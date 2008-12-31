@@ -25,7 +25,7 @@ INCLUDES	:=
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE) -I$(DEVKITPRO)/SDL/include -U__unix
+CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE) -I$(DEVKITPRO)/SDL/include -U__unix -DHAVE_SDL
 CXXFLAGS	=	$(CFLAGS)
 
 LDFLAGS	=	-L$(DEVKITPRO)/SDL/lib -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -58,7 +58,7 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 #---------------------------------------------------------------------------------
 # automatically build a list of object files for our project
 #---------------------------------------------------------------------------------
-CFILES		:=
+CFILES		:= menu.c char_to_kc.c
 CPPFILES	:= Display.cpp main.cpp Prefs.cpp SID.cpp REU.cpp IEC.cpp 1541fs.cpp \
                1541d64.cpp 1541t64.cpp 1541job.o SAM.cpp C64.cpp CPUC64.cpp VIC.cpp \
                CIA.cpp CPU1541.cpp
@@ -120,7 +120,7 @@ DEPENDS	:=	$(OFILES:.o=.d)
 # main targets
 #---------------------------------------------------------------------------------
 $(OUTPUT).dol: $(OUTPUT).elf
-$(OUTPUT).elf: $(OFILES)
+$(OUTPUT).elf: sysconfig.h $(OFILES)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .jpg extension
@@ -129,6 +129,11 @@ $(OUTPUT).elf: $(OFILES)
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	$(bin2o)
+
+sysconfig.h: sysconfig.h.Wii
+	cp $< $@
+
+Display.cpp: Display_SDL.i
 
 -include $(DEPENDS)
 

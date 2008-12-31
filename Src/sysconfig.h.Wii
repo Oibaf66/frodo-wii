@@ -95,7 +95,7 @@
 #define HAVE_FCNTL_H 1
 
 /* Define if you have the <linux/joystick.h> header file.  */
-/* #undef HAVE_LINUX_JOYSTICK_H */
+#undef HAVE_LINUX_JOYSTICK_H
 
 /* Define if you have the <ncurses.h> header file.  */
 /* #undef HAVE_NCURSES_H */

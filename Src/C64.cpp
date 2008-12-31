@@ -712,8 +712,3 @@ bool C64::LoadSnapshot(char *filename)
 #ifdef __riscos__
 #include "C64_Acorn.i"
 #endif
-
-#ifdef GEKKO
-#include "C64_wii.i"
-#endif
-

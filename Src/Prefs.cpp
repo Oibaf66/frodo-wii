@@ -134,10 +134,10 @@ bool Prefs::operator==(const Prefs &rhs) const
 		&& SystemKeys == rhs.SystemKeys
 		&& ShowLEDs == rhs.ShowLEDs
 #ifdef GEKKO
-		&& this->JoystickKeyBinding[0] == rhs.JoystickKeybinding[0]
-		&& this->JoystickKeyBinding[1] == rhs.JoystickKeybinding[1]
-		&& this->JoystickKeyBinding[2] == rhs.JoystickKeybinding[2]
-		&& this->JoystickKeyBinding[3] == rhs.JoystickKeybinding[3]
+		&& this->JoystickKeyBinding[0] == rhs.JoystickKeyBinding[0]
+		&& this->JoystickKeyBinding[1] == rhs.JoystickKeyBinding[1]
+		&& this->JoystickKeyBinding[2] == rhs.JoystickKeyBinding[2]
+		&& this->JoystickKeyBinding[3] == rhs.JoystickKeyBinding[3]
 #endif
 	);
 }

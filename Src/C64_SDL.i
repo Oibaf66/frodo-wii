@@ -10,6 +10,9 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+#if defined(GEKKO)
+#include <wiiuse/wpad.h>
+#endif
 
 static struct timeval tv_start;
 static char *main_menu_messages[] = {
@@ -39,9 +42,11 @@ static char *bind_key_messages[] = {
 void C64::c64_ctor1(void)
 {
 	// Initialize joystick variables
+#ifdef HAVE_LINUX_JOYSTICK_H
 	joyfd[0] = joyfd[1] = -1;
 	joy_minx = joy_miny = 32767;
 	joy_maxx = joy_maxy = -32768;
+#endif
 
 	this->base_dir = ".";
 
@@ -358,16 +363,16 @@ uint8 C64::poll_joystick(int port)
 		this->enter_menu();
 	if ( (held & WPAD_BUTTON_A) && this->joystick_key_binding[0])
 		TheDisplay->FakeKeyPress(this->joystick_key_binding[0],
-				shifted, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, &joykey);
+				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
 	if ( (held & WPAD_BUTTON_PLUS) && this->joystick_key_binding[1])
 		TheDisplay->FakeKeyPress(this->joystick_key_binding[1],
-				shifted, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, &joykey);
+				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
 	if ( (held & WPAD_BUTTON_MINUS) && this->joystick_key_binding[2])
 		TheDisplay->FakeKeyPress(this->joystick_key_binding[2],
-				shifted, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, &joykey);
+				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
 	if ( (held & WPAD_BUTTON_1) && this->joystick_key_binding[1])
 		TheDisplay->FakeKeyPress(this->joystick_key_binding[1],
-				shifted, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, &joykey);
+				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
 
 
 	return j;
