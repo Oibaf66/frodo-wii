@@ -64,6 +64,10 @@ class DigitalPlayer;
 #define ldSINTAB 9			// size of sinus table (0 to 90 degrees)
 #endif
 
+#if defined(HAVE_SDL)
+#include <SDL.h>
+#endif
+
 
 #ifdef USE_FIXPOINT_MATHS
 #include "FixPoint.i"
@@ -428,7 +432,14 @@ private:
 	int play_buf;					// Number of buffer currently playing
 #endif
 
-#ifdef __linux__
+#ifdef HAVE_SDL
+	void fill_audio(Uint8 *stream, int len);
+	static void fill_audio_helper(void *udata, Uint8 *stream, int len);
+
+	SDL_AudioSpec spec;
+#endif
+
+#if defined(__linux__) || defined(HAVE_SDL)
 	int devfd, sndbufsize, buffer_rate;
 	int16 *sound_buffer;
 #endif
@@ -1351,6 +1362,9 @@ void DigitalRenderer::calc_buffer(int16 *buf, long count)
 #elif defined(AMIGA)
 #include "SID_Amiga.i"
 
+#elif defined(HAVE_SDL)
+#include "SID_SDL.i"
+
 #elif defined(__linux__)
 #include "SID_linux.i"
 
@@ -1368,6 +1382,9 @@ void DigitalRenderer::calc_buffer(int16 *buf, long count)
 
 #elif defined(__riscos__)
 #include "SID_Acorn.i"
+
+#elif defined(GEKKO)
+#include "SID_wii.i"
 
 #else	// No sound
 void DigitalRenderer::init_sound(void) {ready = false;}

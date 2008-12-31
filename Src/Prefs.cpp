@@ -72,6 +72,13 @@ Prefs::Prefs()
 	AlwaysCopy = false;
 	SystemKeys = true;
 	ShowLEDs = true;
+
+#ifdef GEKKO
+	this->JoystickKeyBinding[0] = 0;
+	this->JoystickKeyBinding[1] = 0;
+	this->JoystickKeyBinding[2] = 0;
+	this->JoystickKeyBinding[3] = 0;
+#endif
 }
 
 
@@ -126,6 +133,12 @@ bool Prefs::operator==(const Prefs &rhs) const
 		&& AlwaysCopy == rhs.AlwaysCopy
 		&& SystemKeys == rhs.SystemKeys
 		&& ShowLEDs == rhs.ShowLEDs
+#ifdef GEKKO
+		&& this->JoystickKeyBinding[0] == rhs.JoystickKeybinding[0]
+		&& this->JoystickKeyBinding[1] == rhs.JoystickKeybinding[1]
+		&& this->JoystickKeyBinding[2] == rhs.JoystickKeybinding[2]
+		&& this->JoystickKeyBinding[3] == rhs.JoystickKeybinding[3]
+#endif
 	);
 }
 
@@ -290,6 +303,16 @@ void Prefs::Load(char *filename)
 					SystemKeys = !strcmp(value, "TRUE");
 				else if (!strcmp(keyword, "ShowLEDs"))
 					ShowLEDs = !strcmp(value, "TRUE");
+#if defined(GEKKO)
+				else if (!strcmp(keyword, "JoystickKeyBinding0"))
+					JoystickKeyBinding[0] = atoi(value);
+				else if (!strcmp(keyword, "JoystickKeyBinding1"))
+					JoystickKeyBinding[1] = atoi(value);
+				else if (!strcmp(keyword, "JoystickKeyBinding2"))
+					JoystickKeyBinding[2] = atoi(value);
+				else if (!strcmp(keyword, "JoystickKeyBinding3"))
+					JoystickKeyBinding[3] = atoi(value);
+#endif
 			}
 		}
 		fclose(file);
@@ -386,6 +409,12 @@ bool Prefs::Save(char *filename)
 		fprintf(file, "AlwaysCopy = %s\n", AlwaysCopy ? "TRUE" : "FALSE");
 		fprintf(file, "SystemKeys = %s\n", SystemKeys ? "TRUE" : "FALSE");
 		fprintf(file, "ShowLEDs = %s\n", ShowLEDs ? "TRUE" : "FALSE");
+#if defined(GEKKO)
+		fprintf(file, "JoystickKeyBinding0 = %d\n", JoystickKeyBinding[0]);
+		fprintf(file, "JoystickKeyBinding1 = %d\n", JoystickKeyBinding[1]);
+		fprintf(file, "JoystickKeyBinding2 = %d\n", JoystickKeyBinding[2]);
+		fprintf(file, "JoystickKeyBinding3 = %d\n", JoystickKeyBinding[3]);
+#endif
 		fclose(file);
 		ThePrefsOnDisk = *this;
 		return true;

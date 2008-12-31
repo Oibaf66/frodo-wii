@@ -114,6 +114,10 @@ private:
 	static char *edit_prefs_name;
 	static HWND hDlg;
 #endif
+
+#ifdef GEKKO
+	int JoystickKeyBinding[4];
+#endif
 };
 
 

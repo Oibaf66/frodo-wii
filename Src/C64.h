@@ -7,6 +7,12 @@
 #ifndef _C64_H
 #define _C64_H
 
+#if defined(HAVE_SDL)
+/* SDL menu */
+#include "menu.h"
+#include <SDL_ttf.h>
+#endif
+
 #ifdef __BEOS__
 #include <KernelKit.h>
 #include <device/Joystick.h>
@@ -90,6 +96,9 @@ public:
 #ifdef FRODO_SC
 	uint32 CycleCounter;
 #endif
+	void enter_menu() {
+		this->have_a_break = true;
+	}
 
 private:
 	void c64_ctor1(void);
@@ -135,11 +144,28 @@ private:
 	bool game_open, port_allocated;	// Flags: gameport.device opened, game port allocated
 #endif
 
+#ifdef GEKKO
+	double speed_index;
+	int joystick_key_binding[4]; /* A, Plus, Minus, 1 */
+#endif
+
 #ifdef __unix
 	int joyfd[2];			// File descriptors for joysticks
 	double speed_index;
 public:
-	CmdPipe *gui;
+#endif
+#ifdef HAVE_SDL
+	menu_t main_menu;
+	TTF_Font *menu_font;
+	const char *base_dir;
+
+	bool fake_key_sequence;
+	int fake_key_type;
+	int fake_key_index;
+	int fake_key_keytime;
+
+	void select_disc();
+	void bind_key();
 #endif
 
 #ifdef WIN32

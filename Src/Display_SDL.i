@@ -13,15 +13,17 @@
 
 
 // Display surface
-static SDL_Surface *screen = NULL;
+SDL_Surface *screen = NULL;
 
 // Keyboard
 static bool num_locked = false;
 
+#if defined(DO_ERROR_BLINK)
 // For LED error blinking
 static C64Display *c64_disp;
 static struct sigaction pulse_sa;
 static itimerval pulse_tv;
+#endif
 
 // Colors for speedometer/drive LEDs
 enum {
@@ -45,7 +47,7 @@ enum {
   3     V   U   H   B   8   G   Y   7
   4     N   O   K   M   0   J   I   9
   5     ,   @   :   .   -   L   P   +
-  6     /   ^   =  SHR HOM  ;   *   £
+  6     /   ^   =  SHR HOM  ;   *   ï¿½
   7    R/S  Q   C= SPC  2  CTL  <-  1
 */
 
@@ -62,6 +64,11 @@ int init_graphics(void)
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
 		return 0;
+	}
+	if (TTF_Init() < 0)
+	{
+	        fprintf(stderr, "Unable to init TTF: %s\n", TTF_GetError() );
+	        return 0;		
 	}
 
 	// Open window
@@ -85,6 +92,7 @@ C64Display::C64Display(C64 *the_c64) : TheC64(the_c64)
 	for (int i=0; i<4; i++)
 		led_state[i] = old_led_state[i] = LED_OFF;
 
+#if defined(DO_ERROR_BLINK)
 	// Start timer for LED error blinking
 	c64_disp = this;
 	pulse_sa.sa_handler = (void (*)(int))pulse_handler;
@@ -96,6 +104,7 @@ C64Display::C64Display(C64 *the_c64) : TheC64(the_c64)
 	pulse_tv.it_value.tv_sec = 0;
 	pulse_tv.it_value.tv_usec = 400000;
 	setitimer(ITIMER_REAL, &pulse_tv, NULL);
+#endif
 }
 
 
@@ -106,6 +115,7 @@ C64Display::C64Display(C64 *the_c64) : TheC64(the_c64)
 C64Display::~C64Display()
 {
 	SDL_Quit();
+	TTF_Quit();
 }
 
 
@@ -213,6 +223,7 @@ void C64Display::draw_string(SDL_Surface *s, int x, int y, const char *str, uint
  *  LED error blink
  */
 
+#if defined(DO_ERROR_BLINK)
 void C64Display::pulse_handler(...)
 {
 	for (int i=0; i<4; i++)
@@ -225,6 +236,7 @@ void C64Display::pulse_handler(...)
 				break;
 		}
 }
+#endif
 
 
 /*
@@ -262,6 +274,38 @@ int C64Display::BitmapXMod(void)
 	return screen->pitch;
 }
 
+void C64Display::FakeKeyPress(int kc, bool shift, uint8 *CIA_key_matrix,
+		uint8 *CIA_rev_matrix, uint8 *joystick)
+{
+        // Clear matrices                                                                                                                       
+        for (int i = 0; i < 8; i ++)
+        {
+                CIA_key_matrix[i] = 0xFF;
+                CIA_rev_matrix[i] = 0xFF;
+        }
+
+        if (shift)
+        {
+                CIA_key_matrix[6] &= 0xef;
+                CIA_rev_matrix[4] &= 0xbf;
+        }
+
+        if (kc != -1)
+        {
+                int c64_byte, c64_bit, shifted;
+                c64_byte = kc >> 3;
+                c64_bit = kc & 7;
+                shifted = kc & 128;
+                c64_byte &= 7;
+                if (shifted)
+                {
+                        CIA_key_matrix[6] &= 0xef;
+                        CIA_rev_matrix[4] &= 0xbf;
+                }
+                CIA_key_matrix[c64_byte] &= ~(1 << c64_bit);
+                CIA_rev_matrix[c64_bit] &= ~(1 << c64_byte);
+        }
+}
 
 /*
  *  Poll the keyboard
@@ -424,6 +468,10 @@ void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joyst
 
 					case SDLK_F12:	// F12: Reset
 						TheC64->Reset();
+						break;
+
+					case SDLK_HOME:	// Home: Pause and enter menu
+						TheC64->enter_menu();
 						break;
 
 					case SDLK_NUMLOCK:

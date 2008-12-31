@@ -18,7 +18,7 @@
 #include "Display.h"
 #include "Prefs.h"
 
-#if defined(__unix) && !defined(__svgalib__)
+#if defined(__unix) && !defined(__svgalib__) && !defined(HAVE_SDL)
 #include "CmdPipe.h"
 #endif
 
@@ -697,8 +697,8 @@ bool C64::LoadSnapshot(char *filename)
 #include "C64_Amiga.i"
 #endif
 
-#ifdef __unix
-#include "C64_x.i"
+#ifdef HAVE_SDL
+#include "C64_SDL.i"
 #endif
 
 #ifdef __mac__
@@ -712,3 +712,8 @@ bool C64::LoadSnapshot(char *filename)
 #ifdef __riscos__
 #include "C64_Acorn.i"
 #endif
+
+#ifdef GEKKO
+#include "C64_wii.i"
+#endif
+

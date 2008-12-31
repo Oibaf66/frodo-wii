@@ -248,4 +248,25 @@ extern Frodo *be_app;	// Pointer to Frodo object
 
 #endif
 
+#ifdef GEKKO
+
+class Prefs;
+
+class Frodo {
+public:
+	Frodo();
+	void ArgvReceived(int argc, char **argv);
+	void ReadyToRun(void);
+	static Prefs *reload_prefs(void);
+
+	C64 *TheC64;
+
+private:
+	bool load_rom_files(void);
+
+	static char prefs_path[256];	// Pathname of current preferences file
+};
+
+#endif
+
 #endif

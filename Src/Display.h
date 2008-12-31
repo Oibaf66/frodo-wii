@@ -17,6 +17,7 @@
 
 #ifdef HAVE_SDL
 struct SDL_Surface;
+extern SDL_Surface *screen;
 #endif
 
 #ifdef WIN32
@@ -59,6 +60,10 @@ public:
 #else
 	void PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joystick);
 #endif
+#if defined(HAVE_SDL)
+        void FakeKeyPress(int kc, bool shift, uint8 *CIA_key_matrix,
+        		uint8 *CIA_rev_matrix, uint8 *joystick);
+#endif
 	bool NumLock(void);
 	void InitColors(uint8 *colors);
 	void NewPrefs(Prefs *prefs);
@@ -79,7 +84,7 @@ public:
 	Joy_Keys JoystickKeys[2];		// it's easier making the joystick keys public
 #endif
 
-#ifdef __unix
+#if defined(__unix) || defined(GEKKO)
 	bool quit_requested;
 #endif
 
