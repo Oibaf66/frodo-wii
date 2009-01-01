@@ -36,6 +36,10 @@ static char *bind_key_messages[] = {
 		NULL,
 };
 
+#define FONT_PATH "FreeMono.ttf"
+#if defined(GEKKO)
+#define FONT_PATH "/apps/frodo/FreeMono.ttf"
+#endif
 /*
  *  Constructor, system-dependent things
  */
@@ -48,21 +52,43 @@ void C64::c64_ctor1(void)
 	joy_maxx = joy_maxy = -32768;
 #endif
 
+#if defined(GEKKO)
+	this->base_dir = "/apps/frodo/images";
+#else
 	this->base_dir = ".";
+#endif
 
 	this->fake_key_sequence = false;
 	this->fake_key_index = 0;
 	this->fake_key_keytime = 5;
 	this->fake_key_type = 0;
 
-	this->menu_font = TTF_OpenFont("FreeMono.ttf", 20);
+	FILE *f = fopen(FONT_PATH, "r");
+	if (!f)
+		fprintf(stderr, "Cannot open %s\n", FONT_PATH);
+	else {
+		fprintf(stderr, "Could open %s!!!\n", FONT_PATH);
+		fclose(f);
+	}
+	f = fopen("/FreeMono.ttf", "r");
+	if (!f)
+		fprintf(stderr, "Cannot open %s\n", "/Free...");
+	else {
+		fprintf(stderr, "Could open %s!!!\n", "/Free...");
+		fclose(f);
+	}
+
+	this->menu_font = TTF_OpenFont(FONT_PATH, 20);
 	if (!this->menu_font)
 	{
 	        fprintf(stderr, "Unable to open font: %s\n", TTF_GetError() );
-	        exit(1);		
+	        SDL_Delay(1000);
+	        //exit(1);		
 	}
+#if 0
 	menu_init(&this->main_menu, this->menu_font, main_menu_messages,
 			0, 0, DISPLAY_X, DISPLAY_Y);
+#endif
 }
 
 void C64::c64_ctor2(void)
@@ -275,30 +301,16 @@ void C64::VBlank(bool draw_frame)
 	TheCIA2->CountTOD();
 
 	// Update window if needed
+	static uint64_t lastFrame;
 	if (draw_frame) {
-    	TheDisplay->Update();
-
-		// Calculate time between VBlanks, display speedometer
-		struct timeval tv;
-		gettimeofday(&tv, NULL);
-		if ((tv.tv_usec -= tv_start.tv_usec) < 0) {
-			tv.tv_usec += 1000000;
-			tv.tv_sec -= 1;
-		}
-		tv.tv_sec -= tv_start.tv_sec;
-		double elapsed_time = (double)tv.tv_sec * 1000000 + tv.tv_usec;
-		speed_index = 20000 / (elapsed_time + 1) * ThePrefs.SkipFrames * 100;
-
-		// Limit speed to 100% if desired
-		if ((speed_index > 100) && ThePrefs.LimitSpeed) {
-			usleep((unsigned long)(ThePrefs.SkipFrames * 20000 - elapsed_time));
-			speed_index = 100;
-		}
-
-		gettimeofday(&tv_start, NULL);
-
-		TheDisplay->Speedometer((int)speed_index);
+		TheDisplay->Update();
 	}
+        uint32_t now = SDL_GetTicks();
+
+        if ( (now - lastFrame) < 30 ) {
+          SDL_Delay( 30 - (now - lastFrame) );
+        }
+        lastFrame = now;
 }
 
 
@@ -360,7 +372,20 @@ uint8 C64::poll_joystick(int port)
 	if (held & WPAD_BUTTON_2)
 		j &= 0xef; // Button
 	if (held & WPAD_BUTTON_HOME)
-		this->enter_menu();
+		exit(1);
+		//this->enter_menu();
+
+	if (held & WPAD_BUTTON_A) {
+		Prefs *np = Frodo::reload_prefs();
+		strncpy(np->DrivePath[0], "/apps/frodo/images/spy_vs_spy.d64", 255);
+		np->DriveType[0] = DRVTYPE_D64;
+		np->LimitSpeed = true;
+		NewPrefs(np);
+		ThePrefs = *np;
+
+		this->fake_key_sequence = true;
+	}
+		//this->enter_menu();
 	if ( (held & WPAD_BUTTON_A) && this->joystick_key_binding[0])
 		TheDisplay->FakeKeyPress(this->joystick_key_binding[0],
 				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);

@@ -12,10 +12,7 @@
 
 extern int init_graphics(void);
 
-
-// Global variables
-char Frodo::prefs_path[256] = "";
-
+#define PREFS_PATH "/apps/frodo/frodorc"
 
 /*
  *  Create application object and start it
@@ -36,6 +33,17 @@ extern "C" int main(int argc, char **argv)
 		return 0;
 	}
 	fflush(stdout);
+
+	// Init SDL
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
+		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
+		return 0;
+	}
+	if (TTF_Init() < 0)
+	{
+	        fprintf(stderr, "Unable to init TTF: %s\n", TTF_GetError() );
+	        return 0;		
+	}
 
 	fatInitDefault();
 	if (WPAD_Init() != WPAD_ERR_NONE)
@@ -69,8 +77,6 @@ Frodo::Frodo()
 
 void Frodo::ArgvReceived(int argc, char **argv)
 {
-	if (argc == 2)
-		strncpy(prefs_path, argv[1], 255);
 }
 
 
@@ -82,16 +88,7 @@ void Frodo::ReadyToRun(void)
 {
 	getcwd(AppDirPath, 256);
 
-	// Load preferences
-	if (!prefs_path[0]) {
-		char *home = getenv("HOME");
-		if (home != NULL && strlen(home) < 240) {
-			strncpy(prefs_path, home, 200);
-			strcat(prefs_path, "/");
-		}
-		strcat(prefs_path, ".frodorc");
-	}
-	ThePrefs.Load(prefs_path);
+	ThePrefs.Load((char*)PREFS_PATH);
 
 	// Create and start C64
 	TheC64 = new C64;
@@ -104,6 +101,6 @@ void Frodo::ReadyToRun(void)
 Prefs *Frodo::reload_prefs(void)
 {
 	static Prefs newprefs;
-	newprefs.Load(prefs_path);
+	newprefs.Load((char*)PREFS_PATH);
 	return &newprefs;
 }

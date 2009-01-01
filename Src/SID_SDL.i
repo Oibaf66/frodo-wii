@@ -63,8 +63,8 @@ void DigitalRenderer::init_sound(void)
 
 	/* Set the audio format */
 	this->spec.freq = 44100;
-	this->spec.format = AUDIO_S16LSB;
-	this->spec.channels = 1;    /* 1 = mono, 2 = stereo */
+	this->spec.format = AUDIO_S16MSB;
+	this->spec.channels = 2;    /* 1 = mono, 2 = stereo */
 	this->spec.samples = 512;
 	this->spec.callback = this->fill_audio_helper;
 	this->spec.userdata = (void*)this;

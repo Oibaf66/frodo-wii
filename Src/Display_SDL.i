@@ -60,20 +60,16 @@ enum {
 
 int init_graphics(void)
 {
-	// Init SDL
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
-		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
-		return 0;
-	}
-	if (TTF_Init() < 0)
-	{
-	        fprintf(stderr, "Unable to init TTF: %s\n", TTF_GetError() );
-	        return 0;		
-	}
-
 	// Open window
 	SDL_WM_SetCaption(VERSION_STRING, "Frodo");
-	screen = SDL_SetVideoMode(DISPLAY_X, DISPLAY_Y + 17, 8, SDL_DOUBLEBUF);
+	SDL_ShowCursor(SDL_DISABLE);
+
+	screen = SDL_SetVideoMode(640, 480, 8,
+			SDL_DOUBLEBUF | SDL_FULLSCREEN);
+#if 0
+	screen = SDL_SetVideoMode(DISPLAY_X, DISPLAY_Y + 17, 8,
+			SDL_DOUBLEBUF | SDL_FULLSCREEN);
+#endif
 
 	return 1;
 }
