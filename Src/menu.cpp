@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "bitmap-font.h"
+
 #if defined(GEKKO)
 # include <wiiuse/wpad.h>
 #endif
@@ -42,14 +44,11 @@ static submenu_t *find_submenu(menu_t *p_menu, int index)
   return NULL;
 }
 
-static void print_font(SDL_Surface *screen, TTF_Font *font, int r, int g, int b,
+static void print_font(SDL_Surface *screen, Font *font, int type,
                        int x, int y, char *msg)
 {
-  SDL_Surface *font_surf;
-  SDL_Rect dst = {x, y,  0, 0};
-  SDL_Color color = {r, g, b};
   char buf[255];
-  int i;
+  unsigned int i;
 
   memset(buf, 0, sizeof(buf));
   strncpy(buf, msg, 254);
@@ -61,17 +60,7 @@ static void print_font(SDL_Surface *screen, TTF_Font *font, int r, int g, int b,
 		  buf[i] = ' ';
   }
 
-  font_surf = TTF_RenderText_Solid(font, buf,
-                                   color);
-  if (!font_surf)
-    {
-      fprintf(stderr, "%s\n", TTF_GetError());
-      exit(1);
-    }
-
-  SDL_BlitSurface(font_surf, NULL, screen, &dst);
-
-  SDL_FreeSurface(font_surf);
+  font->ShowText(buf, type, x, y, screen);
 }
 
 
@@ -79,7 +68,7 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu)
 {
   int x_start = p_menu->x1 + (p_menu->x2 - p_menu->x1) / 2 - p_menu->text_w / 2;
   int y_start = p_menu->y1 + (p_menu->y2 - p_menu->y1) / 2 - p_menu->text_h / 2;
-  int font_height = TTF_FontHeight(p_menu->p_font);
+  int font_height = p_menu->p_font->GetHeight();
   int line_height = (font_height + font_height / 4);
   int cur_y = p_menu->cur_sel * line_height;
   int entries_visible = p_menu->y2 / line_height;
@@ -98,13 +87,13 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu)
       int y = (i - p_menu->start_entry_visible) * line_height;
 
       if ((p_menu->available_options & (1<<i)) == 0) /* Gray (not available) */
-	print_font(screen, p_menu->p_font, 128,128,128, x_start,
+	print_font(screen, p_menu->p_font, 2, x_start,
                    y_start + y, msg);
       else if (p_menu->cur_sel == i) /* Selected - color */
-	print_font(screen, p_menu->p_font, 255,255,0, x_start,
+	print_font(screen, p_menu->p_font, 3, x_start,
                    y_start + y, msg);
       else /* Otherwise white */
-	print_font(screen, p_menu->p_font, 255,255,255, x_start,
+	print_font(screen, p_menu->p_font, 0, x_start,
                    y_start + y, msg);
       if (IS_SUBMENU(msg))
 	{
@@ -125,14 +114,8 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu)
 		  if (p_submenu->sel == n_pipe-1)
 		    {
                       SDL_Rect r;
-                      int w;
-                      int h;
-
-                      if (TTF_SizeText(p_menu->p_font, "X", &w, &h) < 0)
-                      {
-                	      fprintf(stderr, "%s\n", TTF_GetError());
-                	      exit(1);
-                      }
+                      int w = p_menu->p_font->GetWidth();
+                      int h = p_menu->p_font->GetHeight();
 
                       r = (SDL_Rect) { x_start + (n+1) * w-1,
                 	      y_start + (i+1 - p_menu->start_entry_visible) * ((h + h/4)-1),
@@ -180,7 +163,7 @@ static int is_submenu_title(menu_t *p_menu, int n)
 }
 
 
-void menu_init(menu_t *p_menu, TTF_Font *p_font, char **pp_msgs,
+void menu_init(menu_t *p_menu, Font *p_font, char **pp_msgs,
 	       int16_t x1, int16_t y1, int16_t x2, int16_t y2)
 {
   int i;
@@ -209,15 +192,11 @@ void menu_init(menu_t *p_menu, TTF_Font *p_font, char **pp_msgs,
 	  continue; /* Length of submenus is unimportant */
 	}
 
-      if (TTF_SizeText(p_font, p_menu->pp_msgs[p_menu->n_entries], &text_w_font, NULL) != 0)
-        {
-          fprintf(stderr, "%s\n", TTF_GetError());
-          exit(1);
-        }
+      text_w_font = p_menu->p_font->GetWidth();
       if (text_w_font > p_menu->text_w)
 	p_menu->text_w = text_w_font;
     }
-  if ( !(p_menu->p_submenus = malloc(sizeof(submenu_t) * p_menu->n_submenus)) )
+  if ( !(p_menu->p_submenus = (submenu_t*)malloc(sizeof(submenu_t) * p_menu->n_submenus)) )
     {
       perror("malloc failed!\n");
       exit(1);
@@ -244,7 +223,7 @@ void menu_init(menu_t *p_menu, TTF_Font *p_font, char **pp_msgs,
 	    }
 	}
     }
-  p_menu->text_h = p_menu->n_entries * (TTF_FontHeight(p_font) + TTF_FontHeight(p_font) / 4);
+  p_menu->text_h = p_menu->n_entries * (p_font->GetHeight() + p_font->GetHeight() / 4);
 }
 
 void menu_fini(menu_t *p_menu)

@@ -9,8 +9,8 @@
 
 #if defined(HAVE_SDL)
 /* SDL menu */
+#include "bitmap-font.h"
 #include "menu.h"
-#include <SDL_ttf.h>
 #endif
 
 #ifdef __BEOS__
@@ -146,7 +146,7 @@ private:
 
 #ifdef GEKKO
 	double speed_index;
-	int joystick_key_binding[4]; /* A, Plus, Minus, 1 */
+	int joystick_key_binding[5]; /* A, B, Plus, Minus, 1 */
 #endif
 
 #ifdef __unix
@@ -156,7 +156,7 @@ public:
 #endif
 #ifdef HAVE_SDL
 	menu_t main_menu;
-	TTF_Font *menu_font;
+	Font *menu_font;
 	const char *base_dir;
 
 	bool fake_key_sequence;
@@ -166,6 +166,9 @@ public:
 
 	void select_disc();
 	void bind_key();
+	void display_options();
+
+	int display_type;
 #endif
 
 #ifdef WIN32

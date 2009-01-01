@@ -6,6 +6,7 @@
  */
 
 #include "main.h"
+#include "bitmap-font.h"
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -16,11 +17,11 @@
 
 static struct timeval tv_start;
 static char *main_menu_messages[] = {
-		"Insert disc/tape",    /* 0 */
-		"Load disc/tape",      /* 1 */
+		"Insert disc or tape", /* 0 */
+		"Load disc or tape",   /* 1 */
 		"Reset C64",           /* 2 */
 		"Bind key to joystick",/* 3 */
-		"Joystick port (kbd)", /* 4 */
+		"Display options",     /* 4 */
 		"^|1|2",
 		"Swap joysticks",      /* 6 */
 		" ",
@@ -28,18 +29,22 @@ static char *main_menu_messages[] = {
 		NULL,
 };
 
-static char *bind_key_messages[] = {
-		"Bind to A",           /* 0 */
-		"Bind to Plus",        /* 1 */
-		"Bind to Minus",       /* 2 */
-		"Bind to 1",           /* 3 */
+static char *display_option_messages[] = {
+		"1-1 resolution",      /* 0 */
+		"double resolution, centered", /* 1 */
+		"full-screen stretched", /* 2 */
 		NULL,
 };
 
-#define FONT_PATH "FreeMono.ttf"
-#if defined(GEKKO)
-#define FONT_PATH "/apps/frodo/FreeMono.ttf"
-#endif
+static char *bind_key_messages[] = {
+		"Bind to A",           /* 0 */
+		"Bind to B",           /* 1 */
+		"Bind to Plus",        /* 2 */
+		"Bind to Minus",       /* 3 */
+		"Bind to 1",           /* 4 */
+		NULL,
+};
+
 /*
  *  Constructor, system-dependent things
  */
@@ -63,22 +68,7 @@ void C64::c64_ctor1(void)
 	this->fake_key_keytime = 5;
 	this->fake_key_type = 0;
 
-	FILE *f = fopen(FONT_PATH, "r");
-	if (!f)
-		fprintf(stderr, "Cannot open %s\n", FONT_PATH);
-	else {
-		fprintf(stderr, "Could open %s!!!\n", FONT_PATH);
-		fclose(f);
-	}
-	f = fopen("/FreeMono.ttf", "r");
-	if (!f)
-		fprintf(stderr, "Cannot open %s\n", "/Free...");
-	else {
-		fprintf(stderr, "Could open %s!!!\n", "/Free...");
-		fclose(f);
-	}
-
-	this->menu_font = TTF_OpenFont(FONT_PATH, 20);
+	this->menu_font = new Font("/apps/frodo/fonts.png");
 	if (!this->menu_font)
 	{
 	        fprintf(stderr, "Unable to open font: %s\n", TTF_GetError() );
@@ -213,6 +203,18 @@ void C64::bind_key()
 	}
         menu_fini(&bind_key_menu);
         menu_fini(&key_menu);
+}
+
+void C64::display_options()
+{
+        menu_t display_menu;
+
+        menu_init(&display_menu, this->menu_font, display_option_messages,
+			0, 0, DISPLAY_X, DISPLAY_Y);
+	int opt = menu_select(screen, &display_menu, ~0, NULL);
+	if (opt >= 0)
+		this->display_type = opt;
+        menu_fini(&display_menu);
 }
 
 /*
@@ -372,31 +374,22 @@ uint8 C64::poll_joystick(int port)
 	if (held & WPAD_BUTTON_2)
 		j &= 0xef; // Button
 	if (held & WPAD_BUTTON_HOME)
-		exit(1);
-		//this->enter_menu();
+		this->enter_menu();
 
-	if (held & WPAD_BUTTON_A) {
-		Prefs *np = Frodo::reload_prefs();
-		strncpy(np->DrivePath[0], "/apps/frodo/images/spy_vs_spy.d64", 255);
-		np->DriveType[0] = DRVTYPE_D64;
-		np->LimitSpeed = true;
-		NewPrefs(np);
-		ThePrefs = *np;
-
-		this->fake_key_sequence = true;
-	}
-		//this->enter_menu();
 	if ( (held & WPAD_BUTTON_A) && this->joystick_key_binding[0])
 		TheDisplay->FakeKeyPress(this->joystick_key_binding[0],
 				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
-	if ( (held & WPAD_BUTTON_PLUS) && this->joystick_key_binding[1])
+	if ( (held & WPAD_BUTTON_B) && this->joystick_key_binding[1])
 		TheDisplay->FakeKeyPress(this->joystick_key_binding[1],
 				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
-	if ( (held & WPAD_BUTTON_MINUS) && this->joystick_key_binding[2])
+	if ( (held & WPAD_BUTTON_PLUS) && this->joystick_key_binding[2])
 		TheDisplay->FakeKeyPress(this->joystick_key_binding[2],
 				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
-	if ( (held & WPAD_BUTTON_1) && this->joystick_key_binding[1])
-		TheDisplay->FakeKeyPress(this->joystick_key_binding[1],
+	if ( (held & WPAD_BUTTON_MINUS) && this->joystick_key_binding[3])
+		TheDisplay->FakeKeyPress(this->joystick_key_binding[3],
+				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
+	if ( (held & WPAD_BUTTON_1) && this->joystick_key_binding[4])
+		TheDisplay->FakeKeyPress(this->joystick_key_binding[4],
 				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
 
 
@@ -516,7 +509,8 @@ void C64::thread_func(void)
 			case 3: /* Bind keys to joystick */
 				this->bind_key();
 				break;
-			case 4: /* Joystick port */
+			case 4: /* Display options */
+				this->display_options();
 				break;
 			case 6: /* Swap joysticks */
 			{

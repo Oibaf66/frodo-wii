@@ -58,10 +58,10 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 #---------------------------------------------------------------------------------
 # automatically build a list of object files for our project
 #---------------------------------------------------------------------------------
-CFILES		:= menu.c char_to_kc.c
+CFILES		:= char_to_kc.c
 CPPFILES	:= Display.cpp main.cpp Prefs.cpp SID.cpp REU.cpp IEC.cpp 1541fs.cpp \
                1541d64.cpp 1541t64.cpp 1541job.o SAM.cpp C64.cpp CPUC64.cpp VIC.cpp \
-               CIA.cpp CPU1541.cpp
+               CIA.cpp CPU1541.cpp menu.cpp bitmap-font.cpp
 sFILES		:=	
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
