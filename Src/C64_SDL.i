@@ -71,14 +71,11 @@ void C64::c64_ctor1(void)
 	this->menu_font = new Font("/apps/frodo/fonts.png");
 	if (!this->menu_font)
 	{
-	        fprintf(stderr, "Unable to open font: %s\n", TTF_GetError() );
-	        SDL_Delay(1000);
-	        //exit(1);		
+	        fprintf(stderr, "Unable to open font\n" );
+	        exit(1);		
 	}
-#if 0
 	menu_init(&this->main_menu, this->menu_font, main_menu_messages,
 			0, 0, DISPLAY_X, DISPLAY_Y);
-#endif
 }
 
 void C64::c64_ctor2(void)
