@@ -116,7 +116,8 @@ private:
 #endif
 
 #ifdef GEKKO
-	int JoystickKeyBinding[4];
+	int JoystickKeyBinding[5];
+	int DisplayOption;
 #endif
 };
 

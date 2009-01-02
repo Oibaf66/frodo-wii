@@ -33,7 +33,7 @@ LDFLAGS	=	-L$(DEVKITPRO)/SDL/lib -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-lSDL_ttf -lSDL_mixer -lSDL_image -ljpeg -lpng -lz -lSDL -lfreetype -lfat -lwiiuse -lbte -logc -lm
+LIBS	:=	-lSDL_image -ljpeg -lpng -lz -lSDL -lfat -lwiiuse -lbte -logc -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

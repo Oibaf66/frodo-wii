@@ -146,7 +146,6 @@ private:
 
 #ifdef GEKKO
 	double speed_index;
-	int joystick_key_binding[5]; /* A, B, Plus, Minus, 1 */
 #endif
 
 #ifdef __unix
@@ -167,8 +166,6 @@ public:
 	void select_disc();
 	void bind_key();
 	void display_options();
-
-	int display_type;
 #endif
 
 #ifdef WIN32

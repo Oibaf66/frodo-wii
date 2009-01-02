@@ -68,7 +68,7 @@ void C64::c64_ctor1(void)
 	this->fake_key_keytime = 5;
 	this->fake_key_type = 0;
 
-	this->menu_font = new Font("/apps/frodo/fonts.png");
+	this->menu_font = new Font("/apps/frodo/fonts.bmp");
 	if (!this->menu_font)
 	{
 	        fprintf(stderr, "Unable to open font\n" );
@@ -195,7 +195,7 @@ void C64::bind_key()
 		int key = menu_select(screen, &key_menu, ~0, NULL);
 
 #if defined(GEKKO)
-		this->joystick_key_binding[opt] = kcs[key];
+		ThePrefs.JoystickKeyBinding[opt] = kcs[key];
 #endif
 	}
         menu_fini(&bind_key_menu);
@@ -210,7 +210,7 @@ void C64::display_options()
 			0, 0, DISPLAY_X, DISPLAY_Y);
 	int opt = menu_select(screen, &display_menu, ~0, NULL);
 	if (opt >= 0)
-		this->display_type = opt;
+		ThePrefs.DisplayOption = opt;
         menu_fini(&display_menu);
 }
 
@@ -372,21 +372,23 @@ uint8 C64::poll_joystick(int port)
 		j &= 0xef; // Button
 	if (held & WPAD_BUTTON_HOME)
 		this->enter_menu();
+	if (held & WPAD_BUTTON_A)
+		exit(1);
 
-	if ( (held & WPAD_BUTTON_A) && this->joystick_key_binding[0])
-		TheDisplay->FakeKeyPress(this->joystick_key_binding[0],
+	if ( (held & WPAD_BUTTON_A) && ThePrefs.JoystickKeyBinding[0])
+		TheDisplay->FakeKeyPress(ThePrefs.JoystickKeyBinding[0],
 				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
-	if ( (held & WPAD_BUTTON_B) && this->joystick_key_binding[1])
-		TheDisplay->FakeKeyPress(this->joystick_key_binding[1],
+	if ( (held & WPAD_BUTTON_B) && ThePrefs.JoystickKeyBinding[1])
+		TheDisplay->FakeKeyPress(ThePrefs.JoystickKeyBinding[1],
 				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
-	if ( (held & WPAD_BUTTON_PLUS) && this->joystick_key_binding[2])
-		TheDisplay->FakeKeyPress(this->joystick_key_binding[2],
+	if ( (held & WPAD_BUTTON_PLUS) && ThePrefs.JoystickKeyBinding[2])
+		TheDisplay->FakeKeyPress(ThePrefs.JoystickKeyBinding[2],
 				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
-	if ( (held & WPAD_BUTTON_MINUS) && this->joystick_key_binding[3])
-		TheDisplay->FakeKeyPress(this->joystick_key_binding[3],
+	if ( (held & WPAD_BUTTON_MINUS) && ThePrefs.JoystickKeyBinding[3])
+		TheDisplay->FakeKeyPress(ThePrefs.JoystickKeyBinding[3],
 				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
-	if ( (held & WPAD_BUTTON_1) && this->joystick_key_binding[4])
-		TheDisplay->FakeKeyPress(this->joystick_key_binding[4],
+	if ( (held & WPAD_BUTTON_1) && ThePrefs.JoystickKeyBinding[4])
+		TheDisplay->FakeKeyPress(ThePrefs.JoystickKeyBinding[4],
 				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
 
 

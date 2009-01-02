@@ -78,6 +78,9 @@ Prefs::Prefs()
 	this->JoystickKeyBinding[1] = 0;
 	this->JoystickKeyBinding[2] = 0;
 	this->JoystickKeyBinding[3] = 0;
+	this->JoystickKeyBinding[4] = 0;
+
+	this->DisplayOption = 0;
 #endif
 }
 
@@ -138,6 +141,8 @@ bool Prefs::operator==(const Prefs &rhs) const
 		&& this->JoystickKeyBinding[1] == rhs.JoystickKeyBinding[1]
 		&& this->JoystickKeyBinding[2] == rhs.JoystickKeyBinding[2]
 		&& this->JoystickKeyBinding[3] == rhs.JoystickKeyBinding[3]
+		&& this->JoystickKeyBinding[4] == rhs.JoystickKeyBinding[4]
+		&& this->DisplayOption == rhs.DisplayOption
 #endif
 	);
 }
@@ -312,6 +317,10 @@ void Prefs::Load(char *filename)
 					JoystickKeyBinding[2] = atoi(value);
 				else if (!strcmp(keyword, "JoystickKeyBinding3"))
 					JoystickKeyBinding[3] = atoi(value);
+				else if (!strcmp(keyword, "JoystickKeyBinding4"))
+					JoystickKeyBinding[4] = atoi(value);
+				else if (!strcmp(keyword, "DisplayOption"))
+					DisplayOption = atoi(value);
 #endif
 			}
 		}
@@ -414,6 +423,9 @@ bool Prefs::Save(char *filename)
 		fprintf(file, "JoystickKeyBinding1 = %d\n", JoystickKeyBinding[1]);
 		fprintf(file, "JoystickKeyBinding2 = %d\n", JoystickKeyBinding[2]);
 		fprintf(file, "JoystickKeyBinding3 = %d\n", JoystickKeyBinding[3]);
+		fprintf(file, "JoystickKeyBinding4 = %d\n", JoystickKeyBinding[4]);
+
+		fprintf(file, "DisplayOption = %d\n", DisplayOption);
 #endif
 		fclose(file);
 		ThePrefsOnDisk = *this;

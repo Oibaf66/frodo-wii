@@ -1,11 +1,42 @@
 #include <SDL_image.h>
 #include <SDL.h>
+#include <SDL_rwops.h>
+#include <stdio.h>
 
 #include "bitmap-font.h"
 
 Font::Font(std::string src_file)
 {
-	m_pFontList = SDL_DisplayFormatAlpha(IMG_Load(src_file.c_str()));
+	Uint8 *data = (Uint8*)malloc(2 * 1024*1024);
+	FILE *fp = fopen(src_file.c_str(), "r");
+	SDL_RWops *rw;
+	
+	if (!fp) {
+		fprintf(stderr, "Could not open fonts\n");
+		SDL_Delay(1000);
+		free(data);
+		exit(1);
+	}
+	else
+		fprintf(stderr, "I could open fonts manually\n");
+	fread(data, 1, 2 * 1024 * 1024, fp);
+	rw = SDL_RWFromMem(data, 2 * 1024 * 1024);
+	if (!rw) {
+		fprintf(stderr, "Could not create RW: %s\n", SDL_GetError());
+		exit(1);
+	}
+
+	SDL_Surface *surf = IMG_Load_RW(rw, 0);
+
+	if (!surf) {
+		fprintf(stderr, "Could not load %s\n", src_file.c_str());
+		SDL_Delay(1000);
+		exit(1);
+	}
+	m_pFontList = surf;
+
+	SDL_FreeRW(rw);
+	free(data);
 }
 
 Font::~Font(void)

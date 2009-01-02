@@ -111,7 +111,6 @@ C64Display::C64Display(C64 *the_c64) : TheC64(the_c64)
 C64Display::~C64Display()
 {
 	SDL_Quit();
-	TTF_Quit();
 }
 
 
@@ -404,6 +403,8 @@ static void translate_key(SDLKey key, bool key_up, uint8 *key_matrix, uint8 *rev
 
 		case SDLK_KP_DIVIDE: c64_key = MATRIX(6,7); break;
 		case SDLK_KP_ENTER: c64_key = MATRIX(0,1); break;
+
+		default: break;
 	}
 
 	if (c64_key < 0)
