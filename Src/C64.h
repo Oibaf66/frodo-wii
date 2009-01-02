@@ -9,7 +9,6 @@
 
 #if defined(HAVE_SDL)
 /* SDL menu */
-#include "bitmap-font.h"
 #include "menu.h"
 #endif
 

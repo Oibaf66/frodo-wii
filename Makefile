@@ -61,7 +61,7 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 CFILES		:= char_to_kc.c
 CPPFILES	:= Display.cpp main.cpp Prefs.cpp SID.cpp REU.cpp IEC.cpp 1541fs.cpp \
                1541d64.cpp 1541t64.cpp 1541job.o SAM.cpp C64.cpp CPUC64.cpp VIC.cpp \
-               CIA.cpp CPU1541.cpp menu.cpp bitmap-font.cpp
+               CIA.cpp CPU1541.cpp menu.cpp
 sFILES		:=	
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))

@@ -6,7 +6,6 @@
  */
 
 #include "main.h"
-#include "bitmap-font.h"
 
 #include <sys/types.h>
 #include <dirent.h>
