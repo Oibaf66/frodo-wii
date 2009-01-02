@@ -49,7 +49,7 @@ static void print_font(SDL_Surface *screen, TTF_Font *font, int r, int g, int b,
   SDL_Rect dst = {x, y,  0, 0};
   SDL_Color color = {r, g, b};
   char buf[255];
-  int i;
+  unsigned int i;
 
   memset(buf, 0, sizeof(buf));
   strncpy(buf, msg, 254);
@@ -81,7 +81,6 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu)
   int y_start = p_menu->y1 + (p_menu->y2 - p_menu->y1) / 2 - p_menu->text_h / 2;
   int font_height = TTF_FontHeight(p_menu->p_font);
   int line_height = (font_height + font_height / 4);
-  int cur_y = p_menu->cur_sel * line_height;
   int entries_visible = p_menu->y2 / line_height;
   int i;
 
@@ -267,18 +266,18 @@ static uint32_t wait_key_press(void)
 		remote_keys = WPAD_ButtonsDown(WPAD_CHAN_0);
 
 		if (remote_keys & WPAD_BUTTON_DOWN)
-			keys |= KEY_DOWN;
-		if (remote_keys & WPAD_BUTTON_UP)
-			keys |= KEY_UP;
-		if (remote_keys & WPAD_BUTTON_LEFT)
-			keys |= KEY_LEFT;
-		if (remote_keys & WPAD_BUTTON_RIGHT)
 			keys |= KEY_RIGHT;
+		if (remote_keys & WPAD_BUTTON_UP)
+			keys |= KEY_LEFT;
+		if (remote_keys & WPAD_BUTTON_LEFT)
+			keys |= KEY_DOWN;
+		if (remote_keys & WPAD_BUTTON_RIGHT)
+			keys |= KEY_UP;
 		if (remote_keys & WPAD_BUTTON_PLUS)
 			keys |= KEY_PAGEUP;
 		if (remote_keys & WPAD_BUTTON_MINUS)
 			keys |= KEY_PAGEDOWN;
-		if (remote_keys & (WPAD_BUTTON_A | WPAD_BUTTON_1) )
+		if (remote_keys & (WPAD_BUTTON_A | WPAD_BUTTON_2) )
 			keys |= KEY_SELECT;
 		if (remote_keys & (WPAD_BUTTON_1 | WPAD_BUTTON_HOME) )
 			keys |= KEY_ESCAPE;
@@ -339,46 +338,48 @@ static uint32_t wait_key_press(void)
 int menu_select(SDL_Surface *screen, menu_t *p_menu,
                 uint32_t available_options, int *p_submenus)
 {
-  p_menu->available_options = available_options;
+	int ret = -1;
 
-  while(1)
-    {
-      uint32_t keys;
+	p_menu->available_options = available_options;
 
-      SDL_FillRect(screen, 0, SDL_MapRGB(screen->format, 0, 0, 0));
-
-      menu_draw(screen, p_menu);
-      SDL_Flip(screen);
-
-      keys = wait_key_press();
-
-      if (keys & KEY_UP)
-	select_next(p_menu, 0, -1);
-      else if (keys & KEY_DOWN)
-	select_next(p_menu, 0, 1);
-      else if (keys & KEY_LEFT)
-	select_next(p_menu, -1, 0);
-      else if (keys & KEY_RIGHT)
-	select_next(p_menu, 1, 0);
-      else if (keys & KEY_ESCAPE)
-	return -1;
-      else if (keys & KEY_SELECT)
+	while(1)
 	{
-	  int ret = p_menu->cur_sel;
-	  int i;
+		uint32_t keys;
 
-	  if (!is_submenu_title(p_menu, ret))
-	    {
-	      for (i=0; i<p_menu->n_submenus; i++)
-		p_submenus[i] = p_menu->p_submenus[i].sel;
-	      p_menu->cur_sel = 0;
+		SDL_FillRect(screen, 0, SDL_MapRGB(screen->format, 0, 0, 0));
 
-	      return ret;
-	    }
+		menu_draw(screen, p_menu);
+		SDL_Flip(screen);
+
+		keys = wait_key_press();
+
+		if (keys & KEY_UP)
+			select_next(p_menu, 0, -1);
+		else if (keys & KEY_DOWN)
+			select_next(p_menu, 0, 1);
+		else if (keys & KEY_LEFT)
+			select_next(p_menu, -1, 0);
+		else if (keys & KEY_RIGHT)
+			select_next(p_menu, 1, 0);
+		else if (keys & KEY_ESCAPE)
+			break;
+		else if (keys & KEY_SELECT)
+		{
+			ret = p_menu->cur_sel;
+			int i;
+
+			if (!is_submenu_title(p_menu, ret))
+			{
+				for (i=0; i<p_menu->n_submenus; i++)
+					p_submenus[i] = p_menu->p_submenus[i].sel;
+				p_menu->cur_sel = 0;
+			}
+			break;
+		}
 	}
-    }
 
-  return -1;
+	SDL_FillRect(screen, 0, SDL_MapRGB(screen->format, 0, 0, 0));
+	return ret;
 }
 
 #if defined(TEST_MENU)

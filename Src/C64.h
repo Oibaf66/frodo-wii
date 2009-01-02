@@ -163,9 +163,9 @@ public:
 	int fake_key_index;
 	int fake_key_keytime;
 
-	void select_disc();
-	void bind_key();
-	void display_options();
+	void select_disc(Prefs *np);
+	void bind_key(Prefs *np);
+	void display_options(Prefs *np);
 #endif
 
 #ifdef WIN32

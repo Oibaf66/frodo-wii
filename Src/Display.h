@@ -18,6 +18,7 @@
 #ifdef HAVE_SDL
 struct SDL_Surface;
 extern SDL_Surface *screen;
+extern SDL_Surface *real_screen;
 #endif
 
 #ifdef WIN32
@@ -38,6 +39,10 @@ const int DISPLAY_X = 0x180;
 const int DISPLAY_Y = 0x110;
 #endif
 
+#if defined(GEKKO)
+const int FULL_DISPLAY_X = 640;
+const int FULL_DISPLAY_Y = 480;
+#endif
 
 class C64Window;
 class C64Screen;

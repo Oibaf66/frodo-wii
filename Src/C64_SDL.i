@@ -22,10 +22,9 @@ static char *main_menu_messages[] = {
 		"Reset C64",           /* 2 */
 		"Bind key to joystick",/* 3 */
 		"Display options",     /* 4 */
-		"^|1|2",
-		"Swap joysticks",      /* 6 */
+		"Swap joysticks",      /* 5 */
 		" ",
-		"Quit",                /* 8 */
+		"Quit",                /* 7 */
 		NULL,
 };
 
@@ -90,7 +89,7 @@ void C64::c64_ctor1(void)
 	        exit(1);		
 	}
 	menu_init(&this->main_menu, this->menu_font, main_menu_messages,
-			0, 0, DISPLAY_X, DISPLAY_Y);
+			0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y);
 }
 
 void C64::c64_ctor2(void)
@@ -108,7 +107,7 @@ void C64::c64_dtor(void)
 	menu_fini(&this->main_menu);
 }
 
-void C64::select_disc()
+void C64::select_disc(Prefs *np)
 {
         DIR *d = opendir(this->base_dir);
 	char **file_list;
@@ -150,13 +149,12 @@ void C64::select_disc()
         closedir(d);
 
 	menu_init(&select_disc_menu, this->menu_font, file_list,
-			0, 0, DISPLAY_X, DISPLAY_Y);
-	int opt = menu_select(screen, &select_disc_menu, ~0, NULL);
+			0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y);
+	int opt = menu_select(real_screen, &select_disc_menu, ~0, NULL);
 	if (opt >= 0)
 	{
 		char *name = file_list[opt];
 
-		Prefs *np = Frodo::reload_prefs();
 		if (strcmp(file_list[opt], "None") == 0)
 		{
 			strcpy(np->DrivePath[0], "\0");
@@ -168,9 +166,9 @@ void C64::select_disc()
 				np->DriveType[0] = DRVTYPE_D64;
 			else
 				np->DriveType[0] = DRVTYPE_T64;
+			NewPrefs(np);
+			ThePrefs = *np;
 		}
-		NewPrefs(np);
-		ThePrefs = *np;
 	}
         menu_fini(&select_disc_menu);
 
@@ -182,7 +180,7 @@ void C64::select_disc()
 
 #define MATRIX(a,b) (((a) << 3) | (b))
 
-void C64::bind_key()
+void C64::bind_key(Prefs *np)
 {
         menu_t bind_key_menu;
         menu_t key_menu;
@@ -201,31 +199,31 @@ void C64::bind_key()
         	MATRIX(1, 1), MATRIX(2, 7), MATRIX(3, 1), MATRIX(1, 4) };
 
         menu_init(&bind_key_menu, this->menu_font, bind_key_messages,
-			0, 0, DISPLAY_X, DISPLAY_Y);
+			0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y);
         menu_init(&key_menu, this->menu_font, keys,
-			0, 0, DISPLAY_X, DISPLAY_Y);
-	int opt = menu_select(screen, &bind_key_menu, ~0, NULL);
+			0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y);
+	int opt = menu_select(real_screen, &bind_key_menu, ~0, NULL);
 	if (opt >= 0)
 	{
-		int key = menu_select(screen, &key_menu, ~0, NULL);
+		int key = menu_select(real_screen, &key_menu, ~0, NULL);
 
 #if defined(GEKKO)
-		ThePrefs.JoystickKeyBinding[opt] = kcs[key];
+		np->JoystickKeyBinding[opt] = kcs[key];
 #endif
 	}
         menu_fini(&bind_key_menu);
         menu_fini(&key_menu);
 }
 
-void C64::display_options()
+void C64::display_options(Prefs *np)
 {
         menu_t display_menu;
 
         menu_init(&display_menu, this->menu_font, display_option_messages,
-			0, 0, DISPLAY_X, DISPLAY_Y);
-	int opt = menu_select(screen, &display_menu, ~0, NULL);
+			0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y);
+	int opt = menu_select(real_screen, &display_menu, ~0, NULL);
 	if (opt >= 0)
-		ThePrefs.DisplayOption = opt;
+		np->DisplayOption = opt;
         menu_fini(&display_menu);
 }
 
@@ -321,8 +319,8 @@ void C64::VBlank(bool draw_frame)
 	}
         uint32_t now = SDL_GetTicks();
 
-        if ( (now - lastFrame) < 30 ) {
-          SDL_Delay( 30 - (now - lastFrame) );
+        if ( (now - lastFrame) < 20 ) {
+          SDL_Delay( 20 - (now - lastFrame) );
         }
         lastFrame = now;
 }
@@ -375,20 +373,18 @@ uint8 C64::poll_joystick(int port)
 	Uint32 held = WPAD_ButtonsHeld(port);
 	uint8 j = 0xff;
 
-	if (held & WPAD_BUTTON_LEFT)
-		j &= 0xfb; // Left
-	if (held & WPAD_BUTTON_RIGHT)
-		j &= 0xf7; // Right
 	if (held & WPAD_BUTTON_UP)
-		j &= 0xfe; // Up
+		j &= 0xfb; // Left
 	if (held & WPAD_BUTTON_DOWN)
+		j &= 0xf7; // Right
+	if (held & WPAD_BUTTON_RIGHT)
+		j &= 0xfe; // Up
+	if (held & WPAD_BUTTON_LEFT)
 		j &= 0xfd; // Down
 	if (held & WPAD_BUTTON_2)
 		j &= 0xef; // Button
 	if (held & WPAD_BUTTON_HOME)
 		this->enter_menu();
-	if (held & WPAD_BUTTON_B)
-		exit(1);
 
 	if ( (held & WPAD_BUTTON_A) && ThePrefs.JoystickKeyBinding[0])
 		TheDisplay->FakeKeyPress(ThePrefs.JoystickKeyBinding[0],
@@ -507,12 +503,13 @@ void C64::thread_func(void)
 		linecnt++;
 		if (this->have_a_break) {
 			int submenus[1]; 
-			int opt = menu_select(screen, &this->main_menu, ~0, submenus);
+			int opt = menu_select(real_screen, &this->main_menu, ~0, submenus);
 
+			Prefs *np = Frodo::reload_prefs();
 			switch(opt)
 			{
 			case 0: /* Insert disc/tape */
-				this->select_disc();
+				this->select_disc(np);
 				break;
 			case 1: /* Load disc/tape */
 				this->fake_key_sequence = true;
@@ -521,26 +518,28 @@ void C64::thread_func(void)
 				Reset();
 				break;
 			case 3: /* Bind keys to joystick */
-				this->bind_key();
+				this->bind_key(np);
 				break;
 			case 4: /* Display options */
-				this->display_options();
+				this->display_options(np);
 				break;
-			case 6: /* Swap joysticks */
+			case 5: /* Swap joysticks */
 			{
 				uint8 tmp = TheCIA1->Joystick1;
 				TheCIA1->Joystick1 = TheCIA1->Joystick2;
 				TheCIA1->Joystick2 = tmp;
 			}	break;
-			case 8: /* Quit */
+			case 7: /* Quit */
 				quit_thyself = true;				
 				break;
 			case -1:
 			default:
 				break;
 			}
-			this->have_a_break = false;
 
+			ThePrefs = *np;
+
+			this->have_a_break = false;
 		}
 	}
 }

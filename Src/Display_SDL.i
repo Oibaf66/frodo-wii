@@ -14,6 +14,7 @@
 
 // Display surface
 SDL_Surface *screen = NULL;
+SDL_Surface *real_screen = NULL;
 
 // Keyboard
 static bool num_locked = false;
@@ -60,12 +61,31 @@ enum {
 
 int init_graphics(void)
 {
+	Uint32 rmask, gmask, bmask, amask;
+
+	/* SDL interprets each pixel as a 32-bit number, so our masks must depend                                                               
+           on the endianness (byte order) of the machine */
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+	rmask = 0xff000000;
+	gmask = 0x00ff0000;
+	bmask = 0x0000ff00;
+	amask = 0x000000ff;
+#else
+     	rmask = 0x000000ff;
+	gmask = 0x0000ff00;
+	bmask = 0x00ff0000;
+	amask = 0xff000000;
+#endif
+
 	// Open window
 	SDL_WM_SetCaption(VERSION_STRING, "Frodo");
 	SDL_ShowCursor(SDL_DISABLE);
 
-	screen = SDL_SetVideoMode(640, 480, 8,
+	screen = SDL_CreateRGBSurface(SDL_SWSURFACE, DISPLAY_X, DISPLAY_Y + 17, 8,
+			rmask, gmask, bmask, amask);
+	real_screen = SDL_SetVideoMode(640, 480, 8,
 			SDL_DOUBLEBUF | SDL_FULLSCREEN);
+
 #if 0
 	screen = SDL_SetVideoMode(DISPLAY_X, DISPLAY_Y + 17, 8,
 			SDL_DOUBLEBUF | SDL_FULLSCREEN);
@@ -182,7 +202,25 @@ void C64Display::Update(void)
 	draw_string(screen, 24, DISPLAY_Y + 4, speedometer_string, black, fill_gray);
 
 	// Update display
-	SDL_Flip(screen);
+	SDL_Rect srcrect, dstrect;
+
+	if (ThePrefs.DisplayOption == 0) {
+		/* Normal */
+		srcrect = (SDL_Rect){0, 0, DISPLAY_X, DISPLAY_Y+17};
+		dstrect = (SDL_Rect){0, 0, DISPLAY_X, DISPLAY_Y+17};
+	}
+	else if (ThePrefs.DisplayOption == 1) {
+		/* Center, double size */
+		srcrect = (SDL_Rect){28, 14, FULL_DISPLAY_X / 2, FULL_DISPLAY_Y / 2};
+		dstrect = (SDL_Rect){0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y};
+	}
+	else {
+		/* Stretch */
+		srcrect = (SDL_Rect){0, 0, DISPLAY_X, DISPLAY_Y};
+		dstrect = (SDL_Rect){0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y};
+	}
+	SDL_SoftStretch(screen, &srcrect, real_screen, &dstrect);                                                                     
+	SDL_Flip(real_screen);
 }
 
 
@@ -541,6 +579,8 @@ void C64Display::InitColors(uint8 *colors)
 	palette[green].g = 0xf0;
 	palette[green].r = palette[green].b = 0;
 	SDL_SetColors(screen, palette, 0, PALETTE_SIZE);
+	SDL_SetColors(real_screen, palette, 0, PALETTE_SIZE);
+
 
 	for (int i=0; i<256; i++)
 		colors[i] = i & 0x0f;
