@@ -155,7 +155,7 @@ public:
 #endif
 #ifdef HAVE_SDL
 	menu_t main_menu;
-	Font *menu_font;
+	TTF_Font *menu_font;
 	const char *base_dir;
 
 	bool fake_key_sequence;

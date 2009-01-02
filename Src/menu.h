@@ -14,7 +14,6 @@
 
 #include <SDL.h>
 #include <SDL_ttf.h>
-#include "bitmap-font.h"
 #include <stdint.h>
 
 #if defined(__cplusplus)
@@ -32,7 +31,7 @@ typedef struct
 typedef struct
 {
   char     **pp_msgs;
-  Font      *p_font;
+  TTF_Font  *p_font;
   int        x1,y1;
   int        x2,y2;
   int        text_w;
@@ -47,7 +46,7 @@ typedef struct
   int        n_entries;
 } menu_t;
 
-void menu_init(menu_t *p_menu, Font *p_font, char **pp_msgs,
+void menu_init(menu_t *p_menu, TTF_Font *p_font, char **pp_msgs,
 	       int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 void menu_fini(menu_t *p_menu);
 

@@ -68,7 +68,22 @@ void C64::c64_ctor1(void)
 	this->fake_key_keytime = 5;
 	this->fake_key_type = 0;
 
-	this->menu_font = new Font("/apps/frodo/fonts.bmp");
+	SDL_RWops *rw;
+	
+	Uint8 *data = (Uint8*)malloc(1 * 1024*1024);
+	FILE *fp = fopen("/apps/frodo/FreeMono.ttf", "r");
+	if (!fp) {
+		fprintf(stderr, "Could not open font\n");
+		exit(1);
+	}
+	fread(data, 1, 1 * 1024 * 1024, fp);
+	rw = SDL_RWFromMem(data, 1 * 1024 * 1024);
+	if (!rw) {
+		fprintf(stderr, "Could not create RW: %s\n", SDL_GetError());
+		exit(1);
+	}
+
+	this->menu_font = TTF_OpenFontRW(rw, 1, 20);
 	if (!this->menu_font)
 	{
 	        fprintf(stderr, "Unable to open font\n" );
@@ -372,7 +387,7 @@ uint8 C64::poll_joystick(int port)
 		j &= 0xef; // Button
 	if (held & WPAD_BUTTON_HOME)
 		this->enter_menu();
-	if (held & WPAD_BUTTON_A)
+	if (held & WPAD_BUTTON_B)
 		exit(1);
 
 	if ( (held & WPAD_BUTTON_A) && ThePrefs.JoystickKeyBinding[0])

@@ -40,6 +40,12 @@ extern "C" int main(int argc, char **argv)
 		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
 		return 0;
 	}
+	if (TTF_Init() < 0)
+	{
+	        fprintf(stderr, "Unable to init TTF: %s\n", TTF_GetError() );
+	        return 0;		
+	}
+
 	if (WPAD_Init() != WPAD_ERR_NONE)
 	{
 		fprintf(stderr, "Failed initializing controllers\n");
