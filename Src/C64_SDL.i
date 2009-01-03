@@ -136,10 +136,10 @@ void C64::select_disc(Prefs *np)
                         p = strdup(de->d_name);
                         file_list[cur++] = p;
                         file_list[cur] = NULL;
-                        if (cur > cnt - 1)
+                        if (cur > cnt - 2)
                         {
                         	cnt = cnt + 32;
-                        	file_list = (char**)realloc(file_list, cnt);
+                        	file_list = (char**)realloc(file_list, cnt * sizeof(char*));
 				if (!file_list)
 					return;
                         }
