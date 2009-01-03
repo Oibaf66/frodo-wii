@@ -312,10 +312,11 @@ void C64::VBlank(bool draw_frame)
 	TheCIA2->CountTOD();
 
 	// Update window if needed
-	static uint64_t lastFrame;
 	if (draw_frame) {
 		TheDisplay->Update();
 	}
+	/* From Acorn port */
+	static uint64_t lastFrame;
         uint32_t now = SDL_GetTicks();
 
         if ( (now - lastFrame) < 20 ) {
