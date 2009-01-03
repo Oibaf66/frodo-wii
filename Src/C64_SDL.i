@@ -22,8 +22,9 @@ static char *main_menu_messages[] = {
 		"Bind key to joystick",/* 3 */
 		"Display options",     /* 4 */
 		"Swap joysticks",      /* 5 */
+		"Save/Load state",     /* 6 */
 		" ",
-		"Quit",                /* 7 */
+		"Quit",                /* 8 */
 		NULL,
 };
 
@@ -40,6 +41,13 @@ static char *bind_key_messages[] = {
 		"Bind to Plus",        /* 2 */
 		"Bind to Minus",       /* 3 */
 		"Bind to 1",           /* 4 */
+		NULL,
+};
+
+static char *save_load_state_messages[] = {
+		"Load saved state",    /* 0 */
+		"Save current state",  /* 0 */
+		"Delete state",        /* 0 */
 		NULL,
 };
 
@@ -188,7 +196,7 @@ void C64::bind_key(Prefs *np)
         		"B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
         		"N", "O", "P", "Q", "R", "S", "T", "U", "V", "X", "Y", "Z",
         		NULL };
-        int kcs[] = { MATRIX(7, 4), MATRIX(7, 7), MATRIX(0, 1), /* space,R/S, return */
+        int kcs[] = { MATRIX(7, 4), MATRIX(7, 7), MATRIX(0, 1), /* space, R/S, return */
         	MATRIX(0, 4), MATRIX(0, 5), MATRIX(0, 6), MATRIX(0, 3), MATRIX(4, 3), MATRIX(7, 0),
         	MATRIX(7, 3), MATRIX(1, 0), MATRIX(1, 3), MATRIX(2, 0), MATRIX(2, 3), MATRIX(3, 0),
         	MATRIX(3, 3), MATRIX(4, 0), MATRIX(1, 2), MATRIX(3, 4), MATRIX(2, 4), MATRIX(2, 2),
@@ -224,6 +232,33 @@ void C64::display_options(Prefs *np)
 	if (opt >= 0)
 		np->DisplayOption = opt;
         menu_fini(&display_menu);
+}
+
+
+void C64::save_load_state(Prefs *np)
+{
+        menu_t save_load_menu;
+        menu_t select_saves_menu;
+
+        menu_init(&save_load_menu, this->menu_font, save_load_state_messages,
+			0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y);
+	int opt = menu_select(real_screen, &save_load_menu, ~0, NULL);
+	switch(opt)
+	{
+	case 1: /* save */
+		break;
+	case 0: /* load/delete */
+	case 2:
+	{
+		int save = menu_select(real_screen, &select_saves_menu, ~0, NULL);
+	} break;
+	default:
+		break;
+	}
+	if (opt >= 0)
+	{
+	}
+        menu_fini(&save_load_menu);
 }
 
 /*
@@ -389,7 +424,6 @@ uint8 C64::poll_joystick(int port)
 	if (held & WPAD_BUTTON_HOME)
 		this->enter_menu();
 
-	static int maboo = 0;
 	if ( (held & WPAD_BUTTON_A) && ThePrefs.JoystickKeyBinding[0])
 		TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[0],
 				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
@@ -528,12 +562,12 @@ void C64::thread_func(void)
 				this->display_options(np);
 				break;
 			case 5: /* Swap joysticks */
-			{
-				uint8 tmp = TheCIA1->Joystick1;
-				TheCIA1->Joystick1 = TheCIA1->Joystick2;
-				TheCIA1->Joystick2 = tmp;
-			}	break;
-			case 7: /* Quit */
+				np->JoystickSwap = !np->JoystickSwap;
+				break;
+			case 6: /* Save / load game */
+				this->save_load_state(np);
+				break;
+			case 8: /* Quit */
 				quit_thyself = true;				
 				break;
 			case -1:

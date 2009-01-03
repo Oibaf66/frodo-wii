@@ -168,6 +168,7 @@ public:
 	void select_disc(Prefs *np);
 	void bind_key(Prefs *np);
 	void display_options(Prefs *np);
+	void save_load_state(Prefs *np);
 #endif
 
 #ifdef WIN32
