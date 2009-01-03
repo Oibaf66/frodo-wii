@@ -27,6 +27,9 @@
 #include "ROlib.h"
 #endif
 
+#ifdef GEKKO
+#define PREFS_PATH "/apps/frodo/frodorc"
+#endif
 
 // false: Frodo, true: FrodoSC
 extern bool IsFrodoSC;

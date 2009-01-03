@@ -307,8 +307,24 @@ int C64Display::BitmapXMod(void)
 	return screen->pitch;
 }
 
+void C64Display::FakeKeyPressRepeat(int kc, bool shift, uint8 *CIA_key_matrix, uint8 *CIA_rev_matrix)
+{
+	static int cnt = 5;
+
+	if (cnt > 0) {
+		this->FakeKeyPress(-1, shift, CIA_key_matrix, CIA_rev_matrix);
+		cnt--;
+	}
+	else
+	{
+		this->FakeKeyPress(kc, shift, CIA_key_matrix, CIA_rev_matrix);
+		cnt = 5;
+	}
+}
+
+
 void C64Display::FakeKeyPress(int kc, bool shift, uint8 *CIA_key_matrix,
-		uint8 *CIA_rev_matrix, uint8 *joystick)
+		uint8 *CIA_rev_matrix)
 {
         // Clear matrices                                                                                                                       
         for (int i = 0; i < 8; i ++)

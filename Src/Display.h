@@ -66,8 +66,11 @@ public:
 	void PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joystick);
 #endif
 #if defined(HAVE_SDL)
-        void FakeKeyPress(int kc, bool shift, uint8 *CIA_key_matrix,
-        		uint8 *CIA_rev_matrix, uint8 *joystick);
+	void FakeKeyPressRepeat(int kc, bool shift, uint8 *CIA_key_matrix,
+			uint8 *CIA_rev_matrix);
+
+	void FakeKeyPress(int kc, bool shift, uint8 *CIA_key_matrix,
+        		uint8 *CIA_rev_matrix);
 #endif
 	bool NumLock(void);
 	void InitColors(uint8 *colors);

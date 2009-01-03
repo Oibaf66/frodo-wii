@@ -12,8 +12,6 @@
 
 extern int init_graphics(void);
 
-#define PREFS_PATH "/apps/frodo/frodorc"
-
 /*
  *  Create application object and start it
  */

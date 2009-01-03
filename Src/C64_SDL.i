@@ -120,7 +120,6 @@ void C64::select_disc(Prefs *np)
 
         file_list = (char**)malloc(cnt * sizeof(char*));
         file_list[cur++] = strdup("None"); 
-        file_list[cur++] = strdup(".."); 
         file_list[cur] = NULL;
 
         for (de = readdir(d);
@@ -128,8 +127,8 @@ void C64::select_disc(Prefs *np)
              de = readdir(d))
 	{
         	/* FIXME! Add directories */
-                if (strstr(de->d_name, ".d64") ||
-                		strstr(de->d_name, ".t64"))
+                if (strstr(de->d_name, ".d64") || strstr(de->d_name, ".D64") ||
+                		strstr(de->d_name, ".t64") || strstr(de->d_name, ".T64"))
                 {
                         char *p;
 
@@ -160,8 +159,9 @@ void C64::select_disc(Prefs *np)
 		}
 		else
 		{
-			strncpy(np->DrivePath[0], name, 255);
-			if (strstr(name, ".d64"))
+			snprintf(np->DrivePath[0], 255, "%s/%s",
+					this->base_dir, name);
+			if (strstr(name, ".d64") || strstr(name, ".D64"))
 				np->DriveType[0] = DRVTYPE_D64;
 			else
 				np->DriveType[0] = DRVTYPE_T64;
@@ -275,7 +275,7 @@ void C64::VBlank(bool draw_frame)
                 int kc = get_kc_from_char(auto_seq[this->fake_key_type][this->fake_key_index], &shifted);
 
 		TheDisplay->FakeKeyPress(kc, shifted, TheCIA1->KeyMatrix,
-				TheCIA1->RevMatrix, &joykey);
+				TheCIA1->RevMatrix);
 
 		this->fake_key_keytime --;
                 if (this->fake_key_keytime == 0)
@@ -369,9 +369,12 @@ void C64::open_close_joysticks(bool oldjoy1, bool oldjoy2, bool newjoy1, bool ne
 uint8 C64::poll_joystick(int port)
 {
 #ifdef GEKKO
-	Uint32 held = WPAD_ButtonsHeld(port);
+	Uint32 held;
 	uint8 j = 0xff;
 
+	WPAD_ScanPads();
+
+	held =  WPAD_ButtonsHeld(port);
 	if (held & WPAD_BUTTON_UP)
 		j &= 0xfb; // Left
 	if (held & WPAD_BUTTON_DOWN)
@@ -385,21 +388,22 @@ uint8 C64::poll_joystick(int port)
 	if (held & WPAD_BUTTON_HOME)
 		this->enter_menu();
 
+	static int maboo = 0;
 	if ( (held & WPAD_BUTTON_A) && ThePrefs.JoystickKeyBinding[0])
-		TheDisplay->FakeKeyPress(ThePrefs.JoystickKeyBinding[0],
-				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
+		TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[0],
+				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
 	if ( (held & WPAD_BUTTON_B) && ThePrefs.JoystickKeyBinding[1])
-		TheDisplay->FakeKeyPress(ThePrefs.JoystickKeyBinding[1],
-				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
+		TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[1],
+				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
 	if ( (held & WPAD_BUTTON_PLUS) && ThePrefs.JoystickKeyBinding[2])
-		TheDisplay->FakeKeyPress(ThePrefs.JoystickKeyBinding[2],
-				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
+		TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[2],
+				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
 	if ( (held & WPAD_BUTTON_MINUS) && ThePrefs.JoystickKeyBinding[3])
-		TheDisplay->FakeKeyPress(ThePrefs.JoystickKeyBinding[3],
-				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
+		TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[3],
+				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
 	if ( (held & WPAD_BUTTON_1) && ThePrefs.JoystickKeyBinding[4])
-		TheDisplay->FakeKeyPress(ThePrefs.JoystickKeyBinding[4],
-				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
+		TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[4],
+				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
 
 
 	return j;
@@ -536,7 +540,9 @@ void C64::thread_func(void)
 				break;
 			}
 
+			this->NewPrefs(np);
 			ThePrefs = *np;
+			ThePrefs.Save(PREFS_PATH);
 
 			this->have_a_break = false;
 		}

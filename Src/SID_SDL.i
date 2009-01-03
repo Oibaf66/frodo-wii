@@ -14,36 +14,46 @@
 
 static int divisor = 0;
 static int to_output = 0;
-static int buffer_pos = 0;
 
 void DigitalRenderer::fill_audio(Uint8 *stream, int len)
 {
-	int cnt = 0;
+ 	int cnt = 0;
 	int bytes_to_write = to_output * sizeof(Uint16);
 	int buf_size = this->sndbufsize * sizeof(Uint16);
 
+	/* Wii is stereo-only, so divide the buffer by two */
+	len = len / 2;
 	memset(stream, 0, len);
 	if (to_output <= 0)
-		return;
+	        return;
 
 	while (cnt < bytes_to_write && cnt < len)
 	{
-		int datalen = buf_size;
+	        int datalen = buf_size;
+		static Uint16 real_buf[4096];
+	        int i;
 
 		if (datalen > bytes_to_write)
-			datalen = bytes_to_write;
+	                datalen = bytes_to_write;
 
-		if (datalen > len - cnt)
-			datalen = len - cnt;
+	        if (datalen > len - cnt)
+	                datalen = len - cnt;
 
-		calc_buffer(sound_buffer, datalen);
-		memcpy(stream + cnt, (Uint8*)this->sound_buffer, datalen);
+                calc_buffer(sound_buffer, datalen);
+                /* ... and calculate a real stereo buffer */
+                for (i = 0; i < datalen; i++)
+                  {
+                    real_buf[i*2] = sound_buffer[i];
+                    real_buf[i*2+1] = sound_buffer[i];
+                  }
+                /* and output it */
+		memcpy(stream + cnt*2, (Uint8*)real_buf, datalen * 2);
 		cnt += datalen;
-	}
-	if (to_output - cnt / 2 <= 0)
-		to_output = 0;
+        }
+        if (to_output - cnt / 2 <= 0)
+                to_output = 0;
 	else
-		to_output -= cnt / 2;
+                to_output -= cnt / 2;
 }
 
 void DigitalRenderer::fill_audio_helper(void *udata, Uint8 *stream, int len)
