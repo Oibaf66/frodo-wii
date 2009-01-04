@@ -15,16 +15,18 @@
 #endif
 
 static struct timeval tv_start;
+static int MENU_SIZE_X, MENU_SIZE_Y;
 static char *main_menu_messages[] = {
 		"Insert disc or tape", /* 0 */
 		"Load disc or tape",   /* 1 */
 		"Reset C64",           /* 2 */
 		"Bind key to joystick",/* 3 */
 		"Display options",     /* 4 */
-		"Swap joysticks",      /* 5 */
-		"Save/Load state",     /* 6 */
+		"Controller 1 joystick port", /* 5 */
+		"^|1|2",
+		"Save/Load state",     /* 7 */
 		" ",
-		"Quit",                /* 8 */
+		"Quit",                /* 9 */
 		NULL,
 };
 
@@ -74,6 +76,9 @@ void C64::c64_ctor1(void)
 	this->fake_key_keytime = 5;
 	this->fake_key_type = 0;
 
+	MENU_SIZE_X = FULL_DISPLAY_X;
+	MENU_SIZE_Y = FULL_DISPLAY_Y - FULL_DISPLAY_Y / 4;
+
 	SDL_RWops *rw;
 	
 	Uint8 *data = (Uint8*)malloc(1 * 1024*1024);
@@ -96,7 +101,7 @@ void C64::c64_ctor1(void)
 	        exit(1);		
 	}
 	menu_init(&this->main_menu, this->menu_font, main_menu_messages,
-			0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y);
+			0, 0, MENU_SIZE_X, MENU_SIZE_Y);
 }
 
 void C64::c64_ctor2(void)
@@ -155,7 +160,7 @@ void C64::select_disc(Prefs *np)
         closedir(d);
 
 	menu_init(&select_disc_menu, this->menu_font, file_list,
-			0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y);
+			0, 0, MENU_SIZE_X, MENU_SIZE_Y);
 	int opt = menu_select(real_screen, &select_disc_menu, ~0, NULL);
 	if (opt >= 0)
 	{
@@ -191,7 +196,7 @@ void C64::bind_key(Prefs *np)
 {
         menu_t bind_key_menu;
         menu_t key_menu;
-        char *keys[] = { "space", "Run/Stop", "return", "F1", "F3", "F5", "F7",
+        static char *keys[] = { "space", "Run/Stop", "return", "F1", "F3", "F5", "F7",
         		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A",
         		"B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
         		"N", "O", "P", "Q", "R", "S", "T", "U", "V", "X", "Y", "Z",
@@ -206,9 +211,9 @@ void C64::bind_key(Prefs *np)
         	MATRIX(1, 1), MATRIX(2, 7), MATRIX(3, 1), MATRIX(1, 4) };
 
         menu_init(&bind_key_menu, this->menu_font, bind_key_messages,
-			0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y);
+			0, 0, MENU_SIZE_X, MENU_SIZE_Y);
         menu_init(&key_menu, this->menu_font, keys,
-			0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y);
+			0, 0, MENU_SIZE_X, MENU_SIZE_Y);
 	int opt = menu_select(real_screen, &bind_key_menu, ~0, NULL);
 	if (opt >= 0)
 	{
@@ -227,7 +232,7 @@ void C64::display_options(Prefs *np)
         menu_t display_menu;
 
         menu_init(&display_menu, this->menu_font, display_option_messages,
-			0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y);
+			0, 0, MENU_SIZE_X, MENU_SIZE_Y);
 	int opt = menu_select(real_screen, &display_menu, ~0, NULL);
 	if (opt >= 0)
 		np->DisplayOption = opt;
@@ -241,12 +246,19 @@ void C64::save_load_state(Prefs *np)
         menu_t select_saves_menu;
 
         menu_init(&save_load_menu, this->menu_font, save_load_state_messages,
-			0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y);
+			0, 0, MENU_SIZE_X, MENU_SIZE_Y);
 	int opt = menu_select(real_screen, &save_load_menu, ~0, NULL);
 	switch(opt)
 	{
 	case 1: /* save */
-		break;
+	{
+		char buf[255];
+		const char *name = "save";
+
+		snprintf(buf, 255, "/apps/frodo/saves/%s.sav", name);
+
+		this->SaveSnapshot(buf);
+	} break;
 	case 0: /* load/delete */
 	case 2:
 	{
@@ -254,9 +266,6 @@ void C64::save_load_state(Prefs *np)
 	} break;
 	default:
 		break;
-	}
-	if (opt >= 0)
-	{
 	}
         menu_fini(&save_load_menu);
 }
@@ -335,12 +344,6 @@ void C64::VBlank(bool draw_frame)
 		TheCIA1->Joystick1 = TheCIA1->Joystick2;
 		TheCIA1->Joystick2 = tmp;
 	}
-
-	// Joystick keyboard emulation
-	if (TheDisplay->NumLock())
-		TheCIA1->Joystick1 &= joykey;
-	else
-		TheCIA1->Joystick2 &= joykey;
        
 	// Count TOD clocks
 	TheCIA1->CountTOD();
@@ -349,13 +352,80 @@ void C64::VBlank(bool draw_frame)
 	// Update window if needed
 	if (draw_frame) {
 		TheDisplay->Update();
+#if 0
+		// Calculate time between VBlanks, display speedometer
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+		if ((tv.tv_usec -= tv_start.tv_usec) < 0) {
+			tv.tv_usec += 1000000;
+			tv.tv_sec -= 1;
+		}
+		tv.tv_sec -= tv_start.tv_sec;
+		double elapsed_time = (double)tv.tv_sec * 1000000 + tv.tv_usec;
+		speed_index = 20000 / (elapsed_time + 1) * 100;
+
+		// Limit speed to 100% if desired
+		if ((speed_index > 100)) {
+			usleep((unsigned long)(20000 - elapsed_time));
+			speed_index = 100;
+		}
+
+		gettimeofday(&tv_start, NULL);
+
+		TheDisplay->Speedometer((int)speed_index);
+#endif
+	}
+	if (this->have_a_break) {
+		int submenus[1]; 
+		int opt = menu_select(real_screen, &this->main_menu, ~0, submenus);
+
+		Prefs *np = Frodo::reload_prefs();
+		switch(opt)
+		{
+		case 0: /* Insert disc/tape */
+			this->select_disc(np);
+			break;
+		case 1: /* Load disc/tape */
+			this->fake_key_sequence = true;
+			break;
+		case 2: /* Reset */
+			Reset();
+			break;
+		case 3: /* Bind keys to joystick */
+			this->bind_key(np);
+			break;
+		case 4: /* Display options */
+			this->display_options(np);
+			break;
+		case 5: /* Swap joysticks */
+			if (submenus[0] == 0)
+				np->JoystickSwap = false;
+			else
+				np->JoystickSwap = true;
+			break;
+		case 7: /* Save / load game */
+			this->save_load_state(np);
+			break;
+		case 9: /* Quit */
+			quit_thyself = true;				
+			break;
+		case -1:
+		default:
+			break;
+		}
+
+		this->NewPrefs(np);
+		ThePrefs = *np;
+		ThePrefs.Save(PREFS_PATH);
+
+		this->have_a_break = false;
 	}
 	/* From Acorn port */
 	static uint64_t lastFrame;
         uint32_t now = SDL_GetTicks();
 
-        if ( (now - lastFrame) < 20 ) {
-          SDL_Delay( 20 - (now - lastFrame) );
+        if ( (now - lastFrame) < 30 ) {
+          SDL_Delay( 30 - (now - lastFrame) );
         }
         lastFrame = now;
 }
@@ -539,47 +609,5 @@ void C64::thread_func(void)
 			TheCPU->EmulateLine(cycles);
 #endif
 		linecnt++;
-		if (this->have_a_break) {
-			int submenus[1]; 
-			int opt = menu_select(real_screen, &this->main_menu, ~0, submenus);
-
-			Prefs *np = Frodo::reload_prefs();
-			switch(opt)
-			{
-			case 0: /* Insert disc/tape */
-				this->select_disc(np);
-				break;
-			case 1: /* Load disc/tape */
-				this->fake_key_sequence = true;
-				break;
-			case 2: /* Reset */
-				Reset();
-				break;
-			case 3: /* Bind keys to joystick */
-				this->bind_key(np);
-				break;
-			case 4: /* Display options */
-				this->display_options(np);
-				break;
-			case 5: /* Swap joysticks */
-				np->JoystickSwap = !np->JoystickSwap;
-				break;
-			case 6: /* Save / load game */
-				this->save_load_state(np);
-				break;
-			case 8: /* Quit */
-				quit_thyself = true;				
-				break;
-			case -1:
-			default:
-				break;
-			}
-
-			this->NewPrefs(np);
-			ThePrefs = *np;
-			ThePrefs.Save(PREFS_PATH);
-
-			this->have_a_break = false;
-		}
 	}
 }
