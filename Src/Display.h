@@ -39,7 +39,7 @@ const int DISPLAY_X = 0x180;
 const int DISPLAY_Y = 0x110;
 #endif
 
-#if defined(GEKKO)
+#if defined(HAVE_SDL)
 const int FULL_DISPLAY_X = 640;
 const int FULL_DISPLAY_Y = 480;
 #endif

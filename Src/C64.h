@@ -29,6 +29,8 @@
 
 #ifdef GEKKO
 #define PREFS_PATH "/apps/frodo/frodorc"
+#elif HAVE_SDL
+#define PREFS_PATH "/home/ska/.frodorc"
 #endif
 
 // false: Frodo, true: FrodoSC

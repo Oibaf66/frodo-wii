@@ -84,7 +84,7 @@ int init_graphics(void)
 	screen = SDL_CreateRGBSurface(SDL_SWSURFACE, DISPLAY_X, DISPLAY_Y + 17, 8,
 			rmask, gmask, bmask, amask);
 	real_screen = SDL_SetVideoMode(FULL_DISPLAY_X, FULL_DISPLAY_Y, 8,
-			SDL_DOUBLEBUF | SDL_FULLSCREEN);
+			SDL_DOUBLEBUF);
 
 	return 1;
 }

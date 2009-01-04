@@ -13,8 +13,10 @@
 #if defined(GEKKO)
 #include <wiiuse/wpad.h>
 #define FONT_PATH "/apps/frodo/FreeMono.ttf"
+#define MS_PER_FRAME 30
 #else
 #define FONT_PATH "FreeMono.ttf"
+#define MS_PER_FRAME 20
 #endif
 
 static struct timeval tv_start;
@@ -427,8 +429,8 @@ void C64::VBlank(bool draw_frame)
 	static uint64_t lastFrame;
         uint32_t now = SDL_GetTicks();
 
-        if ( (now - lastFrame) < 30 ) {
-          SDL_Delay( 30 - (now - lastFrame) );
+        if ( (now - lastFrame) < MS_PER_FRAME ) {
+          SDL_Delay( MS_PER_FRAME - (now - lastFrame) );
         }
         lastFrame = now;
 }

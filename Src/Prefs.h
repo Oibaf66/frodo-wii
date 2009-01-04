@@ -115,7 +115,7 @@ private:
 	static HWND hDlg;
 #endif
 
-#ifdef GEKKO
+#ifdef HAVE_SDL
 	int JoystickKeyBinding[5];
 	int DisplayOption;
 #endif

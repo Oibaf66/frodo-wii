@@ -73,7 +73,7 @@ Prefs::Prefs()
 	SystemKeys = true;
 	ShowLEDs = true;
 
-#ifdef GEKKO
+#ifdef HAVE_SDL
 	this->JoystickKeyBinding[0] = 0;
 	this->JoystickKeyBinding[1] = 0;
 	this->JoystickKeyBinding[2] = 0;
@@ -136,7 +136,7 @@ bool Prefs::operator==(const Prefs &rhs) const
 		&& AlwaysCopy == rhs.AlwaysCopy
 		&& SystemKeys == rhs.SystemKeys
 		&& ShowLEDs == rhs.ShowLEDs
-#ifdef GEKKO
+#ifdef HAVE_SDL
 		&& this->JoystickKeyBinding[0] == rhs.JoystickKeyBinding[0]
 		&& this->JoystickKeyBinding[1] == rhs.JoystickKeyBinding[1]
 		&& this->JoystickKeyBinding[2] == rhs.JoystickKeyBinding[2]
@@ -308,7 +308,7 @@ void Prefs::Load(char *filename)
 					SystemKeys = !strcmp(value, "TRUE");
 				else if (!strcmp(keyword, "ShowLEDs"))
 					ShowLEDs = !strcmp(value, "TRUE");
-#if defined(GEKKO)
+#if defined(HAVE_SDL)
 				else if (!strcmp(keyword, "JoystickKeyBinding0"))
 					JoystickKeyBinding[0] = atoi(value);
 				else if (!strcmp(keyword, "JoystickKeyBinding1"))
@@ -418,7 +418,7 @@ bool Prefs::Save(char *filename)
 		fprintf(file, "AlwaysCopy = %s\n", AlwaysCopy ? "TRUE" : "FALSE");
 		fprintf(file, "SystemKeys = %s\n", SystemKeys ? "TRUE" : "FALSE");
 		fprintf(file, "ShowLEDs = %s\n", ShowLEDs ? "TRUE" : "FALSE");
-#if defined(GEKKO)
+#if defined(HAVE_SDL)
 		fprintf(file, "JoystickKeyBinding0 = %d\n", JoystickKeyBinding[0]);
 		fprintf(file, "JoystickKeyBinding1 = %d\n", JoystickKeyBinding[1]);
 		fprintf(file, "JoystickKeyBinding2 = %d\n", JoystickKeyBinding[2]);
