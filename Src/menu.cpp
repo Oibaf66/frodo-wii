@@ -263,7 +263,7 @@ static uint32_t wait_key_press(void)
 		Uint32 remote_keys;
 
 		WPAD_ScanPads();
-		remote_keys = WPAD_ButtonsDown(WPAD_CHAN_0);
+		remote_keys = WPAD_ButtonsDown(WPAD_CHAN_0) | WPAD_ButtonsDown(WPAD_CHAN_1);
 
 		if (remote_keys & WPAD_BUTTON_DOWN)
 			keys |= KEY_RIGHT;

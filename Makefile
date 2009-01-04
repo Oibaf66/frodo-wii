@@ -25,7 +25,7 @@ INCLUDES	:=
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE) -I$(DEVKITPRO)/SDL/include -U__unix -DHAVE_SDL
+CFLAGS	= -g -Wall $(MACHDEP) $(INCLUDE) -I$(DEVKITPRO)/SDL/include -U__unix -DHAVE_SDL
 CXXFLAGS	=	$(CFLAGS)
 
 LDFLAGS	=	-L$(DEVKITPRO)/SDL/lib -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -104,7 +104,8 @@ $(BUILD):
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
+	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol Src/sysconfig.h Frodo FrodoPC \
+          FrodoSC
 
 #---------------------------------------------------------------------------------
 run:

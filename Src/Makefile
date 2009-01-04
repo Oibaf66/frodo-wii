@@ -97,7 +97,7 @@ CIA_SC.o: CIA_SC.cpp CIA.h CPUC64.h CPU1541.h VIC.h Prefs.h
 #-------------------------------------------------------------------------
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-main.o: sysdeps.h sysconfig.h main.h C64.h Display.h Prefs.h SAM.h
+main.o: sysdeps.h sysconfig.h main.h C64.h Display.h Prefs.h SAM.h main_x.i
 Display.o: sysdeps.h sysconfig.h Display.h main.h Prefs.h Display_SDL.i
 Prefs.o: sysdeps.h sysconfig.h Prefs.h Display.h C64.h main.h
 SID.o: sysdeps.h sysconfig.h SID.h Prefs.h SID_SDL.i

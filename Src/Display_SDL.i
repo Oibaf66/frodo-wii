@@ -206,7 +206,7 @@ void C64Display::Update(void)
 	}
 	else if (ThePrefs.DisplayOption == 1) {
 		/* Center, double size */
-		srcrect = (SDL_Rect){28, 14, FULL_DISPLAY_X / 2, FULL_DISPLAY_Y / 2};
+		srcrect = (SDL_Rect){32, 14, FULL_DISPLAY_X / 2, FULL_DISPLAY_Y / 2};
 		dstrect = (SDL_Rect){0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y};
 	}
 	else {

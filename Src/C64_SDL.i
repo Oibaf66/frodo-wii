@@ -13,11 +13,10 @@
 #if defined(GEKKO)
 #include <wiiuse/wpad.h>
 #define FONT_PATH "/apps/frodo/FreeMono.ttf"
-#define MS_PER_FRAME 30
 #else
 #define FONT_PATH "FreeMono.ttf"
-#define MS_PER_FRAME 20
 #endif
+#define MS_PER_FRAME 40
 
 static struct timeval tv_start;
 static int MENU_SIZE_X, MENU_SIZE_Y;
@@ -217,19 +216,17 @@ void C64::bind_key(Prefs *np)
 
         menu_init(&bind_key_menu, this->menu_font, bind_key_messages,
 			0, 0, MENU_SIZE_X, MENU_SIZE_Y);
-        menu_init(&key_menu, this->menu_font, keys,
-			0, 0, MENU_SIZE_X, MENU_SIZE_Y);
 	int opt = menu_select(real_screen, &bind_key_menu, ~0, NULL);
 	if (opt >= 0)
 	{
+	        menu_init(&key_menu, this->menu_font, keys,
+				0, 0, MENU_SIZE_X, MENU_SIZE_Y);
 		int key = menu_select(real_screen, &key_menu, ~0, NULL);
 
-#if defined(GEKKO)
 		np->JoystickKeyBinding[opt] = kcs[key];
-#endif
+	        menu_fini(&key_menu);
 	}
         menu_fini(&bind_key_menu);
-        menu_fini(&key_menu);
 }
 
 void C64::display_options(Prefs *np)
@@ -343,12 +340,6 @@ void C64::VBlank(bool draw_frame)
 	// Poll joysticks
 	TheCIA1->Joystick1 = poll_joystick(0);
 	TheCIA1->Joystick2 = poll_joystick(1);
-
-	if (ThePrefs.JoystickSwap) {
-		uint8 tmp = TheCIA1->Joystick1;
-		TheCIA1->Joystick1 = TheCIA1->Joystick2;
-		TheCIA1->Joystick2 = tmp;
-	}
        
 	// Count TOD clocks
 	TheCIA1->CountTOD();
@@ -403,10 +394,6 @@ void C64::VBlank(bool draw_frame)
 			this->display_options(np);
 			break;
 		case 5: /* Swap joysticks */
-			if (submenus[0] == 0)
-				np->JoystickSwap = false;
-			else
-				np->JoystickSwap = true;
 			break;
 		case 7: /* Save / load game */
 			this->save_load_state(np);
@@ -418,6 +405,10 @@ void C64::VBlank(bool draw_frame)
 		default:
 			break;
 		}
+		if (submenus[0] == 0)
+			np->JoystickSwap = false;
+		else
+			np->JoystickSwap = true;
 
 		this->NewPrefs(np);
 		ThePrefs = *np;
@@ -480,12 +471,16 @@ void C64::open_close_joysticks(bool oldjoy1, bool oldjoy2, bool newjoy1, bool ne
 uint8 C64::poll_joystick(int port)
 {
 #ifdef GEKKO
+	int controller = port;
 	Uint32 held;
 	uint8 j = 0xff;
 
+	if (ThePrefs.JoystickSwap)
+		controller = !port;
+
 	WPAD_ScanPads();
 
-	held =  WPAD_ButtonsHeld(port);
+	held =  WPAD_ButtonsHeld(controller);
 	if (held & WPAD_BUTTON_UP)
 		j &= 0xfb; // Left
 	if (held & WPAD_BUTTON_DOWN)

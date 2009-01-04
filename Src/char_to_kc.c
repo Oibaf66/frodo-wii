@@ -26,7 +26,7 @@ static uint8_t char_to_kc[] =
 	/* F1 */
 	/* F7 */
 	['\n'] = MATRIX(0, 1),
-	['\008'] = MATRIX(0, 0),
+	[8] = MATRIX(0, 0),
 
 	['E'] = MATRIX(1, 6),
 	['S'] = MATRIX(1, 5),
