@@ -311,8 +311,13 @@ uint8 T64Drive::open_file(int channel, char *filename)
 	if (find_first_file(plainname, filetype, &num)) {
 
 		// Open temporary file
-		if ((file[channel] = tmpfile()) != NULL) {
-
+		if ((file[channel] =
+#if defined(GEKKO)
+		fopen("/apps/frodo/t64tmp", "rw")
+#else
+		tmpfile()
+#endif
+		) != NULL) {
 			// Write load address (.t64 only)
 			if (!is_lynx) {
 				fwrite(&file_info[num].sa_lo, 1, 1, file[channel]);
