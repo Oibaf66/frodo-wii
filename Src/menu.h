@@ -36,7 +36,6 @@ typedef struct
   int        x2,y2;
   int        text_w;
   int        text_h;
-  uint32_t   available_options;
 
   int        n_submenus;
   submenu_t *p_submenus;
@@ -51,7 +50,7 @@ void menu_init(menu_t *p_menu, TTF_Font *p_font, const char **pp_msgs,
 void menu_fini(menu_t *p_menu);
 
 int menu_select(SDL_Surface *screen, menu_t *p_menu,
-                uint32_t available_options, int *p_submenus);
+                int *p_submenus);
 
 #if defined(__cplusplus)
 };

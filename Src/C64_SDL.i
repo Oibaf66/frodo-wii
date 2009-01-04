@@ -165,7 +165,7 @@ void C64::select_disc(Prefs *np)
 
 	menu_init(&select_disc_menu, this->menu_font, file_list,
 			0, 0, MENU_SIZE_X, MENU_SIZE_Y);
-	int opt = menu_select(real_screen, &select_disc_menu, ~0, NULL);
+	int opt = menu_select(real_screen, &select_disc_menu, NULL);
 	if (opt >= 0)
 	{
 		const char *name = file_list[opt];
@@ -203,7 +203,7 @@ void C64::bind_key(Prefs *np)
         static const char *keys[] = { "space", "Run/Stop", "return", "F1", "F3", "F5", "F7",
         		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A",
         		"B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-        		"N", "O", "P", "Q", "R", "S", "T", "U", "V", "X", "Y", "Z",
+        		"N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
         		NULL };
         int kcs[] = { MATRIX(7, 4), MATRIX(7, 7), MATRIX(0, 1), /* space, R/S, return */
         	MATRIX(0, 4), MATRIX(0, 5), MATRIX(0, 6), MATRIX(0, 3), MATRIX(4, 3), MATRIX(7, 0),
@@ -216,12 +216,12 @@ void C64::bind_key(Prefs *np)
 
         menu_init(&bind_key_menu, this->menu_font, bind_key_messages,
 			0, 0, MENU_SIZE_X, MENU_SIZE_Y);
-	int opt = menu_select(real_screen, &bind_key_menu, ~0, NULL);
+	int opt = menu_select(real_screen, &bind_key_menu, NULL);
 	if (opt >= 0)
 	{
 	        menu_init(&key_menu, this->menu_font, keys,
 				0, 0, MENU_SIZE_X, MENU_SIZE_Y);
-		int key = menu_select(real_screen, &key_menu, ~0, NULL);
+		int key = menu_select(real_screen, &key_menu, NULL);
 
 		np->JoystickKeyBinding[opt] = kcs[key];
 	        menu_fini(&key_menu);
@@ -235,7 +235,7 @@ void C64::display_options(Prefs *np)
 
         menu_init(&display_menu, this->menu_font, display_option_messages,
 			0, 0, MENU_SIZE_X, MENU_SIZE_Y);
-	int opt = menu_select(real_screen, &display_menu, ~0, NULL);
+	int opt = menu_select(real_screen, &display_menu, NULL);
 	if (opt >= 0)
 		np->DisplayOption = opt;
         menu_fini(&display_menu);
@@ -249,7 +249,7 @@ void C64::save_load_state(Prefs *np)
 
         menu_init(&save_load_menu, this->menu_font, save_load_state_messages,
 			0, 0, MENU_SIZE_X, MENU_SIZE_Y);
-	int opt = menu_select(real_screen, &save_load_menu, ~0, NULL);
+	int opt = menu_select(real_screen, &save_load_menu, NULL);
 	switch(opt)
 	{
 	case 1: /* save */
@@ -264,7 +264,7 @@ void C64::save_load_state(Prefs *np)
 	case 0: /* load/delete */
 	case 2:
 	{
-		int save = menu_select(real_screen, &select_saves_menu, ~0, NULL);
+		int save = menu_select(real_screen, &select_saves_menu, NULL);
 	} break;
 	default:
 		break;
@@ -373,7 +373,7 @@ void C64::VBlank(bool draw_frame)
 	}
 	if (this->have_a_break) {
 		int submenus[1]; 
-		int opt = menu_select(real_screen, &this->main_menu, ~0, submenus);
+		int opt = menu_select(real_screen, &this->main_menu, submenus);
 
 		Prefs *np = Frodo::reload_prefs();
 		switch(opt)

@@ -96,10 +96,7 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu)
       const char *msg = p_menu->pp_msgs[i];
       int y = (i - p_menu->start_entry_visible) * line_height;
 
-      if ((p_menu->available_options & (1<<i)) == 0) /* Gray (not available) */
-	print_font(screen, p_menu->p_font, 128,128,128, x_start,
-                   y_start + y, msg);
-      else if (p_menu->cur_sel == i) /* Selected - color */
+      if (p_menu->cur_sel == i) /* Selected - color */
 	print_font(screen, p_menu->p_font, 255,255,0, x_start,
                    y_start + y, msg);
       else /* Otherwise white */
@@ -156,7 +153,6 @@ static void select_next(menu_t *p_menu, int dx, int dy)
     (p_menu->cur_sel + dy + 1) % p_menu->n_entries;
 
   if (p_menu->pp_msgs[p_menu->cur_sel][0] == ' ' ||
-      ( (p_menu->available_options & (1<<p_menu->cur_sel)) == 0) ||
       IS_SUBMENU(p_menu->pp_msgs[p_menu->cur_sel]) )
     select_next(p_menu, dx, dy);
   /* If the next is a submenu */
@@ -336,11 +332,9 @@ static uint32_t wait_key_press(void)
 
 
 int menu_select(SDL_Surface *screen, menu_t *p_menu,
-                uint32_t available_options, int *p_submenus)
+                int *p_submenus)
 {
 	int ret = -1;
-
-	p_menu->available_options = available_options;
 
 	while(1)
 	{
