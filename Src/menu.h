@@ -30,7 +30,7 @@ typedef struct
 
 typedef struct
 {
-  char     **pp_msgs;
+  const char **pp_msgs;
   TTF_Font  *p_font;
   int        x1,y1;
   int        x2,y2;
@@ -46,7 +46,7 @@ typedef struct
   int        n_entries;
 } menu_t;
 
-void menu_init(menu_t *p_menu, TTF_Font *p_font, char **pp_msgs,
+void menu_init(menu_t *p_menu, TTF_Font *p_font, const char **pp_msgs,
 	       int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 void menu_fini(menu_t *p_menu);
 

@@ -43,7 +43,7 @@ static submenu_t *find_submenu(menu_t *p_menu, int index)
 }
 
 static void print_font(SDL_Surface *screen, TTF_Font *font, int r, int g, int b,
-                       int x, int y, char *msg)
+                       int x, int y, const char *msg)
 {
   SDL_Surface *font_surf;
   SDL_Rect dst = {x, y,  0, 0};
@@ -93,7 +93,7 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu)
 
   for (i = p_menu->start_entry_visible; i < p_menu->n_entries; i++)
     {
-      char *msg = p_menu->pp_msgs[i];
+      const char *msg = p_menu->pp_msgs[i];
       int y = (i - p_menu->start_entry_visible) * line_height;
 
       if ((p_menu->available_options & (1<<i)) == 0) /* Gray (not available) */
@@ -179,7 +179,7 @@ static int is_submenu_title(menu_t *p_menu, int n)
 }
 
 
-void menu_init(menu_t *p_menu, TTF_Font *p_font, char **pp_msgs,
+void menu_init(menu_t *p_menu, TTF_Font *p_font, const char **pp_msgs,
 	       int16_t x1, int16_t y1, int16_t x2, int16_t y2)
 {
   int i;

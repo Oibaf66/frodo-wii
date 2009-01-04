@@ -12,11 +12,14 @@
 
 #if defined(GEKKO)
 #include <wiiuse/wpad.h>
+#define FONT_PATH "/apps/frodo/FreeMono.ttf"
+#else
+#define FONT_PATH "FreeMono.ttf"
 #endif
 
 static struct timeval tv_start;
 static int MENU_SIZE_X, MENU_SIZE_Y;
-static char *main_menu_messages[] = {
+static const char *main_menu_messages[] = {
 		"Insert disc or tape", /* 0 */
 		"Load disc or tape",   /* 1 */
 		"Reset C64",           /* 2 */
@@ -30,14 +33,14 @@ static char *main_menu_messages[] = {
 		NULL,
 };
 
-static char *display_option_messages[] = {
+static const char *display_option_messages[] = {
 		"1-1 resolution",      /* 0 */
 		"double resolution, centered", /* 1 */
 		"full-screen stretched", /* 2 */
 		NULL,
 };
 
-static char *bind_key_messages[] = {
+static const char *bind_key_messages[] = {
 		"Bind to A",           /* 0 */
 		"Bind to B",           /* 1 */
 		"Bind to Plus",        /* 2 */
@@ -46,7 +49,7 @@ static char *bind_key_messages[] = {
 		NULL,
 };
 
-static char *save_load_state_messages[] = {
+static const char *save_load_state_messages[] = {
 		"Load saved state",    /* 0 */
 		"Save current state",  /* 0 */
 		"Delete state",        /* 0 */
@@ -82,7 +85,7 @@ void C64::c64_ctor1(void)
 	SDL_RWops *rw;
 	
 	Uint8 *data = (Uint8*)malloc(1 * 1024*1024);
-	FILE *fp = fopen("/apps/frodo/FreeMono.ttf", "r");
+	FILE *fp = fopen(FONT_PATH, "r");
 	if (!fp) {
 		fprintf(stderr, "Could not open font\n");
 		exit(1);
@@ -122,7 +125,7 @@ void C64::c64_dtor(void)
 void C64::select_disc(Prefs *np)
 {
         DIR *d = opendir(this->base_dir);
-	char **file_list;
+	const char **file_list;
         int cur = 0;
         struct dirent *de;
         int cnt = 16;
@@ -131,7 +134,7 @@ void C64::select_disc(Prefs *np)
         if (!d)
                	return;
 
-        file_list = (char**)malloc(cnt * sizeof(char*));
+        file_list = (const char**)malloc(cnt * sizeof(char*));
         file_list[cur++] = strdup("None"); 
         file_list[cur] = NULL;
 
@@ -151,7 +154,7 @@ void C64::select_disc(Prefs *np)
                         if (cur > cnt - 2)
                         {
                         	cnt = cnt + 32;
-                        	file_list = (char**)realloc(file_list, cnt * sizeof(char*));
+                        	file_list = (const char**)realloc(file_list, cnt * sizeof(char*));
 				if (!file_list)
 					return;
                         }
@@ -164,7 +167,7 @@ void C64::select_disc(Prefs *np)
 	int opt = menu_select(real_screen, &select_disc_menu, ~0, NULL);
 	if (opt >= 0)
 	{
-		char *name = file_list[opt];
+		const char *name = file_list[opt];
 
 		if (strcmp(file_list[opt], "None") == 0)
 		{
@@ -186,7 +189,7 @@ void C64::select_disc(Prefs *np)
 
         /* Cleanup everything */
         for ( int i = 0; i < cur; i++ )
-        	free(file_list[i]);
+        	free((void*)file_list[i]);
         free(file_list);
 }
 
@@ -196,7 +199,7 @@ void C64::bind_key(Prefs *np)
 {
         menu_t bind_key_menu;
         menu_t key_menu;
-        static char *keys[] = { "space", "Run/Stop", "return", "F1", "F3", "F5", "F7",
+        static const char *keys[] = { "space", "Run/Stop", "return", "F1", "F3", "F5", "F7",
         		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A",
         		"B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
         		"N", "O", "P", "Q", "R", "S", "T", "U", "V", "X", "Y", "Z",
@@ -512,8 +515,7 @@ uint8 C64::poll_joystick(int port)
 
 
 	return j;
-#endif
-#ifdef HAVE_LINUX_JOYSTICK_H
+#elif defined(HAVE_LINUX_JOYSTICK_H)
 	JS_DATA_TYPE js;
 	uint8 j = 0xff;
 

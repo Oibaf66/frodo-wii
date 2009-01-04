@@ -86,11 +86,6 @@ int init_graphics(void)
 	real_screen = SDL_SetVideoMode(640, 480, 8,
 			SDL_DOUBLEBUF | SDL_FULLSCREEN);
 
-#if 0
-	screen = SDL_SetVideoMode(DISPLAY_X, DISPLAY_Y + 17, 8,
-			SDL_DOUBLEBUF | SDL_FULLSCREEN);
-#endif
-
 	return 1;
 }
 
