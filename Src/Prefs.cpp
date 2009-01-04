@@ -29,7 +29,7 @@ Prefs::Prefs()
 	BadLineCycles = 23;
 	CIACycles = 63;
 	FloppyCycles = 64;
-	SkipFrames = 2;
+	SkipFrames = 0;
 	LatencyMin = 80;
 	LatencyMax = 120;
 	LatencyAvg = 280;

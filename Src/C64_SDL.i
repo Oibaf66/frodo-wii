@@ -123,45 +123,61 @@ void C64::c64_dtor(void)
 	menu_fini(&this->main_menu);
 }
 
+static int cmpstringp(const void *p1, const void *p2)
+{
+    return strcmp(* (char * const *) p1, * (char * const *) p2);
+}
+
+static const char **get_file_list(const char *base_dir)
+{
+	DIR *d = opendir(base_dir);
+	const char **file_list;
+	int cur = 0;
+	struct dirent *de;
+	int cnt = 16;
+
+	if (!d)
+		return NULL;
+
+	file_list = (const char**)malloc(cnt * sizeof(char*));
+	file_list[cur++] = strdup("None"); 
+	file_list[cur] = NULL;
+
+	for (de = readdir(d);
+	de;
+	de = readdir(d))
+	{
+		if (strstr(de->d_name, ".d64") || strstr(de->d_name, ".D64") ||
+				strstr(de->d_name, ".t64") || strstr(de->d_name, ".T64") ||
+				strstr(de->d_name, ".sav"))
+		{
+			char *p;
+
+			p = strdup(de->d_name);
+			file_list[cur++] = p;
+			file_list[cur] = NULL;
+			if (cur > cnt - 2)
+			{
+				cnt = cnt + 32;
+				file_list = (const char**)realloc(file_list, cnt * sizeof(char*));
+				if (!file_list)
+					return NULL;
+			}
+		}
+	}
+	closedir(d);
+        qsort(file_list, cur, sizeof(const char *), cmpstringp);
+
+        return file_list;
+}
+
 void C64::select_disc(Prefs *np)
 {
-        DIR *d = opendir(this->base_dir);
-	const char **file_list;
-        int cur = 0;
-        struct dirent *de;
-        int cnt = 16;
-        menu_t select_disc_menu;
+	const char **file_list = get_file_list(this->base_dir);
+	menu_t select_disc_menu;
 
-        if (!d)
-               	return;
-
-        file_list = (const char**)malloc(cnt * sizeof(char*));
-        file_list[cur++] = strdup("None"); 
-        file_list[cur] = NULL;
-
-        for (de = readdir(d);
-             de;
-             de = readdir(d))
-	{
-        	/* FIXME! Add directories */
-                if (strstr(de->d_name, ".d64") || strstr(de->d_name, ".D64") ||
-                		strstr(de->d_name, ".t64") || strstr(de->d_name, ".T64"))
-                {
-                        char *p;
-
-                        p = strdup(de->d_name);
-                        file_list[cur++] = p;
-                        file_list[cur] = NULL;
-                        if (cur > cnt - 2)
-                        {
-                        	cnt = cnt + 32;
-                        	file_list = (const char**)realloc(file_list, cnt * sizeof(char*));
-				if (!file_list)
-					return;
-                        }
-                }
-        }
-        closedir(d);
+	if (file_list == NULL)
+		return;
 
 	menu_init(&select_disc_menu, this->menu_font, file_list,
 			0, 0, MENU_SIZE_X, MENU_SIZE_Y);
@@ -189,7 +205,7 @@ void C64::select_disc(Prefs *np)
         menu_fini(&select_disc_menu);
 
         /* Cleanup everything */
-        for ( int i = 0; i < cur; i++ )
+        for ( int i = 0; file_list[i]; i++ )
         	free((void*)file_list[i]);
         free(file_list);
 }
@@ -271,42 +287,10 @@ void C64::save_load_state(Prefs *np)
 	case 0: /* load/delete */
 	case 2:
 	{
-	        DIR *d = opendir(this->base_dir);
-		const char **file_list;
-	        int cur = 0;
-	        struct dirent *de;
-	        int cnt = 16;
+		const char **file_list = get_file_list("/apps/frodo/saves");
 
-	        if (!d)
-	               	return;
-
-	        file_list = (const char**)malloc(cnt * sizeof(char*));
-	        file_list[cur] = NULL;
-
-	        for (de = readdir(d);
-	             de;
-	             de = readdir(d))
-		{
-	                if (strstr(de->d_name, ".sav"))
-	                {
-	                        char *p;
-
-	                        p = strdup(de->d_name);
-	                        file_list[cur++] = p;
-	                        file_list[cur] = NULL;
-	                        if (cur > cnt - 2)
-	                        {
-	                        	cnt = cnt + 32;
-	                        	file_list = (const char**)realloc(file_list, cnt * sizeof(char*));
-					if (!file_list)
-						return;
-	                        }
-	                }
-	        }
-	        closedir(d);
-	        if (cur == 0)
-	        	break;
-
+		if (file_list == NULL)
+			break;
 		menu_init(&select_saves_menu, this->menu_font, file_list,
 				0, 0, MENU_SIZE_X, MENU_SIZE_Y);
 		int save = menu_select(real_screen, &select_saves_menu, NULL);
@@ -320,6 +304,11 @@ void C64::save_load_state(Prefs *np)
 				this->LoadSnapshot((char*)file_list[save]);
 		}
 	        menu_fini(&select_saves_menu);
+
+	        /* Cleanup everything */
+	        for ( int i = 0; file_list[i]; i++ )
+	        	free((void*)file_list[i]);
+	        free(file_list);
 	} break;
 	default:
 		break;
