@@ -255,7 +255,14 @@ void C64::save_load_state(Prefs *np)
 	case 1: /* save */
 	{
 		char buf[255];
-		const char *name = "save";
+		char name[255];
+		char *p;
+
+		p = strrchr(ThePrefs.DrivePath[0], '/');
+		if (p == NULL)
+			strcpy(name, "unknown");
+		else
+			strncpy(name, p + 1, 255);
 
 		snprintf(buf, 255, "/apps/frodo/saves/%s.sav", name);
 
@@ -264,7 +271,55 @@ void C64::save_load_state(Prefs *np)
 	case 0: /* load/delete */
 	case 2:
 	{
+	        DIR *d = opendir(this->base_dir);
+		const char **file_list;
+	        int cur = 0;
+	        struct dirent *de;
+	        int cnt = 16;
+
+	        if (!d)
+	               	return;
+
+	        file_list = (const char**)malloc(cnt * sizeof(char*));
+	        file_list[cur] = NULL;
+
+	        for (de = readdir(d);
+	             de;
+	             de = readdir(d))
+		{
+	                if (strstr(de->d_name, ".sav"))
+	                {
+	                        char *p;
+
+	                        p = strdup(de->d_name);
+	                        file_list[cur++] = p;
+	                        file_list[cur] = NULL;
+	                        if (cur > cnt - 2)
+	                        {
+	                        	cnt = cnt + 32;
+	                        	file_list = (const char**)realloc(file_list, cnt * sizeof(char*));
+					if (!file_list)
+						return;
+	                        }
+	                }
+	        }
+	        closedir(d);
+	        if (cur == 0)
+	        	break;
+
+		menu_init(&select_saves_menu, this->menu_font, file_list,
+				0, 0, MENU_SIZE_X, MENU_SIZE_Y);
 		int save = menu_select(real_screen, &select_saves_menu, NULL);
+		if (save >= 0)
+		{
+			if (opt == 2)
+			{
+				/* FIXME! Delete */
+			}
+			else /* Load the snapshot */
+				this->LoadSnapshot((char*)file_list[save]);
+		}
+	        menu_fini(&select_saves_menu);
 	} break;
 	default:
 		break;
