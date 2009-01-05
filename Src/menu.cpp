@@ -336,6 +336,9 @@ int menu_select(SDL_Surface *screen, menu_t *p_menu,
 {
 	int ret = -1;
 
+	for (int i = 0; i < p_menu->n_submenus; i++)
+		p_menu->p_submenus[i].sel = p_submenus[i];
+
 	while(1)
 	{
 		uint32_t keys;
@@ -362,12 +365,8 @@ int menu_select(SDL_Surface *screen, menu_t *p_menu,
 			ret = p_menu->cur_sel;
 			int i;
 
-			if (!is_submenu_title(p_menu, ret))
-			{
-				for (i=0; i<p_menu->n_submenus; i++)
-					p_submenus[i] = p_menu->p_submenus[i].sel;
-				p_menu->cur_sel = 0;
-			}
+			for (i=0; i<p_menu->n_submenus; i++)
+				p_submenus[i] = p_menu->p_submenus[i].sel;
 			break;
 		}
 	}

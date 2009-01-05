@@ -418,9 +418,13 @@ void C64::VBlank(bool draw_frame)
 	}
 	if (this->have_a_break) {
 		int submenus[1]; 
-		int opt = menu_select(real_screen, &this->main_menu, submenus);
+		int opt;
 
 		Prefs *np = Frodo::reload_prefs();
+
+		submenus[0] = np->JoystickSwap == true ? 1 : 0;
+		opt = menu_select(real_screen, &this->main_menu, submenus);
+
 		switch(opt)
 		{
 		case 0: /* Insert disc/tape */
