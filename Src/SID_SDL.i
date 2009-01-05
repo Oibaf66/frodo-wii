@@ -22,8 +22,8 @@ void DigitalRenderer::fill_audio(Uint8 *stream, int len)
 	int buf_size = this->sndbufsize * sizeof(Uint16);
 
 	/* Wii is stereo-only, so divide the buffer by two */
-	len = len / 2;
 	memset(stream, 0, len);
+	len = len / 2;
 	if (to_output <= 0)
 	        return;
 
