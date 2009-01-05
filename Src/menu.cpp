@@ -61,7 +61,7 @@ static void print_font(SDL_Surface *screen, TTF_Font *font, int r, int g, int b,
 		  buf[i] = ' ';
   }
 
-  font_surf = TTF_RenderText_Solid(font, buf,
+  font_surf = TTF_RenderText_Blended(font, buf,
                                    color);
   if (!font_surf)
     {
@@ -343,7 +343,7 @@ int menu_select(SDL_Surface *screen, menu_t *p_menu,
 	{
 		uint32_t keys;
 
-		SDL_FillRect(screen, 0, SDL_MapRGB(screen->format, 0, 0, 0));
+		SDL_FillRect(screen, 0, SDL_MapRGB(screen->format, 0x00, 0x80, 0x80));
 
 		menu_draw(screen, p_menu);
 		SDL_Flip(screen);
