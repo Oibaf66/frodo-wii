@@ -13,8 +13,12 @@
 #if defined(GEKKO)
 #include <wiiuse/wpad.h>
 #define FONT_PATH "/apps/frodo/FreeMono.ttf"
+#define SAVES_PATH "/apps/frodo/saves"
+#define IMAGE_PATH "/apps/frodo/images"
 #else
 #define FONT_PATH "FreeMono.ttf"
+#define SAVES_PATH "saves"
+#define IMAGE_PATH "images"
 #endif
 #define MS_PER_FRAME 40
 
@@ -52,8 +56,8 @@ static const char *bind_key_messages[] = {
 
 static const char *save_load_state_messages[] = {
 		"Load saved state",    /* 0 */
-		"Save current state",  /* 0 */
-		"Delete state",        /* 0 */
+		"Save current state",  /* 1 */
+		"Delete state",        /* 2 */
 		NULL,
 };
 
@@ -67,12 +71,6 @@ void C64::c64_ctor1(void)
 	joyfd[0] = joyfd[1] = -1;
 	joy_minx = joy_miny = 32767;
 	joy_maxx = joy_maxy = -32768;
-#endif
-
-#if defined(GEKKO)
-	this->base_dir = "/apps/frodo/images";
-#else
-	this->base_dir = ".";
 #endif
 
 	this->fake_key_sequence = false;
@@ -173,7 +171,7 @@ static const char **get_file_list(const char *base_dir)
 
 void C64::select_disc(Prefs *np)
 {
-	const char **file_list = get_file_list(this->base_dir);
+	const char **file_list = get_file_list(IMAGE_PATH);
 	menu_t select_disc_menu;
 
 	if (file_list == NULL)
@@ -193,7 +191,7 @@ void C64::select_disc(Prefs *np)
 		else
 		{
 			snprintf(np->DrivePath[0], 255, "%s/%s",
-					this->base_dir, name);
+					IMAGE_PATH, name);
 			if (strstr(name, ".d64") || strstr(name, ".D64"))
 				np->DriveType[0] = DRVTYPE_D64;
 			else
@@ -280,14 +278,14 @@ void C64::save_load_state(Prefs *np)
 		else
 			strncpy(name, p + 1, 255);
 
-		snprintf(buf, 255, "/apps/frodo/saves/%s.sav", name);
+		snprintf(buf, 255, "%s/%s.sav", SAVES_PATH,  name);
 
 		this->SaveSnapshot(buf);
 	} break;
 	case 0: /* load/delete */
 	case 2:
 	{
-		const char **file_list = get_file_list("/apps/frodo/saves");
+		const char **file_list = get_file_list(SAVES_PATH);
 
 		if (file_list == NULL)
 			break;
@@ -296,12 +294,15 @@ void C64::save_load_state(Prefs *np)
 		int save = menu_select(real_screen, &select_saves_menu, NULL);
 		if (save >= 0)
 		{
+			char buf[255];
+
+			snprintf(buf, 255, "%s/%s", SAVES_PATH,  file_list[save]);
 			if (opt == 2)
 			{
 				/* FIXME! Delete */
 			}
 			else /* Load the snapshot */
-				this->LoadSnapshot((char*)file_list[save]);
+				this->LoadSnapshot(buf);
 		}
 	        menu_fini(&select_saves_menu);
 

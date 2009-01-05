@@ -160,7 +160,6 @@ public:
 #ifdef HAVE_SDL
 	menu_t main_menu;
 	TTF_Font *menu_font;
-	const char *base_dir;
 
 	bool fake_key_sequence;
 	int fake_key_type;
