@@ -15,13 +15,14 @@
 
 void DigitalRenderer::init_sound(void)
 {
-	this->sndbufsize = 1024;
+	this->sndbufsize = 512;
 
 	ready = false;
 	InitialiseAudio();
 	ResetAudio();
 
 	this->sound_buffer = new int16[this->sndbufsize];
+	memset(this->sound_buffer, 0, sizeof(int16) * this->sndbufsize);
 	ready = true;
 }
 
@@ -64,7 +65,6 @@ void DigitalRenderer::EmulateLine(void)
 {
 	static int divisor = 0;
 	static int to_output = 0;
-	static int buffer_pos = 0;
 
 	if (!ready)
 		return;
@@ -83,11 +83,11 @@ void DigitalRenderer::EmulateLine(void)
 	 * Calculate the sound data only when we have enough to fill
 	 * the buffer entirely.
 	 */
-	if ((buffer_pos + to_output) >= sndbufsize) {
-		int datalen = sndbufsize - buffer_pos;
+	if (to_output >= sndbufsize) {
+		int datalen = sndbufsize;
 		to_output -= datalen;
-		calc_buffer(sound_buffer + buffer_pos, datalen*2);
-		PlaySound((uint16_t*)sound_buffer, sndbufsize);
-		buffer_pos = 0;
+		calc_buffer(sound_buffer, datalen * 2);
+
+		PlaySound(sound_buffer, datalen);
 	}    
 }

@@ -1367,9 +1367,6 @@ void DigitalRenderer::calc_buffer(int16 *buf, long count)
 #elif defined(GEKKO)
 #include "SID_wii.i"
 
-#elif defined(HAVE_SDL)
-#include "SID_SDL.i"
-
 #elif defined(__linux__)
 #include "SID_linux.i"
 

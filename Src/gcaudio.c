@@ -118,19 +118,23 @@ void ResetAudio()
  * Puts incoming mono samples into mixbuffer
  * Splits mono samples into two channels (stereo)
  ****************************************************************************/
-void PlaySound( uint16_t *Buffer, int count )
+void PlaySound( int16_t *Buffer, int count )
 {
 	int i;
 	u16 sample;
 	u32 *dst = (u32 *)mixbuffer;
+	u32 level;
 
+	/* Protect against interrupts while adjusting head */
+	level = IRQ_Disable();
 	for( i = 0; i < count; i++ )
 	{
-		sample = Buffer[i];
+		sample = (Buffer[i] & 0xffff) + 8192;
 		dst[mixhead++] = sample | ( sample << 16);
 		if (mixhead == 4000)
 			mixhead = 0;
 	}
+	IRQ_Restore(level);
 
 	// Restart Sound Processing if stopped
 	if (IsPlaying == 0)

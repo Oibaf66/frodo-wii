@@ -20,7 +20,7 @@ extern "C" {
 void InitialiseAudio();
 void StopAudio();
 void ResetAudio();
-void PlaySound( uint16_t *Buffer, int samples );
+void PlaySound( int16_t *Buffer, int samples );
 
 #if defined(__cplusplus)
 };
