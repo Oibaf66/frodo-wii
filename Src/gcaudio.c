@@ -129,9 +129,7 @@ void PlaySound( int16_t *Buffer, int count )
 	level = IRQ_Disable();
 	for( i = 0; i < count; i++ )
 	{
-		/* FIXME simonk: 8192 is a Frodo artifact. Not sure why this
-		 * is needed */
-		sample = (Buffer[i] & 0xffff) + 8192;
+		sample = (Buffer[i] & 0xffff);
 		dst[mixhead++] = sample | ( sample << 16);
 		if (mixhead == 4000)
 			mixhead = 0;
