@@ -298,9 +298,7 @@ void C64::save_load_state(Prefs *np)
 
 			snprintf(buf, 255, "%s/%s", SAVES_PATH,  file_list[save]);
 			if (opt == 2)
-			{
-				/* FIXME! Delete */
-			}
+				unlink(buf);
 			else /* Load the snapshot */
 				this->LoadSnapshot(buf);
 		}
