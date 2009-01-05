@@ -255,7 +255,6 @@ void C64::display_options(Prefs *np)
         menu_fini(&display_menu);
 }
 
-
 void C64::save_load_state(Prefs *np)
 {
         menu_t save_load_menu;
@@ -338,7 +337,7 @@ void C64::Run(void)
 }
 
 /* From dreamcast port */
-static const char *auto_seq[4] =
+static char *auto_seq[4] =
 {
         "\nLOAD \"*\",8,1\nRUN\n",
 	"\nLOAD \"*\",9,1\nRUN\n",
@@ -353,6 +352,10 @@ extern "C" int get_kc_from_char(char c_in, int *shifted);
 
 void C64::VBlank(bool draw_frame)
 {
+	// Poll joysticks
+	TheCIA1->Joystick1 = poll_joystick(0);
+	TheCIA1->Joystick2 = poll_joystick(1);
+
 	// Poll keyboard
 	TheDisplay->PollKeyboard(TheCIA1->KeyMatrix, TheCIA1->RevMatrix, &joykey);
 	if (TheDisplay->quit_requested)
@@ -380,9 +383,6 @@ void C64::VBlank(bool draw_frame)
                         }
                 }
 	}
-	// Poll joysticks
-	TheCIA1->Joystick1 = poll_joystick(0);
-	TheCIA1->Joystick2 = poll_joystick(1);
        
 	// Count TOD clocks
 	TheCIA1->CountTOD();
@@ -460,6 +460,8 @@ void C64::VBlank(bool draw_frame)
 		this->NewPrefs(np);
 		ThePrefs = *np;
 		ThePrefs.Save(PREFS_PATH);
+		TheDisplay->FakeKeyPress(-1, false, TheCIA1->KeyMatrix,
+				TheCIA1->RevMatrix);
 
 		this->have_a_break = false;
 	}
@@ -540,23 +542,24 @@ uint8 C64::poll_joystick(int port)
 		j &= 0xef; // Button
 	if (held & WPAD_BUTTON_HOME)
 		this->enter_menu();
-
-	if ( (held & WPAD_BUTTON_A) && ThePrefs.JoystickKeyBinding[0])
-		TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[0],
-				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
-	if ( (held & WPAD_BUTTON_B) && ThePrefs.JoystickKeyBinding[1])
-		TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[1],
-				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
-	if ( (held & WPAD_BUTTON_PLUS) && ThePrefs.JoystickKeyBinding[2])
-		TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[2],
-				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
-	if ( (held & WPAD_BUTTON_MINUS) && ThePrefs.JoystickKeyBinding[3])
-		TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[3],
-				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
-	if ( (held & WPAD_BUTTON_1) && ThePrefs.JoystickKeyBinding[4])
-		TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[4],
-				false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
-
+	else
+	{
+		if ( (held & WPAD_BUTTON_A) && ThePrefs.JoystickKeyBinding[0])
+			TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[0],
+					false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
+		if ( (held & WPAD_BUTTON_B) && ThePrefs.JoystickKeyBinding[1])
+			TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[1],
+					false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
+		if ( (held & WPAD_BUTTON_PLUS) && ThePrefs.JoystickKeyBinding[2])
+			TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[2],
+					false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
+		if ( (held & WPAD_BUTTON_MINUS) && ThePrefs.JoystickKeyBinding[3])
+			TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[3],
+					false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
+		if ( (held & WPAD_BUTTON_1) && ThePrefs.JoystickKeyBinding[4])
+			TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[4],
+					false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
+	}
 
 	return j;
 #elif defined(HAVE_LINUX_JOYSTICK_H)
