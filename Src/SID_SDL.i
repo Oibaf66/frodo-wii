@@ -52,7 +52,7 @@ void DigitalRenderer::fill_audio(Uint8 *stream, int len)
         }
         if (to_output - cnt / 2 <= 0)
                 to_output = 0;
-	else
+        else
                 to_output -= cnt / 2;
 }
 
