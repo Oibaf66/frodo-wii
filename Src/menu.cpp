@@ -143,14 +143,21 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu)
     }
 }
 
+static int get_next_seq_y(menu_t *p_menu, int v, int dy)
+{
+	if (v + dy < 0)
+		return p_menu->n_entries - 1;
+	if (v + dy > p_menu->n_entries - 1)
+		return 0;
+	return v + dy;
+}
+
 static void select_next(menu_t *p_menu, int dx, int dy)
 {
   int next;
 
-  p_menu->cur_sel = (p_menu->cur_sel + dy) < 0 ? p_menu->n_entries - 1 :
-    (p_menu->cur_sel + dy) % p_menu->n_entries;
-  next = (p_menu->cur_sel + dy + 1) < 0 ? p_menu->n_entries - 1 :
-    (p_menu->cur_sel + dy + 1) % p_menu->n_entries;
+  p_menu->cur_sel = get_next_seq_y(p_menu, p_menu->cur_sel, dy);
+  next = get_next_seq_y(p_menu, p_menu->cur_sel, dy);
 
   if (p_menu->pp_msgs[p_menu->cur_sel][0] == ' ' ||
       IS_SUBMENU(p_menu->pp_msgs[p_menu->cur_sel]) )
@@ -354,6 +361,10 @@ int menu_select(SDL_Surface *screen, menu_t *p_menu,
 			select_next(p_menu, 0, -1);
 		else if (keys & KEY_DOWN)
 			select_next(p_menu, 0, 1);
+		else if (keys & KEY_PAGEUP)
+			select_next(p_menu, 0, -6);
+		else if (keys & KEY_PAGEDOWN)
+			select_next(p_menu, 0, 6);
 		else if (keys & KEY_LEFT)
 			select_next(p_menu, -1, 0);
 		else if (keys & KEY_RIGHT)
