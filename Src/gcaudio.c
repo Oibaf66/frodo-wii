@@ -15,9 +15,15 @@
 
 #define SAMPLERATE 48000
 
+#define MIXBUFSIZE_BYTES 16000
+#define MIXBUFSIZE_SHORT (MIXBUFSIZE_BYTES / 2)
+#define MIXBUFSIZE_WORDS (MIXBUFSIZE_BYTES / 4)
+
+#define SOUNDBUFSIZE 3840 
+
 static u8 ConfigRequested = 0;
-static u8 soundbuffer[2][3840] ATTRIBUTE_ALIGN(32);
-static u8 mixbuffer[16000];
+static u8 soundbuffer[2][SOUNDBUFSIZE] ATTRIBUTE_ALIGN(32);
+static u8 mixbuffer[MIXBUFSIZE_BYTES];
 static int mixhead = 0;
 static int mixtail = 0;
 static int whichab = 0;
@@ -41,14 +47,14 @@ static int MixerCollect( u8 *outbuffer, int len )
 	while ( ( mixtail != mixhead ) && ( done < len ) )
 	{
 		*dst++ = src[mixtail++];
-		if (mixtail == 4000) mixtail = 0;
+		if (mixtail == MIXBUFSIZE_WORDS) mixtail = 0;
 		done += 4;
 	}
 
 	// Realign to 32 bytes for DMA
 	mixtail -= ((done&0x1f) >> 2);
 	if (mixtail < 0)
-		mixtail += 4000;
+		mixtail += MIXBUFSIZE_WORDS;
 	done &= ~0x1f;
 	if (!done)
 		return len >> 1;
@@ -65,7 +71,7 @@ static void AudioSwitchBuffers()
 {
 	if ( !ConfigRequested )
 	{
-		int len = MixerCollect( soundbuffer[whichab], 3840 );
+		int len = MixerCollect( soundbuffer[whichab], SOUNDBUFSIZE );
 		DCFlushRange(soundbuffer[whichab], len);
 		AUDIO_InitDMA((u32)soundbuffer[whichab], len);
 		AUDIO_StartDMA();
@@ -85,8 +91,8 @@ void InitialiseAudio()
 	AUDIO_Init(NULL); // Start audio subsystem
 	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
 	AUDIO_RegisterDMACallback( AudioSwitchBuffers );
-	memset(soundbuffer, 0, 3840*2);
-	memset(mixbuffer, 0, 16000);
+	memset(soundbuffer, 0, SOUNDBUFSIZE*2);
+	memset(mixbuffer, 0, MIXBUFSIZE_BYTES);
 }
 
 /****************************************************************************
@@ -107,8 +113,8 @@ void StopAudio()
  ***************************************************************************/
 void ResetAudio()
 {
-	memset(soundbuffer, 0, 3840*2);
-	memset(mixbuffer, 0, 16000);
+	memset(soundbuffer, 0, SOUNDBUFSIZE*2);
+	memset(mixbuffer, 0, MIXBUFSIZE_BYTES);
 	mixhead = mixtail = 0;
 }
 
@@ -120,21 +126,18 @@ void ResetAudio()
  ****************************************************************************/
 void PlaySound( int16_t *Buffer, int count )
 {
-	int i;
-	u16 sample;
 	u32 *dst = (u32 *)mixbuffer;
-	u32 level;
+	int i;
 
-	/* Protect against interrupts while adjusting head */
-	level = IRQ_Disable();
 	for( i = 0; i < count; i++ )
 	{
+		u16 sample;
+
 		sample = (Buffer[i] & 0xffff);
 		dst[mixhead++] = sample | ( sample << 16);
-		if (mixhead == 4000)
+		if (mixhead == MIXBUFSIZE_WORDS)
 			mixhead = 0;
 	}
-	IRQ_Restore(level);
 
 	// Restart Sound Processing if stopped
 	if (IsPlaying == 0)

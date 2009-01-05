@@ -89,5 +89,5 @@ void DigitalRenderer::EmulateLine(void)
 		calc_buffer(sound_buffer, datalen * 2);
 
 		PlaySound(sound_buffer, datalen);
-	}    
+	}
 }
