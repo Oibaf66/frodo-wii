@@ -25,6 +25,7 @@ INCLUDES	:=
 # options for code generation
 #---------------------------------------------------------------------------------
 
+PCFLAGS = -DPRECISE_CPU_CYCLES=1 -DPRECISE_CIA_CYCLES=1 -DPC_IS_POINTER=0
 CFLAGS	= -g -Wall $(MACHDEP) $(INCLUDE) -I$(DEVKITPRO)/SDL/include -U__unix -DHAVE_SDL
 CXXFLAGS	=	$(CFLAGS)
 
@@ -105,7 +106,21 @@ $(BUILD):
 clean:
 	@echo clean ...
 	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol Src/sysconfig.h Frodo FrodoPC \
-          FrodoSC
+          FrodoSC dist
+
+dist: $(BUILD)
+	install -d $@/apps/frodo
+	install -d $@/apps/frodo/images
+	install -d $@/apps/frodo/saves
+	cp $(TARGET).dol $@/apps/frodo/boot.dol
+	cp meta.xml $@/apps/frodo/
+	cp icon.png $@/apps/frodo/
+	cp FreeMono.ttf $@/apps/frodo/
+	cp "Kernal ROM" $@/apps/frodo/Kernal_ROM
+	cp "Char ROM" $@/apps/frodo/Char_ROM
+	cp "1541 ROM" $@/apps/frodo/1541_ROM
+	cp "Basic ROM" $@/apps/frodo/Basic_ROM
+	cp frodorc $@/apps/frodo/
 
 #---------------------------------------------------------------------------------
 run:

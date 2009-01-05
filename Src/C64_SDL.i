@@ -20,7 +20,7 @@
 #define SAVES_PATH "saves"
 #define IMAGE_PATH "images"
 #endif
-#define MS_PER_FRAME 40
+#define MS_PER_FRAME 30
 
 static struct timeval tv_start;
 static int MENU_SIZE_X, MENU_SIZE_Y;

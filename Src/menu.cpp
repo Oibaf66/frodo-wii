@@ -157,7 +157,7 @@ static void select_next(menu_t *p_menu, int dx, int dy)
   int next;
 
   p_menu->cur_sel = get_next_seq_y(p_menu, p_menu->cur_sel, dy);
-  next = get_next_seq_y(p_menu, p_menu->cur_sel, dy);
+  next = get_next_seq_y(p_menu, p_menu->cur_sel, dy + 1);
 
   if (p_menu->pp_msgs[p_menu->cur_sel][0] == ' ' ||
       IS_SUBMENU(p_menu->pp_msgs[p_menu->cur_sel]) )
