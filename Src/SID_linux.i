@@ -94,32 +94,31 @@ void DigitalRenderer::Resume(void)
 
 void DigitalRenderer::EmulateLine(void)
 {
-    static int divisor = 0;
-    static int to_output = 0;
-    static int buffer_pos = 0;
+	static int divisor = 0;
+	static int to_output = 0;
 
-    if (!ready)
-	return;
+	if (!ready)
+		return;
 
 	sample_buf[sample_in_ptr] = volume;
 	sample_in_ptr = (sample_in_ptr + 1) % SAMPLE_BUF_SIZE;
 
-    /*
-     * Now see how many samples have to be added for this line
-     */
-    divisor += SAMPLE_FREQ;
-    while (divisor >= 0)
-	divisor -= TOTAL_RASTERS*SCREEN_FREQ, to_output++;
+	/*
+	 * Now see how many samples have to be added for this line
+	 */
+	divisor += SAMPLE_FREQ;
+	while (divisor >= 0)
+		divisor -= TOTAL_RASTERS*SCREEN_FREQ, to_output++;
 
-    /*
-     * Calculate the sound data only when we have enough to fill
-     * the buffer entirely.
-     */
-    if ((buffer_pos + to_output) >= sndbufsize) {
-	int datalen = sndbufsize - buffer_pos;
-	to_output -= datalen;
-	calc_buffer(sound_buffer + buffer_pos, datalen*2);
-	write(devfd, sound_buffer, sndbufsize*2);
-	buffer_pos = 0;
-    }    
+	/*
+	 * Calculate the sound data only when we have enough to fill
+	 * the buffer entirely.
+	 */
+	if (to_output >= sndbufsize) {
+		int datalen = sndbufsize;
+		to_output -= datalen;
+		calc_buffer(sound_buffer, datalen * 2);
+
+		write(devfd, sound_buffer, sndbufsize*2);
+	}
 }
