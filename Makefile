@@ -121,6 +121,7 @@ dist: $(BUILD)
 	cp "1541 ROM" $@/apps/frodo/1541_ROM
 	cp "Basic ROM" $@/apps/frodo/Basic_ROM
 	cp frodorc $@/apps/frodo/
+	cd $@ && tar -czf ../frodo-wii-bin.tar.gz *
 
 #---------------------------------------------------------------------------------
 run:
