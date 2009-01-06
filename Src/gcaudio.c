@@ -19,7 +19,7 @@
 #define MIXBUFSIZE_SHORT (MIXBUFSIZE_BYTES / 2)
 #define MIXBUFSIZE_WORDS (MIXBUFSIZE_BYTES / 4)
 
-#define SOUNDBUFSIZE 3840 
+#define SOUNDBUFSIZE 512
 
 static u8 ConfigRequested = 0;
 static u8 soundbuffer[2][SOUNDBUFSIZE] ATTRIBUTE_ALIGN(32);
