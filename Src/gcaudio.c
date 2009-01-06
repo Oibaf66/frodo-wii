@@ -56,8 +56,6 @@ static int MixerCollect( u8 *outbuffer, int len )
 	if (mixtail < 0)
 		mixtail += MIXBUFSIZE_WORDS;
 	done &= ~0x1f;
-	if (!done)
-		return len >> 1;
 
 	return done;
 }
@@ -72,6 +70,9 @@ static void AudioSwitchBuffers()
 	if ( !ConfigRequested )
 	{
 		int len = MixerCollect( soundbuffer[whichab], SOUNDBUFSIZE );
+		if (len == 0)
+			return;
+
 		DCFlushRange(soundbuffer[whichab], len);
 		AUDIO_InitDMA((u32)soundbuffer[whichab], len);
 		AUDIO_StartDMA();
