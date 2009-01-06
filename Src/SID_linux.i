@@ -119,6 +119,6 @@ void DigitalRenderer::EmulateLine(void)
 		to_output -= datalen;
 		calc_buffer(sound_buffer, datalen * 2);
 
-		write(devfd, sound_buffer, sndbufsize*2);
+		write(devfd, sound_buffer, datalen * 2);
 	}
 }
