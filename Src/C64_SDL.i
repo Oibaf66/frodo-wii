@@ -20,7 +20,7 @@
 #define SAVES_PATH "saves"
 #define IMAGE_PATH "images"
 #endif
-#define MS_PER_FRAME 30
+#define MS_PER_FRAME 25
 
 static struct timeval tv_start;
 static int MENU_SIZE_X, MENU_SIZE_Y;
@@ -478,7 +478,6 @@ void C64::VBlank(bool draw_frame)
 
 		this->NewPrefs(np);
 		ThePrefs = *np;
-		ThePrefs.Save(PREFS_PATH);
 		TheDisplay->FakeKeyPress(-1, false, TheCIA1->KeyMatrix,
 				TheCIA1->RevMatrix);
 
@@ -489,7 +488,7 @@ void C64::VBlank(bool draw_frame)
         uint32_t now = SDL_GetTicks();
 
         if ( (now - lastFrame) < MS_PER_FRAME ) {
-          SDL_Delay( MS_PER_FRAME - (now - lastFrame) );
+        	SDL_Delay( MS_PER_FRAME - (now - lastFrame) );
         }
         lastFrame = now;
 }
