@@ -164,7 +164,7 @@ static const char **get_file_list(const char *base_dir)
 		}
 	}
 	closedir(d);
-        qsort(file_list, cur, sizeof(const char *), cmpstringp);
+        qsort(&file_list[1], cur-1, sizeof(const char *), cmpstringp);
 
         return file_list;
 }
@@ -437,6 +437,7 @@ void C64::VBlank(bool draw_frame)
 
 		Prefs *np = Frodo::reload_prefs();
 
+		TheSID->PauseSound();
 		submenus[0] = np->JoystickSwap == true ? 1 : 0;
 		opt = menu_select(real_screen, &this->main_menu, submenus);
 
@@ -464,6 +465,7 @@ void C64::VBlank(bool draw_frame)
 			break;
 		case 9: /* Quit */
 			quit_thyself = true;				
+			ThePrefs.Save(PREFS_PATH);
 			break;
 		case -1:
 		default:

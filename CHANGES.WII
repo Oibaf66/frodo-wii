@@ -1,5 +1,8 @@
 version 2:
+        * Only save prefs on exit
+        * Pause sound in the menu
         * Handle very long filenames better (thanks Corey89 for pointing this out)
+        * Corrected file sorting
         * Better Makefile
         * More keycodes added (C=)
 
