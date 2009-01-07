@@ -208,6 +208,19 @@ void C64::select_disc(Prefs *np)
         free(file_list);
 }
 
+/*
+  C64 keyboard matrix:
+
+    Bit 7   6   5   4   3   2   1   0
+  0    CUD  F5  F3  F1  F7 CLR RET DEL
+  1    SHL  E   S   Z   4   A   W   3
+  2     X   T   F   C   6   D   R   5
+  3     V   U   H   B   8   G   Y   7
+  4     N   O   K   M   0   J   I   9
+  5     ,   @   :   .   -   L   P   +
+  6     /   ^   =  SHR HOM  ;   *   �
+  7    R/S  Q   C= SPC  2  CTL  <-  1
+*/
 #define MATRIX(a,b) (((a) << 3) | (b))
 
 void C64::bind_key(Prefs *np)
@@ -218,6 +231,7 @@ void C64::bind_key(Prefs *np)
         		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A",
         		"B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
         		"N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+        		"ctrl", "del", "home,", "shl", "shr", "clr", "C=", "<-",
         		NULL };
         int kcs[] = { MATRIX(7, 4), MATRIX(7, 7), MATRIX(0, 1), /* space, R/S, return */
         	MATRIX(0, 4), MATRIX(0, 5), MATRIX(0, 6), MATRIX(0, 3), MATRIX(4, 3), MATRIX(7, 0),
@@ -226,7 +240,10 @@ void C64::bind_key(Prefs *np)
         	MATRIX(1, 6), MATRIX(2, 5), MATRIX(3, 2), MATRIX(3, 5), MATRIX(4, 1), MATRIX(4, 2),
         	MATRIX(4, 5), MATRIX(5, 2), MATRIX(4, 4), MATRIX(4, 7), MATRIX(4, 6), MATRIX(5, 1),
         	MATRIX(7, 6), MATRIX(2, 1), MATRIX(1, 5), MATRIX(2, 6), MATRIX(3, 6), MATRIX(3, 7),
-        	MATRIX(1, 1), MATRIX(2, 7), MATRIX(3, 1), MATRIX(1, 4) };
+        	MATRIX(1, 1), MATRIX(2, 7), MATRIX(3, 1), MATRIX(1, 4), /* ... Z */
+        	MATRIX(7, 3), MATRIX(0, 0), MATRIX(6, 4), MATRIX(1, 7), MATRIX(6, 4),
+        	MATRIX(0, 2), MATRIX(7, 5), MATRIX(7, 1),
+        	};
 
         menu_init(&bind_key_menu, this->menu_font, bind_key_messages,
 			0, 32, MENU_SIZE_X, MENU_SIZE_Y);
