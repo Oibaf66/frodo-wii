@@ -105,8 +105,8 @@ $(BUILD):
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol Src/sysconfig.h Frodo FrodoPC \
-          FrodoSC dist
+	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol Src/sysconfig.h Src/*.o \
+          FrodoSC FrodoPC dist
 
 dist: $(BUILD)
 	install -d $@/apps/frodo
