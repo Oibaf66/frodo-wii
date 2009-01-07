@@ -78,7 +78,7 @@ void C64::c64_ctor1(void)
 	this->fake_key_keytime = 5;
 	this->fake_key_type = 0;
 
-	MENU_SIZE_X = FULL_DISPLAY_X;
+	MENU_SIZE_X = FULL_DISPLAY_X - FULL_DISPLAY_X / 4;
 	MENU_SIZE_Y = FULL_DISPLAY_Y - FULL_DISPLAY_Y / 4;
 
 	SDL_RWops *rw;
@@ -103,7 +103,7 @@ void C64::c64_ctor1(void)
 	        exit(1);		
 	}
 	menu_init(&this->main_menu, this->menu_font, main_menu_messages,
-			0, 32, MENU_SIZE_X, MENU_SIZE_Y);
+			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
 }
 
 void C64::c64_ctor2(void)
@@ -178,7 +178,7 @@ void C64::select_disc(Prefs *np)
 		return;
 
 	menu_init(&select_disc_menu, this->menu_font, file_list,
-			0, 32, MENU_SIZE_X, MENU_SIZE_Y);
+			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
 	int opt = menu_select(real_screen, &select_disc_menu, NULL);
 	if (opt >= 0)
 	{
@@ -246,12 +246,12 @@ void C64::bind_key(Prefs *np)
         	};
 
         menu_init(&bind_key_menu, this->menu_font, bind_key_messages,
-			0, 32, MENU_SIZE_X, MENU_SIZE_Y);
+			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
 	int opt = menu_select(real_screen, &bind_key_menu, NULL);
 	if (opt >= 0)
 	{
 	        menu_init(&key_menu, this->menu_font, keys,
-				0, 32, MENU_SIZE_X, MENU_SIZE_Y);
+				32, 32, MENU_SIZE_X, MENU_SIZE_Y);
 		int key = menu_select(real_screen, &key_menu, NULL);
 
 		np->JoystickKeyBinding[opt] = kcs[key];
@@ -265,7 +265,7 @@ void C64::display_options(Prefs *np)
         menu_t display_menu;
 
         menu_init(&display_menu, this->menu_font, display_option_messages,
-			0, 32, MENU_SIZE_X, MENU_SIZE_Y);
+			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
 	int opt = menu_select(real_screen, &display_menu, NULL);
 	if (opt >= 0)
 		np->DisplayOption = opt;
@@ -278,7 +278,7 @@ void C64::save_load_state(Prefs *np)
         menu_t select_saves_menu;
 
         menu_init(&save_load_menu, this->menu_font, save_load_state_messages,
-			0, 32, MENU_SIZE_X, MENU_SIZE_Y);
+			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
 	int opt = menu_select(real_screen, &save_load_menu, NULL);
 	switch(opt)
 	{
@@ -306,7 +306,7 @@ void C64::save_load_state(Prefs *np)
 		if (file_list == NULL)
 			break;
 		menu_init(&select_saves_menu, this->menu_font, file_list,
-				0, 32, MENU_SIZE_X, MENU_SIZE_Y);
+				32, 32, MENU_SIZE_X, MENU_SIZE_Y);
 		int save = menu_select(real_screen, &select_saves_menu, NULL);
 		if (save >= 0)
 		{

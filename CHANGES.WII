@@ -1,0 +1,7 @@
+version 2:
+        * Handle very long filenames better (thanks Corey89 for pointing this out)
+        * Better Makefile
+        * More keycodes added (C=)
+
+version 1:
+        * Initial release

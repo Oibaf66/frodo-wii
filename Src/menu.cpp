@@ -219,6 +219,9 @@ void menu_init(menu_t *p_menu, TTF_Font *p_font, const char **pp_msgs,
       if (text_w_font > p_menu->text_w)
 	p_menu->text_w = text_w_font;
     }
+  if (p_menu->text_w > p_menu->x2 - p_menu->x1)
+	  p_menu->text_w = p_menu->x2 - p_menu->x1;
+
   if ( !(p_menu->p_submenus = (submenu_t *)malloc(sizeof(submenu_t) * p_menu->n_submenus)) )
     {
       perror("malloc failed!\n");
