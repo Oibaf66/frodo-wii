@@ -20,7 +20,7 @@
 #define SAVES_PATH "saves"
 #define IMAGE_PATH "images"
 #endif
-#define MS_PER_FRAME 25
+#define MS_PER_FRAME 24
 
 static struct timeval tv_start;
 static int MENU_SIZE_X, MENU_SIZE_Y;
@@ -465,7 +465,6 @@ void C64::VBlank(bool draw_frame)
 			break;
 		case 9: /* Quit */
 			quit_thyself = true;				
-			ThePrefs.Save(PREFS_PATH);
 			break;
 		case -1:
 		default:
@@ -478,6 +477,7 @@ void C64::VBlank(bool draw_frame)
 
 		this->NewPrefs(np);
 		ThePrefs = *np;
+		ThePrefs.Save(PREFS_PATH);
 		TheDisplay->FakeKeyPress(-1, false, TheCIA1->KeyMatrix,
 				TheCIA1->RevMatrix);
 
