@@ -1,5 +1,5 @@
 version 2:
-        * Removed status bar
+        * Improved speed just a bit
         * Only save prefs on exit
         * Pause sound in the menu
         * Handle very long filenames better (thanks Corey89 for pointing this out)

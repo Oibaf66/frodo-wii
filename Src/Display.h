@@ -17,7 +17,6 @@
 
 #ifdef HAVE_SDL
 struct SDL_Surface;
-extern SDL_Surface *screen;
 extern SDL_Surface *real_screen;
 #endif
 

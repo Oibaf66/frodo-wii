@@ -8,7 +8,7 @@ REVISION  = 1
 
 CXX    = g++
 LIBS   =  -L/usr/lib -lSDL -lSDL_ttf -lSDL_mixer -lSDL_image
-CFLAGS = -O2 -g -fomit-frame-pointer -Wall -Wno-unused -Wno-format -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT -DHAVE_SDL -fno-strength-reduce -DREGPARAM="__attribute__((regparm(3)))" -I./ -DFRODO_HPUX_REV=0 -DKBD_LANG=0
+CFLAGS =  -g -fomit-frame-pointer -Wall -Wno-unused -Wno-format -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT -DHAVE_SDL -fno-strength-reduce -DREGPARAM="__attribute__((regparm(3)))" -I./ -DFRODO_HPUX_REV=0 -DKBD_LANG=0
 
 INSTALL         = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
