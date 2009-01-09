@@ -1,4 +1,7 @@
 version 2:
+        * Remove the 1-1 graphics option and make stretched the default. Should avoid
+          "helpful and constructive" messages such as
+             http://wiinewz.com/forums/nintendo-news/91829-frodo-v1-0-a.html#post580580
         * Improved speed just a bit
         * Only save prefs on exit
         * Pause sound in the menu

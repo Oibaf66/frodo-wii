@@ -39,9 +39,8 @@ static const char *main_menu_messages[] = {
 };
 
 static const char *display_option_messages[] = {
-		"1-1 resolution",      /* 0 */
-		"double resolution, centered", /* 1 */
-		"full-screen stretched", /* 2 */
+		"double resolution, centered", /* 0 */
+		"full-screen stretched", /* 1 */
 		NULL,
 };
 
