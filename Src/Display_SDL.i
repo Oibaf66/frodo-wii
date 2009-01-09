@@ -144,65 +144,13 @@ void C64Display::NewPrefs(Prefs *prefs)
 
 void C64Display::Update(void)
 {
-	// Draw speedometer/LEDs
-	SDL_Rect r = {0, DISPLAY_Y, DISPLAY_X, 15};
-	SDL_FillRect(screen, &r, fill_gray);
-	r.w = DISPLAY_X; r.h = 1;
-	SDL_FillRect(screen, &r, shine_gray);
-	r.y = DISPLAY_Y + 14;
-	SDL_FillRect(screen, &r, shadow_gray);
-	r.w = 16;
-	for (int i=2; i<6; i++) {
-		r.x = DISPLAY_X * i/5 - 24; r.y = DISPLAY_Y + 4;
-		SDL_FillRect(screen, &r, shadow_gray);
-		r.y = DISPLAY_Y + 10;
-		SDL_FillRect(screen, &r, shine_gray);
-	}
-	r.y = DISPLAY_Y; r.w = 1; r.h = 15;
-	for (int i=0; i<5; i++) {
-		r.x = DISPLAY_X * i / 5;
-		SDL_FillRect(screen, &r, shine_gray);
-		r.x = DISPLAY_X * (i+1) / 5 - 1;
-		SDL_FillRect(screen, &r, shadow_gray);
-	}
-	r.y = DISPLAY_Y + 4; r.h = 7;
-	for (int i=2; i<6; i++) {
-		r.x = DISPLAY_X * i/5 - 24;
-		SDL_FillRect(screen, &r, shadow_gray);
-		r.x = DISPLAY_X * i/5 - 9;
-		SDL_FillRect(screen, &r, shine_gray);
-	}
-	r.y = DISPLAY_Y + 5; r.w = 14; r.h = 5;
-	for (int i=0; i<4; i++) {
-		r.x = DISPLAY_X * (i+2) / 5 - 23;
-		int c;
-		switch (led_state[i]) {
-			case LED_ON:
-				c = green;
-				break;
-			case LED_ERROR_ON:
-				c = red;
-				break;
-			default:
-				c = black;
-				break;
-		}
-		SDL_FillRect(screen, &r, c);
-	}
-
-	draw_string(screen, DISPLAY_X * 1/5 + 8, DISPLAY_Y + 4, "D\x12 8", black, fill_gray);
-	draw_string(screen, DISPLAY_X * 2/5 + 8, DISPLAY_Y + 4, "D\x12 9", black, fill_gray);
-	draw_string(screen, DISPLAY_X * 3/5 + 8, DISPLAY_Y + 4, "D\x12 10", black, fill_gray);
-	draw_string(screen, DISPLAY_X * 4/5 + 8, DISPLAY_Y + 4, "D\x12 11", black, fill_gray);
-	draw_string(screen, 24, DISPLAY_Y + 4, speedometer_string, black, fill_gray);
-
 	// Update display
 	SDL_Rect srcrect, dstrect;
 
 	if (ThePrefs.DisplayOption == 0) {
 		/* Normal */
-		srcrect = (SDL_Rect){0, 0, DISPLAY_X, DISPLAY_Y+17};
-		dstrect = (SDL_Rect){0, 0, DISPLAY_X, DISPLAY_Y+17};
+		srcrect = (SDL_Rect){0, 0, DISPLAY_X, DISPLAY_Y};
+		dstrect = (SDL_Rect){0, 0, DISPLAY_X, DISPLAY_Y};
 	}
 	else if (ThePrefs.DisplayOption == 1) {
 		/* Center, double size */
