@@ -1,5 +1,5 @@
 version 2:
-        * Also support the .prg format
+        * Also support the .prg and p00, s00 formats. Only .prg has been tested.
         * Added support for classic controllers. NOTE: This is untested since I don't
           have a classic controller!
         * Fixed some corner-cases in the prefs setting to avoid loosing key bindings etc
@@ -17,6 +17,8 @@ version 2:
         * Corrected file sorting
         * Better Makefile
         * More keycodes added (C=)
+
+        -- Simon Kagstrom <simon.kagstrom@gmail.com>, Sat Jan 10 17:26:32 CET 2009
 
 version 1:
         * Initial release
