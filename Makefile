@@ -112,6 +112,7 @@ dist: $(BUILD)
 	install -d $@/apps/frodo
 	install -d $@/apps/frodo/images
 	install -d $@/apps/frodo/saves
+	install -d $@/apps/frodo/tmp
 	cp $(TARGET).dol $@/apps/frodo/boot.dol
 	cp meta.xml $@/apps/frodo/
 	cp icon.png $@/apps/frodo/

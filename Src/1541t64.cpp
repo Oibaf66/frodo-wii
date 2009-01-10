@@ -313,7 +313,7 @@ uint8 T64Drive::open_file(int channel, char *filename)
 		// Open temporary file
 		if ((file[channel] =
 #if defined(GEKKO)
-		fopen("/apps/frodo/t64tmp", "w+")
+		fopen("/apps/frodo/tmp/a", "w+")
 #else
 		tmpfile()
 #endif

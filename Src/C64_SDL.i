@@ -15,10 +15,12 @@
 #define FONT_PATH "/apps/frodo/FreeMono.ttf"
 #define SAVES_PATH "/apps/frodo/saves"
 #define IMAGE_PATH "/apps/frodo/images"
+#define TMP_PATH "/apps/frodo/tmp"
 #else
 #define FONT_PATH "FreeMono.ttf"
 #define SAVES_PATH "saves"
 #define IMAGE_PATH "images"
+#define TMP_PATH "tmp"
 #endif
 #define MS_PER_FRAME 27
 
@@ -138,6 +140,9 @@ static const char **get_file_list(const char *base_dir)
 	de = readdir(d))
 	{
 		if (strstr(de->d_name, ".d64") || strstr(de->d_name, ".D64") ||
+				strstr(de->d_name, ".prg") || strstr(de->d_name, ".PRG") ||
+				strstr(de->d_name, ".p00") || strstr(de->d_name, ".P00") ||
+				strstr(de->d_name, ".s00") || strstr(de->d_name, ".S00") ||
 				strstr(de->d_name, ".t64") || strstr(de->d_name, ".T64") ||
 				strstr(de->d_name, ".sav"))
 		{
@@ -186,6 +191,37 @@ void C64::select_disc(Prefs *np)
 					IMAGE_PATH, name);
 			if (strstr(name, ".d64") || strstr(name, ".D64"))
 				np->DriveType[0] = DRVTYPE_D64;
+			else if (strstr(name, ".prg") || strstr(name, ".PRG") ||
+				 strstr(name, ".p00") || strstr(name, ".P00") ||
+				 strstr(name, ".s00") || strstr(name, ".S00")) {
+				FILE *src, *dst;
+
+				/* Clean temp dir first (we only want one file) */
+				unlink(TMP_PATH"/a");
+
+				src = fopen(np->DrivePath[0], "r");
+				if (src != NULL)
+				{
+					np->DriveType[0] = DRVTYPE_DIR;
+					snprintf(np->DrivePath[0], 255, "%s", TMP_PATH);
+
+					/* Special handling of .prg: Copy to TMP_PATH and
+					 * load that as a dir */
+					dst = fopen(TMP_PATH"/a", "w");
+					if (dst)
+					{
+						Uint8 buf[1024];
+						size_t v;
+
+						do {
+							v = fread(buf, 1, 1024, src);
+							fwrite(buf, 1, v, dst);
+						} while (v > 0);
+						fclose(dst);
+					}
+					fclose(src);
+				}
+			}
 			else
 				np->DriveType[0] = DRVTYPE_T64;
 			NewPrefs(np);
