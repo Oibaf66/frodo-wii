@@ -167,6 +167,7 @@ public:
 	int fake_key_keytime;
 
 	bool prefs_changed;
+	char save_game_name[256];
 
 	void select_disc(Prefs *np);
 	void bind_key(Prefs *np);

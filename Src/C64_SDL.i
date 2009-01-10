@@ -71,6 +71,8 @@ void C64::c64_ctor1(void)
 	this->fake_key_type = 0;
 
 	this->prefs_changed = false;
+	memset(this->save_game_name, 0, sizeof(this->save_game_name));
+	strcpy(this->save_game_name, "unknown");
 
 	MENU_SIZE_X = FULL_DISPLAY_X - FULL_DISPLAY_X / 4;
 	MENU_SIZE_Y = FULL_DISPLAY_Y - FULL_DISPLAY_Y / 4;
@@ -189,6 +191,7 @@ void C64::select_disc(Prefs *np)
 		{
 			snprintf(np->DrivePath[0], 255, "%s/%s",
 					IMAGE_PATH, name);
+			strncpy(this->save_game_name, name, 255);
 			if (strstr(name, ".d64") || strstr(name, ".D64"))
 				np->DriveType[0] = DRVTYPE_D64;
 			else if (strstr(name, ".prg") || strstr(name, ".PRG") ||
@@ -360,16 +363,9 @@ void C64::save_load_state(Prefs *np)
 	case 1: /* save */
 	{
 		char buf[255];
-		char name[255];
-		char *p;
 
-		p = strrchr(ThePrefs.DrivePath[0], '/');
-		if (p == NULL)
-			strcpy(name, "unknown");
-		else
-			strncpy(name, p + 1, 255);
-
-		snprintf(buf, 255, "%s/%s.sav", SAVES_PATH,  name);
+		snprintf(buf, 255, "%s/%s.sav", SAVES_PATH,
+				this->save_game_name);
 
 		this->SaveSnapshot(buf);
 	} break;
