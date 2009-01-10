@@ -641,7 +641,7 @@ uint8 C64::poll_joystick(int port)
 	if (wpad->exp.type == WPAD_EXP_CLASSIC)
 		held_classic = wpad->exp.classic.btns_held; 
 	if (wpad_other->exp.type == WPAD_EXP_CLASSIC)
-		held_classic_other = wpad->exp.classic.btns_held; 
+		held_classic_other = wpad_other->exp.classic.btns_held; 
 
 	if ( (held & WPAD_BUTTON_UP) || (held_classic & CLASSIC_CTRL_BUTTON_UP) )
 		j &= 0xfb; // Left

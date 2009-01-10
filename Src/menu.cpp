@@ -266,26 +266,37 @@ static uint32_t wait_key_press(void)
 	while (1)
 	{
 #if defined(GEKKO)
-		Uint32 remote_keys;
+		Uint32 remote_keys, classic_keys;
+	        WPADData *wpad, *wpad_other;
 
 		WPAD_ScanPads();
-		remote_keys = WPAD_ButtonsDown(WPAD_CHAN_0) | WPAD_ButtonsDown(WPAD_CHAN_1);
 
-		if (remote_keys & WPAD_BUTTON_DOWN)
+		wpad = WPAD_Data(WPAD_CHAN_0);
+	        wpad_other = WPAD_Data(WPAD_CHAN_1);
+	        remote_keys = wpad->btns_d | wpad_other->btns_d;
+	        classic_keys = 0;
+
+		// Check classic controller as well
+		if (wpad->exp.type == WPAD_EXP_CLASSIC)
+			classic_keys = wpad->exp.classic.btns_held | wpad_other->exp.classic.btns_held; 
+
+		if ( (remote_keys & WPAD_BUTTON_DOWN) || (classic_keys & CLASSIC_CTRL_BUTTON_DOWN) )
 			keys |= KEY_RIGHT;
-		if (remote_keys & WPAD_BUTTON_UP)
+		if ( (remote_keys & WPAD_BUTTON_UP) || (classic_keys & CLASSIC_CTRL_BUTTON_UP) )
 			keys |= KEY_LEFT;
-		if (remote_keys & WPAD_BUTTON_LEFT)
+		if ( (remote_keys & WPAD_BUTTON_LEFT) || (classic_keys & CLASSIC_CTRL_BUTTON_LEFT) )
 			keys |= KEY_DOWN;
-		if (remote_keys & WPAD_BUTTON_RIGHT)
+		if ( (remote_keys & WPAD_BUTTON_RIGHT) || (classic_keys & CLASSIC_CTRL_BUTTON_RIGHT) )
 			keys |= KEY_UP;
-		if (remote_keys & WPAD_BUTTON_PLUS)
+		if ( (remote_keys & WPAD_BUTTON_PLUS) || (classic_keys & CLASSIC_CTRL_BUTTON_PLUS) )
 			keys |= KEY_PAGEUP;
-		if (remote_keys & WPAD_BUTTON_MINUS)
+		if ( (remote_keys & WPAD_BUTTON_MINUS) || (classic_keys & CLASSIC_CTRL_BUTTON_MINUS) )
 			keys |= KEY_PAGEDOWN;
-		if (remote_keys & (WPAD_BUTTON_A | WPAD_BUTTON_2) )
+		if ( (remote_keys & (WPAD_BUTTON_A | WPAD_BUTTON_2) ) ||
+				(classic_keys & (CLASSIC_CTRL_BUTTON_A | CLASSIC_CTRL_BUTTON_X)) )
 			keys |= KEY_SELECT;
-		if (remote_keys & (WPAD_BUTTON_1 | WPAD_BUTTON_HOME) )
+		if ( (remote_keys & (WPAD_BUTTON_1 | WPAD_BUTTON_HOME) ) ||
+				(classic_keys & (CLASSIC_CTRL_BUTTON_B | CLASSIC_CTRL_BUTTON_Y)) )
 			keys |= KEY_ESCAPE;
 #endif
 		if (SDL_PollEvent(&ev))
