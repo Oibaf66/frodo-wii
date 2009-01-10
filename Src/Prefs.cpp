@@ -74,11 +74,8 @@ Prefs::Prefs()
 	ShowLEDs = true;
 
 #ifdef HAVE_SDL
-	this->JoystickKeyBinding[0] = 0;
-	this->JoystickKeyBinding[1] = 0;
-	this->JoystickKeyBinding[2] = 0;
-	this->JoystickKeyBinding[3] = 0;
-	this->JoystickKeyBinding[4] = 0;
+	for (int i = 0; i < N_WIIMOTE_BINDINGS; i++)
+		this->JoystickKeyBinding[i] = -1;
 
 	this->DisplayOption = 0;
 #endif
@@ -142,6 +139,12 @@ bool Prefs::operator==(const Prefs &rhs) const
 		&& this->JoystickKeyBinding[2] == rhs.JoystickKeyBinding[2]
 		&& this->JoystickKeyBinding[3] == rhs.JoystickKeyBinding[3]
 		&& this->JoystickKeyBinding[4] == rhs.JoystickKeyBinding[4]
+                && this->JoystickKeyBinding[5] == rhs.JoystickKeyBinding[5]
+                && this->JoystickKeyBinding[6] == rhs.JoystickKeyBinding[6]
+                && this->JoystickKeyBinding[7] == rhs.JoystickKeyBinding[7]
+                && this->JoystickKeyBinding[8] == rhs.JoystickKeyBinding[8]
+                && this->JoystickKeyBinding[9] == rhs.JoystickKeyBinding[9]
+                && this->JoystickKeyBinding[10] == rhs.JoystickKeyBinding[10]
 		&& this->DisplayOption == rhs.DisplayOption
 #endif
 	);
@@ -319,6 +322,18 @@ void Prefs::Load(char *filename)
 					JoystickKeyBinding[3] = atoi(value);
 				else if (!strcmp(keyword, "JoystickKeyBinding4"))
 					JoystickKeyBinding[4] = atoi(value);
+				else if (!strcmp(keyword, "JoystickKeyBinding5"))
+					JoystickKeyBinding[5] = atoi(value);
+				else if (!strcmp(keyword, "JoystickKeyBinding6"))
+					JoystickKeyBinding[6] = atoi(value);
+				else if (!strcmp(keyword, "JoystickKeyBinding7"))
+					JoystickKeyBinding[7] = atoi(value);
+				else if (!strcmp(keyword, "JoystickKeyBinding8"))
+					JoystickKeyBinding[8] = atoi(value);
+				else if (!strcmp(keyword, "JoystickKeyBinding9"))
+					JoystickKeyBinding[9] = atoi(value);
+				else if (!strcmp(keyword, "JoystickKeyBinding10"))
+					JoystickKeyBinding[10] = atoi(value);
 				else if (!strcmp(keyword, "DisplayOption"))
 					DisplayOption = atoi(value);
 #endif
@@ -419,11 +434,9 @@ bool Prefs::Save(char *filename)
 		fprintf(file, "SystemKeys = %s\n", SystemKeys ? "TRUE" : "FALSE");
 		fprintf(file, "ShowLEDs = %s\n", ShowLEDs ? "TRUE" : "FALSE");
 #if defined(HAVE_SDL)
-		fprintf(file, "JoystickKeyBinding0 = %d\n", JoystickKeyBinding[0]);
-		fprintf(file, "JoystickKeyBinding1 = %d\n", JoystickKeyBinding[1]);
-		fprintf(file, "JoystickKeyBinding2 = %d\n", JoystickKeyBinding[2]);
-		fprintf(file, "JoystickKeyBinding3 = %d\n", JoystickKeyBinding[3]);
-		fprintf(file, "JoystickKeyBinding4 = %d\n", JoystickKeyBinding[4]);
+		for (int i = 0; i < N_WIIMOTE_BINDINGS; i++)
+			fprintf(file, "JoystickKeyBinding%d = %d\n",
+					i, JoystickKeyBinding[i]);
 
 		fprintf(file, "DisplayOption = %d\n", DisplayOption);
 #endif

@@ -1,4 +1,6 @@
 version 2:
+        * Added support for classic controllers. NOTE: This is untested since I don't
+          have a classic controller!
         * Fixed some corner-cases in the prefs setting to avoid loosing key bindings etc
         * Improve keyboard bindings to handle press and release correctly and also
           both controllers at the same time (key is released when the last controller releases
@@ -7,7 +9,7 @@ version 2:
         * Remove the 1-1 graphics option and make stretched the default. Should avoid
           "helpful and constructive" messages such as
              http://wiinewz.com/forums/nintendo-news/91829-frodo-v1-0-a.html#post580580
-        * Improved speed just a bit
+        * Improved speed just a bit (by enabling compiler optimization!)
         * Only save prefs on exit
         * Pause sound in the menu
         * Handle very long filenames better (thanks Corey89 for pointing this out)

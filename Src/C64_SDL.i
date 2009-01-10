@@ -44,15 +44,6 @@ static const char *display_option_messages[] = {
 		NULL,
 };
 
-static const char *bind_key_messages[] = {
-		"Bind to A",           /* 0 */
-		"Bind to B",           /* 1 */
-		"Bind to Plus",        /* 2 */
-		"Bind to Minus",       /* 3 */
-		"Bind to 1",           /* 4 */
-		NULL,
-};
-
 static const char *save_load_state_messages[] = {
 		"Load saved state",    /* 0 */
 		"Save current state",  /* 1 */
@@ -227,6 +218,8 @@ void C64::select_disc(Prefs *np)
 
 void C64::bind_key(Prefs *np)
 {
+	const char **bind_key_messages;
+	bool has_classic_controller = false;
         menu_t bind_key_menu;
         menu_t key_menu;
         static const char *keys[] = { "None", "space", "Run/Stop", "return", "F1", "F3", "F5", "F7",
@@ -246,6 +239,39 @@ void C64::bind_key(Prefs *np)
         	MATRIX(7, 3), MATRIX(0, 0), MATRIX(6, 4), MATRIX(1, 7), MATRIX(6, 4),
         	MATRIX(0, 2), MATRIX(7, 5), MATRIX(7, 1),
         	};
+
+#if defined(GEKKO)
+        WPADData *wpad, *wpad_other;
+
+        wpad = WPAD_Data(0);
+        wpad_other = WPAD_Data(1);
+
+        if (wpad->exp.type == WPAD_EXP_CLASSIC ||
+        		wpad_other->exp.type == WPAD_EXP_CLASSIC)
+        	has_classic_controller = true;
+#endif
+
+        bind_key_messages = (const char **)malloc( sizeof(const char*) * (N_WIIMOTE_BINDINGS + 1));
+        assert(bind_key_messages);
+        memset(bind_key_messages, 0, sizeof(const char*) * (N_WIIMOTE_BINDINGS + 1));
+
+        bind_key_messages[WIIMOTE_A] = "Bind to A";
+        bind_key_messages[WIIMOTE_B] = "Bind to B";
+        bind_key_messages[WIIMOTE_PLUS] = "Bind to Plus";
+        bind_key_messages[WIIMOTE_MINUS] = "Bind to Minus";
+        bind_key_messages[WIIMOTE_1] = "Bind to 1";
+
+        if (has_classic_controller)
+        {
+                bind_key_messages[WIIMOTE_PLUS] = "Bind to wiimote/classic Plus";
+                bind_key_messages[WIIMOTE_MINUS] = "Bind to wiimote/classic Minus";
+
+                bind_key_messages[CLASSIC_X] = "Bind to classic X";
+                bind_key_messages[CLASSIC_Y] = "Bind to classic Y";
+                bind_key_messages[CLASSIC_B] = "Bind to classic B";
+                bind_key_messages[CLASSIC_L] = "Bind to classic L";
+                bind_key_messages[CLASSIC_R] = "Bind to classic R";
+        }
 
         menu_init(&bind_key_menu, this->menu_font, bind_key_messages,
 			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
@@ -267,6 +293,7 @@ void C64::bind_key(Prefs *np)
 	        menu_fini(&key_menu);
 	}
         menu_fini(&bind_key_menu);
+        free(bind_key_messages);
 }
 
 void C64::display_options(Prefs *np)
@@ -564,26 +591,36 @@ uint8 C64::poll_joystick(int port)
 #ifdef GEKKO
 	int extra_keys[N_WIIMOTE_BINDINGS];
 	int controller = port;
-	Uint32 held, held_other;
+        WPADData *wpad, *wpad_other;
+	Uint32 held, held_other, held_classic, held_classic_other;
 	uint8 j = 0xff;
 
 	if (ThePrefs.JoystickSwap)
 		controller = !port;
+	held_classic = held_classic_other = 0; 
 
-	held =  WPAD_ButtonsHeld(controller);
-	held_other =  WPAD_ButtonsHeld(!controller);
+        wpad = WPAD_Data(controller);
+        wpad_other = WPAD_Data(!controller);
+        held = wpad->btns_h;
+        held_other = wpad_other->btns_h;
 
-	if (held & WPAD_BUTTON_UP)
+	// Check classic controller as well
+	if (wpad->exp.type == WPAD_EXP_CLASSIC)
+		held_classic = wpad->exp.classic.btns_held; 
+	if (wpad_other->exp.type == WPAD_EXP_CLASSIC)
+		held_classic_other = wpad->exp.classic.btns_held; 
+
+	if ( (held & WPAD_BUTTON_UP) || (held_classic & CLASSIC_CTRL_BUTTON_UP) )
 		j &= 0xfb; // Left
-	if (held & WPAD_BUTTON_DOWN)
+	if ( (held & WPAD_BUTTON_DOWN) || (held_classic & CLASSIC_CTRL_BUTTON_DOWN) )
 		j &= 0xf7; // Right
-	if (held & WPAD_BUTTON_RIGHT)
+	if ( (held & WPAD_BUTTON_RIGHT) || (held_classic & CLASSIC_CTRL_BUTTON_RIGHT) )
 		j &= 0xfe; // Up
-	if (held & WPAD_BUTTON_LEFT)
+	if ( (held & WPAD_BUTTON_LEFT) || (held_classic & CLASSIC_CTRL_BUTTON_LEFT) )
 		j &= 0xfd; // Down
-	if (held & WPAD_BUTTON_2)
+	if ( (held & WPAD_BUTTON_2) || (held_classic & CLASSIC_CTRL_BUTTON_A) )
 		j &= 0xef; // Button
-	if (held & WPAD_BUTTON_HOME)
+	if ( (held & WPAD_BUTTON_HOME) || (held_classic & CLASSIC_CTRL_BUTTON_HOME) )
 		this->enter_menu();
 
 	extra_keys[WIIMOTE_A] = (held | held_other) & WPAD_BUTTON_A;
@@ -591,6 +628,13 @@ uint8 C64::poll_joystick(int port)
 	extra_keys[WIIMOTE_PLUS] = (held | held_other) & WPAD_BUTTON_PLUS;
 	extra_keys[WIIMOTE_MINUS] = (held | held_other) & WPAD_BUTTON_MINUS;
 	extra_keys[WIIMOTE_1] = (held | held_other) & WPAD_BUTTON_1;
+
+	/* Classic buttons (might not be connected) */
+	extra_keys[CLASSIC_X] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_X;
+	extra_keys[CLASSIC_Y] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_Y;
+	extra_keys[CLASSIC_B] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_B;
+	extra_keys[CLASSIC_L] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_FULL_L;
+	extra_keys[CLASSIC_R] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_FULL_R;
 
 	for (int i = 0; i < N_WIIMOTE_BINDINGS; i++)
 	{
