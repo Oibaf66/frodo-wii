@@ -1,0 +1,24 @@
+version 2:
+        * Also support the .prg and p00, s00 formats. Only .prg has been tested.
+        * Added support for classic controllers. NOTE: This is untested since I don't
+          have a classic controller!
+        * Fixed some corner-cases in the prefs setting to avoid loosing key bindings etc
+        * Improve keyboard bindings to handle press and release correctly and also
+          both controllers at the same time (key is released when the last controller releases
+          it)
+        * Handle keycode 0 and therefore make del work
+        * Remove the 1-1 graphics option and make stretched the default. Should avoid
+          "helpful and constructive" messages such as
+             http://wiinewz.com/forums/nintendo-news/91829-frodo-v1-0-a.html#post580580
+        * Improved speed just a bit (by enabling compiler optimization!)
+        * Only save prefs on exit
+        * Pause sound in the menu
+        * Handle very long filenames better (thanks Corey89 for pointing this out)
+        * Corrected file sorting
+        * Better Makefile
+        * More keycodes added (C=)
+
+        -- Simon Kagstrom <simon.kagstrom@gmail.com>, Sat Jan 10 17:26:32 CET 2009
+
+version 1:
+        * Initial release
