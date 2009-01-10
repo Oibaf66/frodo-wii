@@ -1,4 +1,5 @@
 version 2:
+        * Fixed some corner-cases in the prefs setting to avoid loosing key bindings etc
         * Improve keyboard bindings to handle press and release correctly and also
           both controllers at the same time (key is released when the last controller releases
           it)

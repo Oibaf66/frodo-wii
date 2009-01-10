@@ -166,6 +166,8 @@ public:
 	int fake_key_index;
 	int fake_key_keytime;
 
+	bool prefs_changed;
+
 	void select_disc(Prefs *np);
 	void bind_key(Prefs *np);
 	void display_options(Prefs *np);

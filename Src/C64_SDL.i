@@ -77,6 +77,8 @@ void C64::c64_ctor1(void)
 	this->fake_key_keytime = 5;
 	this->fake_key_type = 0;
 
+	this->prefs_changed = false;
+
 	MENU_SIZE_X = FULL_DISPLAY_X - FULL_DISPLAY_X / 4;
 	MENU_SIZE_Y = FULL_DISPLAY_Y - FULL_DISPLAY_Y / 4;
 
@@ -198,6 +200,7 @@ void C64::select_disc(Prefs *np)
 			NewPrefs(np);
 			ThePrefs = *np;
 		}
+		this->prefs_changed = true;
 	}
         menu_fini(&select_disc_menu);
 
@@ -253,10 +256,14 @@ void C64::bind_key(Prefs *np)
 				32, 32, MENU_SIZE_X, MENU_SIZE_Y);
 		int key = menu_select(real_screen, &key_menu, NULL);
 
+		/* Assume prefs are changed */
+		this->prefs_changed = true;
 		if (key > 0)
 			np->JoystickKeyBinding[opt] = kcs[key];
 		else if (key == 0)
 			np->JoystickKeyBinding[opt] = -1;
+		else
+			this->prefs_changed = false;
 	        menu_fini(&key_menu);
 	}
         menu_fini(&bind_key_menu);
@@ -270,16 +277,19 @@ void C64::display_options(Prefs *np)
 			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
 	int opt = menu_select(real_screen, &display_menu, NULL);
 	if (opt >= 0)
+	{
 		np->DisplayOption = opt;
+		this->prefs_changed = true;
+	}
         menu_fini(&display_menu);
 }
 
 void C64::save_load_state(Prefs *np)
 {
-        menu_t save_load_menu;
-        menu_t select_saves_menu;
+	menu_t save_load_menu;
+	menu_t select_saves_menu;
 
-        menu_init(&save_load_menu, this->menu_font, save_load_state_messages,
+	menu_init(&save_load_menu, this->menu_font, save_load_state_messages,
 			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
 	int opt = menu_select(real_screen, &save_load_menu, NULL);
 	switch(opt)
@@ -320,17 +330,17 @@ void C64::save_load_state(Prefs *np)
 			else /* Load the snapshot */
 				this->LoadSnapshot(buf);
 		}
-	        menu_fini(&select_saves_menu);
+		menu_fini(&select_saves_menu);
 
-	        /* Cleanup everything */
-	        for ( int i = 0; file_list[i]; i++ )
-	        	free((void*)file_list[i]);
-	        free(file_list);
+		/* Cleanup everything */
+		for ( int i = 0; file_list[i]; i++ )
+			free((void*)file_list[i]);
+		free(file_list);
 	} break;
 	default:
 		break;
 	}
-        menu_fini(&save_load_menu);
+	menu_fini(&save_load_menu);
 }
 
 /*
@@ -440,17 +450,19 @@ void C64::VBlank(bool draw_frame)
 	if (this->have_a_break) {
 		int submenus[1]; 
 		int opt;
+		int old_swap = ThePrefs.JoystickSwap == true ? 1 : 0; 
 
-		Prefs *np = Frodo::reload_prefs();
+		Prefs np = ThePrefs;
+		this->prefs_changed = false;
 
 		TheSID->PauseSound();
-		submenus[0] = np->JoystickSwap == true ? 1 : 0;
+		submenus[0] = old_swap;
 		opt = menu_select(real_screen, &this->main_menu, submenus);
 
 		switch(opt)
 		{
 		case 0: /* Insert disc/tape */
-			this->select_disc(np);
+			this->select_disc(&np);
 			break;
 		case 1: /* Load disc/tape */
 			this->fake_key_sequence = true;
@@ -459,15 +471,15 @@ void C64::VBlank(bool draw_frame)
 			Reset();
 			break;
 		case 3: /* Bind keys to joystick */
-			this->bind_key(np);
+			this->bind_key(&np);
 			break;
 		case 4: /* Display options */
-			this->display_options(np);
+			this->display_options(&np);
 			break;
 		case 5: /* Swap joysticks */
 			break;
 		case 7: /* Save / load game */
-			this->save_load_state(np);
+			this->save_load_state(&np);
 			break;
 		case 9: /* Quit */
 			quit_thyself = true;				
@@ -477,17 +489,23 @@ void C64::VBlank(bool draw_frame)
 			break;
 		}
 		if (submenus[0] == 0)
-			np->JoystickSwap = false;
+			np.JoystickSwap = false;
 		else
-			np->JoystickSwap = true;
+			np.JoystickSwap = true;
+		if (submenus[0] != old_swap)
+			this->prefs_changed = true;
 
-		this->NewPrefs(np);
-		ThePrefs = *np;
-		ThePrefs.Save(PREFS_PATH);
+		if (this->prefs_changed)
+		{
+			this->NewPrefs(&np);
+			ThePrefs = np;
+		}
 		TheDisplay->FakeKeyPress(-1, false, TheCIA1->KeyMatrix,
 				TheCIA1->RevMatrix);
 
 		this->have_a_break = false;
+		if (this->quit_thyself)
+			ThePrefs.Save(PREFS_PATH);
 	}
 	/* From Acorn port */
 	static uint64_t lastFrame;
