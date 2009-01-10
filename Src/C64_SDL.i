@@ -186,6 +186,7 @@ void C64::select_disc(Prefs *np)
 		if (strcmp(file_list[opt], "None") == 0)
 		{
 			strcpy(np->DrivePath[0], "\0");
+			strcpy(this->save_game_name, "unknown");
 		}
 		else
 		{
