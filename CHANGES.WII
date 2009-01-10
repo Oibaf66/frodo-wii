@@ -1,4 +1,8 @@
 version 2:
+        * Improve keyboard bindings to handle press and release correctly and also
+          both controllers at the same time (key is released when the last controller releases
+          it)
+        * Handle keycode 0 and therefore make del work
         * Remove the 1-1 graphics option and make stretched the default. Should avoid
           "helpful and constructive" messages such as
              http://wiinewz.com/forums/nintendo-news/91829-frodo-v1-0-a.html#post580580

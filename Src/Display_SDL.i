@@ -245,22 +245,6 @@ int C64Display::BitmapXMod(void)
 	return screen->pitch;
 }
 
-void C64Display::FakeKeyPressRepeat(int kc, bool shift, uint8 *CIA_key_matrix, uint8 *CIA_rev_matrix)
-{
-	static int cnt = 5;
-
-	if (cnt > 0) {
-		this->FakeKeyPress(-1, shift, CIA_key_matrix, CIA_rev_matrix);
-		cnt--;
-	}
-	else
-	{
-		this->FakeKeyPress(kc, shift, CIA_key_matrix, CIA_rev_matrix);
-		cnt = 5;
-	}
-}
-
-
 void C64Display::FakeKeyPress(int kc, bool shift, uint8 *CIA_key_matrix,
 		uint8 *CIA_rev_matrix)
 {
@@ -294,11 +278,34 @@ void C64Display::FakeKeyPress(int kc, bool shift, uint8 *CIA_key_matrix,
         }
 }
 
+void C64Display::UpdateKeyMatrix(int c64_key, bool key_up, uint8 *key_matrix, uint8 *rev_matrix)
+{
+	bool shifted = c64_key & 0x80;
+	int c64_byte = (c64_key >> 3) & 7;
+	int c64_bit = c64_key & 7;
+
+	if (key_up) {
+		if (shifted) {
+			key_matrix[6] |= 0x10;
+			rev_matrix[4] |= 0x40;
+		}
+		key_matrix[c64_byte] |= (1 << c64_bit);
+		rev_matrix[c64_bit] |= (1 << c64_byte);
+	} else {
+		if (shifted) {
+			key_matrix[6] &= 0xef;
+			rev_matrix[4] &= 0xbf;
+		}
+		key_matrix[c64_byte] &= ~(1 << c64_bit);
+		rev_matrix[c64_bit] &= ~(1 << c64_byte);
+	}
+}
+
 /*
  *  Poll the keyboard
  */
 
-static void translate_key(SDLKey key, bool key_up, uint8 *key_matrix, uint8 *rev_matrix, uint8 *joystick)
+void C64Display::TranslateKey(SDLKey key, bool key_up, uint8 *key_matrix, uint8 *rev_matrix, uint8 *joystick)
 {
 	int c64_key = -1;
 	switch (key) {
@@ -412,25 +419,7 @@ static void translate_key(SDLKey key, bool key_up, uint8 *key_matrix, uint8 *rev
 		return;
 	}
 
-	// Handle other keys
-	bool shifted = c64_key & 0x80;
-	int c64_byte = (c64_key >> 3) & 7;
-	int c64_bit = c64_key & 7;
-	if (key_up) {
-		if (shifted) {
-			key_matrix[6] |= 0x10;
-			rev_matrix[4] |= 0x40;
-		}
-		key_matrix[c64_byte] |= (1 << c64_bit);
-		rev_matrix[c64_bit] |= (1 << c64_byte);
-	} else {
-		if (shifted) {
-			key_matrix[6] &= 0xef;
-			rev_matrix[4] &= 0xbf;
-		}
-		key_matrix[c64_byte] &= ~(1 << c64_bit);
-		rev_matrix[c64_bit] &= ~(1 << c64_byte);
-	}
+	this->UpdateKeyMatrix(c64_key, key_up, key_matrix, rev_matrix);
 }
 
 void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joystick)
@@ -481,7 +470,7 @@ void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joyst
 						break;
 
 					default:
-						translate_key(event.key.keysym.sym, false, key_matrix, rev_matrix, joystick);
+						TranslateKey(event.key.keysym.sym, false, key_matrix, rev_matrix, joystick);
 						break;
 				}
 				break;
@@ -491,7 +480,7 @@ void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joyst
 				if (event.key.keysym.sym == SDLK_NUMLOCK)
 					num_locked = false;
 				else
-					translate_key(event.key.keysym.sym, true, key_matrix, rev_matrix, joystick);
+					TranslateKey(event.key.keysym.sym, true, key_matrix, rev_matrix, joystick);
 				break;
 
 			// Quit Frodo

@@ -16,7 +16,7 @@
 #endif
 
 #ifdef HAVE_SDL
-struct SDL_Surface;
+#include <SDL.h>
 extern SDL_Surface *real_screen;
 #endif
 
@@ -65,11 +65,10 @@ public:
 	void PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joystick);
 #endif
 #if defined(HAVE_SDL)
-	void FakeKeyPressRepeat(int kc, bool shift, uint8 *CIA_key_matrix,
-			uint8 *CIA_rev_matrix);
-
 	void FakeKeyPress(int kc, bool shift, uint8 *CIA_key_matrix,
         		uint8 *CIA_rev_matrix);
+	void TranslateKey(SDLKey key, bool key_up, uint8 *key_matrix, uint8 *rev_matrix, uint8 *joystick);
+	void UpdateKeyMatrix(int c64_key, bool key_up, uint8 *key_matrix, uint8 *rev_matrix);
 #endif
 	bool NumLock(void);
 	void InitColors(uint8 *colors);

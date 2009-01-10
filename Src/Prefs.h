@@ -39,6 +39,17 @@ enum {
 	DISPTYPE_SCREEN		// BWindowScreen
 };
 
+// Key bindings (WII)
+enum {
+	WIIMOTE_A,
+	WIIMOTE_B,
+	WIIMOTE_PLUS,
+	WIIMOTE_MINUS,
+	WIIMOTE_1,
+	N_WIIMOTE_BINDINGS
+};
+
+
 
 // Preferences data
 class Prefs {
@@ -116,7 +127,7 @@ private:
 #endif
 
 #ifdef HAVE_SDL
-	int JoystickKeyBinding[5];
+	int JoystickKeyBinding[N_WIIMOTE_BINDINGS];
 	int DisplayOption;
 #endif
 };

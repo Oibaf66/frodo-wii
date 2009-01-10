@@ -226,13 +226,13 @@ void C64::bind_key(Prefs *np)
 {
         menu_t bind_key_menu;
         menu_t key_menu;
-        static const char *keys[] = { "space", "Run/Stop", "return", "F1", "F3", "F5", "F7",
+        static const char *keys[] = { "None", "space", "Run/Stop", "return", "F1", "F3", "F5", "F7",
         		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A",
         		"B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
         		"N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
         		"ctrl", "del", "home,", "shl", "shr", "clr", "C=", "<-",
         		NULL };
-        int kcs[] = { MATRIX(7, 4), MATRIX(7, 7), MATRIX(0, 1), /* space, R/S, return */
+        int kcs[] = { 0, MATRIX(7, 4), MATRIX(7, 7), MATRIX(0, 1), /* space, R/S, return */
         	MATRIX(0, 4), MATRIX(0, 5), MATRIX(0, 6), MATRIX(0, 3), MATRIX(4, 3), MATRIX(7, 0),
         	MATRIX(7, 3), MATRIX(1, 0), MATRIX(1, 3), MATRIX(2, 0), MATRIX(2, 3), MATRIX(3, 0),
         	MATRIX(3, 3), MATRIX(4, 0), MATRIX(1, 2), MATRIX(3, 4), MATRIX(2, 4), MATRIX(2, 2),
@@ -253,7 +253,10 @@ void C64::bind_key(Prefs *np)
 				32, 32, MENU_SIZE_X, MENU_SIZE_Y);
 		int key = menu_select(real_screen, &key_menu, NULL);
 
-		np->JoystickKeyBinding[opt] = kcs[key];
+		if (key > 0)
+			np->JoystickKeyBinding[opt] = kcs[key];
+		else if (key == 0)
+			np->JoystickKeyBinding[opt] = -1;
 	        menu_fini(&key_menu);
 	}
         menu_fini(&bind_key_menu);
@@ -353,7 +356,7 @@ void C64::Run(void)
 }
 
 /* From dreamcast port */
-static char *auto_seq[4] =
+static const char *auto_seq[4] =
 {
         "\nLOAD \"*\",8,1\nRUN\n",
 	"\nLOAD \"*\",9,1\nRUN\n",
@@ -368,6 +371,10 @@ extern "C" int get_kc_from_char(char c_in, int *shifted);
 
 void C64::VBlank(bool draw_frame)
 {
+#if defined(GEKKO)
+	WPAD_ScanPads();
+#endif
+
 	// Poll joysticks
 	TheCIA1->Joystick1 = poll_joystick(0);
 	TheCIA1->Joystick2 = poll_joystick(1);
@@ -537,16 +544,17 @@ void C64::open_close_joysticks(bool oldjoy1, bool oldjoy2, bool newjoy1, bool ne
 uint8 C64::poll_joystick(int port)
 {
 #ifdef GEKKO
+	int extra_keys[N_WIIMOTE_BINDINGS];
 	int controller = port;
-	Uint32 held;
+	Uint32 held, held_other;
 	uint8 j = 0xff;
 
 	if (ThePrefs.JoystickSwap)
 		controller = !port;
 
-	WPAD_ScanPads();
-
 	held =  WPAD_ButtonsHeld(controller);
+	held_other =  WPAD_ButtonsHeld(!controller);
+
 	if (held & WPAD_BUTTON_UP)
 		j &= 0xfb; // Left
 	if (held & WPAD_BUTTON_DOWN)
@@ -559,23 +567,26 @@ uint8 C64::poll_joystick(int port)
 		j &= 0xef; // Button
 	if (held & WPAD_BUTTON_HOME)
 		this->enter_menu();
-	else
+
+	extra_keys[WIIMOTE_A] = (held | held_other) & WPAD_BUTTON_A;
+	extra_keys[WIIMOTE_B] = (held | held_other) & WPAD_BUTTON_B;
+	extra_keys[WIIMOTE_PLUS] = (held | held_other) & WPAD_BUTTON_PLUS;
+	extra_keys[WIIMOTE_MINUS] = (held | held_other) & WPAD_BUTTON_MINUS;
+	extra_keys[WIIMOTE_1] = (held | held_other) & WPAD_BUTTON_1;
+
+	for (int i = 0; i < N_WIIMOTE_BINDINGS; i++)
 	{
-		if ( (held & WPAD_BUTTON_A) && ThePrefs.JoystickKeyBinding[0])
-			TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[0],
-					false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
-		if ( (held & WPAD_BUTTON_B) && ThePrefs.JoystickKeyBinding[1])
-			TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[1],
-					false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
-		if ( (held & WPAD_BUTTON_PLUS) && ThePrefs.JoystickKeyBinding[2])
-			TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[2],
-					false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
-		if ( (held & WPAD_BUTTON_MINUS) && ThePrefs.JoystickKeyBinding[3])
-			TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[3],
-					false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
-		if ( (held & WPAD_BUTTON_1) && ThePrefs.JoystickKeyBinding[4])
-			TheDisplay->FakeKeyPressRepeat(ThePrefs.JoystickKeyBinding[4],
-					false, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
+		int kc = ThePrefs.JoystickKeyBinding[i];
+
+		if ( kc < 0 )
+			continue;
+
+		if (extra_keys[i])
+			TheDisplay->UpdateKeyMatrix(kc, false,
+					TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
+		else
+			TheDisplay->UpdateKeyMatrix(kc, true,
+					TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
 	}
 
 	return j;
