@@ -1,4 +1,10 @@
 version 3:
+        * Skip SDL_Delay and SDL_GetTicks() which seem to give strange
+          results. Use gettime and usleep instead.
+
+        * Improve performance a bit more by doing a custom
+          blit-to-double-size implementation
+
         * Fixed changelog format
 
         * Bought a Classic controller and fixed so that it actually works...

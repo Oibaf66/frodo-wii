@@ -11,7 +11,6 @@
 
 #include <SDL.h>
 
-
 // Display surface
 SDL_Surface *screen = NULL;
 SDL_Surface *real_screen = NULL;
@@ -161,17 +160,33 @@ void C64Display::Update(void)
 	if (ThePrefs.DisplayOption == 0) {
 		const int x_border = (DISPLAY_X - FULL_DISPLAY_X / 2) / 2;
 		const int y_border = (DISPLAY_Y - FULL_DISPLAY_Y / 2) / 2;
+		Uint8 *src_pixels = (Uint8*)screen->pixels;
+		Uint8 *dst_pixels = (Uint8*)real_screen->pixels;
+		const Uint16 src_pitch = screen->pitch;
+		const Uint16 dst_pitch = real_screen->pitch;
 
 		/* Center, double size */
-		srcrect = (SDL_Rect){x_border, y_border, FULL_DISPLAY_X / 2, FULL_DISPLAY_Y / 2};
-		dstrect = (SDL_Rect){0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y};
+		for (int y = y_border; y < (FULL_DISPLAY_Y/2) + y_border; y++)
+		{
+			for (int x = x_border; x < (FULL_DISPLAY_X / 2 + x_border); x++)
+			{
+				int src_off = y * src_pitch + x;
+				int dst_off = (y * 2 - y_border * 2) * dst_pitch + (x * 2 - x_border * 2);
+				Uint8 v = src_pixels[src_off];
+
+				dst_pixels[ dst_off ] = v;
+				dst_pixels[ dst_off + 1 ] = v;
+				dst_pixels[ dst_off + dst_pitch ] = v;
+				dst_pixels[ dst_off + dst_pitch + 1] = v;
+			}
+		}
 	}
 	else {
 		/* Stretch */
 		srcrect = (SDL_Rect){0, 0, DISPLAY_X, DISPLAY_Y};
 		dstrect = (SDL_Rect){0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y};
+		SDL_SoftStretch(screen, &srcrect, real_screen, &dstrect);                                                                     
 	}
-	SDL_SoftStretch(screen, &srcrect, real_screen, &dstrect);                                                                     
 	SDL_Flip(real_screen);
 }
 

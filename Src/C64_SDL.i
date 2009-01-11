@@ -12,6 +12,7 @@
 
 #if defined(GEKKO)
 #include <wiiuse/wpad.h>
+#include <ogc/lwp_watchdog.h>
 #define FONT_PATH "/apps/frodo/FreeMono.ttf"
 #define SAVES_PATH "/apps/frodo/saves"
 #define IMAGE_PATH "/apps/frodo/images"
@@ -22,7 +23,7 @@
 #define IMAGE_PATH "images"
 #define TMP_PATH "tmp"
 #endif
-#define MS_PER_FRAME 27
+#define MS_PER_FRAME 38
 
 static struct timeval tv_start;
 static int MENU_SIZE_X, MENU_SIZE_Y;
@@ -578,10 +579,14 @@ void C64::VBlank(bool draw_frame)
 	}
 	/* From Acorn port */
 	static uint64_t lastFrame;
+#if defined(GEKKO)
+        uint32_t now = ticks_to_millisecs(gettime());
+#else
         uint32_t now = SDL_GetTicks();
+#endif
 
         if ( (now - lastFrame) < MS_PER_FRAME ) {
-        	SDL_Delay( MS_PER_FRAME - (now - lastFrame) );
+        	usleep( (MS_PER_FRAME - (now - lastFrame)) * 1000);
         }
         lastFrame = now;
 }
