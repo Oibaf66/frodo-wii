@@ -11,6 +11,7 @@
 
 #include <SDL.h>
 
+
 // Display surface
 SDL_Surface *screen = NULL;
 SDL_Surface *real_screen = NULL;
@@ -47,7 +48,7 @@ enum {
   3     V   U   H   B   8   G   Y   7
   4     N   O   K   M   0   J   I   9
   5     ,   @   :   .   -   L   P   +
-  6     /   ^   =  SHR HOM  ;   *   ï¿½
+  6     /   ^   =  SHR HOM  ;   *   £
   7    R/S  Q   C= SPC  2  CTL  <-  1
 */
 
@@ -154,9 +155,6 @@ void C64Display::NewPrefs(Prefs *prefs)
 
 void C64Display::Update(void)
 {
-	// Update display
-	SDL_Rect srcrect, dstrect;
-
 	if (ThePrefs.DisplayOption == 0) {
 		const int x_border = (DISPLAY_X - FULL_DISPLAY_X / 2) / 2;
 		const int y_border = (DISPLAY_Y - FULL_DISPLAY_Y / 2) / 2;
@@ -182,9 +180,10 @@ void C64Display::Update(void)
 		}
 	}
 	else {
+		SDL_Rect srcrect = {0, 0, DISPLAY_X, DISPLAY_Y};
+		SDL_Rect dstrect = {0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y};
+
 		/* Stretch */
-		srcrect = (SDL_Rect){0, 0, DISPLAY_X, DISPLAY_Y};
-		dstrect = (SDL_Rect){0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y};
 		SDL_SoftStretch(screen, &srcrect, real_screen, &dstrect);                                                                     
 	}
 	SDL_Flip(real_screen);

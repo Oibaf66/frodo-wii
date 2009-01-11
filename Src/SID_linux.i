@@ -22,6 +22,8 @@ void DigitalRenderer::init_sound(void)
     int tmp;
     unsigned long format;
 
+    sndbufsize = 512;
+
     ready = false;
     devfd = open("/dev/dsp", O_WRONLY);
     if (devfd < 0)
@@ -118,7 +120,6 @@ void DigitalRenderer::EmulateLine(void)
 		int datalen = sndbufsize;
 		to_output -= datalen;
 		calc_buffer(sound_buffer, datalen * 2);
-
 		write(devfd, sound_buffer, datalen * 2);
 	}
 }
