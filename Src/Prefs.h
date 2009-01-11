@@ -136,6 +136,7 @@ private:
 #ifdef HAVE_SDL
 	int JoystickKeyBinding[N_WIIMOTE_BINDINGS];
 	int DisplayOption;
+	int MsPerFrame;
 #endif
 };
 

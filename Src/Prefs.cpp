@@ -78,6 +78,7 @@ Prefs::Prefs()
 		this->JoystickKeyBinding[i] = -1;
 
 	this->DisplayOption = 0;
+	this->MsPerFrame = 38;
 #endif
 }
 
@@ -148,6 +149,7 @@ bool Prefs::operator==(const Prefs &rhs) const
                 && this->JoystickKeyBinding[11] == rhs.JoystickKeyBinding[11]
                 && this->JoystickKeyBinding[12] == rhs.JoystickKeyBinding[12]
 		&& this->DisplayOption == rhs.DisplayOption
+		&& this->MsPerFrame == rhs.MsPerFrame
 #endif
 	);
 }
@@ -342,6 +344,8 @@ void Prefs::Load(char *filename)
 					JoystickKeyBinding[12] = atoi(value);
 				else if (!strcmp(keyword, "DisplayOption"))
 					DisplayOption = atoi(value);
+				else if (!strcmp(keyword, "MsPerFrame"))
+					MsPerFrame = atoi(value);
 #endif
 			}
 		}
@@ -445,6 +449,7 @@ bool Prefs::Save(char *filename)
 					i, JoystickKeyBinding[i]);
 
 		fprintf(file, "DisplayOption = %d\n", DisplayOption);
+		fprintf(file, "MsPerFrame = %d\n", MsPerFrame);
 #endif
 		fclose(file);
 		ThePrefsOnDisk = *this;

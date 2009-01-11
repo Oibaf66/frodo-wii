@@ -23,7 +23,6 @@
 #define IMAGE_PATH "images"
 #define TMP_PATH "tmp"
 #endif
-#define MS_PER_FRAME 38
 
 static struct timeval tv_start;
 static int MENU_SIZE_X, MENU_SIZE_Y;
@@ -32,7 +31,7 @@ static const char *main_menu_messages[] = {
 		"Load disc or tape",   /* 1 */
 		"Reset C64",           /* 2 */
 		"Bind key to joystick",/* 3 */
-		"Display options",     /* 4 */
+		"Other options",       /* 4 */
 		"Controller 1 joystick port", /* 5 */
 		"^|1|2",
 		"Save/Load state",     /* 7 */
@@ -41,9 +40,11 @@ static const char *main_menu_messages[] = {
 		NULL,
 };
 
-static const char *display_option_messages[] = {
-		"double resolution, centered", /* 0 */
-		"full-screen stretched", /* 1 */
+static const char *other_options_messages[] = {
+		"Display resolution", /* 0 */
+		"^|double-center|stretched",
+		"Speed (approx)",     /* 2 */
+		"^|95|100|110",
 		NULL,
 };
 
@@ -339,16 +340,36 @@ void C64::bind_key(Prefs *np)
         free(bind_key_messages);
 }
 
-void C64::display_options(Prefs *np)
+void C64::other_options(Prefs *np)
 {
         menu_t display_menu;
+        int submenus[2] = { np->DisplayOption};
 
-        menu_init(&display_menu, this->menu_font, display_option_messages,
+        switch (np->MsPerFrame)
+        {
+        case 36:
+        	submenus[1] = 0; break;
+        case 38:
+        	submenus[1] = 1; break;
+        default:
+        	submenus[1] = 2; break;
+        }
+        menu_init(&display_menu, this->menu_font, other_options_messages,
 			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
-	int opt = menu_select(real_screen, &display_menu, NULL);
+	int opt = menu_select(real_screen, &display_menu, submenus);
 	if (opt >= 0)
 	{
-		np->DisplayOption = opt;
+		np->DisplayOption = submenus[0];
+		switch(submenus[1])
+		{
+		case 0:
+			np->MsPerFrame = 36; break;
+		case 1:
+			np->MsPerFrame = 38; break;
+		case 2:
+		default:
+			np->MsPerFrame = 39; break;
+		}
 		this->prefs_changed = true;
 	}
         menu_fini(&display_menu);
@@ -543,8 +564,8 @@ void C64::VBlank(bool draw_frame)
 		case 3: /* Bind keys to joystick */
 			this->bind_key(&np);
 			break;
-		case 4: /* Display options */
-			this->display_options(&np);
+		case 4: /* Other options */
+			this->other_options(&np);
 			break;
 		case 5: /* Swap joysticks */
 			break;
@@ -585,8 +606,8 @@ void C64::VBlank(bool draw_frame)
         uint32_t now = SDL_GetTicks();
 #endif
 
-        if ( (now - lastFrame) < MS_PER_FRAME ) {
-        	usleep( (MS_PER_FRAME - (now - lastFrame)) * 1000);
+        if ( (now - lastFrame) < ThePrefs.MsPerFrame) {
+        	usleep( (ThePrefs.MsPerFrame - (now - lastFrame)) * 1000);
         }
         lastFrame = now;
 }

@@ -185,71 +185,70 @@ static int is_submenu_title(menu_t *p_menu, int n)
 void menu_init(menu_t *p_menu, TTF_Font *p_font, const char **pp_msgs,
 	       int16_t x1, int16_t y1, int16_t x2, int16_t y2)
 {
-  int i;
-  int j;
+	int submenu;
+	int i;
+	int j;
 
-  memset(p_menu, 0, sizeof(menu_t));
+	memset(p_menu, 0, sizeof(menu_t));
 
-  p_menu->pp_msgs = pp_msgs;
-  p_menu->p_font = p_font;
-  p_menu->x1 = x1;
-  p_menu->y1 = y1;
-  p_menu->x2 = x2;
-  p_menu->y2 = y2;
+	p_menu->pp_msgs = pp_msgs;
+	p_menu->p_font = p_font;
+	p_menu->x1 = x1;
+	p_menu->y1 = y1;
+	p_menu->x2 = x2;
+	p_menu->y2 = y2;
 
-  p_menu->text_w = 0;
-  p_menu->n_submenus = 0;
+	p_menu->text_w = 0;
+	p_menu->n_submenus = 0;
 
-  for (p_menu->n_entries = 0; p_menu->pp_msgs[p_menu->n_entries]; p_menu->n_entries++)
-    {
-      int text_w_font;
-
-      /* Is this a submenu? */
-      if (IS_SUBMENU(p_menu->pp_msgs[p_menu->n_entries]))
+	for (p_menu->n_entries = 0; p_menu->pp_msgs[p_menu->n_entries]; p_menu->n_entries++)
 	{
-	  p_menu->n_submenus++;
-	  continue; /* Length of submenus is unimportant */
-	}
+		int text_w_font;
 
-      if (TTF_SizeText(p_font, p_menu->pp_msgs[p_menu->n_entries], &text_w_font, NULL) != 0)
-        {
-          fprintf(stderr, "%s\n", TTF_GetError());
-          exit(1);
-        }
-      if (text_w_font > p_menu->text_w)
-	p_menu->text_w = text_w_font;
-    }
-  if (p_menu->text_w > p_menu->x2 - p_menu->x1)
-	  p_menu->text_w = p_menu->x2 - p_menu->x1;
-
-  if ( !(p_menu->p_submenus = (submenu_t *)malloc(sizeof(submenu_t) * p_menu->n_submenus)) )
-    {
-      perror("malloc failed!\n");
-      exit(1);
-    }
-
-  j=0;
-  for (i=0; i<p_menu->n_submenus; i++)
-    {
-
-      for (; j < p_menu->n_entries; j++)
-	{
-	  if (IS_SUBMENU(p_menu->pp_msgs[j]))
-	    {
-	      int n;
-
-	      p_menu->p_submenus[i].index = j;
-	      p_menu->p_submenus[i].sel = 0;
-	      p_menu->p_submenus[i].n_entries = 0;
-	      for (n=0; p_menu->pp_msgs[j][n] != '\0'; n++)
+		/* Is this a submenu? */
+		if (IS_SUBMENU(p_menu->pp_msgs[p_menu->n_entries]))
 		{
-		  if (p_menu->pp_msgs[j][n] == '|')
-		    p_menu->p_submenus[i].n_entries++;
+			p_menu->n_submenus++;
+			continue; /* Length of submenus is unimportant */
 		}
-	    }
+
+		if (TTF_SizeText(p_font, p_menu->pp_msgs[p_menu->n_entries], &text_w_font, NULL) != 0)
+		{
+			fprintf(stderr, "%s\n", TTF_GetError());
+			exit(1);
+		}
+		if (text_w_font > p_menu->text_w)
+			p_menu->text_w = text_w_font;
 	}
-    }
-  p_menu->text_h = p_menu->n_entries * (TTF_FontHeight(p_font) + TTF_FontHeight(p_font) / 4);
+	if (p_menu->text_w > p_menu->x2 - p_menu->x1)
+		p_menu->text_w = p_menu->x2 - p_menu->x1;
+
+	if ( !(p_menu->p_submenus = (submenu_t *)malloc(sizeof(submenu_t) * p_menu->n_submenus)) )
+	{
+		perror("malloc failed!\n");
+		exit(1);
+	}
+
+	j=0;
+	submenu = 0;
+	for (; j < p_menu->n_entries; j++)
+	{
+		if (IS_SUBMENU(p_menu->pp_msgs[j]))
+		{
+			int n;
+
+			p_menu->p_submenus[submenu].index = j;
+			p_menu->p_submenus[submenu].sel = 0;
+			p_menu->p_submenus[submenu].n_entries = 0;
+			for (n=0; p_menu->pp_msgs[j][n] != '\0'; n++)
+			{
+				if (p_menu->pp_msgs[j][n] == '|')
+					p_menu->p_submenus[submenu].n_entries++;
+			}
+			submenu++;
+		}
+	}
+	p_menu->text_h = p_menu->n_entries * (TTF_FontHeight(p_font) + TTF_FontHeight(p_font) / 4);
 }
 
 void menu_fini(menu_t *p_menu)
