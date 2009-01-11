@@ -145,6 +145,8 @@ bool Prefs::operator==(const Prefs &rhs) const
                 && this->JoystickKeyBinding[8] == rhs.JoystickKeyBinding[8]
                 && this->JoystickKeyBinding[9] == rhs.JoystickKeyBinding[9]
                 && this->JoystickKeyBinding[10] == rhs.JoystickKeyBinding[10]
+                && this->JoystickKeyBinding[11] == rhs.JoystickKeyBinding[11]
+                && this->JoystickKeyBinding[12] == rhs.JoystickKeyBinding[12]
 		&& this->DisplayOption == rhs.DisplayOption
 #endif
 	);
@@ -334,6 +336,10 @@ void Prefs::Load(char *filename)
 					JoystickKeyBinding[9] = atoi(value);
 				else if (!strcmp(keyword, "JoystickKeyBinding10"))
 					JoystickKeyBinding[10] = atoi(value);
+				else if (!strcmp(keyword, "JoystickKeyBinding11"))
+					JoystickKeyBinding[11] = atoi(value);
+				else if (!strcmp(keyword, "JoystickKeyBinding12"))
+					JoystickKeyBinding[12] = atoi(value);
 				else if (!strcmp(keyword, "DisplayOption"))
 					DisplayOption = atoi(value);
 #endif

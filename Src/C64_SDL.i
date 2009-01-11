@@ -311,6 +311,8 @@ void C64::bind_key(Prefs *np)
                 bind_key_messages[CLASSIC_B] = "Bind to classic B";
                 bind_key_messages[CLASSIC_L] = "Bind to classic L";
                 bind_key_messages[CLASSIC_R] = "Bind to classic R";
+                bind_key_messages[CLASSIC_ZL] = "Bind to classic ZL";
+                bind_key_messages[CLASSIC_ZR] = "Bind to classic ZR";
         }
 
         menu_init(&bind_key_menu, this->menu_font, bind_key_messages,
@@ -675,6 +677,8 @@ uint8 C64::poll_joystick(int port)
 	extra_keys[CLASSIC_B] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_B;
 	extra_keys[CLASSIC_L] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_FULL_L;
 	extra_keys[CLASSIC_R] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_FULL_R;
+	extra_keys[CLASSIC_ZL] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_ZL;
+	extra_keys[CLASSIC_ZR] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_ZR;
 
 	extra_keys[WIIMOTE_PLUS] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_PLUS;
 	extra_keys[WIIMOTE_MINUS] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_MINUS;
