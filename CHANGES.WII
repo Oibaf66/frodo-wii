@@ -1,8 +1,11 @@
 version 3:
+        * Various cleanup of the code
+
         * Fixed a bug in the menu code which was triggered when there
           is more than one submenu
 
-        * Make speed configurable and change the menus a bit
+        * Make speed configurable (basically fast/normal/slow) and
+          change the menus a bit
 
         * Skip SDL_Delay and SDL_GetTicks() which seem to give strange
           results. Use gettime and usleep instead.

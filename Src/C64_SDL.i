@@ -345,14 +345,19 @@ void C64::other_options(Prefs *np)
         menu_t display_menu;
         int submenus[2] = { np->DisplayOption};
 
+#define SPEED_95 40
+#define SPEED_110 34
+#define SPEED_100 38
+
         switch (np->MsPerFrame)
         {
-        case 36:
+        case SPEED_95:
         	submenus[1] = 0; break;
-        case 38:
-        	submenus[1] = 1; break;
-        default:
+        case SPEED_110:
         	submenus[1] = 2; break;
+        default:
+        	/* If it has some other value... */
+        	submenus[1] = 1; break;
         }
         menu_init(&display_menu, this->menu_font, other_options_messages,
 			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
@@ -363,12 +368,12 @@ void C64::other_options(Prefs *np)
 		switch(submenus[1])
 		{
 		case 0:
-			np->MsPerFrame = 36; break;
+			np->MsPerFrame = SPEED_95; break;
 		case 1:
-			np->MsPerFrame = 38; break;
+			np->MsPerFrame = SPEED_100; break;
 		case 2:
 		default:
-			np->MsPerFrame = 39; break;
+			np->MsPerFrame = SPEED_110; break;
 		}
 		this->prefs_changed = true;
 	}
