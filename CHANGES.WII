@@ -20,7 +20,7 @@ version 3:
         * Allow controlling the joystick via the keyboard for the host (basically
           to ease debugging)
 
-        -- Simon Kagstrom <simon.kagstrom@gmail.com>
+        -- Simon Kagstrom <simon.kagstrom@gmail.com>, Sun Jan 11 19:46:01 CET 2009
 
 version 2:
         * Also support the .prg and p00, s00 formats. Only .prg has been tested.
