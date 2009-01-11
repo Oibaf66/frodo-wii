@@ -680,8 +680,8 @@ uint8 C64::poll_joystick(int port)
 	extra_keys[CLASSIC_ZL] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_ZL;
 	extra_keys[CLASSIC_ZR] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_ZR;
 
-	extra_keys[WIIMOTE_PLUS] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_PLUS;
-	extra_keys[WIIMOTE_MINUS] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_MINUS;
+	extra_keys[WIIMOTE_PLUS] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_MINUS;
+	extra_keys[WIIMOTE_MINUS] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_PLUS;
 
 	for (int i = 0; i < N_WIIMOTE_BINDINGS; i++)
 	{

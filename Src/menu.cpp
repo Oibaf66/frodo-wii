@@ -261,8 +261,6 @@ void menu_fini(menu_t *p_menu)
 static uint32_t wait_key_press(void)
 {
 	SDL_Event ev;
-	bool classic_keys_changed = false;
-	Uint32 classic_last = 0;
 	uint32_t keys = 0;
 	
 	while (1)
@@ -282,6 +280,9 @@ static uint32_t wait_key_press(void)
 	        if (wpad->exp.type == WPAD_EXP_CLASSIC ||
 	        	wpad_other->exp.type == WPAD_EXP_CLASSIC)
 	        {
+	        	static bool classic_keys_changed;
+	        	static Uint32 classic_last;
+
 	        	classic_keys = wpad->exp.classic.btns | wpad_other->exp.classic.btns;
 
 	        	classic_keys_changed = classic_keys != classic_last;
