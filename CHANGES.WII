@@ -1,3 +1,7 @@
+version 3:
+
+        -- Simon Kagstrom <simon.kagstrom@gmail.com>
+
 version 2:
         * Also support the .prg and p00, s00 formats. Only .prg has been tested.
         * Added support for classic controllers. NOTE: This is untested since I don't

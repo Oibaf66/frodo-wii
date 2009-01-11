@@ -476,7 +476,14 @@ void C64::VBlank(bool draw_frame)
                         }
                 }
 	}
-       
+#ifndef GEKKO
+	// Joystick keyboard emulation
+	if (TheDisplay->NumLock())
+		TheCIA1->Joystick1 &= joykey;
+	else
+		TheCIA1->Joystick2 &= joykey;
+#endif
+
 	// Count TOD clocks
 	TheCIA1->CountTOD();
 	TheCIA2->CountTOD();
