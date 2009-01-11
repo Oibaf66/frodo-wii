@@ -650,13 +650,13 @@ uint8 C64::poll_joystick(int port)
 	if (wpad_other->exp.type == WPAD_EXP_CLASSIC)
 		held_classic_other = wpad_other->exp.classic.btns_held; 
 
-	if ( (held & WPAD_BUTTON_UP) || (held_classic & CLASSIC_CTRL_BUTTON_UP) )
+	if ( (held & WPAD_BUTTON_UP) || (held_classic & CLASSIC_CTRL_BUTTON_LEFT) )
 		j &= 0xfb; // Left
-	if ( (held & WPAD_BUTTON_DOWN) || (held_classic & CLASSIC_CTRL_BUTTON_DOWN) )
+	if ( (held & WPAD_BUTTON_DOWN) || (held_classic & CLASSIC_CTRL_BUTTON_RIGHT) )
 		j &= 0xf7; // Right
-	if ( (held & WPAD_BUTTON_RIGHT) || (held_classic & CLASSIC_CTRL_BUTTON_RIGHT) )
+	if ( (held & WPAD_BUTTON_RIGHT) || (held_classic & CLASSIC_CTRL_BUTTON_UP) )
 		j &= 0xfe; // Up
-	if ( (held & WPAD_BUTTON_LEFT) || (held_classic & CLASSIC_CTRL_BUTTON_LEFT) )
+	if ( (held & WPAD_BUTTON_LEFT) || (held_classic & CLASSIC_CTRL_BUTTON_DOWN) )
 		j &= 0xfd; // Down
 	if ( (held & WPAD_BUTTON_2) || (held_classic & CLASSIC_CTRL_BUTTON_A) )
 		j &= 0xef; // Button
@@ -675,6 +675,9 @@ uint8 C64::poll_joystick(int port)
 	extra_keys[CLASSIC_B] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_B;
 	extra_keys[CLASSIC_L] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_FULL_L;
 	extra_keys[CLASSIC_R] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_FULL_R;
+
+	extra_keys[WIIMOTE_PLUS] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_PLUS;
+	extra_keys[WIIMOTE_MINUS] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_MINUS;
 
 	for (int i = 0; i < N_WIIMOTE_BINDINGS; i++)
 	{

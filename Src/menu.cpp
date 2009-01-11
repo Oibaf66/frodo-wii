@@ -261,8 +261,10 @@ void menu_fini(menu_t *p_menu)
 static uint32_t wait_key_press(void)
 {
 	SDL_Event ev;
+	bool classic_keys_changed = false;
+	Uint32 classic_last = 0;
 	uint32_t keys = 0;
-
+	
 	while (1)
 	{
 #if defined(GEKKO)
@@ -276,17 +278,27 @@ static uint32_t wait_key_press(void)
 	        remote_keys = wpad->btns_d | wpad_other->btns_d;
 	        classic_keys = 0;
 
-		// Check classic controller as well
-		if (wpad->exp.type == WPAD_EXP_CLASSIC)
-			classic_keys = wpad->exp.classic.btns_held | wpad_other->exp.classic.btns_held; 
+		/* Check classic controllers as well */
+	        if (wpad->exp.type == WPAD_EXP_CLASSIC ||
+	        	wpad_other->exp.type == WPAD_EXP_CLASSIC)
+	        {
+	        	classic_keys = wpad->exp.classic.btns | wpad_other->exp.classic.btns;
 
-		if ( (remote_keys & WPAD_BUTTON_DOWN) || (classic_keys & CLASSIC_CTRL_BUTTON_DOWN) )
+	        	classic_keys_changed = classic_keys != classic_last;
+	        	classic_last = classic_keys;
+
+	        	/* No repeat, thank you */
+	        	if (!classic_keys_changed)
+	        		classic_keys = 0;
+	        }
+
+		if ( (remote_keys & WPAD_BUTTON_DOWN) || (classic_keys & CLASSIC_CTRL_BUTTON_RIGHT) )
 			keys |= KEY_RIGHT;
-		if ( (remote_keys & WPAD_BUTTON_UP) || (classic_keys & CLASSIC_CTRL_BUTTON_UP) )
+		if ( (remote_keys & WPAD_BUTTON_UP) || (classic_keys & CLASSIC_CTRL_BUTTON_LEFT) )
 			keys |= KEY_LEFT;
-		if ( (remote_keys & WPAD_BUTTON_LEFT) || (classic_keys & CLASSIC_CTRL_BUTTON_LEFT) )
+		if ( (remote_keys & WPAD_BUTTON_LEFT) || (classic_keys & CLASSIC_CTRL_BUTTON_DOWN) )
 			keys |= KEY_DOWN;
-		if ( (remote_keys & WPAD_BUTTON_RIGHT) || (classic_keys & CLASSIC_CTRL_BUTTON_RIGHT) )
+		if ( (remote_keys & WPAD_BUTTON_RIGHT) || (classic_keys & CLASSIC_CTRL_BUTTON_UP) )
 			keys |= KEY_UP;
 		if ( (remote_keys & WPAD_BUTTON_PLUS) || (classic_keys & CLASSIC_CTRL_BUTTON_PLUS) )
 			keys |= KEY_PAGEUP;
