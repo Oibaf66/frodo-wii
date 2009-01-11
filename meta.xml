@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-  <app version="3">
+  <app version="4">
     <name>Frodo</name>
     <coder>Simon Kagstrom</coder>
-    <version>3</version>
+    <version>4</version>
     <release_date>20090107</release_date>
     <short_description>Commodore 64 emulator</short_description>
-    <long_description>Frodo is a C64 emulator written by Christian Bauer. It supports C64 disk and tape images in the .d64 and .t64 formats. The port to Wii was done by Simon Kagstrom.</long_description>
+    <long_description>Frodo is a C64 emulator written by Christian Bauer. It supports C64 disk and tape images in the .d64, .t64 and .prg formats. The port to Wii was done by Simon Kagstrom.</long_description>
   </app>
