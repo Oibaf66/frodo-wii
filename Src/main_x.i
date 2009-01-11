@@ -27,9 +27,6 @@ int main(int argc, char **argv)
 	srand(tv.tv_usec);
 
 	printf("%s by Christian Bauer\n", VERSION_STRING);
-	if (!init_graphics())
-		return 0;
-	fflush(stdout);
 	// Init SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0) {
 		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
@@ -40,6 +37,9 @@ int main(int argc, char **argv)
 	        fprintf(stderr, "Unable to init TTF: %s\n", TTF_GetError() );
 	        return 0;		
 	}
+	if (!init_graphics())
+		return 0;
+	fflush(stdout);
 
 	the_app = new Frodo();
 	the_app->ArgvReceived(argc, argv);
