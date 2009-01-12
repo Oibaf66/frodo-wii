@@ -1,10 +1,24 @@
 /*
  *  CPUC64.cpp - 6510 (C64) emulation (line based)
  *
- *  Frodo (C) 1994-1997,2002 Christian Bauer
+ *  Frodo (C) 1994-1997,2002-2005 Christian Bauer
  *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
- *
+/*
  * Notes:
  * ------
  *
@@ -465,55 +479,51 @@ void MOS6510::REUWriteByte(uint16 adr, uint8 byte)
  */
 
 #if PC_IS_POINTER
-void MOS6510::jump(uint16 adr)
-{
-	if (adr < 0xa000) {
-		pc = ram + adr;
-		pc_base = ram;
-	} else
-		switch (adr >> 12) {
-			case 0xa:
-			case 0xb:
-				if (basic_in) {
-					pc = basic_rom + (adr & 0x1fff);
-					pc_base = basic_rom - 0xa000;
-				} else {
-					pc = ram + adr;
-					pc_base = ram;
-				}
-				break;
-			case 0xc:
-				pc = ram + adr;
-				pc_base = ram;
-				break;
-			case 0xd:
-				if (io_in)
-					illegal_jump(pc-pc_base, adr);
-				else if (char_in) {
-					pc = char_rom + (adr & 0x0fff);
-					pc_base = char_rom - 0xd000;
-				} else {
-					pc = ram + adr;
-					pc_base = ram;
-				}
-				break;
-			case 0xe:
-			case 0xf:
-				if (kernal_in) {
-					pc = kernal_rom + (adr & 0x1fff);
-					pc_base = kernal_rom - 0xe000;
-				} else {
-					pc = ram + adr;
-					pc_base = ram;
-				}
-				break;
-		}
-}
+#define jump(adr) \
+	if ((adr) < 0xa000) { \
+		pc = ram + (adr); \
+		pc_base = ram; \
+	} else { \
+		switch ((adr) >> 12) { \
+			case 0xa: \
+			case 0xb: \
+				if (basic_in) { \
+					pc = basic_rom + ((adr) & 0x1fff); \
+					pc_base = basic_rom - 0xa000; \
+				} else { \
+					pc = ram + (adr); \
+					pc_base = ram; \
+				} \
+				break; \
+			case 0xc: \
+				pc = ram + (adr); \
+				pc_base = ram; \
+				break; \
+			case 0xd: \
+				if (io_in) { \
+					illegal_jump(pc-pc_base, (adr)); \
+				} else if (char_in) { \
+					pc = char_rom + ((adr) & 0x0fff); \
+					pc_base = char_rom - 0xd000; \
+				} else { \
+					pc = ram + (adr); \
+					pc_base = ram; \
+				} \
+				break; \
+			case 0xe: \
+			case 0xf: \
+				if (kernal_in) { \
+					pc = kernal_rom + ((adr) & 0x1fff); \
+					pc_base = kernal_rom - 0xe000; \
+				} else { \
+					pc = ram + (adr); \
+					pc_base = ram; \
+				} \
+				break; \
+		} \
+	}
 #else
-inline void MOS6510::jump(uint16 adr)
-{
-	pc = adr;
-}
+#define jump(adr) pc = (adr)
 #endif
 
 
@@ -524,31 +534,22 @@ inline void MOS6510::jump(uint16 adr)
 void MOS6510::do_adc(uint8 byte)
 {
 	if (!d_flag) {
-		uint16 tmp;
-
-		// Binary mode
-		tmp = a + byte + (c_flag ? 1 : 0);
+		uint16 tmp = a + (byte) + (c_flag ? 1 : 0);
 		c_flag = tmp > 0xff;
-		v_flag = !((a ^ byte) & 0x80) && ((a ^ tmp) & 0x80);
+		v_flag = !((a ^ (byte)) & 0x80) && ((a ^ tmp) & 0x80);
 		z_flag = n_flag = a = tmp;
-
 	} else {
 		uint16 al, ah;
-
-		// Decimal mode
-		al = (a & 0x0f) + (byte & 0x0f) + (c_flag ? 1 : 0);		// Calculate lower nybble
-		if (al > 9) al += 6;									// BCD fixup for lower nybble
-
-		ah = (a >> 4) + (byte >> 4);							// Calculate upper nybble
+		al = (a & 0x0f) + ((byte) & 0x0f) + (c_flag ? 1 : 0);
+		if (al > 9) al += 6;
+		ah = (a >> 4) + ((byte) >> 4);
 		if (al > 0x0f) ah++;
-
-		z_flag = a + byte + (c_flag ? 1 : 0);					// Set flags
-		n_flag = ah << 4;	// Only highest bit used
-		v_flag = (((ah << 4) ^ a) & 0x80) && !((a ^ byte) & 0x80);
-
-		if (ah > 9) ah += 6;									// BCD fixup for upper nybble
-		c_flag = ah > 0x0f;										// Set carry flag
-		a = (ah << 4) | (al & 0x0f);							// Compose result
+		z_flag = a + (byte) + (c_flag ? 1 : 0);
+		n_flag = ah << 4;
+		v_flag = (((ah << 4) ^ a) & 0x80) && !((a ^ (byte)) & 0x80);
+		if (ah > 9) ah += 6;
+		c_flag = ah > 0x0f;
+		a = (ah << 4) | (al & 0x0f);
 	}
 }
 
@@ -559,32 +560,24 @@ void MOS6510::do_adc(uint8 byte)
 
 void MOS6510::do_sbc(uint8 byte)
 {
-	uint16 tmp = a - byte - (c_flag ? 0 : 1);
-
+	uint16 tmp = a - (byte) - (c_flag ? 0 : 1);
 	if (!d_flag) {
-
-		// Binary mode
 		c_flag = tmp < 0x100;
-		v_flag = ((a ^ tmp) & 0x80) && ((a ^ byte) & 0x80);
+		v_flag = ((a ^ tmp) & 0x80) && ((a ^ (byte)) & 0x80);
 		z_flag = n_flag = a = tmp;
-
 	} else {
 		uint16 al, ah;
-
-		// Decimal mode
-		al = (a & 0x0f) - (byte & 0x0f) - (c_flag ? 0 : 1);		// Calculate lower nybble
-		ah = (a >> 4) - (byte >> 4);							// Calculate upper nybble
+		al = (a & 0x0f) - ((byte) & 0x0f) - (c_flag ? 0 : 1);
+		ah = (a >> 4) - ((byte) >> 4);
 		if (al & 0x10) {
-			al -= 6;											// BCD fixup for lower nybble
+			al -= 6;
 			ah--;
 		}
-		if (ah & 0x10) ah -= 6;									// BCD fixup for upper nybble
-
-		c_flag = tmp < 0x100;									// Set flags
-		v_flag = ((a ^ tmp) & 0x80) && ((a ^ byte) & 0x80);
+		if (ah & 0x10) ah -= 6;
+		c_flag = tmp < 0x100;
+		v_flag = ((a ^ tmp) & 0x80) && ((a ^ (byte)) & 0x80);
 		z_flag = n_flag = tmp;
-
-		a = (ah << 4) | (al & 0x0f);							// Compose result
+		a = (ah << 4) | (al & 0x0f);
 	}
 }
 
@@ -605,7 +598,7 @@ void MOS6510::GetState(MOS6510State *s)
 	if (i_flag) s->p |= 0x04;
 	if (!z_flag) s->p |= 0x02;
 	if (c_flag) s->p |= 0x01;
-	
+
 	s->ddr = ram[0];
 	s->pr = ram[1] & 0x3f;
 
@@ -758,10 +751,10 @@ int MOS6510::EmulateLine(int cycles_left)
 	// Any pending interrupts?
 	if (interrupt.intr_any) {
 handle_int:
-		if (interrupt.intr[INT_RESET])
+		if (interrupt.intr[INT_RESET]) {
 			Reset();
 
-		else if (interrupt.intr[INT_NMI]) {
+		} else if (interrupt.intr[INT_NMI]) {
 			interrupt.intr[INT_NMI] = false;	// Simulate an edge-triggered input
 #if PC_IS_POINTER
 			push_byte((pc-pc_base) >> 8); push_byte(pc-pc_base);
@@ -770,7 +763,8 @@ handle_int:
 #endif
 			push_flags(false);
 			i_flag = true;
-			jump(read_word(0xfffa));
+			adr = read_word(0xfffa);
+			jump(adr);
 			last_cycles = 7;
 
 		} else if ((interrupt.intr[INT_VICIRQ] || interrupt.intr[INT_CIAIRQ]) && !i_flag) {
@@ -781,12 +775,13 @@ handle_int:
 #endif
 			push_flags(false);
 			i_flag = true;
-			jump(read_word(0xfffe));
+			adr = read_word(0xfffe);
+			jump(adr);
 			last_cycles = 7;
 		}
 	}
 
-#include "CPU_emulline.i"
+#include "CPU_emulline.h"
 
 		// Extension opcode
 		case 0xf2:
@@ -816,7 +811,7 @@ handle_int:
 					jump(0xedac);
 					break;
 				case 0x03:
-					ram[0x90] |= TheIEC->In(&a);
+					ram[0x90] |= TheIEC->In(a);
 					set_nz(a);
 					c_flag = false;
 					jump(0xedac);

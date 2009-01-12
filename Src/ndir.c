@@ -15,13 +15,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-    $Header: /u/src/master/ccvs/windows-NT/ndir.c,v 1.3 1995/09/08 00:34:09 jimb Exp $
+    $Header: /home/cvs/cebix/Frodo4/Src/ndir.c,v 1.1 2003/07/01 17:09:43 cebix Exp $
  */
 
 /* Everything non trivial in this code is from: @(#)msd_dir.c 1.4
    87/11/06.  A public domain implementation of BSD directory routines
    for MS-DOS.  Written by Michael Rendell ({uunet,utai}michael@garfield),
-   August 1897 */
+   August 1987 */
 
 
 #include <io.h>

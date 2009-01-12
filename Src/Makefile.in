@@ -1,57 +1,83 @@
 # Makefile.in for Frodo (generic Unix/X11)
-# Copyright (C) 1995-1997 Christian Bauer <cbauer@iphcip1.physik.uni-mainz.de>
 
 ## Version information
-VERSION   = 4
-REVISION  = 1
+VERSION  = 4
+REVISION = 3
 
+## System specific configuration
 @SET_MAKE@
-CXX    = @CXX@
-LIBS   = @LIBS@
-CFLAGS = @CFLAGS@ -I./ -DFRODO_HPUX_REV=@HPUX_REV@ -DKBD_LANG=@KBD_LANG@
+SHELL = /bin/sh
 
-INSTALL         = @INSTALL@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+datadir = @datadir@
+
+DESTDIR =
+
+CXX = @CXX@
+CFLAGS = @CFLAGS@ @GLADE_CFLAGS@ @OSSO_CFLAGS@ -I./ -DKBD_LANG=@KBD_LANG@
+DEFS = @DEFS@ -DDATADIR=\"$(datadir)/frodo/\" -DBINDIR=\"$(bindir)/\"
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@ @GLADE_LIBS@ @OSSO_LIBS@
+INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
-INSTALL_DATA    = @INSTALL_DATA@
-prefix          = @prefix@
-exec_prefix     = @exec_prefix@
-bindir          = @bindir@
-libdir          = @libdir@
-sysconfdir      = @sysconfdir@
-
-.SUFFIXES: .o .cpp .h
+INSTALL_DATA = @INSTALL_DATA@
 
 ## Files
-OBJS    = main.o Display.o Prefs.o SID.o REU.o IEC.o 1541fs.o \
+GUIOBJS = @GUIOBJS@
+OBJS    = $(GUIOBJS) main.o Display.o Prefs.o SID.o REU.o IEC.o 1541fs.o \
           1541d64.o 1541t64.o 1541job.o SAM.o CmdPipe.o
 SLOBJS  = $(OBJS) C64.o CPUC64.o VIC.o CIA.o CPU1541.o
-PCOBJS  = $(OBJS) C64_PC.o CPUC64_PC.o VIC.o CIA.o CPU1541_PC.o
-PCFLAGS = -DPRECISE_CPU_CYCLES=1 -DPRECISE_CIA_CYCLES=1 -DPC_IS_POINTER=0
+SLFLAGS = -DPRECISE_CPU_CYCLES=1 -DPRECISE_CIA_CYCLES=1 -DPC_IS_POINTER=0
 SCOBJS  = $(OBJS) C64_SC.o CPUC64_SC.o VIC_SC.o CIA_SC.o CPU1541_SC.o CPU_common.o
 SCFLAGS = -DFRODO_SC
-SRCS    = main.cpp Display.cpp Prefs.cpp SID.cpp REU.cpp IEC.cpp 1541fs.cpp \
+GUISRCS = @GUISRCS@
+SRCS    = $(GUISRCS) main.cpp Display.cpp Prefs.cpp SID.cpp REU.cpp IEC.cpp 1541fs.cpp \
           1541d64.cpp 1541t64.cpp 1541job.cpp SAM.cpp CmdPipe.cpp C64.cpp \
-          C64_PC.cpp C64_SC.cpp CPUC64.cpp CPUC64_PC.cpp CPUC64_SC.cpp \
-          VIC.cpp VIC_SC.cpp CIA.cpp CIA_SC.cpp CPU1541.cpp CPU1541_PC.cpp \
-          CPU1541_SC.cpp CPU_common.cpp
+          C64_SC.cpp CPUC64.cpp CPUC64_SC.cpp VIC.cpp VIC_SC.cpp CIA.cpp \
+          CIA_SC.cpp CPU1541.cpp CPU1541_PC.cpp CPU1541_SC.cpp CPU_common.cpp
 
-all: Frodo FrodoPC FrodoSC
+## Rules
+.PHONY: install installdirs uninstall clean distclean depend dep
+.SUFFIXES:
+.SUFFIXES: .o .cpp .h
+
+all: Frodo FrodoSC
 
 Frodo: $(SLOBJS)
-	$(CXX) -o Frodo $(SLOBJS) $(LDFLAGS) $(LIBS)
-	cp Frodo ..
-
-FrodoPC: $(PCOBJS)
-	$(CXX) -o FrodoPC $(PCOBJS) $(LDFLAGS) $(LIBS)
-	cp FrodoPC ..
+	$(CXX) -o Frodo $(LDFLAGS) $(SLOBJS) $(LIBS)
 
 FrodoSC: $(SCOBJS)
-	$(CXX) -o FrodoSC $(SCOBJS) $(LDFLAGS) $(LIBS)
-	cp FrodoSC ..
+	$(CXX) -o FrodoSC $(LDFLAGS) $(SCOBJS) $(LIBS)
+
+install: Frodo FrodoSC installdirs
+	$(INSTALL_PROGRAM) Frodo $(DESTDIR)$(bindir)/Frodo
+	$(INSTALL_PROGRAM) FrodoSC $(DESTDIR)$(bindir)/FrodoSC
+	$(INSTALL_PROGRAM) Frodo_GUI.tcl $(DESTDIR)$(bindir)/Frodo_GUI.tcl
+	$(INSTALL_DATA) ../Kernal\ ROM $(DESTDIR)$(datadir)/frodo/Kernal\ ROM
+	$(INSTALL_DATA) glade/Frodo.glade $(DESTDIR)$(datadir)/frodo/Frodo.glade
+	$(INSTALL_DATA) maemo/frodo.desktop $(DESTDIR)$(datadir)/applications/hildon/frodo.desktop
+	$(INSTALL_DATA) maemo/frodo.service $(DESTDIR)$(datadir)/dbus-1/services/frodo.service
+	$(INSTALL_DATA) maemo/frodo.service $(DESTDIR)$(datadir)/dbus-1/services/frodo.service
+	$(INSTALL_DATA) maemo/Frodo_26_26.png $(DESTDIR)$(datadir)/icons/hicolor/26x26/hildon/frodo.png
+	$(INSTALL_DATA) maemo/Frodo_40_40.png $(DESTDIR)$(datadir)/icons/hicolor/40x40/hildon/frodo.png
+	$(INSTALL_DATA) maemo/Frodo_64_64.png $(DESTDIR)$(datadir)/icons/hicolor/scalable/hildon/frodo.png
+
+installdirs:
+	$(SHELL) mkinstalldirs $(DESTDIR)$(bindir) $(DESTDIR)$(datadir)/frodo $(DESTDIR)$(datadir)/applications/hildon $(DESTDIR)$(datadir)/dbus-1/services $(DESTDIR)$(datadir)/icons/hicolor/26x26/hildon  $(DESTDIR)$(datadir)/icons/hicolor/40x40/hildon $(DESTDIR)$(datadir)/icons/hicolor/scalable/hildon
+
+uninstall:
+	rm -f $(DESTDIR)$(bindir)/Frodo
+	rm -f $(DESTDIR)$(bindir)/FrodoSC
+	rm -f $(DESTDIR)$(bindir)/Frodo_GUI.tcl
+	rm -f $(DESTDIR)$(datadir)/frodo/Kernal\ ROM
+	rmdir $(DESTDIR)$(datadir)/frodo
 
 clean:
-	rm -f $(SLOBJS) $(PCOBJS) $(SCOBJS)
-	rm -f Frodo FrodoPC FrodoSC
+	rm -f $(SLOBJS) $(SCOBJS)
+	rm -f Frodo FrodoSC
+	rm -f core* *.core *~ *.bak
 
 distclean: clean
 	rm -rf autom4te.cache
@@ -62,34 +88,31 @@ depend dep:
 	makedepend $(CPPFLAGS) -Y. $(SRCS) 2>/dev/null
 
 .cpp.o:
-	$(CC) $(INCLUDES) $(CFLAGS) -o $@ -c $*.cpp
-       
-.cpp.s:
-	$(CC) $(INCLUDES) $(CFLAGS) $(EXTRAFLAGS) -o $@ -S $*.cpp -g0
+	$(CXX) $(DEFS) $(CFLAGS) -o $@ -c $*.cpp
 
-C64_PC.o: C64.cpp C64.h C64_x.i CmdPipe.h CPUC64.h CPU1541.h VIC.h SID.h CIA.h REU.h IEC.h 1541job.h Display.h Prefs.h
-	$(CC) $(INCLUDES) $(CFLAGS) $(PCFLAGS) -o $@ -c $*.cpp
+C64.o: C64.cpp
+	$(CXX) $(DEFS) $(CFLAGS) $(SLFLAGS) -o $@ -c $*.cpp
 
-CPUC64_PC.o: CPUC64.cpp CPUC64.h CPU_emulline.i C64.h VIC.h SID.h CIA.h REU.h IEC.h Display.h Version.h
-	$(CC) $(INCLUDES) $(CFLAGS) $(PCFLAGS) -o $@ -c $*.cpp
+C64_SC.o: C64_SC.cpp
+	$(CXX) $(DEFS) $(CFLAGS) $(SCFLAGS) -o $@ -c $*.cpp
 
-CPU1541_PC.o: CPU1541.cpp CPU1541.h CPU_emulline.i 1541job.h C64.h CIA.h Display.h
-	$(CC) $(INCLUDES) $(CFLAGS) $(PCFLAGS) -o $@ -c $*.cpp
+CPUC64.o: CPUC64.cpp
+	$(CXX) $(DEFS) $(CFLAGS) $(SLFLAGS) -o $@ -c $*.cpp
 
-C64_SC.o: C64_SC.cpp C64.h C64_x.i CmdPipe.h CPUC64.h CPU1541.h VIC.h SID.h CIA.h REU.h IEC.h 1541job.h Display.h Prefs.h
-	$(CC) $(INCLUDES) $(CFLAGS) $(SCFLAGS) -o $@ -c $*.cpp
+CPUC64_SC.o: CPUC64_SC.cpp
+	$(CXX) $(DEFS) $(CFLAGS) $(SCFLAGS) -o $@ -c $*.cpp
 
-CPUC64_SC.o: CPUC64_SC.cpp CPUC64.h CPU_emulcycle.i CPU_common.h C64.h VIC.h SID.h CIA.h REU.h IEC.h Display.h Version.h
-	$(CC) $(INCLUDES) $(CFLAGS) $(SCFLAGS) -o $@ -c $*.cpp
+CPU1541.o: CPU1541.cpp
+	$(CXX) $(DEFS) $(CFLAGS) $(SLFLAGS) -o $@ -c $*.cpp
 
-CPU1541_SC.o: CPU1541_SC.cpp CPU1541.h CPU_emulcycle.i CPU_common.h 1541job.h C64.h CIA.h Display.h
-	$(CC) $(INCLUDES) $(CFLAGS) $(SCFLAGS) -o $@ -c $*.cpp
+CPU1541_SC.o: CPU1541_SC.cpp
+	$(CXX) $(DEFS) $(CFLAGS) $(SCFLAGS) -o $@ -c $*.cpp
 
-VIC_SC.o: VIC_SC.cpp VIC.h C64.h CPUC64.h Display.h Prefs.h
-	$(CC) $(INCLUDES) $(CFLAGS) $(SCFLAGS) -o $@ -c $*.cpp
+VIC_SC.o: VIC_SC.cpp
+	$(CXX) $(DEFS) $(CFLAGS) $(SCFLAGS) -o $@ -c $*.cpp
 
-CIA_SC.o: CIA_SC.cpp CIA.h CPUC64.h CPU1541.h VIC.h Prefs.h
-	$(CC) $(INCLUDES) $(CFLAGS) $(SCFLAGS) -o $@ -c $*.cpp
+CIA_SC.o: CIA_SC.cpp
+	$(CXX) $(DEFS) $(CFLAGS) $(SCFLAGS) -o $@ -c $*.cpp
 
 #-------------------------------------------------------------------------
 # DO NOT DELETE THIS LINE -- make depend depends on it.

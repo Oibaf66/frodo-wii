@@ -1,12 +1,24 @@
 /*
- * AcornGUI.cc
+ *  AcornGUI.cc - Frodo's Graphical User Interface for Acorn RISC OS machines
  *
- * Frodo's Graphical User Interface for Acorn RISC OS machines (WIMP)
- * (C) 1997 Andreas Dehmel
+ *  (C) 1997 Andreas Dehmel
  *
+ *  Frodo (C) 1994-1997,2002-2005 Christian Bauer
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-
 
 #include "sysdeps.h"
 
@@ -515,6 +527,12 @@ void WIMP::ThePrefsToWindow(void)
   PrefsWindow->WriteIconNumber(Icon_Prefs_CycleBad,ThePrefs.BadLineCycles);
   PrefsWindow->WriteIconNumber(Icon_Prefs_CycleCIA,ThePrefs.CIACycles);
   PrefsWindow->WriteIconNumber(Icon_Prefs_CycleFloppy,ThePrefs.FloppyCycles);
+
+#ifdef SUPPORT_XROM
+  // XROM
+  PrefsWindow->SetIconState(Icon_Prefs_XROMOn,(ThePrefs.XPandROMOn)?IFlg_Slct:0,IFlg_Slct);
+  PrefsWindow->WriteIconText(Icon_Prefs_XROMPath,ThePrefs.XPandROMFile);
+#endif
 }
 
 
@@ -594,6 +612,12 @@ void WIMP::WindowToThePrefs(void)
   prefs->BadLineCycles	= PrefsWindow->ReadIconNumber(Icon_Prefs_CycleBad);
   prefs->CIACycles	= PrefsWindow->ReadIconNumber(Icon_Prefs_CycleCIA);
   prefs->FloppyCycles	= PrefsWindow->ReadIconNumber(Icon_Prefs_CycleFloppy);
+
+#ifdef SUPPORT_XROM
+  // XROM
+  pread_opt(XPandROMOn,XROMOn);
+  strcpy(prefs->XPandROMFile,PrefsWindow->ReadIconText(Icon_Prefs_XROMPath));
+#endif
 
   // Finally make the changes known to the system:
   the_c64->NewPrefs(prefs);
@@ -1587,7 +1611,7 @@ void WIMP::UserMessage(void)
          i = -1;	// indicator whether file is accepted
          if ((Block[5] == EmuWindow->MyHandle()) && (Block[10] == FileType_C64File)) {i=0;}
          else if ((Block[5] == EmuWindow->MyHandle()) && (Block[10] == FileType_Data)) {i=0;}
-         else if ((Block[5] == PrefsWindow->MyHandle()) && (Block[10] == FileType_Text)) {i=0;}
+         else if ((Block[5] == PrefsWindow->MyHandle()) && ((Block[10] == FileType_Text) || (Block[10] == FileType_C64File))) {i=0;}
          else if ((Block[5] == ConfigWindow->MyHandle()) && (Block[10] == FileType_Text)) {i=0;}
          if (i >= 0)
          {
@@ -1647,6 +1671,12 @@ void WIMP::UserMessage(void)
              Block[MsgB_YourRef] = Block[MsgB_MyRef]; Block[MsgB_Action] = Message_DataLoadAck;
              Wimp_SendMessage(17,Block,Block[MsgB_Sender],Block[6]);
            }
+	 	   else if ((Block[6] == Icon_Prefs_XROMPath) && (Block[10] == FileType_C64File))
+		   {
+		     PrefsWindow->WriteIconText(Icon_Prefs_XROMPath,((char*)Block)+44);
+		     Block[MsgB_YourRef] = Block[MsgB_MyRef]; Block[MsgB_Action] = Message_DataLoadAck;
+		     Wimp_SendMessage(17,Block,Block[MsgB_Sender],Block[6]);
+		   }
            else		// interpret as drive path (if dragged on one of the drive path icons)
            {
              switch (Block[6])
@@ -1655,7 +1685,7 @@ void WIMP::UserMessage(void)
                case Icon_Prefs_Dr9Path:  i = 1; break;
                case Icon_Prefs_Dr10Path: i = 2; break;
                case Icon_Prefs_Dr11Path: i = 3; break;
-               default: -1; break;
+               default: i = -1; break;
              }
              if (i >= 0) {NewDriveImage(i,Block,false);}
            }

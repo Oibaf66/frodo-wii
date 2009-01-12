@@ -1,20 +1,28 @@
 /*
  *  C64.h - Put the pieces together
  *
- *  Frodo (C) 1994-1997,2002 Christian Bauer
+ *  Frodo (C) 1994-1997,2002-2005 Christian Bauer
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef _C64_H
 #define _C64_H
 
-#if defined(HAVE_SDL)
-/* SDL menu */
-#include "menu.h"
-#endif
-
 #ifdef __BEOS__
 #include <KernelKit.h>
-#include <device/Joystick.h>
 #endif
 
 #ifdef AMIGA
@@ -27,11 +35,16 @@
 #include "ROlib.h"
 #endif
 
-#ifdef GEKKO
-#define PREFS_PATH "/apps/frodo/frodorc"
-#elif HAVE_SDL
-#define PREFS_PATH "/home/ska/.frodorc"
-#endif
+
+// Sizes of memory areas
+const int C64_RAM_SIZE = 0x10000;
+const int COLOR_RAM_SIZE = 0x400;
+const int BASIC_ROM_SIZE = 0x2000;
+const int KERNAL_ROM_SIZE = 0x2000;
+const int CHAR_ROM_SIZE = 0x1000;
+const int DRIVE_RAM_SIZE = 0x800;
+const int DRIVE_ROM_SIZE = 0x4000;
+
 
 // false: Frodo, true: FrodoSC
 extern bool IsFrodoSC;
@@ -100,15 +113,12 @@ public:
 #ifdef FRODO_SC
 	uint32 CycleCounter;
 #endif
-	void enter_menu() {
-		this->have_a_break = true;
-	}
 
 private:
 	void c64_ctor1(void);
 	void c64_ctor2(void);
 	void c64_dtor(void);
-	void open_close_joysticks(bool oldjoy1, bool oldjoy2, bool newjoy1, bool newjoy2);
+	void open_close_joysticks(int oldjoy1, int oldjoy2, int newjoy1, int newjoy2);
 	uint8 poll_joystick(int port);
 	void thread_func(void);
 
@@ -116,7 +126,7 @@ private:
 	bool quit_thyself;		// Emulation thread shall quit
 	bool have_a_break;		// Emulation thread shall pause
 
-	int joy_minx, joy_maxx, joy_miny, joy_maxy; // For dynamic joystick calibration
+	int joy_minx[2], joy_maxx[2], joy_miny[2], joy_maxy[2]; // For dynamic joystick calibration
 	uint8 joykey;			// Joystick keyboard emulation mask value
 
 	uint8 orig_kernal_1d84,	// Original contents of kernal locations $1d84 and $1d85
@@ -128,12 +138,14 @@ public:
 
 private:
 	static long thread_invoc(void *obj);
+	void open_close_joystick(int port, int oldjoy, int newjoy);
 
-	BJoystick *joy[2];		// Joystick objects
+	void *joy[2];			// Joystick objects (BJoystick or BDigitalPort)
+	bool joy_geek_port[2];	// Flag: joystick on GeekPort?
 	thread_id the_thread;
 	sem_id pause_sem;
 	sem_id sound_sync_sem;
-	double start_time;
+	bigtime_t start_time;
 #endif
 
 #ifdef AMIGA
@@ -148,31 +160,11 @@ private:
 	bool game_open, port_allocated;	// Flags: gameport.device opened, game port allocated
 #endif
 
-#ifdef GEKKO
-	double speed_index;
-#endif
-
 #ifdef __unix
-	int joyfd[2];			// File descriptors for joysticks
+	void open_close_joystick(int port, int oldjoy, int newjoy);
 	double speed_index;
 public:
-#endif
-#ifdef HAVE_SDL
-	menu_t main_menu;
-	TTF_Font *menu_font;
-
-	bool fake_key_sequence;
-	int fake_key_type;
-	int fake_key_index;
-	int fake_key_keytime;
-
-	bool prefs_changed;
-	char save_game_name[256];
-
-	void select_disc(Prefs *np);
-	void bind_key(Prefs *np);
-	void other_options(Prefs *np);
-	void save_load_state(Prefs *np);
+	CmdPipe *gui;
 #endif
 
 #ifdef WIN32

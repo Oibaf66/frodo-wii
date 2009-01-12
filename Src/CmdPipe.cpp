@@ -1,8 +1,21 @@
 /*
  *  CmdPipe.cpp
  *
- *  Frodo (C) 1994-1997,2002 Christian Bauer
- *  Tcl/Tk stuff by Lutz Vieweg
+ *  Frodo (C) 1994-1997,2002-2005 Christian Bauer
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #include "CmdPipe.h"
@@ -102,18 +115,18 @@ unsigned long Pipe::eread(void * buf, unsigned long len) {
 
 int Pipe::probe(void) const {
         
-	fd_set set;
-	FD_ZERO(&set);
-	FD_SET(fds[0], &set);
-        
-	struct timeval tv;
-	tv.tv_sec = 0;
-	tv.tv_usec = 0;
-        
+//	fd_set set;
+//	FD_ZERO(&set);
+//	FD_SET(fds[0], &set);
+//        
+//	struct timeval tv;
+//	tv.tv_sec = 0;
+//	tv.tv_usec = 0;
+//        
 	int res;
-// Use the following commented line for HP-UX < 10.20
-//	res = select(FD_SETSIZE, (int *)&set, (int *)0, (int *)0, &tv);
-	res = select(FD_SETSIZE, &set, (fd_set *)0, (fd_set *)0, &tv);
+//// Use the following commented line for HP-UX < 10.20
+////	res = select(FD_SETSIZE, (int *)&set, (int *)0, (int *)0, &tv);
+//	res = select(FD_SETSIZE, &set, (fd_set *)0, (fd_set *)0, &tv);
         
 	if (res > 0) return -1;
 	return 0;
@@ -157,12 +170,12 @@ CmdPipe::CmdPipe(const char * command, const char * arg, int nicediff) : childpi
 
 CmdPipe::~CmdPipe(void) {
         
-	if (childpid) {
-		int status;
-		waitpid(childpid, &status, 0);
-                                
-		if (status != 0) {
-			fprintf(stderr,"~CmdPipe child process returned error\n");
-		}
-	}
+	//if (childpid) {
+	//	int status;
+	//	waitpid(childpid, &status, 0);
+ //                               
+	//	if (status != 0) {
+	//		fprintf(stderr,"~CmdPipe child process returned error\n");
+	//	}
+	//}
 }

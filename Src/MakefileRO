@@ -1,18 +1,14 @@
-# Makefile.in for Frodo (RISC OS with GCC)
-# Copyright (C) 1995-1997 Christian Bauer <cbauer@iphcip1.physik.uni-mainz.de>
-# Acorn port 1997 by Andreas Dehmel
+# Makefile for Frodo (RISC OS with GCC)
 
 ## Version information
 VERSION   = 4
-REVISION  = 0
+REVISION  = 2
 
 CXX       = gcc
 CFLAGS    = -O2
 CFLAGSO   = -O3
 SCFLAGS   = -O2 -DFRODO_SC
 SCFLAGSO  = -O3 -DFRODO_SC
-PCFLAGS   = -O2 -DFRODO_PC
-PCFLAGSO  = -O3 -DFRODO_PC
 
 LIBRARIES = GCC:o.libgcc C:o.stubs
 LINK      = drlink
@@ -23,24 +19,18 @@ OBJS   = o.Prefs o.REU o.IEC o.1541fs o.1541d64 o.1541t64 o.1541job o.SAM o.ROli
 SLOBJS = $(OBJS) o.C64 o.CPUC64 o.VIC o.CIA o.CPU1541 o.Display o.SID o.main o.AcornGUI
 SCOBJS = $(OBJS) o.C64_SC o.CPUC64_SC o.VIC_SC o.CIA_SC o.CPU1541_SC o.CPU_common o.Display_SC\
 	 o.main_SC o.SID_SC o.AcornGUI_SC
-PCOBJS = $(OBJS) o.C64_PC o.CPUC64_PC o.VIC o.CIA o.CPU1541_PC o.Display o.main_PC o.SID\
-	 o.AcornGUI_PC
 
-
-all: Frodo FrodoSC FrodoPC
+all: Frodo FrodoSC
 
 Frodo: $(SLOBJS)
 	$(LINK) -o Frodo $(LIBRARIES) $(SLOBJS) $(LDFLAGS)
-
-FrodoSC: $(SCOBJS)
-	$(LINK) -o FrodoSC $(LIBRARIES) $(SCOBJS) $(LDFLAGS)
 
 FrodoPC: $(PCOBJS)
 	$(LINK) -o FrodoPC $(LIBRARIES) $(PCOBJS) $(LDFLAGS)
 
 
 # SC objects
-o.C64_SC:	cc.C64 h.C64 i.C64_Acorn h.CPUC64 h.CPU1541 h.VIC h.SID h.CIA h.REU \
+o.C64_SC:	cc.C64_SC h.C64 i.C64_Acorn h.CPUC64 h.CPU1541 h.VIC h.SID h.CIA h.REU \
 		h.IEC h.1541job h.Display h.Prefs h.ROlib h.AcornGUI i.OldSnap
 	$(CXX) $(INCLUDES) $(SCFLAGS) -c C64_SC.cc
 
@@ -73,30 +63,6 @@ o.SID_SC:	cc.SID_SC cc.SID h.SID i.SID_Acorn h.Prefs h.ROlib h.C64 i.FixPoint
 o.AcornGUI_SC:	cc.AcornGUI_SC cc.AcornGUI h.AcornGUI h.ROlib h.main h.Prefs h.C64 h.VIC\
 		h.Version
 	$(CXX) $(INCLUDES) $(SCFLAGS) -c AcornGUI_SC.cc
-	
-
-# PC objects
-o.C64_PC:	cc.C64 h.C64 i.C64_Acorn h.CPUC64 h.CPU1541 h.VIC h.SID h.CIA h.REU \
-		h.IEC h.1541job h.Display h.Prefs h.ROlib h.AcornGUI i.OldSnap
-	$(CXX) $(INCLUDES) $(PCFLAGS) -c C64_PC.cc
-
-o.CPUC64_PC:	cc.CPUC64_PC cc.CPUC64 h.CPUC64 i.CPU_emulline h.C64 h.VIC h.SID h.CIA \
-		h.REU h.IEC h.Display h.Version h.ROlib
-	$(CXX) $(INCLUDES) $(PCFLAGSO) -c CPUC64_PC.cc
-
-o.CPU1541_PC:	cc.CPU1541_PC cc.CPU1541 h.CPU1541 i.CPU_emulline h.1541job h.C64 h.CIA \
-		h.Display h.ROlib
-	$(CXX) $(INCLUDES) $(PCFLAGSO) -c CPU1541_PC.cc
-
-## These were added for RISC OS -- same source code, but different object files needed!
-o.main_PC:	cc.main_PC cc.main h.main i.main_Acorn h.C64 h.Display h.Prefs h.SAM h.ROlib\
-		h.AcornGUI
-	$(CXX) $(INCLUDES) $(PCFLAGS) -c main_PC.cc
-
-o.AcornGUI_PC:	cc.AcornGUI_PC cc.AcornGUI h.AcornGUI h.ROlib h.main h.Prefs h.C64 h.VIC\
-		h.Version
-	$(CXX) $(INCLUDES) $(PCFLAGS) -c AcornGUI_PC.cc
-
 
 ## Dependencies
 o.main:		cc.main h.main i.main_Acorn h.C64 h.Display h.Prefs h.SAM h.ROlib h.AcornGUI

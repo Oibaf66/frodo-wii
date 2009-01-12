@@ -1,12 +1,25 @@
 /*
- * ROlib.h
+ *  ROlib.h - Defines Classes, variables and OS interface calls for Acorn
+ *            RISC OS computers
  *
- * Defines Classes, variables and OS interface calls for Acorn RISC OS computers.
- * (C) 1997 Andreas Dehmel
+ *  (C) 1997 Andreas Dehmel
  *
+ *  Frodo (C) 1994-1997,2002-2005 Christian Bauer
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-
 
 #ifndef RO_CUSTOM_LIB
 #define RO_CUSTOM_LIB
@@ -456,7 +469,7 @@ extern _kernel_oserror *OS_ReadC(char *Code);
 /* returns length of characters read; if length negative ==> terminated by escape */
 extern int OS_ReadLine(char *Buffer, int BuffSize, int minasc, int maxasc, int Echo);
 
-/* TRUE ==> escape */
+/* true ==> escape */
 extern bool OS_ReadEscapeState(void);
 
 /* File related calls */

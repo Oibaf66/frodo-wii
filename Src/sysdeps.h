@@ -2,23 +2,42 @@
  *  sysdeps.h - Try to include the right system headers and get other
  *              system-specific stuff right
  *
- *  Frodo (C) 1994-1997,2002 Christian Bauer
+ *  Frodo (C) 1994-1997,2002-2005 Christian Bauer
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #include "sysconfig.h"
-
-extern "C"
-{
-  
 #include <stdio.h>
 #include <stdlib.h>
+#include <gccore.h>
+#include <wiiuse/wpad.h>
+#include <fat.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/dir.h>
+#include <malloc.h>
+#include <ogcsys.h>
+
 #include <assert.h>
 #include <ctype.h>
-
-#ifndef __PSXOS__
 #include <errno.h>
 #include <signal.h>
-#endif
+
+#include <vector>
+using std::vector;
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -81,14 +100,12 @@ extern "C"
 # if HAVE_SYS_TIME_H
 #  include <sys/time.h>
 # else
-#ifndef __PSXOS__
 #  include <time.h>
-#endif
 # endif
 #endif
 
 #if HAVE_DIRENT_H
-# include <dirent.h>
+# include "dirent.h"
 #else
 # define dirent direct
 # if HAVE_SYS_NDIR_H
@@ -102,17 +119,10 @@ extern "C"
 # endif
 #endif
 
-#ifndef __PSXOS__
-#include <errno.h>
-#endif
 #include <assert.h>
 
 #if EEXIST == ENOTEMPTY
 #define BROKEN_OS_PROBABLY_AIX
-#endif
-
-#ifdef HAVE_LINUX_JOYSTICK_H
-#include <linux/joystick.h>
 #endif
 
 #ifdef __NeXT__
@@ -180,7 +190,27 @@ typedef long int32;
 #else
 #error No 4 byte type, you lose.
 #endif
-#endif	// __BEOS__
 
-#define UNUSED(x) (x = x)
-}
+#if SIZEOF_LONG == 8
+typedef unsigned long uint64;
+typedef long int64;
+#elif SIZEOF_LONG_LONG == 8
+typedef unsigned long long uint64;
+typedef long long int64;
+#else
+#error No 8 byte type, you lose.
+#endif
+
+#if SIZEOF_VOID_P == 4
+typedef uint32 uintptr;
+typedef int32 intptr;
+#elif SIZEOF_VOID_P == 8
+typedef uint64 uintptr;
+typedef int64 intptr;
+#else
+#error Unsupported size of pointer
+#endif
+
+#else
+#include <support/SupportDefs.h>
+#endif	// __BEOS__

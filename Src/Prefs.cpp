@@ -1,7 +1,21 @@
 /*
  *  Prefs.cpp - Global preferences
  *
- *  Frodo (C) 1994-1997,2002 Christian Bauer
+ *  Frodo (C) 1994-1997,2002-2005 Christian Bauer
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #include "sysdeps.h"
@@ -29,15 +43,12 @@ Prefs::Prefs()
 	BadLineCycles = 23;
 	CIACycles = 63;
 	FloppyCycles = 64;
-	SkipFrames = 0;
+	SkipFrames = 1;
 	LatencyMin = 80;
 	LatencyMax = 120;
 	LatencyAvg = 280;
 	ScalingNumerator = 2;
 	ScalingDenominator = 2;
-
-	for (int i=0; i<4; i++)
-		DriveType[i] = DRVTYPE_DIR;
 
 	strcpy(DrivePath[0], "64prgs");
 	strcpy(DrivePath[1], "");
@@ -47,19 +58,19 @@ Prefs::Prefs()
 	strcpy(ViewPort, "Default");
 	strcpy(DisplayMode, "Default");
 
-	SIDType = SIDTYPE_NONE;
+	SIDType = SIDTYPE_DIGITAL;
 	REUSize = REU_NONE;
 	DisplayType = DISPTYPE_WINDOW;
+	Joystick1Port = 1;
+	Joystick2Port = 1;
 
 	SpritesOn = true;
 	SpriteCollisions = true;
-	Joystick1On = false;
-	Joystick2On = false;
 	JoystickSwap = false;
-	LimitSpeed = false;
-	FastReset = false;
+	LimitSpeed = true;
+	FastReset = true;
 	CIAIRQHack = false;
-	MapSlash = true;
+	MapSlash = false;
 	Emul1541Proc = false;
 	SIDFilters = true;
 	DoubleScan = true;
@@ -72,14 +83,6 @@ Prefs::Prefs()
 	AlwaysCopy = false;
 	SystemKeys = true;
 	ShowLEDs = true;
-
-#ifdef HAVE_SDL
-	for (int i = 0; i < N_WIIMOTE_BINDINGS; i++)
-		this->JoystickKeyBinding[i] = -1;
-
-	this->DisplayOption = 0;
-	this->MsPerFrame = 38;
-#endif
 }
 
 
@@ -100,10 +103,6 @@ bool Prefs::operator==(const Prefs &rhs) const
 		&& LatencyAvg == rhs.LatencyAvg
 		&& ScalingNumerator == rhs.ScalingNumerator
 		&& ScalingDenominator == rhs.ScalingNumerator
-		&& DriveType[0] == rhs.DriveType[0]
-		&& DriveType[1] == rhs.DriveType[1]
-		&& DriveType[2] == rhs.DriveType[2]
-		&& DriveType[3] == rhs.DriveType[3]
 		&& strcmp(DrivePath[0], rhs.DrivePath[0]) == 0
 		&& strcmp(DrivePath[1], rhs.DrivePath[1]) == 0
 		&& strcmp(DrivePath[2], rhs.DrivePath[2]) == 0
@@ -115,8 +114,8 @@ bool Prefs::operator==(const Prefs &rhs) const
 		&& DisplayType == rhs.DisplayType
 		&& SpritesOn == rhs.SpritesOn
 		&& SpriteCollisions == rhs.SpriteCollisions
-		&& Joystick1On == rhs.Joystick1On
-		&& Joystick2On == rhs.Joystick2On
+		&& Joystick1Port == rhs.Joystick1Port
+		&& Joystick2Port == rhs.Joystick2Port
 		&& JoystickSwap == rhs.JoystickSwap
 		&& LimitSpeed == rhs.LimitSpeed
 		&& FastReset == rhs.FastReset
@@ -134,23 +133,6 @@ bool Prefs::operator==(const Prefs &rhs) const
 		&& AlwaysCopy == rhs.AlwaysCopy
 		&& SystemKeys == rhs.SystemKeys
 		&& ShowLEDs == rhs.ShowLEDs
-#ifdef HAVE_SDL
-		&& this->JoystickKeyBinding[0] == rhs.JoystickKeyBinding[0]
-		&& this->JoystickKeyBinding[1] == rhs.JoystickKeyBinding[1]
-		&& this->JoystickKeyBinding[2] == rhs.JoystickKeyBinding[2]
-		&& this->JoystickKeyBinding[3] == rhs.JoystickKeyBinding[3]
-		&& this->JoystickKeyBinding[4] == rhs.JoystickKeyBinding[4]
-                && this->JoystickKeyBinding[5] == rhs.JoystickKeyBinding[5]
-                && this->JoystickKeyBinding[6] == rhs.JoystickKeyBinding[6]
-                && this->JoystickKeyBinding[7] == rhs.JoystickKeyBinding[7]
-                && this->JoystickKeyBinding[8] == rhs.JoystickKeyBinding[8]
-                && this->JoystickKeyBinding[9] == rhs.JoystickKeyBinding[9]
-                && this->JoystickKeyBinding[10] == rhs.JoystickKeyBinding[10]
-                && this->JoystickKeyBinding[11] == rhs.JoystickKeyBinding[11]
-                && this->JoystickKeyBinding[12] == rhs.JoystickKeyBinding[12]
-		&& this->DisplayOption == rhs.DisplayOption
-		&& this->MsPerFrame == rhs.MsPerFrame
-#endif
 	);
 }
 
@@ -176,10 +158,6 @@ void Prefs::Check(void)
 
 	if (DisplayType < DISPTYPE_WINDOW || DisplayType > DISPTYPE_SCREEN)
 		DisplayType = DISPTYPE_WINDOW;
-
-	for (int i=0; i<4; i++)
-		if (DriveType[i] < DRVTYPE_DIR || DriveType[i] > DRVTYPE_T64)
-			DriveType[i] = DRVTYPE_DIR;
 }
 
 
@@ -215,34 +193,6 @@ void Prefs::Load(char *filename)
 					ScalingNumerator = atoi(value);
 				else if (!strcmp(keyword, "ScalingDenominator"))
 					ScalingDenominator = atoi(value);
-				else if (!strcmp(keyword, "DriveType8"))
-					if (!strcmp(value, "DIR"))
-						DriveType[0] = DRVTYPE_DIR;
-					else if (!strcmp(value, "D64"))
-						DriveType[0] = DRVTYPE_D64;
-					else
-						DriveType[0] = DRVTYPE_T64;
-				else if (!strcmp(keyword, "DriveType9"))
-					if (!strcmp(value, "DIR"))
-						DriveType[1] = DRVTYPE_DIR;
-					else if (!strcmp(value, "D64"))
-						DriveType[1] = DRVTYPE_D64;
-					else
-						DriveType[1] = DRVTYPE_T64;
-				else if (!strcmp(keyword, "DriveType10"))
-					if (!strcmp(value, "DIR"))
-						DriveType[2] = DRVTYPE_DIR;
-					else if (!strcmp(value, "D64"))
-						DriveType[2] = DRVTYPE_D64;
-					else
-						DriveType[2] = DRVTYPE_T64;
-				else if (!strcmp(keyword, "DriveType11"))
-					if (!strcmp(value, "DIR"))
-						DriveType[3] = DRVTYPE_DIR;
-					else if (!strcmp(value, "D64"))
-						DriveType[3] = DRVTYPE_D64;
-					else
-						DriveType[3] = DRVTYPE_T64;
 				else if (!strcmp(keyword, "DrivePath8"))
 					strcpy(DrivePath[0], value);
 				else if (!strcmp(keyword, "DrivePath9"))
@@ -273,14 +223,14 @@ void Prefs::Load(char *filename)
 						REUSize = REU_NONE;
 				} else if (!strcmp(keyword, "DisplayType"))
 					DisplayType = strcmp(value, "SCREEN") ? DISPTYPE_WINDOW : DISPTYPE_SCREEN;
+				else if (!strcmp(keyword, "Joystick1Port"))
+					Joystick1Port = atoi(value);
+				else if (!strcmp(keyword, "Joystick2Port"))
+					Joystick2Port = atoi(value);
 				else if (!strcmp(keyword, "SpritesOn"))
 					SpritesOn = !strcmp(value, "TRUE");
 				else if (!strcmp(keyword, "SpriteCollisions"))
 					SpriteCollisions = !strcmp(value, "TRUE");
-				else if (!strcmp(keyword, "Joystick1On"))
-					Joystick1On = !strcmp(value, "TRUE");
-				else if (!strcmp(keyword, "Joystick2On"))
-					Joystick2On = !strcmp(value, "TRUE");
 				else if (!strcmp(keyword, "JoystickSwap"))
 					JoystickSwap = !strcmp(value, "TRUE");
 				else if (!strcmp(keyword, "LimitSpeed"))
@@ -315,38 +265,6 @@ void Prefs::Load(char *filename)
 					SystemKeys = !strcmp(value, "TRUE");
 				else if (!strcmp(keyword, "ShowLEDs"))
 					ShowLEDs = !strcmp(value, "TRUE");
-#if defined(HAVE_SDL)
-				else if (!strcmp(keyword, "JoystickKeyBinding0"))
-					JoystickKeyBinding[0] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding1"))
-					JoystickKeyBinding[1] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding2"))
-					JoystickKeyBinding[2] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding3"))
-					JoystickKeyBinding[3] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding4"))
-					JoystickKeyBinding[4] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding5"))
-					JoystickKeyBinding[5] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding6"))
-					JoystickKeyBinding[6] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding7"))
-					JoystickKeyBinding[7] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding8"))
-					JoystickKeyBinding[8] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding9"))
-					JoystickKeyBinding[9] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding10"))
-					JoystickKeyBinding[10] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding11"))
-					JoystickKeyBinding[11] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding12"))
-					JoystickKeyBinding[12] = atoi(value);
-				else if (!strcmp(keyword, "DisplayOption"))
-					DisplayOption = atoi(value);
-				else if (!strcmp(keyword, "MsPerFrame"))
-					MsPerFrame = atoi(value);
-#endif
 			}
 		}
 		fclose(file);
@@ -377,21 +295,8 @@ bool Prefs::Save(char *filename)
 		fprintf(file, "LatencyAvg = %d\n", LatencyAvg);
 		fprintf(file, "ScalingNumerator = %d\n", ScalingNumerator);
 		fprintf(file, "ScalingDenominator = %d\n", ScalingDenominator);
-		for (int i=0; i<4; i++) {
-			fprintf(file, "DriveType%d = ", i+8);
-			switch (DriveType[i]) {
-				case DRVTYPE_DIR:
-					fprintf(file, "DIR\n");
-					break;
-				case DRVTYPE_D64:
-					fprintf(file, "D64\n");
-					break;
-				case DRVTYPE_T64:
-					fprintf(file, "T64\n");
-					break;
-			}
+		for (int i=0; i<4; i++)
 			fprintf(file, "DrivePath%d = %s\n", i+8, DrivePath[i]);
-		}
 		fprintf(file, "ViewPort = %s\n", ViewPort);
 		fprintf(file, "DisplayMode = %s\n", DisplayMode);
 		fprintf(file, "SIDType = ");
@@ -422,10 +327,10 @@ bool Prefs::Save(char *filename)
 				break;
 		};
 		fprintf(file, "DisplayType = %s\n", DisplayType == DISPTYPE_WINDOW ? "WINDOW" : "SCREEN");
+		fprintf(file, "Joystick1Port = %d\n", Joystick1Port);
+		fprintf(file, "Joystick2Port = %d\n", Joystick2Port);
 		fprintf(file, "SpritesOn = %s\n", SpritesOn ? "TRUE" : "FALSE");
 		fprintf(file, "SpriteCollisions = %s\n", SpriteCollisions ? "TRUE" : "FALSE");
-		fprintf(file, "Joystick1On = %s\n", Joystick1On ? "TRUE" : "FALSE");
-		fprintf(file, "Joystick2On = %s\n", Joystick2On ? "TRUE" : "FALSE");
 		fprintf(file, "JoystickSwap = %s\n", JoystickSwap ? "TRUE" : "FALSE");
 		fprintf(file, "LimitSpeed = %s\n", LimitSpeed ? "TRUE" : "FALSE");
 		fprintf(file, "FastReset = %s\n", FastReset ? "TRUE" : "FALSE");
@@ -443,14 +348,6 @@ bool Prefs::Save(char *filename)
 		fprintf(file, "AlwaysCopy = %s\n", AlwaysCopy ? "TRUE" : "FALSE");
 		fprintf(file, "SystemKeys = %s\n", SystemKeys ? "TRUE" : "FALSE");
 		fprintf(file, "ShowLEDs = %s\n", ShowLEDs ? "TRUE" : "FALSE");
-#if defined(HAVE_SDL)
-		for (int i = 0; i < N_WIIMOTE_BINDINGS; i++)
-			fprintf(file, "JoystickKeyBinding%d = %d\n",
-					i, JoystickKeyBinding[i]);
-
-		fprintf(file, "DisplayOption = %d\n", DisplayOption);
-		fprintf(file, "MsPerFrame = %d\n", MsPerFrame);
-#endif
 		fclose(file);
 		ThePrefsOnDisk = *this;
 		return true;
@@ -460,13 +357,17 @@ bool Prefs::Save(char *filename)
 
 
 #ifdef __BEOS__
-#include "Prefs_Be.i"
+#include "Prefs_Be.h"
 #endif
 
 #ifdef AMIGA
-#include "Prefs_Amiga.i"
+#include "Prefs_Amiga.h"
 #endif
 
 #ifdef WIN32
-#include "Prefs_WIN32.i"
+#include "Prefs_WIN32.h"
+#endif
+
+#ifdef HAVE_GLADE
+#include "Prefs_glade.h"
 #endif

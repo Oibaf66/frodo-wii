@@ -1,10 +1,24 @@
 /*
  *  CPUC64_SC.cpp - Single-cycle 6510 (C64) emulation
  *
- *  Frodo (C) 1994-1997,2002 Christian Bauer
+ *  Frodo (C) 1994-1997,2002-2005 Christian Bauer
  *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
- *
+/*
  * Notes:
  * ------
  *
@@ -262,9 +276,6 @@ inline uint8 MOS6510::read_byte_io(uint16 adr)
  *  Read a byte from the CPU's address space
  */
 
-#ifdef __i386
-inline
-#endif
 uint8 MOS6510::read_byte(uint16 adr)
 {
 	if (adr < 0xa000) {
@@ -594,7 +605,7 @@ void MOS6510::EmulateCycle(void)
 			state = 0x0008;
 	}
 
-#include "CPU_emulcycle.i"
+#include "CPU_emulcycle.h"
 
 		// Extension opcode
 		case O_EXT:
@@ -619,7 +630,7 @@ void MOS6510::EmulateCycle(void)
 					pc = 0xedac;
 					Last;
 				case 0x03:
-					ram[0x90] |= TheIEC->In(&a);
+					ram[0x90] |= TheIEC->In(a);
 					set_nz(a);
 					c_flag = false;
 					pc = 0xedac;

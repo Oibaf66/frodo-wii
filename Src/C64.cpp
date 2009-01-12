@@ -1,7 +1,21 @@
 /*
  *  C64.cpp - Put the pieces together
  *
- *  Frodo (C) 1994-1997,2002 Christian Bauer
+ *  Frodo (C) 1994-1997,2002-2005 Christian Bauer
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #include "sysdeps.h"
@@ -18,7 +32,7 @@
 #include "Display.h"
 #include "Prefs.h"
 
-#if defined(__unix) && !defined(__svgalib__) && !defined(HAVE_SDL)
+#if defined(__unix) && !defined(__svgalib__) &&!defined(WII)
 #include "CmdPipe.h"
 #endif
 
@@ -36,7 +50,6 @@ bool IsFrodoSC = false;
 
 C64::C64()
 {
-	int i,j;
 	uint8 *p;
 
 	// The thread is not yet running
@@ -51,13 +64,13 @@ C64::C64()
 	TheDisplay = new C64Display(this);
 
 	// Allocate RAM/ROM memory
-	RAM = new uint8[0x10000];
-	Basic = new uint8[0x2000];
-	Kernal = new uint8[0x2000];
-	Char = new uint8[0x1000];
-	Color = new uint8[0x0400];
-	RAM1541 = new uint8[0x0800];
-	ROM1541 = new uint8[0x4000];
+	RAM = new uint8[C64_RAM_SIZE];
+	Basic = new uint8[BASIC_ROM_SIZE];
+	Kernal = new uint8[KERNAL_ROM_SIZE];
+	Char = new uint8[CHAR_ROM_SIZE];
+	Color = new uint8[COLOR_RAM_SIZE];
+	RAM1541 = new uint8[DRIVE_RAM_SIZE];
+	ROM1541 = new uint8[DRIVE_ROM_SIZE];
 
 	// Create the chips
 	TheCPU = new MOS6510(this, RAM, Basic, Kernal, Char, Color);
@@ -73,22 +86,24 @@ C64::C64()
 	TheREU = TheCPU->TheREU = new REU(TheCPU);
 
 	// Initialize RAM with powerup pattern
-	for (i=0, p=RAM; i<512; i++) {
-		for (j=0; j<64; j++)
+	p = RAM;
+	for (unsigned i=0; i<512; i++) {
+		for (unsigned j=0; j<64; j++)
 			*p++ = 0;
-		for (j=0; j<64; j++)
+		for (unsigned j=0; j<64; j++)
 			*p++ = 0xff;
 	}
 
 	// Initialize color RAM with random values
-	for (i=0, p=Color; i<1024; i++)
+	p = Color;
+	for (unsigned i=0; i<COLOR_RAM_SIZE; i++)
 		*p++ = rand() & 0x0f;
 
 	// Clear 1541 RAM
-	memset(RAM1541, 0, 0x800);
+	memset(RAM1541, 0, DRIVE_RAM_SIZE);
 
 	// Open joystick drivers if required
-	open_close_joysticks(false, false, ThePrefs.Joystick1On, ThePrefs.Joystick2On);
+	open_close_joysticks(0, 0, ThePrefs.Joystick1Port, ThePrefs.Joystick2Port);
 	joykey = 0xff;
 
 #ifdef FRODO_SC
@@ -106,7 +121,7 @@ C64::C64()
 
 C64::~C64()
 {
-	open_close_joysticks(ThePrefs.Joystick1On, ThePrefs.Joystick2On, false, false);
+	open_close_joysticks(ThePrefs.Joystick1Port, ThePrefs.Joystick2Port, 0, 0);
 
 	delete TheJob1541;
 	delete TheREU;
@@ -164,7 +179,7 @@ void C64::NMI(void)
 
 void C64::NewPrefs(Prefs *prefs)
 {
-	open_close_joysticks(ThePrefs.Joystick1On, ThePrefs.Joystick2On, prefs->Joystick1On, prefs->Joystick2On);
+	open_close_joysticks(ThePrefs.Joystick1Port, ThePrefs.Joystick2Port, prefs->Joystick1Port, prefs->Joystick2Port);
 	PatchKernal(prefs->FastReset, prefs->Emul1541Proc);
 
 	TheDisplay->NewPrefs(prefs);
@@ -690,25 +705,29 @@ bool C64::LoadSnapshot(char *filename)
 
 
 #ifdef __BEOS__
-#include "C64_Be.i"
+#include "C64_Be.h"
 #endif
 
 #ifdef AMIGA
-#include "C64_Amiga.i"
+#include "C64_Amiga.h"
 #endif
 
-#ifdef HAVE_SDL
-#include "C64_SDL.i"
+#ifdef __unix
+# if defined(QTOPIA) or defined(MAEMO) or defined(WII)
+#  include "C64_Embedded.h"
+# else
+#  include "C64_x.h"
+# endif
 #endif
 
 #ifdef __mac__
-#include "C64_mac.i"
+#include "C64_mac.h"
 #endif
 
 #ifdef WIN32
-#include "C64_WIN32.i"
+#include "C64_WIN32.h"
 #endif
 
 #ifdef __riscos__
-#include "C64_Acorn.i"
+#include "C64_Acorn.h"
 #endif

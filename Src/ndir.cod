@@ -1,0 +1,690 @@
+	TITLE	ndir.c
+	.386P
+include listing.inc
+if @Version gt 510
+.model FLAT
+else
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+_DATA	SEGMENT DWORD USE32 PUBLIC 'DATA'
+_DATA	ENDS
+CONST	SEGMENT DWORD USE32 PUBLIC 'CONST'
+CONST	ENDS
+_BSS	SEGMENT PARA USE32 PUBLIC 'BSS'
+_BSS	ENDS
+_TLS	SEGMENT DWORD USE32 PUBLIC 'TLS'
+_TLS	ENDS
+;	COMDAT ??_C@_00A@?$AA@
+_DATA	SEGMENT DWORD USE32 PUBLIC 'DATA'
+_DATA	ENDS
+;	COMDAT ??_C@_01FDLN@?1?$AA@
+_DATA	SEGMENT DWORD USE32 PUBLIC 'DATA'
+_DATA	ENDS
+;	COMDAT ??_C@_03DCMC@?$CK?4?$CK?$AA@
+_DATA	SEGMENT DWORD USE32 PUBLIC 'DATA'
+_DATA	ENDS
+;	COMDAT _opendir
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _closedir
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _readdir
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _seekdir
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _telldir
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _free_dircontents
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+FLAT	GROUP _DATA, CONST, _BSS
+	ASSUME	CS: FLAT, DS: FLAT, SS: FLAT
+endif
+PUBLIC	_opendir
+PUBLIC	??_C@_00A@?$AA@					; `string'
+PUBLIC	??_C@_01FDLN@?1?$AA@				; `string'
+PUBLIC	??_C@_03DCMC@?$CK?4?$CK?$AA@			; `string'
+EXTRN	_free:NEAR
+EXTRN	_malloc:NEAR
+EXTRN	__findfirst:NEAR
+EXTRN	__findnext:NEAR
+EXTRN	__findclose:NEAR
+;	COMDAT ??_C@_00A@?$AA@
+; File ndir.c
+_BSS	SEGMENT
+??_C@_00A@?$AA@ DB 01H DUP (?)				; `string'
+_BSS	ENDS
+;	COMDAT ??_C@_01FDLN@?1?$AA@
+_DATA	SEGMENT
+??_C@_01FDLN@?1?$AA@ DB '/', 00H			; `string'
+_DATA	ENDS
+;	COMDAT ??_C@_03DCMC@?$CK?4?$CK?$AA@
+_DATA	SEGMENT
+??_C@_03DCMC@?$CK?4?$CK?$AA@ DB '*.*', 00H		; `string'
+_DATA	ENDS
+;	COMDAT _opendir
+_TEXT	SEGMENT
+_name$ = 8
+_find_buf$ = -544
+_name_buf$ = -264
+_hFile$ = -548
+_opendir PROC NEAR					; COMDAT
+
+; 48   :   struct _finddata_t find_buf;
+; 49   :   DIR *dirp;
+; 50   :   struct _dircontents *dp;
+; 51   :   char name_buf[_MAX_PATH + 1];
+; 52   :   char *slash = "";
+; 53   :   long hFile;
+; 54   : 
+; 55   :   if (!name)
+
+  00000	8b 54 24 04	 mov	 edx, DWORD PTR _name$[esp-4]
+  00004	81 ec 24 02 00
+	00		 sub	 esp, 548		; 00000224H
+  0000a	53		 push	 ebx
+  0000b	55		 push	 ebp
+  0000c	33 ed		 xor	 ebp, ebp
+  0000e	56		 push	 esi
+  0000f	3b d5		 cmp	 edx, ebp
+  00011	57		 push	 edi
+  00012	bb 00 00 00 00	 mov	 ebx, OFFSET FLAT:??_C@_00A@?$AA@ ; `string'
+  00017	75 04		 jne	 SHORT $L1716
+
+; 56   :     name = "";
+
+  00019	8b d3		 mov	 edx, ebx
+
+; 57   :   else if (*name)
+
+  0001b	eb 30		 jmp	 SHORT $L1721
+$L1716:
+  0001d	80 3a 00	 cmp	 BYTE PTR [edx], 0
+  00020	74 2b		 je	 SHORT $L1721
+
+; 58   :     {
+; 59   :       const char *s;
+; 60   :       int l = strlen (name);
+
+  00022	8b fa		 mov	 edi, edx
+  00024	83 c9 ff	 or	 ecx, -1
+  00027	33 c0		 xor	 eax, eax
+  00029	f2 ae		 repne scasb
+  0002b	f7 d1		 not	 ecx
+  0002d	49		 dec	 ecx
+
+; 61   : 
+; 62   :       s = name + l - 1;
+; 63   :       if ( !(l == 2 && *s == ':') && *s != '\\' && *s != '/')
+
+  0002e	83 f9 02	 cmp	 ecx, 2
+  00031	75 07		 jne	 SHORT $L1722
+  00033	80 7c 11 ff 3a	 cmp	 BYTE PTR [ecx+edx-1], 58 ; 0000003aH
+  00038	74 13		 je	 SHORT $L1721
+$L1722:
+  0003a	8a 4c 11 ff	 mov	 cl, BYTE PTR [ecx+edx-1]
+  0003e	80 f9 5c	 cmp	 cl, 92			; 0000005cH
+  00041	74 0a		 je	 SHORT $L1721
+  00043	80 f9 2f	 cmp	 cl, 47			; 0000002fH
+  00046	74 05		 je	 SHORT $L1721
+
+; 64   : 	slash = "/";	/* save to insert slash between path and "*.*" */
+
+  00048	bb 00 00 00 00	 mov	 ebx, OFFSET FLAT:??_C@_01FDLN@?1?$AA@ ; `string'
+$L1721:
+
+; 65   :     }
+; 66   : 
+; 67   :   strcat (strcat (strcpy (name_buf, name), slash), "*.*");
+
+  0004d	83 c9 ff	 or	 ecx, -1
+  00050	8b fa		 mov	 edi, edx
+  00052	33 c0		 xor	 eax, eax
+  00054	8d b4 24 2c 01
+	00 00		 lea	 esi, DWORD PTR _name_buf$[esp+564]
+  0005b	f2 ae		 repne scasb
+  0005d	f7 d1		 not	 ecx
+  0005f	2b f9		 sub	 edi, ecx
+  00061	8b d6		 mov	 edx, esi
+  00063	8b c1		 mov	 eax, ecx
+  00065	8b f7		 mov	 esi, edi
+  00067	8b fa		 mov	 edi, edx
+  00069	c1 e9 02	 shr	 ecx, 2
+  0006c	f3 a5		 rep movsd
+  0006e	8b c8		 mov	 ecx, eax
+  00070	33 c0		 xor	 eax, eax
+  00072	83 e1 03	 and	 ecx, 3
+
+; 68   : 
+; 69   :   dirp = (DIR *) malloc (sizeof (DIR));
+
+  00075	6a 10		 push	 16			; 00000010H
+  00077	f3 a4		 rep movsb
+  00079	8b fb		 mov	 edi, ebx
+  0007b	83 c9 ff	 or	 ecx, -1
+  0007e	f2 ae		 repne scasb
+  00080	f7 d1		 not	 ecx
+  00082	2b f9		 sub	 edi, ecx
+  00084	8b f7		 mov	 esi, edi
+  00086	8b d9		 mov	 ebx, ecx
+  00088	8b fa		 mov	 edi, edx
+  0008a	83 c9 ff	 or	 ecx, -1
+  0008d	f2 ae		 repne scasb
+  0008f	8b cb		 mov	 ecx, ebx
+  00091	4f		 dec	 edi
+  00092	c1 e9 02	 shr	 ecx, 2
+  00095	f3 a5		 rep movsd
+  00097	8b cb		 mov	 ecx, ebx
+  00099	83 e1 03	 and	 ecx, 3
+  0009c	f3 a4		 rep movsb
+  0009e	bf 00 00 00 00	 mov	 edi, OFFSET FLAT:??_C@_03DCMC@?$CK?4?$CK?$AA@ ; `string'
+  000a3	83 c9 ff	 or	 ecx, -1
+  000a6	f2 ae		 repne scasb
+  000a8	f7 d1		 not	 ecx
+  000aa	2b f9		 sub	 edi, ecx
+  000ac	8b f7		 mov	 esi, edi
+  000ae	8b d9		 mov	 ebx, ecx
+  000b0	8b fa		 mov	 edi, edx
+  000b2	83 c9 ff	 or	 ecx, -1
+  000b5	f2 ae		 repne scasb
+  000b7	8b cb		 mov	 ecx, ebx
+  000b9	4f		 dec	 edi
+  000ba	c1 e9 02	 shr	 ecx, 2
+  000bd	f3 a5		 rep movsd
+  000bf	8b cb		 mov	 ecx, ebx
+  000c1	83 e1 03	 and	 ecx, 3
+  000c4	f3 a4		 rep movsb
+  000c6	e8 00 00 00 00	 call	 _malloc
+  000cb	8b d8		 mov	 ebx, eax
+  000cd	83 c4 04	 add	 esp, 4
+
+; 70   :   if (dirp == (DIR *)0)
+
+  000d0	3b dd		 cmp	 ebx, ebp
+  000d2	75 0d		 jne	 SHORT $L1728
+  000d4	5f		 pop	 edi
+  000d5	5e		 pop	 esi
+  000d6	5d		 pop	 ebp
+
+; 71   :     return (DIR *)0;
+
+  000d7	33 c0		 xor	 eax, eax
+  000d9	5b		 pop	 ebx
+
+; 115  : }
+
+  000da	81 c4 24 02 00
+	00		 add	 esp, 548		; 00000224H
+  000e0	c3		 ret	 0
+$L1728:
+
+; 72   : 
+; 73   :   dirp->dd_loc = 0;
+; 74   :   dirp->dd_contents = dirp->dd_cp = (struct _dircontents *) 0;
+; 75   : 
+; 76   :   if ((hFile = _findfirst (name_buf, &find_buf)) < 0)
+
+  000e1	8d 44 24 14	 lea	 eax, DWORD PTR _find_buf$[esp+564]
+  000e5	8d 8c 24 2c 01
+	00 00		 lea	 ecx, DWORD PTR _name_buf$[esp+564]
+  000ec	50		 push	 eax
+  000ed	51		 push	 ecx
+  000ee	89 6b 04	 mov	 DWORD PTR [ebx+4], ebp
+  000f1	89 6b 0c	 mov	 DWORD PTR [ebx+12], ebp
+  000f4	89 6b 08	 mov	 DWORD PTR [ebx+8], ebp
+  000f7	e8 00 00 00 00	 call	 __findfirst
+  000fc	83 c4 08	 add	 esp, 8
+  000ff	3b c5		 cmp	 eax, ebp
+  00101	89 44 24 10	 mov	 DWORD PTR _hFile$[esp+564], eax
+  00105	7d 16		 jge	 SHORT $L1793
+
+; 77   :     {
+; 78   :       free (dirp);
+
+  00107	53		 push	 ebx
+  00108	e8 00 00 00 00	 call	 _free
+  0010d	83 c4 04	 add	 esp, 4
+
+; 79   :       return (DIR *)0;
+
+  00110	33 c0		 xor	 eax, eax
+  00112	5f		 pop	 edi
+  00113	5e		 pop	 esi
+  00114	5d		 pop	 ebp
+  00115	5b		 pop	 ebx
+
+; 115  : }
+
+  00116	81 c4 24 02 00
+	00		 add	 esp, 548		; 00000224H
+  0011c	c3		 ret	 0
+$L1793:
+
+; 80   :     }
+; 81   : 
+; 82   :   do
+; 83   :     {
+; 84   :       dp = (struct _dircontents *) malloc (sizeof (struct _dircontents));
+
+  0011d	6a 08		 push	 8
+  0011f	e8 00 00 00 00	 call	 _malloc
+  00124	8b e8		 mov	 ebp, eax
+  00126	83 c4 04	 add	 esp, 4
+
+; 85   :       if (dp == (struct _dircontents *)0)
+
+  00129	85 ed		 test	 ebp, ebp
+  0012b	0f 84 8c 00 00
+	00		 je	 $L1794
+$L1733:
+
+; 89   : 	}
+; 90   : 
+; 91   :       dp->_d_entry = malloc (strlen (find_buf.name) + 1);
+
+  00131	8d 7c 24 28	 lea	 edi, DWORD PTR _find_buf$[esp+584]
+  00135	83 c9 ff	 or	 ecx, -1
+  00138	33 c0		 xor	 eax, eax
+  0013a	f2 ae		 repne scasb
+  0013c	f7 d1		 not	 ecx
+  0013e	51		 push	 ecx
+  0013f	e8 00 00 00 00	 call	 _malloc
+  00144	83 c4 04	 add	 esp, 4
+  00147	89 45 00	 mov	 DWORD PTR [ebp], eax
+
+; 92   :       if (dp->_d_entry == (char *)0)
+
+  0014a	85 c0		 test	 eax, eax
+  0014c	0f 84 84 00 00
+	00		 je	 $L1796
+
+; 97   : 	}
+; 98   : 
+; 99   :       if (dirp->dd_contents)
+
+  00152	8b 43 08	 mov	 eax, DWORD PTR [ebx+8]
+  00155	85 c0		 test	 eax, eax
+  00157	74 0b		 je	 SHORT $L1744
+
+; 100  : 	dirp->dd_cp = dirp->dd_cp->_d_next = dp;
+
+  00159	8b 53 0c	 mov	 edx, DWORD PTR [ebx+12]
+  0015c	89 6a 04	 mov	 DWORD PTR [edx+4], ebp
+  0015f	89 6b 0c	 mov	 DWORD PTR [ebx+12], ebp
+
+; 101  :       else
+
+  00162	eb 06		 jmp	 SHORT $L1745
+$L1744:
+
+; 102  : 	dirp->dd_contents = dirp->dd_cp = dp;
+
+  00164	89 6b 0c	 mov	 DWORD PTR [ebx+12], ebp
+  00167	89 6b 08	 mov	 DWORD PTR [ebx+8], ebp
+$L1745:
+
+; 103  : 
+; 104  :       strcpy (dp->_d_entry, find_buf.name);
+
+  0016a	8d 7c 24 28	 lea	 edi, DWORD PTR _find_buf$[esp+584]
+  0016e	83 c9 ff	 or	 ecx, -1
+  00171	33 c0		 xor	 eax, eax
+  00173	f2 ae		 repne scasb
+  00175	f7 d1		 not	 ecx
+  00177	2b f9		 sub	 edi, ecx
+  00179	8b c1		 mov	 eax, ecx
+  0017b	8b f7		 mov	 esi, edi
+  0017d	8b 7d 00	 mov	 edi, DWORD PTR [ebp]
+  00180	c1 e9 02	 shr	 ecx, 2
+  00183	f3 a5		 rep movsd
+  00185	8b c8		 mov	 ecx, eax
+  00187	83 e1 03	 and	 ecx, 3
+  0018a	f3 a4		 rep movsb
+
+; 105  : 
+; 106  :       dp->_d_next = (struct _dircontents *)0;
+; 107  : 
+; 108  :     } while (!_findnext (hFile, &find_buf));
+
+  0018c	8b 74 24 10	 mov	 esi, DWORD PTR _hFile$[esp+564]
+  00190	8d 4c 24 14	 lea	 ecx, DWORD PTR _find_buf$[esp+564]
+  00194	51		 push	 ecx
+  00195	56		 push	 esi
+  00196	c7 45 04 00 00
+	00 00		 mov	 DWORD PTR [ebp+4], 0
+  0019d	e8 00 00 00 00	 call	 __findnext
+  001a2	83 c4 08	 add	 esp, 8
+  001a5	85 c0		 test	 eax, eax
+  001a7	75 4c		 jne	 SHORT $L1795
+  001a9	6a 08		 push	 8
+  001ab	e8 00 00 00 00	 call	 _malloc
+  001b0	8b e8		 mov	 ebp, eax
+  001b2	83 c4 04	 add	 esp, 4
+  001b5	85 ed		 test	 ebp, ebp
+  001b7	0f 85 74 ff ff
+	ff		 jne	 $L1733
+$L1794:
+
+; 86   : 	{
+; 87   : 	  free_dircontents (dirp->dd_contents);
+
+  001bd	8b 53 08	 mov	 edx, DWORD PTR [ebx+8]
+  001c0	52		 push	 edx
+  001c1	e8 00 00 00 00	 call	 _free_dircontents
+  001c6	83 c4 04	 add	 esp, 4
+
+; 88   : 	  return (DIR *)0;
+
+  001c9	33 c0		 xor	 eax, eax
+  001cb	5f		 pop	 edi
+  001cc	5e		 pop	 esi
+  001cd	5d		 pop	 ebp
+  001ce	5b		 pop	 ebx
+
+; 115  : }
+
+  001cf	81 c4 24 02 00
+	00		 add	 esp, 548		; 00000224H
+  001d5	c3		 ret	 0
+$L1796:
+
+; 93   : 	{
+; 94   : 	  free (dp);
+
+  001d6	55		 push	 ebp
+  001d7	e8 00 00 00 00	 call	 _free
+
+; 95   : 	  free_dircontents (dirp->dd_contents);
+
+  001dc	8b 43 08	 mov	 eax, DWORD PTR [ebx+8]
+  001df	50		 push	 eax
+  001e0	e8 00 00 00 00	 call	 _free_dircontents
+  001e5	83 c4 08	 add	 esp, 8
+
+; 96   : 	  return (DIR *)0;
+
+  001e8	33 c0		 xor	 eax, eax
+  001ea	5f		 pop	 edi
+  001eb	5e		 pop	 esi
+  001ec	5d		 pop	 ebp
+  001ed	5b		 pop	 ebx
+
+; 115  : }
+
+  001ee	81 c4 24 02 00
+	00		 add	 esp, 548		; 00000224H
+  001f4	c3		 ret	 0
+$L1795:
+
+; 109  : 
+; 110  :   dirp->dd_cp = dirp->dd_contents;
+
+  001f5	8b 4b 08	 mov	 ecx, DWORD PTR [ebx+8]
+
+; 111  : 
+; 112  :   _findclose(hFile);
+
+  001f8	56		 push	 esi
+  001f9	89 4b 0c	 mov	 DWORD PTR [ebx+12], ecx
+  001fc	e8 00 00 00 00	 call	 __findclose
+  00201	83 c4 04	 add	 esp, 4
+
+; 113  : 
+; 114  :   return dirp;
+
+  00204	8b c3		 mov	 eax, ebx
+  00206	5f		 pop	 edi
+  00207	5e		 pop	 esi
+  00208	5d		 pop	 ebp
+  00209	5b		 pop	 ebx
+
+; 115  : }
+
+  0020a	81 c4 24 02 00
+	00		 add	 esp, 548		; 00000224H
+  00210	c3		 ret	 0
+_opendir ENDP
+_TEXT	ENDS
+PUBLIC	_closedir
+;	COMDAT _closedir
+_TEXT	SEGMENT
+_dirp$ = 8
+_closedir PROC NEAR					; COMDAT
+
+; 120  : {
+
+  00000	56		 push	 esi
+
+; 121  :   free_dircontents (dirp->dd_contents);
+
+  00001	8b 74 24 08	 mov	 esi, DWORD PTR _dirp$[esp]
+  00005	8b 46 08	 mov	 eax, DWORD PTR [esi+8]
+  00008	50		 push	 eax
+  00009	e8 00 00 00 00	 call	 _free_dircontents
+
+; 122  :   free ((char *) dirp);
+
+  0000e	56		 push	 esi
+  0000f	e8 00 00 00 00	 call	 _free
+  00014	83 c4 08	 add	 esp, 8
+  00017	5e		 pop	 esi
+
+; 123  : }
+
+  00018	c3		 ret	 0
+_closedir ENDP
+_TEXT	ENDS
+PUBLIC	_readdir
+_BSS	SEGMENT
+_?dp@?1??readdir@@9@9 DB 010cH DUP (?)
+_BSS	ENDS
+;	COMDAT _readdir
+_TEXT	SEGMENT
+_dirp$ = 8
+_readdir PROC NEAR					; COMDAT
+
+; 129  :   static struct direct dp;
+; 130  : 
+; 131  :   if (dirp->dd_cp == (struct _dircontents *)0)
+
+  00000	8b 54 24 04	 mov	 edx, DWORD PTR _dirp$[esp-4]
+  00004	8b 42 0c	 mov	 eax, DWORD PTR [edx+12]
+  00007	85 c0		 test	 eax, eax
+  00009	75 01		 jne	 SHORT $L1757
+
+; 143  : }
+
+  0000b	c3		 ret	 0
+$L1757:
+  0000c	53		 push	 ebx
+  0000d	56		 push	 esi
+  0000e	57		 push	 edi
+
+; 132  :     return (struct direct *)0;
+; 133  :   dp.d_namlen = dp.d_reclen =
+; 134  :     strlen (strcpy (dp.d_name, dirp->dd_cp->_d_entry));
+
+  0000f	8b 38		 mov	 edi, DWORD PTR [eax]
+  00011	83 c9 ff	 or	 ecx, -1
+  00014	33 c0		 xor	 eax, eax
+  00016	f2 ae		 repne scasb
+  00018	f7 d1		 not	 ecx
+  0001a	2b f9		 sub	 edi, ecx
+  0001c	8b f7		 mov	 esi, edi
+  0001e	8b c1		 mov	 eax, ecx
+  00020	bf 0c 00 00 00	 mov	 edi, OFFSET FLAT:_?dp@?1??readdir@@9@9+12
+  00025	8b df		 mov	 ebx, edi
+  00027	c1 e9 02	 shr	 ecx, 2
+  0002a	f3 a5		 rep movsd
+  0002c	8b c8		 mov	 ecx, eax
+  0002e	33 c0		 xor	 eax, eax
+  00030	83 e1 03	 and	 ecx, 3
+  00033	f3 a4		 rep movsb
+  00035	8b fb		 mov	 edi, ebx
+  00037	83 c9 ff	 or	 ecx, -1
+  0003a	f2 ae		 repne scasb
+  0003c	f7 d1		 not	 ecx
+  0003e	49		 dec	 ecx
+
+; 135  : #if 0 /* JB */
+; 136  :   strlwr (dp.d_name);		/* JF */
+; 137  : #endif
+; 138  :   dp.d_ino = 0;
+
+  0003f	66 a3 00 00 00
+	00		 mov	 WORD PTR _?dp@?1??readdir@@9@9, ax
+  00045	89 0d 04 00 00
+	00		 mov	 DWORD PTR _?dp@?1??readdir@@9@9+4, ecx
+  0004b	89 0d 08 00 00
+	00		 mov	 DWORD PTR _?dp@?1??readdir@@9@9+8, ecx
+
+; 139  :   dirp->dd_cp = dirp->dd_cp->_d_next;
+
+  00051	8b 4a 0c	 mov	 ecx, DWORD PTR [edx+12]
+  00054	5f		 pop	 edi
+  00055	5e		 pop	 esi
+  00056	5b		 pop	 ebx
+  00057	8b 41 04	 mov	 eax, DWORD PTR [ecx+4]
+  0005a	89 42 0c	 mov	 DWORD PTR [edx+12], eax
+
+; 140  :   dirp->dd_loc++;
+
+  0005d	8b 42 04	 mov	 eax, DWORD PTR [edx+4]
+  00060	40		 inc	 eax
+  00061	89 42 04	 mov	 DWORD PTR [edx+4], eax
+
+; 141  : 
+; 142  :   return &dp;
+
+  00064	b8 00 00 00 00	 mov	 eax, OFFSET FLAT:_?dp@?1??readdir@@9@9
+
+; 143  : }
+
+  00069	c3		 ret	 0
+_readdir ENDP
+_TEXT	ENDS
+PUBLIC	_seekdir
+;	COMDAT _seekdir
+_TEXT	SEGMENT
+_dirp$ = 8
+_off$ = 12
+_seekdir PROC NEAR					; COMDAT
+
+; 149  :   long i = off;
+; 150  :   struct _dircontents *dp;
+; 151  : 
+; 152  :   if (off < 0)
+
+  00000	8b 4c 24 08	 mov	 ecx, DWORD PTR _off$[esp-4]
+  00004	85 c9		 test	 ecx, ecx
+  00006	7c 23		 jl	 SHORT $L1763
+  00008	56		 push	 esi
+
+; 153  :     return;
+; 154  :   for (dp = dirp->dd_contents; --i >= 0 && dp; dp = dp->_d_next)
+
+  00009	8b 74 24 08	 mov	 esi, DWORD PTR _dirp$[esp]
+  0000d	8d 51 ff	 lea	 edx, DWORD PTR [ecx-1]
+  00010	8b 46 08	 mov	 eax, DWORD PTR [esi+8]
+  00013	85 d2		 test	 edx, edx
+  00015	7c 0a		 jl	 SHORT $L1769
+$L1767:
+  00017	85 c0		 test	 eax, eax
+  00019	74 06		 je	 SHORT $L1769
+  0001b	8b 40 04	 mov	 eax, DWORD PTR [eax+4]
+  0001e	4a		 dec	 edx
+  0001f	79 f6		 jns	 SHORT $L1767
+$L1769:
+
+; 155  :     ;
+; 156  :   dirp->dd_loc = off - (i + 1);
+
+  00021	2b ca		 sub	 ecx, edx
+
+; 157  :   dirp->dd_cp = dp;
+
+  00023	89 46 0c	 mov	 DWORD PTR [esi+12], eax
+  00026	49		 dec	 ecx
+  00027	89 4e 04	 mov	 DWORD PTR [esi+4], ecx
+  0002a	5e		 pop	 esi
+$L1763:
+
+; 158  : }
+
+  0002b	c3		 ret	 0
+_seekdir ENDP
+_TEXT	ENDS
+PUBLIC	_telldir
+;	COMDAT _telldir
+_TEXT	SEGMENT
+_dirp$ = 8
+_telldir PROC NEAR					; COMDAT
+
+; 164  :   return dirp->dd_loc;
+
+  00000	8b 44 24 04	 mov	 eax, DWORD PTR _dirp$[esp-4]
+  00004	8b 40 04	 mov	 eax, DWORD PTR [eax+4]
+
+; 165  : }
+
+  00007	c3		 ret	 0
+_telldir ENDP
+_TEXT	ENDS
+;	COMDAT _free_dircontents
+_TEXT	SEGMENT
+_dp$ = 8
+_free_dircontents PROC NEAR				; COMDAT
+
+; 172  : {
+
+  00000	56		 push	 esi
+
+; 173  :   struct _dircontents *odp;
+; 174  : 
+; 175  :   while (dp)
+
+  00001	8b 74 24 08	 mov	 esi, DWORD PTR _dp$[esp]
+  00005	85 f6		 test	 esi, esi
+  00007	74 21		 je	 SHORT $L1779
+$L1778:
+
+; 176  :     {
+; 177  :       if (dp->_d_entry)
+
+  00009	8b 06		 mov	 eax, DWORD PTR [esi]
+  0000b	85 c0		 test	 eax, eax
+  0000d	74 09		 je	 SHORT $L1780
+
+; 178  : 	free (dp->_d_entry);
+
+  0000f	50		 push	 eax
+  00010	e8 00 00 00 00	 call	 _free
+  00015	83 c4 04	 add	 esp, 4
+$L1780:
+
+; 179  :       dp = (odp = dp)->_d_next;
+
+  00018	8b c6		 mov	 eax, esi
+  0001a	8b 76 04	 mov	 esi, DWORD PTR [esi+4]
+
+; 180  :       free (odp);
+
+  0001d	50		 push	 eax
+  0001e	e8 00 00 00 00	 call	 _free
+  00023	83 c4 04	 add	 esp, 4
+  00026	85 f6		 test	 esi, esi
+  00028	75 df		 jne	 SHORT $L1778
+$L1779:
+  0002a	5e		 pop	 esi
+
+; 181  :     }
+; 182  : }
+
+  0002b	c3		 ret	 0
+_free_dircontents ENDP
+_TEXT	ENDS
+END

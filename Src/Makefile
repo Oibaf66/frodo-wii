@@ -1,136 +1,74 @@
 # Makefile.in for Frodo (generic Unix/X11)
-# Copyright (C) 1995-1997 Christian Bauer <cbauer@iphcip1.physik.uni-mainz.de>
-
+include $(DEVKITPPC)/gamecube_rules
 ## Version information
-VERSION   = 4
-REVISION  = 1
+VERSION  = 4
+REVISION = 3
+
+## System specific configuration
+
+#SHELL = /bin/sh
+
+#prefix = /usr/local
+#exec_prefix = ${prefix}
+#bindir = ${exec_prefix}/bin
+#datadir = ${prefix}/share
+
+DESTDIR =
 
 
-CXX    = g++
-LIBS   =  -L/usr/lib -lSDL -lSDL_ttf -lSDL_mixer -lSDL_image
-CFLAGS =  -g -Wall -Wno-unused -Wno-format -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT -DHAVE_SDL -I./ -DFRODO_HPUX_REV=0 -DKBD_LANG=0
-
-INSTALL         = @INSTALL@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@
-INSTALL_DATA    = @INSTALL_DATA@
-prefix          = /usr/local
-exec_prefix     = ${prefix}
-bindir          = ${exec_prefix}/bin
-libdir          = ${exec_prefix}/lib
-sysconfdir      = ${prefix}/etc
-
-.SUFFIXES: .o .cpp .h
 
 ## Files
-OBJS    = main.o Display.o Prefs.o SID.o REU.o IEC.o 1541fs.o \
-          1541d64.o 1541t64.o 1541job.o SAM.o menu.o CmdPipe.o char_to_kc.o
+GUIOBJS = sdlgui.o file.o dlgFileSelect.o dlgMain.o dlgDrives.o dlgOptions.o dlgVideoSound.o dlgAdvanced.o dlgInput.o
+OBJS    = $(GUIOBJS) main.o Display.o Prefs.o SID.o REU.o IEC.o 1541fs.o dirent.o\
+1541d64.o 1541t64.o 1541job.o SAM.o
 SLOBJS  = $(OBJS) C64.o CPUC64.o VIC.o CIA.o CPU1541.o
-PCOBJS  = $(OBJS) C64_PC.o CPUC64_PC.o VIC.o CIA.o CPU1541_PC.o
-PCFLAGS = -DPRECISE_CPU_CYCLES=1 -DPRECISE_CIA_CYCLES=1 -DPC_IS_POINTER=0
+SLFLAGS = -DPRECISE_CPU_CYCLES=1 -DPRECISE_CIA_CYCLES=1 -DPC_IS_POINTER=0
 SCOBJS  = $(OBJS) C64_SC.o CPUC64_SC.o VIC_SC.o CIA_SC.o CPU1541_SC.o CPU_common.o
 SCFLAGS = -DFRODO_SC
-SRCS    = main.cpp Display.cpp Prefs.cpp SID.cpp REU.cpp IEC.cpp 1541fs.cpp \
+GUISRCS = sdlgui.cpp file.cpp dlgFileSelect.cpp dlgMain.cpp dlgDrives.cpp dlgOptions.cpp dlgVidoSound.cpp dlgAdvanced.cpp dlgInput.cpp
+SRCS    = $(GUISRCS) main.cpp Display.cpp Prefs.cpp SID.cpp REU.cpp IEC.cpp 1541fs.cpp \
           1541d64.cpp 1541t64.cpp 1541job.cpp SAM.cpp CmdPipe.cpp C64.cpp \
-          C64_PC.cpp C64_SC.cpp CPUC64.cpp CPUC64_PC.cpp CPUC64_SC.cpp \
-          VIC.cpp VIC_SC.cpp CIA.cpp CIA_SC.cpp CPU1541.cpp CPU1541_PC.cpp \
-          CPU1541_SC.cpp CPU_common.cpp
+          C64_SC.cpp CPUC64.cpp CPUC64_SC.cpp VIC.cpp VIC_SC.cpp CIA.cpp \
+          CIA_SC.cpp CPU1541.cpp CPU1541_PC.cpp CPU1541_SC.cpp CPU_common.cpp
 
-all: Frodo FrodoPC FrodoSC
+#CXX = g++
 
-sysconfig.h: sysconfig.h.Host-SDL
-	cp $< $@
+CFLAGS = $(SLFLAGS) -g -O2 -fomit-frame-pointer -fno-exceptions $(MACHDEP) -I. -I$(DEVKITPRO)/libogc/include/ -I$(DEVKITPRO)/libogc/include/SDL  -DHAVE_SDL -DWII -DR14 -I./ -DKBD_LANG=0
+DEFS = -DHAVE_CONFIG_H -DDATADIR=\"/frodo/\" -DBINDIR=\"/frodo/\"
+LDFLAGS = -g $(MACHDEP) -Wl,-Map,$(notdir $@).map 
+LIBS =  -L$(DEVKITPRO)/libogc/lib/cube -lSDL -logc -lz -lm 
+CXXFLAGS   =   $(CFLAGS)
 
-Frodo: sysconfig.h $(SLOBJS)
-	$(CXX) -o Frodo $(SLOBJS) $(LDFLAGS) $(LIBS)
-	cp Frodo ..
+## Rules
+.PHONY: install installdirs uninstall clean distclean depend dep
+.SUFFIXES:
+.SUFFIXES: .o .cpp .h
 
-FrodoPC: $(PCOBJS)
-	$(CXX) -o FrodoPC $(PCOBJS) $(LDFLAGS) $(LIBS)
-	cp FrodoPC ..
+all: boot.dol #FrodoSC
+
+Frodo.elf: $(SLOBJS)
+	$(CXX) -o Frodo.elf $(CFLAGS) $(LDFLAGS) $(SLOBJS) $(LIBS)
+#@powerpc-gekko-objcopy -O binary $< $@
 
 FrodoSC: $(SCOBJS)
-	$(CXX) -o FrodoSC $(SCOBJS) $(LDFLAGS) $(LIBS)
-	cp FrodoSC ..
+	$(CXX) -o FrodoSC $(LDFLAGS) $(SCOBJS) $(LIBS)
+
+boot.dol: Frodo.dol
+	cp Frodo.dol boot.dol
+
+Frodo.dol: Frodo.elf
+
+uninstall:
+	rm -f $(DESTDIR)$(bindir)/Frodo
+	rm -f $(DESTDIR)$(bindir)/FrodoSC
+	rm -f $(DESTDIR)$(bindir)/Frodo_GUI.tcl
+	rm -f $(DESTDIR)$(datadir)/frodo/Kernal\ ROM
+	rmdir $(DESTDIR)$(datadir)/frodo
 
 clean:
-	rm -f $(SLOBJS) $(PCOBJS) $(SCOBJS) sysconfig.h
-	rm -f Frodo FrodoPC FrodoSC
-
-distclean: clean
-	rm -rf autom4te.cache
-	rm -f Makefile sysconfig.h
-	rm -f config.cache config.log config.status config.h
-
-depend dep:
-	makedepend $(CPPFLAGS) -Y. $(SRCS) 2>/dev/null
-
-.cpp.o:
-	$(CC) $(INCLUDES) $(CFLAGS) -o $@ -c $*.cpp
-       
-.cpp.s:
-	$(CC) $(INCLUDES) $(CFLAGS) $(EXTRAFLAGS) -o $@ -S $*.cpp -g0
-
-C64_PC.o: C64.cpp C64.h C64_SDL.i CmdPipe.h CPUC64.h CPU1541.h VIC.h SID.h CIA.h REU.h IEC.h 1541job.h Display.h Prefs.h
-	$(CC) $(INCLUDES) $(CFLAGS) $(PCFLAGS) -o $@ -c $*.cpp
-
-CPUC64_PC.o: CPUC64.cpp CPUC64.h CPU_emulline.i C64.h VIC.h SID.h CIA.h REU.h IEC.h Display.h Version.h
-	$(CC) $(INCLUDES) $(CFLAGS) $(PCFLAGS) -o $@ -c $*.cpp
-
-CPU1541_PC.o: CPU1541.cpp CPU1541.h CPU_emulline.i 1541job.h C64.h CIA.h Display.h
-	$(CC) $(INCLUDES) $(CFLAGS) $(PCFLAGS) -o $@ -c $*.cpp
-
-C64_SC.o: C64_SC.cpp C64.h C64_SDL.i CmdPipe.h CPUC64.h CPU1541.h VIC.h SID.h CIA.h REU.h IEC.h 1541job.h Display.h Prefs.h
-	$(CC) $(INCLUDES) $(CFLAGS) $(SCFLAGS) -o $@ -c $*.cpp
-
-CPUC64_SC.o: CPUC64_SC.cpp CPUC64.h CPU_emulcycle.i CPU_common.h C64.h VIC.h SID.h CIA.h REU.h IEC.h Display.h Version.h
-	$(CC) $(INCLUDES) $(CFLAGS) $(SCFLAGS) -o $@ -c $*.cpp
-
-CPU1541_SC.o: CPU1541_SC.cpp CPU1541.h CPU_emulcycle.i CPU_common.h 1541job.h C64.h CIA.h Display.h
-	$(CC) $(INCLUDES) $(CFLAGS) $(SCFLAGS) -o $@ -c $*.cpp
-
-VIC_SC.o: VIC_SC.cpp VIC.h C64.h CPUC64.h Display.h Prefs.h
-	$(CC) $(INCLUDES) $(CFLAGS) $(SCFLAGS) -o $@ -c $*.cpp
-
-CIA_SC.o: CIA_SC.cpp CIA.h CPUC64.h CPU1541.h VIC.h Prefs.h
-	$(CC) $(INCLUDES) $(CFLAGS) $(SCFLAGS) -o $@ -c $*.cpp
+	rm -f $(SLOBJS) $(SCOBJS)
+	rm -f Frodo FrodoSC
+	rm -f core* *.core *~ *.bak
 
 #-------------------------------------------------------------------------
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-
-main.o: sysdeps.h sysconfig.h main.h C64.h Display.h Prefs.h SAM.h main_x.i
-Display.o: sysdeps.h sysconfig.h Display.h main.h Prefs.h Display_SDL.i
-Prefs.o: sysdeps.h sysconfig.h Prefs.h Display.h C64.h main.h
-SID.o: sysdeps.h sysconfig.h SID.h Prefs.h SID_linux.i
-REU.o: sysdeps.h sysconfig.h REU.h CPUC64.h C64.h Prefs.h
-IEC.o: sysdeps.h sysconfig.h IEC.h 1541fs.h 1541d64.h 1541t64.h Prefs.h
-IEC.o: Display.h
-1541fs.o: sysdeps.h sysconfig.h 1541fs.h IEC.h main.h Prefs.h
-1541d64.o: sysdeps.h sysconfig.h 1541d64.h IEC.h Prefs.h
-1541t64.o: sysdeps.h sysconfig.h 1541t64.h IEC.h Prefs.h
-1541job.o: sysdeps.h sysconfig.h 1541job.h CPU1541.h CIA.h Prefs.h C64.h
-SAM.o: sysdeps.h sysconfig.h SAM.h C64.h CPUC64.h CPU1541.h CIA.h Prefs.h
-SAM.o: VIC.h SID.h
-CmdPipe.o: CmdPipe.h
-C64.o: sysdeps.h sysconfig.h C64.h CPUC64.h CPU1541.h CIA.h Prefs.h VIC.h C64_SDL.i
-C64.o: SID.h REU.h IEC.h 1541job.h Display.h
-C64_PC.o: C64.cpp sysdeps.h sysconfig.h C64.h CPUC64.h CPU1541.h CIA.h
-C64_PC.o: Prefs.h VIC.h SID.h REU.h IEC.h 1541job.h Display.h
-C64_SC.o: C64.cpp sysdeps.h sysconfig.h C64.h CPUC64.h CPU1541.h CIA.h
-C64_SC.o: Prefs.h VIC.h SID.h REU.h IEC.h 1541job.h Display.h
-CPUC64.o: sysdeps.h sysconfig.h CPUC64.h C64.h VIC.h SID.h CIA.h Prefs.h
-CPUC64.o: REU.h IEC.h Display.h Version.h CPU_emulline.i
-CPUC64_PC.o: CPUC64.cpp sysdeps.h sysconfig.h CPUC64.h C64.h VIC.h SID.h
-CPUC64_PC.o: CIA.h Prefs.h REU.h IEC.h Display.h Version.h CPU_emulline.i
-CPUC64_SC.o: sysdeps.h sysconfig.h CPUC64.h C64.h CPU_common.h VIC.h SID.h
-CPUC64_SC.o: CIA.h Prefs.h REU.h IEC.h Display.h Version.h CPU_emulcycle.i
-VIC.o: sysdeps.h sysconfig.h VIC.h C64.h CPUC64.h Display.h Prefs.h
-VIC_SC.o: sysdeps.h sysconfig.h VIC.h C64.h CPUC64.h Display.h Prefs.h
-CIA.o: sysdeps.h sysconfig.h CIA.h Prefs.h CPUC64.h C64.h CPU1541.h VIC.h
-CIA_SC.o: sysdeps.h sysconfig.h CIA.h Prefs.h CPUC64.h C64.h CPU1541.h VIC.h
-CPU1541.o: sysdeps.h sysconfig.h CPU1541.h CIA.h Prefs.h C64.h 1541job.h
-CPU1541.o: Display.h CPU_emulline.i
-CPU1541_PC.o: CPU1541.cpp sysdeps.h sysconfig.h CPU1541.h CIA.h Prefs.h C64.h
-CPU1541_PC.o: 1541job.h Display.h CPU_emulline.i
-CPU1541_SC.o: sysdeps.h sysconfig.h CPU1541.h CIA.h Prefs.h C64.h
-CPU1541_SC.o: CPU_common.h 1541job.h Display.h CPU_emulcycle.i
-CPU_common.o: sysdeps.h sysconfig.h CPU_common.h

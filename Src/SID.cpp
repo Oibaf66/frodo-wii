@@ -1,15 +1,28 @@
 /*
  *  SID.cpp - 6581 emulation
  *
- *  Frodo (C) 1994-1997,2002 Christian Bauer
+ *  Frodo (C) 1994-1997,2002-2005 Christian Bauer
  *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
- *
+/*
  * Incompatibilities:
  * ------------------
  *
  *  - Lots of empirically determined constants in the filter calculations
- *  - Voice 3 cannot be muted
  */
 
 #include "sysdeps.h"
@@ -19,7 +32,7 @@
 #include "Prefs.h"
 
 #ifdef __BEOS__
-#include <MediaKit.h>
+#include <media/SoundPlayer.h>
 #endif
 
 #ifdef AMIGA
@@ -64,13 +77,9 @@ class DigitalPlayer;
 #define ldSINTAB 9			// size of sinus table (0 to 90 degrees)
 #endif
 
-#if defined(HAVE_SDL)
-#include <SDL.h>
-#endif
-
 
 #ifdef USE_FIXPOINT_MATHS
-#include "FixPoint.i"
+#include "FixPoint.h"
 #endif
 
 
@@ -269,10 +278,8 @@ void MOS6581::SetState(MOS6581State *ss)
 
 #if defined(AMIGA) || defined(__riscos__)
 const uint32 SAMPLE_FREQ = 22050;	// Sample output frequency in Hz
-#elif defined(GEKKO)
-const uint32 SAMPLE_FREQ = 48000;
 #else
-const uint32 SAMPLE_FREQ = 44100;	// Sample output frequency in Hz
+const uint32 SAMPLE_FREQ = 32000;	// Sample output frequency in Hz
 #endif
 const uint32 SID_FREQ = 985248;		// SID frequency in Hz
 const uint32 CALC_FREQ = 50;			// Frequency at which calc_buffer is called in Hz (should be 50Hz)
@@ -341,6 +348,7 @@ struct DRVoice {
 					// The following bit is set for the modulating
 					// voice, not for the modulated one (as the SID bits)
 	bool sync;		// Sync modulation bit
+	bool mute;		// Voice muted (voice 3 only)
 };
 
 // Renderer class
@@ -359,19 +367,22 @@ public:
 	virtual void NewPrefs(Prefs *prefs);
 	virtual void Pause(void);
 	virtual void Resume(void);
-
+#ifdef WII
+	void calc_buffer(int16 *buf, long count);
+#endif	
 private:
 	void init_sound(void);
 	void calc_filter(void);
 #ifdef __riscos__
 	void calc_buffer(uint8 *buf, long count);
 #else
+#ifndef WII
 	void calc_buffer(int16 *buf, long count);
+#endif	
 #endif
 
 	bool ready;						// Flag: Renderer has initialized and is ready
 	uint8 volume;					// Master volume
-	bool v3_mute;					// Voice 3 muted
 
 	static uint16 TriTable[0x1000*2];	// Tables for certain waveforms
 	static const uint16 TriSawTable[0x100];
@@ -410,11 +421,10 @@ private:
 	int sample_in_ptr;				// Index in sample_buf for writing
 
 #ifdef __BEOS__
-	static bool stream_func(void *arg, char *buf, size_t count, void *header);
+	static void buffer_proc(void *cookie, void *buffer, size_t size, const media_raw_audio_format &format);
 	C64 *the_c64;					// Pointer to C64 object
-	BDACStream *the_stream;			// Pointer to stream
-	BSubscriber *the_sub;			// Pointer to subscriber
-	bool in_stream;					// Flag: Subscriber has entered stream
+	BSoundPlayer *the_player;		// Pointer to sound player
+	bool player_stopped;			// Flag: player stopped
 #endif
 
 #ifdef AMIGA
@@ -435,13 +445,11 @@ private:
 #endif
 
 #ifdef HAVE_SDL
-	void fill_audio(Uint8 *stream, int len);
-	static void fill_audio_helper(void *udata, Uint8 *stream, int len);
-
-	SDL_AudioSpec spec;
+	int sndbufsize;
+	int16 *sound_buffer;
 #endif
 
-#if defined(__linux__) || defined(HAVE_SDL)
+#ifdef __linux__
 	int devfd, sndbufsize, buffer_rate;
 	int16 *sound_buffer;
 #endif
@@ -450,13 +458,13 @@ private:
 	int fd;
 	audio_info status;
 	uint_t sent_samples,delta_samples;
-	WORD *sound_calc_buf;
+	int16 *sound_calc_buf;
 #endif
 
 #ifdef __hpux
 	int fd;
 	audio_status status;
-	int16 * sound_calc_buf;
+	int16 *sound_calc_buf;
 	int linecnt;
 #endif
 
@@ -876,7 +884,6 @@ DigitalRenderer::DigitalRenderer()
 void DigitalRenderer::Reset(void)
 {
 	volume = 0;
-	v3_mute = false;
 
 	for (int v=0; v<3; v++) {
 		voice[v].wave = WAVE_NONE;
@@ -886,7 +893,7 @@ void DigitalRenderer::Reset(void)
 		voice[v].eg_level = voice[v].s_level = 0;
 		voice[v].a_add = voice[v].d_sub = voice[v].r_sub = EGTable[0];
 		voice[v].gate = voice[v].ring = voice[v].test = false;
-		voice[v].filter = voice[v].sync = false;
+		voice[v].filter = voice[v].sync = voice[v].mute = false;
 	}
 
 	f_type = FILT_NONE;
@@ -965,7 +972,7 @@ void DigitalRenderer::WriteRegister(uint16 adr, uint8 byte)
 			voice[v].gate = byte & 1;
 			voice[v].mod_by->sync = byte & 2;
 			voice[v].ring = byte & 4;
-			if ((voice[v].test = byte & 8))
+			if ((voice[v].test = byte & 8) != 0)
 				voice[v].count = 0;
 			break;
 
@@ -1004,7 +1011,7 @@ void DigitalRenderer::WriteRegister(uint16 adr, uint8 byte)
 
 		case 24:
 			volume = byte & 0xf;
-			v3_mute = byte & 0x80;
+			voice[2].mute = byte & 0x80;
 			if (((byte >> 4) & 7) != f_type) {
 				f_type = (byte >> 4) & 7;
 #ifdef USE_FIXPOINT_MATHS
@@ -1200,21 +1207,15 @@ void DigitalRenderer::calc_buffer(int16 *buf, long count)
 #ifdef __riscos__	// on RISC OS we have 8 bit logarithmic sound
 	DigitalRenderer_GetTables(&LinToLog, &LogScale);	// get translation tables
 #else
-#ifdef __BEOS__
-	count >>= 2;	// 16 bit stereo output, count is in bytes
-#else
 	count >>= 1;	// 16 bit mono output, count is in bytes
 #endif
-#endif
 	while (count--) {
-		int32 sum_output;
-		int32 sum_output_filter = 0;
-
 		// Get current master volume from sample buffer,
 		// calculate sampled voice
 		uint8 master_volume = sample_buf[(sample_count >> 16) % SAMPLE_BUF_SIZE];
 		sample_count += ((0x138 * 50) << 16) / SAMPLE_FREQ;
-		sum_output = SampleTab[master_volume] << 8;
+		int32 sum_output = SampleTab[master_volume] << 8;
+		int32 sum_output_filter = 0;
 
 		// Loop for all three voices
 		for (int j=0; j<3; j++) {
@@ -1254,6 +1255,8 @@ void DigitalRenderer::calc_buffer(int16 *buf, long count)
 			envelope = (v->eg_level * master_volume) >> 20;
 
 			// Waveform generator
+			if (v->mute)
+				continue;
 			uint16 output;
 
 			if (!v->test)
@@ -1334,21 +1337,7 @@ void DigitalRenderer::calc_buffer(int16 *buf, long count)
 		}
 
 		// Write to buffer
-#ifdef __BEOS__
-		int16 audio_data = (sum_output + sum_output_filter) >> 10;
-		int val = *buf + audio_data;
-		if (val > 32767)
-			val = 32767;
-		if (val < -32768)
-			val = -32768;
-		*buf++ = val;
-		val = *buf + audio_data;
-		if (val > 32767)
-			val = 32767;
-		if (val < -32768)
-			val = -32768;
-		*buf++ = val;
-#elif defined(__riscos__)	// lookup in 8k (13bit) translation table
+#if defined(__riscos__)	// lookup in 8k (13bit) translation table
 		*buf++ = LinToLog[((sum_output + sum_output_filter) >> 13) & 0x1fff];
 #else
 		*buf++ = (sum_output + sum_output_filter) >> 10;
@@ -1359,31 +1348,31 @@ void DigitalRenderer::calc_buffer(int16 *buf, long count)
 
 // Manufacturer independent sound is still just a dream...
 #if defined(__BEOS__)
-#include "SID_Be.i"
+#include "SID_Be.h"
 
 #elif defined(AMIGA)
-#include "SID_Amiga.i"
+#include "SID_Amiga.h"
 
-#elif defined(GEKKO)
-#include "SID_wii.i"
+#elif defined(HAVE_SDL)
+#include "SID_SDL.h"
 
 #elif defined(__linux__)
-#include "SID_linux.i"
+#include "SID_linux.h"
 
 #elif defined(SUN)
-#include "SID_sun.i"
+#include "SID_sun.h"
 
 #elif defined(__hpux)
-#include "SID_hp.i"
+#include "SID_hp.h"
 
 #elif defined(__mac__)
-#include "SID_mac.i"
+#include "SID_mac.h"
 
 #elif defined(WIN32)
-#include "SID_WIN32.i"
+#include "SID_WIN32.h"
 
 #elif defined(__riscos__)
-#include "SID_Acorn.i"
+#include "SID_Acorn.h"
 
 #else	// No sound
 void DigitalRenderer::init_sound(void) {ready = false;}
@@ -1411,11 +1400,15 @@ void MOS6581::open_close_renderer(int old_type, int new_type)
 #if defined(__BEOS__) || defined(__riscos__)
 		the_renderer = new DigitalRenderer(the_c64);
 #else
-		the_renderer = new DigitalRenderer();
+		the_renderer = new DigitalRenderer;
 #endif
 #ifdef AMIGA
 	else if (new_type == SIDTYPE_SIDCARD)
-		the_renderer = new SIDCardRenderer();
+		the_renderer = new SIDCardRenderer;
+#endif
+#ifdef __linux__
+	else if (new_type == SIDTYPE_SIDCARD)
+		the_renderer = new CatweaselRenderer;
 #endif
 	else
 		the_renderer = NULL;

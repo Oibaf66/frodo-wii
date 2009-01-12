@@ -1,19 +1,25 @@
 /*
  *  Prefs.h - Global preferences
  *
- *  Frodo (C) 1994-1997,2002 Christian Bauer
+ *  Frodo (C) 1994-1997,2002-2005 Christian Bauer
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef _PREFS_H
 #define _PREFS_H
-
-
-// Drive types
-enum {
-	DRVTYPE_DIR,	// 1541 emulation in host file system
-	DRVTYPE_D64,	// 1541 emulation in .d64 file
-	DRVTYPE_T64		// 1541 emulation in .t64 file
-};
 
 
 // SID types
@@ -33,29 +39,11 @@ enum {
 };
 
 
-// Display types (BeOS)
+// Display types
 enum {
-	DISPTYPE_WINDOW,	// BWindow
-	DISPTYPE_SCREEN		// BWindowScreen
+	DISPTYPE_WINDOW,	// Window
+	DISPTYPE_SCREEN		// Fullscreen
 };
-
-// Key bindings (WII)
-enum {
-	WIIMOTE_A,
-	WIIMOTE_B,
-	WIIMOTE_PLUS,
-	WIIMOTE_MINUS,
-	WIIMOTE_1,
-	CLASSIC_X,
-	CLASSIC_Y,
-	CLASSIC_B,
-	CLASSIC_L,
-	CLASSIC_R,
-	CLASSIC_ZR,
-	CLASSIC_ZL,
-	N_WIIMOTE_BINDINGS
-};
-
 
 
 // Preferences data
@@ -76,8 +64,6 @@ public:
 	int FloppyCycles;		// Available 1541 CPU cycles per line
 	int SkipFrames;			// Draw every n-th frame
 
-	int DriveType[4];		// Type of drive 8..11
-
 	char DrivePath[4][256];	// Path for drive 8..11
 
 	char ViewPort[256];		// Size of the C64 screen to display (Win32)
@@ -86,6 +72,8 @@ public:
 	int SIDType;			// SID emulation type
 	int REUSize;			// Size of REU
 	int DisplayType;		// Display type (BeOS)
+	int Joystick1Port;		// Port that joystick 1 is connected to (0 = no joystick, all other values are system dependant)
+	int Joystick2Port;		// Port that joystick 2 is connected to
 	int LatencyMin;			// Min msecs ahead of sound buffer (Win32)
 	int LatencyMax;			// Max msecs ahead of sound buffer (Win32)
 	int LatencyAvg;			// Averaging interval in msecs (Win32)
@@ -94,8 +82,6 @@ public:
 
 	bool SpritesOn;			// Sprite display is on
 	bool SpriteCollisions;	// Sprite collision detection is on
-	bool Joystick1On;		// Joystick connected to port 1 of host
-	bool Joystick2On;		// Joystick connected to port 2 of host
 	bool JoystickSwap;		// Swap joysticks 1<->2
 	bool LimitSpeed;		// Limit speed to 100%
 	bool FastReset;			// Skip RAM test on reset
@@ -104,6 +90,7 @@ public:
 	bool Emul1541Proc;		// Enable processor-level 1541 emulation
 	bool SIDFilters;		// Emulate SID filters
 	bool DoubleScan;		// Double scan lines (BeOS, if DisplayType == DISPTYPE_SCREEN)
+	bool JoystickGeekPort;	// Enable GeekPort joystick adapter
 	bool HideCursor;		// Hide mouse cursor when visible (Win32)
 	bool DirectSound;		// Use direct sound (instead of wav) (Win32)
 	bool ExclusiveSound;	// Use exclusive mode with direct sound (Win32)
@@ -131,12 +118,6 @@ private:
 	static Prefs *edit_prefs;
 	static char *edit_prefs_name;
 	static HWND hDlg;
-#endif
-
-#ifdef HAVE_SDL
-	int JoystickKeyBinding[N_WIIMOTE_BINDINGS];
-	int DisplayOption;
-	int MsPerFrame;
 #endif
 };
 

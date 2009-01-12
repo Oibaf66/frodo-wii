@@ -1,7 +1,21 @@
 /*
  *  main.h - Main program
  *
- *  Frodo (C) 1994-1997,2002 Christian Bauer
+ *  Frodo (C) 1994-1997,2002-2005 Christian Bauer
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef _MAIN_H
@@ -57,10 +71,9 @@ public:
 	virtual bool QuitRequested(void);
 	virtual void AboutRequested(void);
 
-	C64 *TheC64;
-
 private:
-	bool load_rom_files(void);
+	void load_rom(const char *which, const char *path, uint8 *where, size_t size, const uint8 *builtin);
+	void load_rom_files();
 
 	char prefs_path[1024];	// Pathname of current preferences file
 	bool prefs_showing;		// true: Preferences editor is on screen
@@ -86,10 +99,9 @@ public:
 	void ReadyToRun(void);
 	void RunPrefsEditor(void);
 
-	C64 *TheC64;
-
 private:
-	bool load_rom_files(void);
+	void load_rom(const char *which, const char *path, uint8 *where, size_t size, const uint8 *builtin);
+	void load_rom_files();
 
 	char prefs_path[256];	// Pathname of current preferences file
 };
@@ -114,11 +126,10 @@ public:
 	void ArgvReceived(int argc, char **argv);
 	void ReadyToRun(void);
 	static Prefs *reload_prefs(void);
-
-	C64 *TheC64;
-
+	static char* get_prefs_path() { return prefs_path; };
 private:
-	bool load_rom_files(void);
+	void load_rom(const char *which, const char *path, uint8 *where, size_t size, const uint8 *builtin);
+	void load_rom_files();
 
 	static char prefs_path[256];	// Pathname of current preferences file
 };
@@ -137,10 +148,10 @@ public:
 	Frodo();
 
 	void Run(void);
-	C64 *TheC64;
 
 private:
-	bool load_rom_files(void);
+	void load_rom(const char *which, const char *path, uint8 *where, size_t size, const uint8 *builtin);
+	void load_rom_files();
 };
 
 #endif
@@ -160,11 +171,11 @@ public:
 	void ReadyToRun();
 	void RunPrefsEditor();
 
-	C64 *TheC64;
 	char prefs_path[256];	// Pathname of current preferences file
 
 private:
-	bool load_rom_files();
+	void load_rom(const char *which, const char *path, uint8 *where, size_t size, const uint8 *builtin);
+	void load_rom_files();
 };
 
 // Global variables
@@ -175,29 +186,6 @@ extern HWND hwnd;
 
 // Command line options.
 extern BOOL full_screen;
-
-#if defined(DEBUG)
-
-inline void Debug(const char *format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	char tmp[256];
-	vsprintf(tmp, format, args);
-	va_end(args);
-	OutputDebugString(tmp);
-}
-
-#else
-
-inline void Debug(const char *format, ...)
-{
-}
-
-#endif
-
-#define DebugResult(message, val) \
-	Debug("%s: 0x%x (%d)\n", message, val, HRESULT_CODE(val))
 
 #endif
 
@@ -210,63 +198,27 @@ inline void Debug(const char *format, ...)
 
 class Frodo
 {
-  public:
-  Frodo(void);
-  ~Frodo(void);
-  void ReadyToRun(void);
+public:
+	Frodo();
+	~Frodo();
+	void ReadyToRun(void);
 
-  C64 *TheC64;
-
-  private:
-  bool load_rom_files(void);
+private:
+	void load_rom(const char *which, const char *path, uint8 *where, size_t size, const uint8 *builtin);
+	void load_rom_files();
 };
 
 #endif
+
+// Global C64 object
+extern C64 *TheC64;
 
 
 /*
- *  PSX specific stuff
+ *  Functions
  */
 
-#ifdef __PSXOS__
-
-class Frodo {
-public:
-	Frodo();
-	void ReadyToRun(void);
-
-	C64 *TheC64;
-
-private:
-	bool load_rom_files(void);
-
-	char prefs_path[256];	// Pathname of current preferences file
-};
-
-// Global variables
-extern Frodo *be_app;	// Pointer to Frodo object
-
-#endif
-
-#ifdef GEKKO
-
-class Prefs;
-
-class Frodo {
-public:
-	Frodo();
-	void ArgvReceived(int argc, char **argv);
-	void ReadyToRun(void);
-	static Prefs *reload_prefs(void);
-
-	C64 *TheC64;
-
-private:
-	bool load_rom_files(void);
-
-	static char prefs_path[256];	// Pathname of current preferences file
-};
-
-#endif
+// Determine whether path name refers to a directory
+extern bool IsDirectory(const char *path);
 
 #endif
