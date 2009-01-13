@@ -357,7 +357,7 @@ static uint32_t wait_key_press(void)
 		}
 		if (keys != 0)
 			return keys;
-		SDL_Delay(100);
+		SDL_Delay(30);
 	}
 
 	return keys;
