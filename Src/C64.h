@@ -194,7 +194,8 @@ public:
 	char save_game_name[256];
 
 	void select_disc(Prefs *np);
-	void bind_key(Prefs *np);
+	char * bind_one_key(Prefs *np, int which);
+	void bind_keys(Prefs *np);
 	void other_options(Prefs *np);
 	void save_load_state(Prefs *np);
 #endif

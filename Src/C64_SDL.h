@@ -256,29 +256,57 @@ void C64::select_disc(Prefs *np)
 */
 #define MATRIX(a,b) (((a) << 3) | (b))
 
-void C64::bind_key(Prefs *np)
+static const char *key_names[] = { "None", "space", "Run/Stop", "return",
+		"F1", "F3", "F5", "F7",
+		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A",
+		"B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+		"N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+		"ctrl", "del", "home", "shl", "shr", "clr", "C=", "<-",
+		NULL };
+
+static int key_keycodes[] = { 0, MATRIX(7, 4), MATRIX(7, 7), MATRIX(0, 1), /* space, R/S, return */
+	MATRIX(0, 4), MATRIX(0, 5), MATRIX(0, 6), MATRIX(0, 3), MATRIX(4, 3), MATRIX(7, 0),
+	MATRIX(7, 3), MATRIX(1, 0), MATRIX(1, 3), MATRIX(2, 0), MATRIX(2, 3), MATRIX(3, 0),
+	MATRIX(3, 3), MATRIX(4, 0), MATRIX(1, 2), MATRIX(3, 4), MATRIX(2, 4), MATRIX(2, 2),
+	MATRIX(1, 6), MATRIX(2, 5), MATRIX(3, 2), MATRIX(3, 5), MATRIX(4, 1), MATRIX(4, 2),
+	MATRIX(4, 5), MATRIX(5, 2), MATRIX(4, 4), MATRIX(4, 7), MATRIX(4, 6), MATRIX(5, 1),
+	MATRIX(7, 6), MATRIX(2, 1), MATRIX(1, 5), MATRIX(2, 6), MATRIX(3, 6), MATRIX(3, 7),
+	MATRIX(1, 1), MATRIX(2, 7), MATRIX(3, 1), MATRIX(1, 4), /* ... Z */
+	MATRIX(7, 3), MATRIX(0, 0), MATRIX(6, 4), MATRIX(1, 7), MATRIX(6, 4),
+	MATRIX(0, 2), MATRIX(7, 5), MATRIX(7, 1),
+};
+
+char *C64::bind_one_key(Prefs *np, int which)
 {
-	const char **bind_key_messages;
+	static const char *which_to_button_name[] = { "A", "B", "+", "-", "1",
+			"classic X", "classic Y", "classic B", "classic L",
+			"classic R", "classic ZR", "classic ZL" };
+	static char strs[N_WIIMOTE_BINDINGS][255];
+	char *out = strs[which];
+	const char *cur_binding = "None";
+	int cur = np->JoystickKeyBinding[which];
+
+	for (int i = 1; i < sizeof(key_keycodes) / sizeof(key_keycodes[0]); i++ )
+	{
+		if (key_keycodes[i] == cur)
+		{
+			cur_binding = key_names[i];
+			printf("Faund %s\n", cur_binding);
+			break;
+		}
+	}
+	snprintf(out, 255, "Bind to %s (now %s)", which_to_button_name[which],
+			cur_binding);
+
+	return out;
+}
+
+void C64::bind_keys(Prefs *np)
+{
+	const char *bind_key_messages[N_WIIMOTE_BINDINGS + 1];
 	bool has_classic_controller = false;
         menu_t bind_key_menu;
         menu_t key_menu;
-        static const char *keys[] = { "None", "space", "Run/Stop", "return", "F1", "F3", "F5", "F7",
-        		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A",
-        		"B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-        		"N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
-        		"ctrl", "del", "home,", "shl", "shr", "clr", "C=", "<-",
-        		NULL };
-        int kcs[] = { 0, MATRIX(7, 4), MATRIX(7, 7), MATRIX(0, 1), /* space, R/S, return */
-        	MATRIX(0, 4), MATRIX(0, 5), MATRIX(0, 6), MATRIX(0, 3), MATRIX(4, 3), MATRIX(7, 0),
-        	MATRIX(7, 3), MATRIX(1, 0), MATRIX(1, 3), MATRIX(2, 0), MATRIX(2, 3), MATRIX(3, 0),
-        	MATRIX(3, 3), MATRIX(4, 0), MATRIX(1, 2), MATRIX(3, 4), MATRIX(2, 4), MATRIX(2, 2),
-        	MATRIX(1, 6), MATRIX(2, 5), MATRIX(3, 2), MATRIX(3, 5), MATRIX(4, 1), MATRIX(4, 2),
-        	MATRIX(4, 5), MATRIX(5, 2), MATRIX(4, 4), MATRIX(4, 7), MATRIX(4, 6), MATRIX(5, 1),
-        	MATRIX(7, 6), MATRIX(2, 1), MATRIX(1, 5), MATRIX(2, 6), MATRIX(3, 6), MATRIX(3, 7),
-        	MATRIX(1, 1), MATRIX(2, 7), MATRIX(3, 1), MATRIX(1, 4), /* ... Z */
-        	MATRIX(7, 3), MATRIX(0, 0), MATRIX(6, 4), MATRIX(1, 7), MATRIX(6, 4),
-        	MATRIX(0, 2), MATRIX(7, 5), MATRIX(7, 1),
-        	};
 
 #if defined(GEKKO)
         WPADData *wpad, *wpad_other;
@@ -291,43 +319,24 @@ void C64::bind_key(Prefs *np)
         	has_classic_controller = true;
 #endif
 
-        bind_key_messages = (const char **)malloc( sizeof(const char*) * (N_WIIMOTE_BINDINGS + 1));
-        assert(bind_key_messages);
         memset(bind_key_messages, 0, sizeof(const char*) * (N_WIIMOTE_BINDINGS + 1));
 
-        bind_key_messages[WIIMOTE_A] = "Bind to A";
-        bind_key_messages[WIIMOTE_B] = "Bind to B";
-        bind_key_messages[WIIMOTE_PLUS] = "Bind to Plus";
-        bind_key_messages[WIIMOTE_MINUS] = "Bind to Minus";
-        bind_key_messages[WIIMOTE_1] = "Bind to 1";
-
-        if (has_classic_controller)
-        {
-                bind_key_messages[WIIMOTE_PLUS] = "Bind to wiimote/classic Plus";
-                bind_key_messages[WIIMOTE_MINUS] = "Bind to wiimote/classic Minus";
-
-                bind_key_messages[CLASSIC_X] = "Bind to classic X";
-                bind_key_messages[CLASSIC_Y] = "Bind to classic Y";
-                bind_key_messages[CLASSIC_B] = "Bind to classic B";
-                bind_key_messages[CLASSIC_L] = "Bind to classic L";
-                bind_key_messages[CLASSIC_R] = "Bind to classic R";
-                bind_key_messages[CLASSIC_ZL] = "Bind to classic ZL";
-                bind_key_messages[CLASSIC_ZR] = "Bind to classic ZR";
-        }
+        for (int i = 0; i < (has_classic_controller ? N_WIIMOTE_BINDINGS : 5); i++)
+        	bind_key_messages[i] = this->bind_one_key(np, i);
 
         menu_init(&bind_key_menu, this->menu_font, bind_key_messages,
 			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
 	int opt = menu_select(real_screen, &bind_key_menu, NULL);
 	if (opt >= 0)
 	{
-	        menu_init(&key_menu, this->menu_font, keys,
+	        menu_init(&key_menu, this->menu_font, key_names,
 				32, 32, MENU_SIZE_X, MENU_SIZE_Y);
 		int key = menu_select(real_screen, &key_menu, NULL);
 
 		/* Assume prefs are changed */
 		this->prefs_changed = true;
 		if (key > 0)
-			np->JoystickKeyBinding[opt] = kcs[key];
+			np->JoystickKeyBinding[opt] = key_keycodes[key];
 		else if (key == 0)
 			np->JoystickKeyBinding[opt] = -1;
 		else
@@ -335,7 +344,6 @@ void C64::bind_key(Prefs *np)
 	        menu_fini(&key_menu);
 	}
         menu_fini(&bind_key_menu);
-        free(bind_key_messages);
 }
 
 void C64::other_options(Prefs *np)
@@ -567,7 +575,7 @@ void C64::VBlank(bool draw_frame)
 			Reset();
 			break;
 		case 3: /* Bind keys to joystick */
-			this->bind_key(&np);
+			this->bind_keys(&np);
 			break;
 		case 4: /* Other options */
 			this->other_options(&np);
