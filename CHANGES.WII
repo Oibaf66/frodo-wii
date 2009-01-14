@@ -1,7 +1,7 @@
 version 4:
         * TODO: load .zip?
 
-        * TODO: Add cursor keys, more load options
+		* Added arrow up/down/left/right and some other keys as bindable
 
         * Some more "auto load" options, and rearranged the top menu order to help
           with this

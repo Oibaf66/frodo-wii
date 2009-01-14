@@ -273,7 +273,8 @@ static const char *key_names[] = { "None", "space", "Run/Stop", "return",
 		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A",
 		"B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
 		"N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
-		"ctrl", "del", "home", "shl", "shr", "clr", "C=", "<-",
+		"ctrl", "del", "home", "shl", "shr", "clr", "C=", "left arrow",
+		"arrow up", "key down", "key up", "key left", "key right", 
 		NULL };
 
 static int key_keycodes[] = { 0, MATRIX(7, 4), MATRIX(7, 7), MATRIX(0, 1), /* space, R/S, return */
@@ -285,7 +286,8 @@ static int key_keycodes[] = { 0, MATRIX(7, 4), MATRIX(7, 7), MATRIX(0, 1), /* sp
 	MATRIX(7, 6), MATRIX(2, 1), MATRIX(1, 5), MATRIX(2, 6), MATRIX(3, 6), MATRIX(3, 7),
 	MATRIX(1, 1), MATRIX(2, 7), MATRIX(3, 1), MATRIX(1, 4), /* ... Z */
 	MATRIX(7, 3), MATRIX(0, 0), MATRIX(6, 4), MATRIX(1, 7), MATRIX(6, 4),
-	MATRIX(0, 2), MATRIX(7, 5), MATRIX(7, 1),
+	MATRIX(0, 2), MATRIX(7, 5), MATRIX(7, 1), MATRIX(6, 6),
+	MATRIX(0, 7), MATRIX(0, 7) | 0x80, MATRIX(0, 2) | 0x80, MATRIX(0, 2),/* Direction keys */
 };
 
 char *C64::bind_one_key(Prefs *np, int which)
@@ -420,6 +422,7 @@ void C64::run_fake_key_sequence(Prefs *np)
 			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
 
 	opt = menu_select(real_screen, &fake_key_menu, NULL);
+	menu_fini(&fake_key_menu);
 	if (opt < 0)
 		return;
 
