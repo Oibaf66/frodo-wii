@@ -19,6 +19,8 @@ static uint8_t char_to_kc[] =
 {
 	/* Some shifted stuff */
 	['\"'] = MATRIX(7, 3) | SHIFT,
+	['\?'] = MATRIX(1, 3) | SHIFT,
+	['\!'] = MATRIX(7, 0) | SHIFT,
 
 	/* CUD */
 	/* F5 */

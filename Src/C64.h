@@ -186,7 +186,7 @@ public:
 	TTF_Font *menu_font;
 
 	bool fake_key_sequence;
-	int fake_key_type;
+	const char *fake_key_str;
 	int fake_key_index;
 	int fake_key_keytime;
 
@@ -194,6 +194,7 @@ public:
 	char save_game_name[256];
 
 	void select_disc(Prefs *np);
+	void run_fake_key_sequence(Prefs *np);
 	char * bind_one_key(Prefs *np, int which);
 	void bind_keys(Prefs *np);
 	void other_options(Prefs *np);

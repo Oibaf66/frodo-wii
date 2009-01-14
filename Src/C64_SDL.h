@@ -27,8 +27,8 @@
 static struct timeval tv_start;
 static int MENU_SIZE_X, MENU_SIZE_Y;
 static const char *main_menu_messages[] = {
-		"Insert disc or tape", /* 0 */
-		"Load disc or tape",   /* 1 */
+		"Invoke key sequence", /* 0 */
+		"Insert disc or tape", /* 1 */
 		"Reset C64",           /* 2 */
 		"Bind key to joystick",/* 3 */
 		"Other options",       /* 4 */
@@ -72,7 +72,7 @@ void C64::c64_ctor1(void)
 	this->fake_key_sequence = false;
 	this->fake_key_index = 0;
 	this->fake_key_keytime = 5;
-	this->fake_key_type = 0;
+        this->fake_key_str = "\nLOAD \"*\",8,1\nRUN\n";
 
 	this->prefs_changed = false;
 	memset(this->save_game_name, 0, sizeof(this->save_game_name));
@@ -363,7 +363,7 @@ void C64::other_options(Prefs *np)
         int submenus[3] = { np->DisplayOption, 0, !np->Emul1541Proc };
 
 #define SPEED_95 40
-#define SPEED_100 38
+#define SPEED_100 20
 #define SPEED_110 34
 
         switch (np->MsPerFrame)
@@ -397,6 +397,34 @@ void C64::other_options(Prefs *np)
 		this->prefs_changed = true;
 	}
         menu_fini(&display_menu);
+}
+
+void C64::run_fake_key_sequence(Prefs *np)
+{
+	static const char *fake_key_sequences[] = {
+			"\nLOAD \"*\",8,1\nRUN\n",
+			"\nLOAD \"?\",8,1\n",
+			"\nLIST\n",
+			"\n10 PRINT \"HELLO WORLD\"\n20 GOTO 10\nRUN\n",
+			NULL};
+	const char *fake_key_messages[] = {
+			"LOAD \"*\",8,1  and  RUN",
+			"LOAD \"?\",8,1",
+			"LIST",
+			"10 PRINT \"HELLO WORLD\"  and  20 GOTO 10",
+			NULL};
+	menu_t fake_key_menu;
+	int opt;
+
+	menu_init(&fake_key_menu, this->menu_font, fake_key_messages,
+			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
+
+	opt = menu_select(real_screen, &fake_key_menu, NULL);
+	if (opt < 0)
+		return;
+
+	this->fake_key_str = fake_key_sequences[opt];
+	this->fake_key_sequence = true;
 }
 
 void C64::save_load_state(Prefs *np)
@@ -485,14 +513,6 @@ void C64::Run(void)
 	thread_func();
 }
 
-/* From dreamcast port */
-static const char *auto_seq[4] =
-{
-        "\nLOAD \"*\",8,1\nRUN\n",
-	"\nLOAD \"*\",9,1\nRUN\n",
-        "\nLOAD \"*\",10,1\nRUN\n",
-        "\nLOAD \"*\",11,1\nRUN\n",
-};
 extern "C" int get_kc_from_char(char c_in, int *shifted);
 
 /*
@@ -514,10 +534,11 @@ void C64::VBlank(bool draw_frame)
 	if (TheDisplay->quit_requested)
 		quit_thyself = true;
 
+	/* From dreamcast port */
 	if (this->fake_key_sequence)
 	{
                 int shifted;
-                int kc = get_kc_from_char(auto_seq[this->fake_key_type][this->fake_key_index], &shifted);
+                int kc = get_kc_from_char(this->fake_key_str[this->fake_key_index], &shifted);
 
 		TheDisplay->FakeKeyPress(kc, shifted, TheCIA1->KeyMatrix,
 				TheCIA1->RevMatrix);
@@ -528,7 +549,7 @@ void C64::VBlank(bool draw_frame)
                         this->fake_key_keytime = 1;
                         this->fake_key_index ++;
 
-			if (auto_seq[this->fake_key_type][this->fake_key_index] == '\0')
+			if (this->fake_key_str[this->fake_key_index] == '\0')
                         {
                                 this->fake_key_sequence = false;
                                 this->fake_key_index = 0;
@@ -588,11 +609,11 @@ void C64::VBlank(bool draw_frame)
 
 		switch(opt)
 		{
-		case 0: /* Insert disc/tape */
-			this->select_disc(&np);
+		case 0: /* Load disc/tape */
+			this->run_fake_key_sequence(&np);
 			break;
-		case 1: /* Load disc/tape */
-			this->fake_key_sequence = true;
+		case 1: /* Insert disc/tape */
+			this->select_disc(&np);
 			break;
 		case 2: /* Reset */
 			Reset();

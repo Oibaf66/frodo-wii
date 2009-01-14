@@ -1,9 +1,17 @@
 version 4:
         * TODO: load .zip?
 
-		* TODO: Add more autoload, e.g., LOAD "$",8,1, RUN, POKE
-
         * TODO: Add cursor keys, more load options
+
+        * Some more "auto load" options, and rearranged the top menu order to help
+          with this
+
+        * Store preferences together with save games and reload those when the
+          saved state is restored again
+        
+        * Corrected file extension matching
+
+        * Show current key binding in the menu 
 
 		* Added ability to turn on 1541 CPU emulation in the "other options" menu
 		  (hint from Vermeylen Schoonakker)
