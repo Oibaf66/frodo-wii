@@ -291,7 +291,6 @@ char *C64::bind_one_key(Prefs *np, int which)
 		if (key_keycodes[i] == cur)
 		{
 			cur_binding = key_names[i];
-			printf("Faund %s\n", cur_binding);
 			break;
 		}
 	}
