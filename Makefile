@@ -26,6 +26,7 @@ INCLUDES	:=
 #---------------------------------------------------------------------------------
 
 PCFLAGS = -DPRECISE_CPU_CYCLES=1 -DPRECISE_CIA_CYCLES=1 -DPC_IS_POINTER=0
+SCFLAGS = $(PCFLAGS) -DFRODO_SC
 CFLAGS	= -O3 -g -Wall $(MACHDEP) $(INCLUDE) -I$(DEVKITPRO)/SDL/include -U__unix -DHAVE_SDL
 CXXFLAGS = $(CFLAGS)
 
@@ -61,8 +62,8 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 #---------------------------------------------------------------------------------
 CFILES		:= char_to_kc.c gcaudio.c
 CPPFILES	:= Display.cpp main.cpp Prefs.cpp SID.cpp REU.cpp IEC.cpp 1541fs.cpp \
-               1541d64.cpp 1541t64.cpp 1541job.cpp SAM.cpp C64.cpp CPUC64.cpp VIC.cpp \
-               CIA.cpp CPU1541.cpp menu.cpp
+               1541d64.cpp 1541t64.cpp 1541job.cpp SAM.cpp C64_SC.cpp CPUC64_SC.cpp VIC_SC.cpp \
+               CIA_SC.cpp CPU1541_SC.cpp menu.cpp CPU_common.cpp
 sFILES		:=	
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
