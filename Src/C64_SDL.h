@@ -45,6 +45,8 @@ static const char *other_options_messages[] = {
 		"^|double-center|stretched",
 		"Speed (approx)",     /* 2 */
 		"^|95|100|110",
+		"Emulate 1541",       /* 4 */
+		"^|On|Off",
 		NULL,
 };
 
@@ -339,11 +341,11 @@ void C64::bind_key(Prefs *np)
 void C64::other_options(Prefs *np)
 {
         menu_t display_menu;
-        int submenus[2] = { np->DisplayOption};
+        int submenus[3] = { np->DisplayOption, 0, !np->Emul1541Proc };
 
 #define SPEED_95 40
-#define SPEED_110 34
 #define SPEED_100 38
+#define SPEED_110 34
 
         switch (np->MsPerFrame)
         {
@@ -361,6 +363,8 @@ void C64::other_options(Prefs *np)
 	if (opt >= 0)
 	{
 		np->DisplayOption = submenus[0];
+		np->Emul1541Proc = submenus[2] == 0 ? true : false;
+
 		switch(submenus[1])
 		{
 		case 0:

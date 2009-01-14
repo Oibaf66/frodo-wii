@@ -1,4 +1,13 @@
 version 4:
+        * TODO: load .zip?
+
+		* TODO: Add more autoload, e.g., LOAD "$",8,1, RUN, POKE
+
+        * TODO: Add cursor keys, more load options
+
+		* Added ability to turn on 1541 CPU emulation in the "other options" menu
+		  (hint from Vermeylen Schoonakker)
+
 		* Make menu delay a bit shorter (looks better with the classic controller)
 
 		* Merged with the Frodo CVS trunk. This changes a number of things, most
