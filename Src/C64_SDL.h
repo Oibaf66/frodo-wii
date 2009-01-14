@@ -364,9 +364,9 @@ void C64::other_options(Prefs *np)
         menu_t display_menu;
         int submenus[3] = { np->DisplayOption, 0, !np->Emul1541Proc };
 
-#define SPEED_95 40
-#define SPEED_100 20
-#define SPEED_110 34
+#define SPEED_95 33
+#define SPEED_100 28
+#define SPEED_110 25
 
         switch (np->MsPerFrame)
         {
