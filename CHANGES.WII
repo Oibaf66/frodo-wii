@@ -1,5 +1,7 @@
 version 4:
-        * TODO: load .zip?
+        * Build the SC version of frodo, which makes some more games work or
+          some work better. For example, I *think* that the sound in Exploding
+          fist is now correct 
 
 		* Added arrow up/down/left/right and some other keys as bindable
 
