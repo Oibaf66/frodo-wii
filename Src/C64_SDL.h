@@ -126,6 +126,18 @@ static int cmpstringp(const void *p1, const void *p2)
     return strcmp(* (char * const *) p1, * (char * const *) p2);
 }
 
+/* Return true if name ends with ext (for filenames) */
+static bool ext_matches(const char *name, const char *ext)
+{
+	int len = strlen(name);
+	int ext_len = strlen(ext);
+
+	if (len <= ext_len)
+		return false;
+	return (strcmp(name + len - ext_len, ext) == 0);
+	
+}
+
 static const char **get_file_list(const char *base_dir)
 {
 	DIR *d = opendir(base_dir);
@@ -145,12 +157,12 @@ static const char **get_file_list(const char *base_dir)
 	de;
 	de = readdir(d))
 	{
-		if (strstr(de->d_name, ".d64") || strstr(de->d_name, ".D64") ||
-				strstr(de->d_name, ".prg") || strstr(de->d_name, ".PRG") ||
-				strstr(de->d_name, ".p00") || strstr(de->d_name, ".P00") ||
-				strstr(de->d_name, ".s00") || strstr(de->d_name, ".S00") ||
-				strstr(de->d_name, ".t64") || strstr(de->d_name, ".T64") ||
-				strstr(de->d_name, ".sav"))
+		if (ext_matches(de->d_name, ".d64") || ext_matches(de->d_name, ".D64") ||
+				ext_matches(de->d_name, ".prg") || ext_matches(de->d_name, ".PRG") ||
+				ext_matches(de->d_name, ".p00") || ext_matches(de->d_name, ".P00") ||
+				ext_matches(de->d_name, ".s00") || ext_matches(de->d_name, ".S00") ||
+				ext_matches(de->d_name, ".t64") || ext_matches(de->d_name, ".T64") ||
+				ext_matches(de->d_name, ".sav"))
 		{
 			char *p;
 
@@ -399,12 +411,15 @@ void C64::save_load_state(Prefs *np)
 	{
 	case 1: /* save */
 	{
-		char buf[255];
+		char save_buf[255];
+		char prefs_buf[255];
 
-		snprintf(buf, 255, "%s/%s.sav", SAVES_PATH,
+		snprintf(save_buf, 255, "%s/%s.sav", SAVES_PATH,
 				this->save_game_name);
+		snprintf(prefs_buf, 255, "%s.prefs", save_buf);
 
-		this->SaveSnapshot(buf);
+		this->SaveSnapshot(save_buf);
+		np->Save(prefs_buf);
 	} break;
 	case 0: /* load/delete */
 	case 2:
@@ -418,13 +433,22 @@ void C64::save_load_state(Prefs *np)
 		int save = menu_select(real_screen, &select_saves_menu, NULL);
 		if (save >= 0)
 		{
-			char buf[255];
+			char save_buf[255];
+			char prefs_buf[255];
 
-			snprintf(buf, 255, "%s/%s", SAVES_PATH,  file_list[save]);
+			snprintf(save_buf, 255, "%s/%s", SAVES_PATH,  file_list[save]);
+			snprintf(prefs_buf, 255, "%s.prefs", save_buf);
 			if (opt == 2)
-				unlink(buf);
+			{
+				unlink(save_buf);
+				unlink(prefs_buf);
+			}
 			else /* Load the snapshot */
-				this->LoadSnapshot(buf);
+			{
+				this->LoadSnapshot(save_buf);
+				np->Load(prefs_buf);
+				this->prefs_changed = true;
+			}
 		}
 		menu_fini(&select_saves_menu);
 
