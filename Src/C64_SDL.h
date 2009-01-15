@@ -278,9 +278,10 @@ static const char *key_names[] = { "None", "space", "Run/Stop", "return",
 		NULL };
 
 static int key_keycodes[] = { 0, MATRIX(7, 4), MATRIX(7, 7), MATRIX(0, 1), /* space, R/S, return */
-	MATRIX(0, 4), MATRIX(0, 5), MATRIX(0, 6), MATRIX(0, 3), MATRIX(4, 3), MATRIX(7, 0),
-	MATRIX(7, 3), MATRIX(1, 0), MATRIX(1, 3), MATRIX(2, 0), MATRIX(2, 3), MATRIX(3, 0),
-	MATRIX(3, 3), MATRIX(4, 0), MATRIX(1, 2), MATRIX(3, 4), MATRIX(2, 4), MATRIX(2, 2),
+	MATRIX(0, 4), MATRIX(0, 5), MATRIX(0, 6), MATRIX(0, 3), /* F1-F7 */
+	MATRIX(4, 3), MATRIX(7, 0), MATRIX(7, 3), MATRIX(1, 0), MATRIX(1, 3), /* 0.. */
+	MATRIX(2, 0), MATRIX(2, 3), MATRIX(3, 0), MATRIX(3, 3), MATRIX(4, 0), /* ..9 */
+	MATRIX(1, 2), MATRIX(3, 4), MATRIX(2, 4), MATRIX(2, 2),
 	MATRIX(1, 6), MATRIX(2, 5), MATRIX(3, 2), MATRIX(3, 5), MATRIX(4, 1), MATRIX(4, 2),
 	MATRIX(4, 5), MATRIX(5, 2), MATRIX(4, 4), MATRIX(4, 7), MATRIX(4, 6), MATRIX(5, 1),
 	MATRIX(7, 6), MATRIX(2, 1), MATRIX(1, 5), MATRIX(2, 6), MATRIX(3, 6), MATRIX(3, 7),
