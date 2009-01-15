@@ -301,7 +301,7 @@ char *C64::bind_one_key(Prefs *np, int which)
 	const char *cur_binding = "None";
 	int cur = np->JoystickKeyBinding[which];
 
-	for (int i = 1; i < sizeof(key_keycodes) / sizeof(key_keycodes[0]); i++ )
+	for (unsigned int i = 1; i < sizeof(key_keycodes) / sizeof(key_keycodes[0]); i++ )
 	{
 		if (key_keycodes[i] == cur)
 		{

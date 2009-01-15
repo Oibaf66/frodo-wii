@@ -594,12 +594,14 @@ uint8 C64::poll_joystick(int port)
 #ifdef GEKKO
 	int extra_keys[N_WIIMOTE_BINDINGS];
 	int controller = port;
+	Uint32 held = 0;
+	Uint32 held_other = 0;
+	Uint32 held_classic = 0;
+	Uint32 held_classic_other = 0;
         WPADData *wpad, *wpad_other;
-	Uint32 held, held_other, held_classic, held_classic_other;
 
 	if (ThePrefs.JoystickSwap)
 		controller = !port;
-	held_classic = held_classic_other = 0; 
 
         wpad = WPAD_Data(controller);
         wpad_other = WPAD_Data(!controller);
@@ -610,7 +612,7 @@ uint8 C64::poll_joystick(int port)
 	if (wpad->exp.type == WPAD_EXP_CLASSIC)
 		held_classic = wpad->exp.classic.btns_held; 
 	if (wpad_other->exp.type == WPAD_EXP_CLASSIC)
-		held_classic_other = wpad_other->exp.classic.btns_held; 
+		held_classic_other = wpad_other->exp.classic.btns_held;
 
 	if ( (held & WPAD_BUTTON_UP) || (held_classic & CLASSIC_CTRL_BUTTON_LEFT) )
 		j &= 0xfb; // Left
@@ -627,8 +629,6 @@ uint8 C64::poll_joystick(int port)
 
 	extra_keys[WIIMOTE_A] = (held | held_other) & WPAD_BUTTON_A;
 	extra_keys[WIIMOTE_B] = (held | held_other) & WPAD_BUTTON_B;
-	extra_keys[WIIMOTE_PLUS] = (held | held_other) & WPAD_BUTTON_PLUS;
-	extra_keys[WIIMOTE_MINUS] = (held | held_other) & WPAD_BUTTON_MINUS;
 	extra_keys[WIIMOTE_1] = (held | held_other) & WPAD_BUTTON_1;
 
 	/* Classic buttons (might not be connected) */
@@ -640,23 +640,26 @@ uint8 C64::poll_joystick(int port)
 	extra_keys[CLASSIC_ZL] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_ZL;
 	extra_keys[CLASSIC_ZR] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_ZR;
 
-	extra_keys[WIIMOTE_PLUS] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_MINUS;
-	extra_keys[WIIMOTE_MINUS] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_PLUS;
+	extra_keys[WIIMOTE_PLUS] = ((held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_MINUS) |
+		(held | held_other) & WPAD_BUTTON_PLUS;
+	extra_keys[WIIMOTE_MINUS] = ((held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_PLUS) |
+		(held | held_other) & WPAD_BUTTON_MINUS;
 
-	for (int i = 0; i < N_WIIMOTE_BINDINGS; i++)
+	static int whose_turn;
+	int kc = ThePrefs.JoystickKeyBinding[whose_turn];
+
+	if ( kc >= 0)
 	{
-		int kc = ThePrefs.JoystickKeyBinding[i];
-
-		if ( kc < 0 )
-			continue;
-
-		if (extra_keys[i])
+		if (extra_keys[whose_turn])
 			TheDisplay->UpdateKeyMatrix(kc, false,
 					TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
 		else
 			TheDisplay->UpdateKeyMatrix(kc, true,
 					TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
 	}
+	whose_turn++;
+	if (whose_turn >= N_WIIMOTE_BINDINGS)
+		whose_turn = 0;
 
 	return j;
 #else
