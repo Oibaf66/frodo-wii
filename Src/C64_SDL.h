@@ -405,13 +405,13 @@ void C64::run_fake_key_sequence(Prefs *np)
 {
 	static const char *fake_key_sequences[] = {
 			"\nLOAD \"*\",8,1\nRUN\n",
-			"\nLOAD \"?\",8,1\n",
+			"\nLOAD \"?\",8\n",
 			"\nLIST\n",
 			"\n10 PRINT \"HELLO WORLD\"\n20 GOTO 10\nRUN\n",
 			NULL};
 	const char *fake_key_messages[] = {
 			"LOAD \"*\",8,1  and  RUN",
-			"LOAD \"?\",8,1",
+			"LOAD \"?\",8",
 			"LIST",
 			"10 PRINT \"HELLO WORLD\"  and  20 GOTO 10",
 			NULL};
