@@ -423,7 +423,7 @@ void Job1541::MoveHeadOut(void)
 	if (current_halftrack == 2)
 		return;
 	current_halftrack--;
-#ifndef __riscos__
+#if !defined(__riscos__) && !defined(GEKKO)
 	printf("Head move %d\n", current_halftrack);
 #endif
 	gcr_ptr = gcr_track_start = gcr_data + ((current_halftrack >> 1) - 1) * GCR_TRACK_SIZE;
@@ -440,7 +440,7 @@ void Job1541::MoveHeadIn(void)
 	if (current_halftrack == NUM_TRACKS*2)
 		return;
 	current_halftrack++;
-#ifndef __riscos__
+#if !defined(__riscos__) && !defined(GEKKO)
 	printf("Head move %d\n", current_halftrack);
 #endif
 	gcr_ptr = gcr_track_start = gcr_data + ((current_halftrack >> 1) - 1) * GCR_TRACK_SIZE;
