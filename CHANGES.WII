@@ -1,6 +1,11 @@
 version 5:
+		* Some wiimote sanity checks 
 
-        -- Simon Kagstrom <simon.kagstrom@gmail.com>,
+		* (Binary only) don't link with Yohanes SDL version anymore. It causes the
+		  home button in the menu to quit the emulator. I'll investigate why it happens,
+		  not sure right now.
+
+        -- Simon Kagstrom <simon.kagstrom@gmail.com>, Fri Jan 16 20:26:12 CET 2009
 
 version 4:
 		* (Binary only) link with Yohanes version of SDL (http://wiiapple.googlecode.com).
