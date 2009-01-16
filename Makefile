@@ -27,7 +27,7 @@ INCLUDES	:=
 
 PCFLAGS = -DPRECISE_CPU_CYCLES=1 -DPRECISE_CIA_CYCLES=1 -DPC_IS_POINTER=0
 SCFLAGS = $(PCFLAGS) -DFRODO_SC
-CFLAGS	= -O3 -g -Wall $(MACHDEP) $(INCLUDE) -I$(DEVKITPRO)/SDL/include -U__unix -DHAVE_SDL $(SCFLAGS)
+CFLAGS	= -O3 -g -Wall $(MACHDEP) $(INCLUDE) -U__unix -DHAVE_SDL $(SCFLAGS) -I$(DEVKITPRO)/SDL/include 
 CXXFLAGS = $(CFLAGS)
 
 LDFLAGS	= -L$(DEVKITPRO)/SDL/lib -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -35,7 +35,7 @@ LDFLAGS	= -L$(DEVKITPRO)/SDL/lib -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-lSDL_image -lSDL_ttf -ljpeg -lpng -lz -lSDL -lfreetype -lfat -lwiiuse -lbte -logc -lm
+LIBS	:=	-lSDL_image -lSDL_ttf -ljpeg -lpng -lz -lSDL_yohanes -lfreetype -lfat -lwiiuse -lbte -logc -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
