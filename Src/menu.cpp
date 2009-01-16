@@ -272,6 +272,10 @@ static uint32_t wait_key_press(void)
 
 		wpad = WPAD_Data(WPAD_CHAN_0);
 	        wpad_other = WPAD_Data(WPAD_CHAN_1);
+
+	        if (!wpad && !wpad_other)
+	        	return 0;
+	        	
 	        remote_keys = wpad->btns_d | wpad_other->btns_d;
 	        classic_keys = 0;
 
@@ -357,7 +361,7 @@ static uint32_t wait_key_press(void)
 		}
 		if (keys != 0)
 			return keys;
-		SDL_Delay(30);
+		SDL_Delay(100);
 	}
 
 	return keys;

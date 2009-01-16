@@ -605,6 +605,9 @@ uint8 C64::poll_joystick(int port)
 
         wpad = WPAD_Data(controller);
         wpad_other = WPAD_Data(!controller);
+        if (!wpad && !wpad_other)
+        	return 0xff;
+
         held = wpad->btns_h;
         held_other = wpad_other->btns_h;
 
