@@ -645,21 +645,27 @@ uint8 C64::poll_joystick(int port)
 	extra_keys[WIIMOTE_MINUS] = ((held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_PLUS) |
 		(held | held_other) & WPAD_BUTTON_MINUS;
 
-	static int whose_turn;
-	int kc = ThePrefs.JoystickKeyBinding[whose_turn];
-
-	if ( kc >= 0)
+	for (int i = 0; i < N_WIIMOTE_BINDINGS; i++)
 	{
-		if (extra_keys[whose_turn])
-			TheDisplay->UpdateKeyMatrix(kc, false,
-					TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
-		else
-			TheDisplay->UpdateKeyMatrix(kc, true,
-					TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
+		static bool is_pressed[N_WIIMOTE_BINDINGS];
+		int kc = ThePrefs.JoystickKeyBinding[i];
+
+		if ( kc >= 0)
+		{
+			if (extra_keys[i])
+			{
+				TheDisplay->UpdateKeyMatrix(kc, false,
+						TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
+				is_pressed[i] = true;
+			}
+			else if (is_pressed[i])
+			{
+				TheDisplay->UpdateKeyMatrix(kc, true,
+						TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
+				is_pressed[i] = false;
+			}
+		}
 	}
-	whose_turn++;
-	if (whose_turn >= N_WIIMOTE_BINDINGS)
-		whose_turn = 0;
 
 	return j;
 #else

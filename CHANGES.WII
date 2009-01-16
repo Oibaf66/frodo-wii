@@ -1,7 +1,6 @@
 version 4:
 		* Fixed + and - bindings on the wiimote and a keybinding bug which caused
-		  keypresses to go unnoticed. Keys are now handled in turn, i.e., not on
-		  each vblank
+		  keypresses to go unnoticed.
 
         * Build the SC version of frodo, which makes some more games work or
           some work better. For example, I *think* that the sound in Exploding

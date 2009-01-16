@@ -219,9 +219,14 @@ uint8 ArchDrive::open_file(int channel, const uint8 *name, int name_len)
 	int num;
 	if (find_first_file(plain_name, plain_name_len, num)) {
 
-		// Open temporary file
-		if ((file[channel] = tmpfile()) != NULL) {
-
+                // Open temporary file                                                                                                          
+                if ((file[channel] =
+#if defined(GEKKO)
+                fopen("/apps/frodo/tmp/a", "w+")
+#else
+                tmpfile()
+#endif
+                ) != NULL) {
 			// Write load address (.t64 only)
 			if (archive_type == TYPE_T64) {
 				fwrite(&file_info[num].sa_lo, 1, 1, file[channel]);
