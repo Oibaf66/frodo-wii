@@ -1,4 +1,7 @@
 version 4:
+		* (Binary only) link with Yohanes version of SDL (http://wiiapple.googlecode.com).
+		  This might bring USB keyboard support, but that's untested.
+
 		* Fixed + and - bindings on the wiimote and a keybinding bug which caused
 		  keypresses to go unnoticed.
 
@@ -26,7 +29,7 @@ version 4:
 		* Merged with the Frodo CVS trunk. This changes a number of things, most
 		  visibly the palette
 
-        -- Simon Kagstrom <simon.kagstrom@gmail.com>,
+        -- Simon Kagstrom <simon.kagstrom@gmail.com>, Fri Jan 16 17:58:51 CET 2009
 
 version 3:
         * Various cleanup of the code
