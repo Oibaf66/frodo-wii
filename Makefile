@@ -118,10 +118,6 @@ dist: $(BUILD)
 	cp meta.xml $@/apps/frodo/
 	cp icon.png $@/apps/frodo/
 	cp FreeMono.ttf $@/apps/frodo/
-	cp "Kernal ROM" $@/apps/frodo/Kernal_ROM
-	cp "Char ROM" $@/apps/frodo/Char_ROM
-	cp "1541 ROM" $@/apps/frodo/1541_ROM
-	cp "Basic ROM" $@/apps/frodo/Basic_ROM
 	cp frodorc $@/apps/frodo/
 	cd $@ && tar -czf ../frodo-wii-bin.tar.gz *
 

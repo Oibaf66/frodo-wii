@@ -89,7 +89,7 @@ Prefs::Prefs()
 		this->JoystickKeyBinding[i] = -1;
 
 	this->DisplayOption = 0;
-	this->MsPerFrame = 38;
+	this->MsPerFrame = 28;
 #endif
 }
 
