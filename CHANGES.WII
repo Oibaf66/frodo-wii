@@ -1,5 +1,12 @@
+version 6:
+        TODO: Multiple frodo versions, switch between
+
+        TODO: load games where the first file is not a .prg
+
+        -- Simon Kagstrom <simon.kagstrom@gmail.com>,
+
 version 5:
-		* Some wiimote sanity checks 
+		* Some wiimote sanity checks
 
 		* (Binary only) don't link with Yohanes SDL version anymore. It causes the
 		  home button in the menu to quit the emulator. I'll investigate why it happens,
@@ -16,7 +23,7 @@ version 4:
 
         * Build the SC version of frodo, which makes some more games work or
           some work better. For example, I *think* that the sound in Exploding
-          fist is now correct 
+          fist is now correct
 
 		* Added arrow up/down/left/right and some other keys as bindable
 
@@ -25,10 +32,10 @@ version 4:
 
         * Store preferences together with save games and reload those when the
           saved state is restored again
-        
+
         * Corrected file extension matching
 
-        * Show current key binding in the menu 
+        * Show current key binding in the menu
 
 		* Added ability to turn on 1541 CPU emulation in the "other options" menu
 		  (hint from Vermeylen Schoonakker)
