@@ -163,9 +163,9 @@ bool Network::DecodeDisplayRaw(Uint8 *screen, struct NetworkDisplayUpdate *src,
 	{
 		for (int x = x_start; x < x_start + SQUARE_H; x += 2)
 		{
-			Uint8 x = src->data[(y - y_start) * raw_w + (x - x_start) / 2];
-			Uint8 a = x >> 4;
-			Uint8 b = x & 0xf;
+			Uint8 v = src->data[(y - y_start) * raw_w + (x - x_start) / 2];
+			Uint8 a = v >> 4;
+			Uint8 b = v & 0xf;
 
 			screen[ y * DISPLAY_X + x ] = a;
 			screen[ y * DISPLAY_X + x + 1 ] = b;
