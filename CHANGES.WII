@@ -1,7 +1,8 @@
 version 6:
         TODO: Multiple frodo versions, switch between
 
-        TODO: load games where the first file is not a .prg
+		* Don't load files with zero-size (allows .d64 files where the first file
+		is not a PRG to load correctly) 
 
         -- Simon Kagstrom <simon.kagstrom@gmail.com>,
 

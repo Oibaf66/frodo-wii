@@ -2,7 +2,7 @@
  *  1541d64.cpp - 1541 emulation in disk image files (.d64/.x64/zipcode)
  *
  *  Frodo (C) 1994-1997,2002-2005 Christian Bauer
- *  zipcode decoding routines (C) 1993-1997 Marko M‰kel‰, Paul David Doherty
+ *  zipcode decoding routines (C) 1993-1997 Marko M√§kel√§, Paul David Doherty
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -988,7 +988,8 @@ bool ImageDrive::find_file(const uint8 *pattern, int pattern_len, int &dir_track
 		}
 
 		// Does entry match pattern?
-		if (de[DE_TYPE] && match(pattern, pattern_len, de + DE_NAME))
+		if (de[DE_TYPE] && match(pattern, pattern_len, de + DE_NAME) &&
+				(de[DE_NUM_BLOCKS_L] | (de[DE_NUM_BLOCKS_H] << 8)) > 0)
 			return true;
 	}
 	return false;
