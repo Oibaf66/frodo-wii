@@ -31,7 +31,8 @@
 #endif
 
 // Display surface
-SDL_Surface *screen = NULL;
+static Uint8 screen[DISPLAY_X * DISPLAY_Y];
+static SDL_Surface *sdl_screen;
 SDL_Surface *real_screen = NULL;
 
 // Keyboard
@@ -100,9 +101,9 @@ int init_graphics(void)
 	// Open window
 	SDL_ShowCursor(SDL_DISABLE);
 
-	screen = SDL_CreateRGBSurface(SDL_SWSURFACE, DISPLAY_X, DISPLAY_Y + 17, 8,
+	sdl_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, DISPLAY_X, DISPLAY_Y + 17, 8,
 			rmask, gmask, bmask, amask);
-	if (!screen)
+	if (!sdl_screen)
 	{
 		fprintf(stderr, "Cannot allocate surface to draw on: %s\n",
 				SDL_GetError());
@@ -177,12 +178,13 @@ void C64Display::NewPrefs(Prefs *prefs)
 
 void C64Display::Update(void)
 {
+	Uint8 *src_pixels = (Uint8*)screen;
+	const Uint16 src_pitch = DISPLAY_X;
+
 	if (ThePrefs.DisplayOption == 0) {
 		const int x_border = (DISPLAY_X - FULL_DISPLAY_X / 2) / 2;
 		const int y_border = (DISPLAY_Y - FULL_DISPLAY_Y / 2) / 2;
-		Uint8 *src_pixels = (Uint8*)screen->pixels;
 		Uint8 *dst_pixels = (Uint8*)real_screen->pixels;
-		const Uint16 src_pitch = screen->pitch;
 		const Uint16 dst_pitch = real_screen->pitch;
 
 		/* Center, double size */
@@ -204,9 +206,24 @@ void C64Display::Update(void)
 	else {
 		SDL_Rect srcrect = {0, 0, DISPLAY_X, DISPLAY_Y};
 		SDL_Rect dstrect = {0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y};
+		Uint8 *dst_pixels = (Uint8*)sdl_screen->pixels;
+		const Uint16 dst_pitch = sdl_screen->pitch;
+
+		/* Draw 1-1 */
+		for (int y = 0; y < DISPLAY_Y; y++)
+		{
+			for (int x = 0; x < DISPLAY_X; x++)
+			{
+				int src_off = y * src_pitch + x;
+				int dst_off = src_off;
+				Uint8 v = src_pixels[src_off];
+
+				dst_pixels[ dst_off ] = v;
+			}
+		}
 
 		/* Stretch */
-		SDL_SoftStretch(screen, &srcrect, real_screen, &dstrect);                                                                     
+		SDL_SoftStretch(sdl_screen, &srcrect, real_screen, &dstrect);                                                                     
 	}
 	SDL_Flip(real_screen);
 }
@@ -282,7 +299,7 @@ void C64Display::Speedometer(int speed)
 
 uint8 *C64Display::BitmapBase(void)
 {
-	return (uint8 *)screen->pixels;
+	return screen;
 }
 
 
@@ -292,7 +309,7 @@ uint8 *C64Display::BitmapBase(void)
 
 int C64Display::BitmapXMod(void)
 {
-	return screen->pitch;
+	return DISPLAY_X;
 }
 
 void C64Display::FakeKeyPress(int kc, bool shift, uint8 *CIA_key_matrix,
@@ -728,7 +745,6 @@ void C64Display::InitColors(uint8 *colors)
 	palette[red].g = palette[red].b = 0;
 	palette[green].g = 0xf0;
 	palette[green].r = palette[green].b = 0;
-	SDL_SetColors(screen, palette, 0, PALETTE_SIZE);
 	SDL_SetColors(real_screen, palette, 0, PALETTE_SIZE);
 
 

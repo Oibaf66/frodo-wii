@@ -18,15 +18,6 @@
 
 #include "menu.h"
 
-#define KEY_UP         1
-#define KEY_DOWN       2
-#define KEY_LEFT       4
-#define KEY_RIGHT      8
-#define KEY_SELECT    16
-#define KEY_ESCAPE    32
-#define KEY_PAGEDOWN  64
-#define KEY_PAGEUP   128
-
 #define IS_SUBMENU(p_msg) ( (p_msg)[0] == '^' )
 
 static submenu_t *find_submenu(menu_t *p_menu, int index)
@@ -42,7 +33,7 @@ static submenu_t *find_submenu(menu_t *p_menu, int index)
   return NULL;
 }
 
-static void print_font(SDL_Surface *screen, TTF_Font *font, int r, int g, int b,
+void menu_print_font(SDL_Surface *screen, TTF_Font *font, int r, int g, int b,
                        int x, int y, const char *msg)
 {
   SDL_Surface *font_surf;
@@ -97,10 +88,10 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu)
       int y = (i - p_menu->start_entry_visible) * line_height;
 
       if (p_menu->cur_sel == i) /* Selected - color */
-	print_font(screen, p_menu->p_font, 255,255,0, x_start,
+	menu_print_font(screen, p_menu->p_font, 255,255,0, x_start,
                    y_start + y, msg);
       else /* Otherwise white */
-	print_font(screen, p_menu->p_font, 255,255,255, x_start,
+	menu_print_font(screen, p_menu->p_font, 255,255,255, x_start,
                    y_start + y, msg);
       if (IS_SUBMENU(msg))
 	{
@@ -257,7 +248,7 @@ void menu_fini(menu_t *p_menu)
 }
 
 
-static uint32_t wait_key_press(void)
+uint32_t menu_wait_key_press(void)
 {
 	SDL_Event ev;
 	uint32_t keys = 0;
@@ -385,7 +376,7 @@ int menu_select(SDL_Surface *screen, menu_t *p_menu,
 		menu_draw(screen, p_menu);
 		SDL_Flip(screen);
 
-		keys = wait_key_press();
+		keys = menu_wait_key_press();
 
 		if (keys & KEY_UP)
 			select_next(p_menu, 0, -1);

@@ -28,7 +28,8 @@ INSTALL_DATA = ${INSTALL} -m 644
 ## Files
 GUIOBJS = 
 OBJS    = $(GUIOBJS) main.o Prefs.o SID.o REU.o IEC.o 1541fs.o \
-          1541d64.o 1541t64.o 1541job.o SAM.o CmdPipe.o menu.o char_to_kc.o Network.o
+          1541d64.o 1541t64.o 1541job.o SAM.o CmdPipe.o menu.o char_to_kc.o Network.o \
+          VirtualKeyboard.o
 SLOBJS  = $(OBJS) C64.o CPUC64.o VIC.o CIA.o CPU1541.o Display.o 
 SLFLAGS = -DPRECISE_CPU_CYCLES=1 -DPRECISE_CIA_CYCLES=1 -DPC_IS_POINTER=0
 SCOBJS  = $(OBJS) C64_SC.o CPUC64_SC.o VIC_SC.o CIA_SC.o CPU1541_SC.o CPU_common.o Display_SC.o
@@ -130,7 +131,7 @@ sysconfig.h: sysconfig.h.Host-SDL
 
 main.o: sysdeps.h sysconfig.h main.h C64.h Display.h Prefs.h SAM.h
 main.o: Basic_ROM.h Kernal_ROM.h Char_ROM.h 1541_ROM.h
-Display.o: sysdeps.h sysconfig.h Display.h main.h Prefs.h
+Display.o: sysdeps.h sysconfig.h Display.h main.h Prefs.h Display_SDL.h
 Prefs.o: sysdeps.h sysconfig.h Prefs.h Display.h C64.h main.h
 SID.o: sysdeps.h sysconfig.h SID.h Prefs.h
 REU.o: sysdeps.h sysconfig.h REU.h CPUC64.h C64.h Prefs.h

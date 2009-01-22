@@ -104,6 +104,8 @@ void C64::c64_ctor1(void)
 	}
 	menu_init(&this->main_menu, this->menu_font, main_menu_messages,
 			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
+
+	this->virtual_keyboard = new VirtualKeyboard(real_screen, this->menu_font);
 }
 
 void C64::c64_ctor2(void)
@@ -343,19 +345,17 @@ void C64::bind_keys(Prefs *np)
 	int opt = menu_select(real_screen, &bind_key_menu, NULL);
 	if (opt >= 0)
 	{
-	        menu_init(&key_menu, this->menu_font, key_names,
-				32, 32, MENU_SIZE_X, MENU_SIZE_Y);
-		int key = menu_select(real_screen, &key_menu, NULL);
+	        int key;
+	        bool shifted;
 
-		/* Assume prefs are changed */
-		this->prefs_changed = true;
-		if (key > 0)
-			np->JoystickKeyBinding[opt] = key_keycodes[key];
-		else if (key == 0)
-			np->JoystickKeyBinding[opt] = -1;
-		else
-			this->prefs_changed = false;
-	        menu_fini(&key_menu);
+		if (this->virtual_keyboard->get_key(&key, &shifted) != false)
+		{
+			this->prefs_changed = true;
+			if (shifted)
+				key |= 0x80;
+
+			np->JoystickKeyBinding[opt] = key;
+		}
 	}
         menu_fini(&bind_key_menu);
 }

@@ -23,6 +23,7 @@
 #if defined(HAVE_SDL)
 /* SDL menu */
 #include "menu.h"
+#include "VirtualKeyboard.h"
 #endif
 
 #ifdef __BEOS__
@@ -183,6 +184,7 @@ public:
 #endif
 #ifdef HAVE_SDL
 	menu_t main_menu;
+	VirtualKeyboard *virtual_keyboard;
 	TTF_Font *menu_font;
 
 	bool fake_key_sequence;

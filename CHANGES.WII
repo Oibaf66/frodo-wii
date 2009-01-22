@@ -1,8 +1,11 @@
 version 6:
         TODO: Multiple frodo versions, switch between
 
+        * Implemented a virtual keyboard which is used to select key bindings
+
 		* Don't load files with zero-size (allows .d64 files where the first file
-		is not a PRG to load correctly) 
+		  is not a PRG to load correctly). Thanks to Dominik Reichardt for pointing
+		  this out
 
         -- Simon Kagstrom <simon.kagstrom@gmail.com>,
 
