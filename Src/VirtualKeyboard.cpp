@@ -48,8 +48,8 @@ typedef struct
 #define KEY_ROWS 5
 
 static virtkey_t keys[KEY_COLS * KEY_ROWS] = {
-	K("<-",7,1),       K("1", 7,0), K("2", 7,3), K("3", 1,0), K("4", 1,3), K("5", 2,0), K("6", 2,3), K("7", 3,0), K("8", 3,3), K("9", 4,0), K("0", 4,3), K("+", 5,0), K("-", 5,3), K("£", 0,0), K("Hom", 6,3),
-	K("Cr", 7,2),      K("q", 7,6), K("w", 1,1), K("e", 1,6), K("r", 2,2), K("t", 2,6), K("y", 3,1), K("u", 3,6), K("i", 4,1), K("o", 6,6), K("p", 5,1), K("@", 5,6), K("*", 6,1), K("Au", 6,0),K("Rstr", 4,0),
+	K("<-",7,1),       K("1", 7,0), K("2", 7,3), K("3", 1,0), K("4", 1,3), K("5", 2,0), K("6", 2,3), K("7", 3,0), K("8", 3,3), K("9", 4,0), K("0", 4,3), K("+", 5,0), K("-", 5,3), K("£", 6,0), K("Hom", 6,3),
+	K("Cr", 7,2),      K("q", 7,6), K("w", 1,1), K("e", 1,6), K("r", 2,2), K("t", 2,6), K("y", 3,1), K("u", 3,6), K("i", 4,1), K("o", 6,6), K("p", 5,1), K("@", 5,6), K("*", 6,1), K("Au", 6,6),K("Rstr", 4,0),
 	K("R/Stp", 7,7),   K(0,   0,0), K("a", 1,2), K("s", 1,5), K("d", 2,2), K("f", 2,5), K("g", 3,2), K("h", 3,5), K("j", 4,2), K("k", 4,5), K("l", 5,2), K(":", 5,5), K(";", 6,2), K("=", 6,5), K("Ret", 0,1),
 	K("C=", 7,5),      S("Sh",1,7), K("z", 1,4), K("x", 2,7), K("c", 2,4), K("v", 3,7), K("b", 3,4), K("n", 4,7), K("m", 4,4), K(",", 5,7), K(".", 5,4), K("/", 6,7), K(NULL,0,0), K("Dwn", 0,7),K("Rgt", 0,2),
 	N("None"),         K(0, 0,0),   K(0, 0,0),   K("space", 7,4),K(0, 0,0),K(0, 0,0),   K("f1", 0,4),K("f3", 0,5),K("f5", 0,6),K("f7", 0,3),K(0, 0,0),   K(0, 0,0),   K(0, 0,0),   K(0, 0,0),   K("Del", 0,0),
@@ -130,6 +130,33 @@ void VirtualKeyboard::select_next(int dx, int dy)
 void VirtualKeyboard::toggle_shift()
 {
 	this->shift_on = !this->shift_on;
+}
+
+const char *VirtualKeyboard::keycode_to_string(int kc)
+{
+	bool shifted = kc & 0x80;
+	int kc_raw = kc & ~0x80;
+	const char *out = "Unknown";
+
+	if (kc < 0)
+		return "None";
+
+	/* Just loop through all of them */
+	for (int i = 0; i < KEY_COLS * KEY_ROWS; i++)
+	{
+		virtkey_t key = keys[i];
+
+		if (key.kc == kc_raw && key.name != NULL)
+		{
+			out = key.name;
+
+			if (shifted && shifted_names[i])
+				out = shifted_names[i];
+			break;
+		}
+	}
+
+	return out;
 }
 
 bool VirtualKeyboard::get_key(int *kc, bool *shifted)

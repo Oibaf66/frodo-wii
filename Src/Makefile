@@ -146,7 +146,7 @@ SAM.o: VIC.h SID.h
 CmdPipe.o: CmdPipe.h
 C64.o: sysdeps.h sysconfig.h C64.h CPUC64.h CPU1541.h CIA.h Prefs.h VIC.h C64_SDL.h
 C64.o: SID.h REU.h IEC.h 1541job.h Display.h
-C64_SC.o: C64.cpp sysdeps.h sysconfig.h C64.h CPUC64.h CPU1541.h CIA.h
+C64_SC.o: C64.cpp sysdeps.h sysconfig.h C64.h CPUC64.h CPU1541.h CIA.h C64_SDL.h
 C64_SC.o: Prefs.h VIC.h SID.h REU.h IEC.h 1541job.h Display.h
 CPUC64.o: sysdeps.h sysconfig.h CPUC64.h C64.h VIC.h SID.h CIA.h Prefs.h
 CPUC64.o: REU.h IEC.h Display.h Version.h CPU_emulline.h

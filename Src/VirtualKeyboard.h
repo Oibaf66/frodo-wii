@@ -17,6 +17,7 @@ class VirtualKeyboard
 public:
 	VirtualKeyboard(SDL_Surface *screen, TTF_Font *font);
 	bool get_key(int *kc, bool *shifted);
+	const char *keycode_to_string(int kc);
 
 private:
 	void draw();
