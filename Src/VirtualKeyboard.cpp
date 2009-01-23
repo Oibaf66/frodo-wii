@@ -247,6 +247,12 @@ const char *VirtualKeyboard::get_string()
 		cnt++;
 		if (cnt >= sizeof(this->buf))
 			return this->buf;
+
+		/* SDL_Flip is done in get_key_internal() */
+		SDL_FillRect(this->screen, 0, SDL_MapRGB(screen->format, 0x00, 0x80, 0x80));
+		menu_print_font(this->screen, this->font, 255, 255, 0,
+				40, screen->h - 50,
+				this->buf);
 	}
 
 	/* Not reachable */
