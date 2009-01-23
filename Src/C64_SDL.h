@@ -302,7 +302,8 @@ void C64::bind_keys(Prefs *np)
 	        int key;
 	        bool shifted;
 
-		if (this->virtual_keyboard->get_key(&key) != false)
+		key = this->virtual_keyboard->get_key();
+		if (key >= 0)
 		{
 			this->prefs_changed = true;
 			np->JoystickKeyBinding[opt] = key;

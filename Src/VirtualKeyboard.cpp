@@ -164,9 +164,9 @@ const char *VirtualKeyboard::keycode_to_string(int kc)
 	return out;
 }
 
-bool VirtualKeyboard::get_key(int *kc)
+int VirtualKeyboard::get_key()
 {
-	bool out = false;
+	int kc = -1;
 
 	while(1)
 	{
@@ -192,11 +192,10 @@ bool VirtualKeyboard::get_key(int *kc)
 		else if (k & KEY_SELECT)
 		{
 			virtkey_t key = keys[ this->sel_y * KEY_COLS + this->sel_x ];
-			out = true;
 
-			*kc = key.kc;
+			kc = key.kc;
 			if (this->shift_on)
-				*kc |= 0x80;
+				kc |= 0x80;
 
 			if (key.is_shift == true)
 				this->toggle_shift();
@@ -206,5 +205,6 @@ bool VirtualKeyboard::get_key(int *kc)
 	}
 
 	SDL_FillRect(screen, 0, SDL_MapRGB(screen->format, 0, 0, 0));
-	return out;
+
+	return kc;
 }
