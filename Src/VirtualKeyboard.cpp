@@ -159,7 +159,7 @@ const char *VirtualKeyboard::keycode_to_string(int kc)
 	return out;
 }
 
-bool VirtualKeyboard::get_key(int *kc, bool *shifted)
+bool VirtualKeyboard::get_key(int *kc)
 {
 	bool out = false;
 
@@ -190,7 +190,9 @@ bool VirtualKeyboard::get_key(int *kc, bool *shifted)
 			out = true;
 
 			*kc = key.kc;
-			*shifted = this->shift_on;
+			if (this->shift_on)
+				*kc |= 0x80;
+
 			if (key.is_shift == true)
 				this->toggle_shift();
 			else
