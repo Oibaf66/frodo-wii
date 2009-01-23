@@ -124,7 +124,12 @@ void VirtualKeyboard::select_next(int dx, int dy)
 
 	/* Skip the empty spots */
 	if (key.name == NULL)
-		this->select_next(dx, dy);
+	{
+		if (dy != 0) /* Look left */
+			this->select_next(-1, 0);
+		else
+			this->select_next(dx, dy);
+	}
 }
 
 void VirtualKeyboard::toggle_shift()
