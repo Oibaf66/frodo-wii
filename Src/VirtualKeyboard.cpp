@@ -70,6 +70,8 @@ VirtualKeyboard::VirtualKeyboard(SDL_Surface *screen, TTF_Font *font)
 	this->sel_x = 0;
 	this->sel_y = 0;
 	this->shift_on = false;
+
+	memset(this->buf, 0, sizeof(this->buf));
 }
 
 void VirtualKeyboard::draw()
@@ -80,6 +82,11 @@ void VirtualKeyboard::draw()
 	int key_h = 36;
 	int border_x = (screen_w - (key_w * KEY_COLS)) / 2;
 	int border_y = (screen_h - (key_h * KEY_ROWS)) / 2;
+	SDL_Rect bg_rect = {border_x, border_y,
+			key_w * KEY_COLS, key_h * KEY_ROWS};
+
+	SDL_FillRect(this->screen, &bg_rect,
+			SDL_MapRGB(screen->format, 0x00, 0x80, 0x80));
 
 	for (int y = 0; y < KEY_ROWS; y++ )
 	{
@@ -164,15 +171,19 @@ const char *VirtualKeyboard::keycode_to_string(int kc)
 	return out;
 }
 
-int VirtualKeyboard::get_key()
+const char VirtualKeyboard::get_char(int kc)
+{
+	/* NULL is never, ever returned */
+	return this->keycode_to_string(kc)[0];
+}
+
+int VirtualKeyboard::get_key_internal()
 {
 	int kc = -1;
 
 	while(1)
 	{
 		uint32_t k;
-
-		SDL_FillRect(this->screen, 0, SDL_MapRGB(screen->format, 0x00, 0x80, 0x80));
 
 		this->draw();
 		SDL_Flip(this->screen);
@@ -188,7 +199,7 @@ int VirtualKeyboard::get_key()
 		else if (k & KEY_RIGHT)
 			this->select_next(1, 0);
 		else if (k & KEY_ESCAPE)
-			break;
+			return -2;
 		else if (k & KEY_SELECT)
 		{
 			virtkey_t key = keys[ this->sel_y * KEY_COLS + this->sel_x ];
@@ -200,11 +211,44 @@ int VirtualKeyboard::get_key()
 			if (key.is_shift == true)
 				this->toggle_shift();
 			else
-				break;
+				return kc;
 		}
 	}
 
-	SDL_FillRect(screen, 0, SDL_MapRGB(screen->format, 0, 0, 0));
-
 	return kc;
+}
+
+int VirtualKeyboard::get_key()
+{
+	SDL_FillRect(this->screen, 0, SDL_MapRGB(screen->format, 0x00, 0x80, 0x80));
+
+	return this->get_key_internal();
+}
+
+const char *VirtualKeyboard::get_string()
+{
+	int cnt = 0;
+
+	SDL_FillRect(this->screen, 0, SDL_MapRGB(screen->format, 0x00, 0x80, 0x80));
+	memset(this->buf, 0, sizeof(this->buf));
+
+	while (true)
+	{
+		int kc = this->get_key_internal();
+
+		/* Abort or None */
+		if (kc == -2 || kc == -1)
+			return NULL;
+		/* Return */
+		if (kc == MATRIX(0, 1))
+			return this->buf;
+
+		this->buf[cnt] = this->get_char(kc);
+		cnt++;
+		if (cnt >= sizeof(this->buf))
+			return this->buf;
+	}
+
+	/* Not reachable */
+	return NULL;
 }
