@@ -22,8 +22,8 @@
 #include "Network.h"
 #include "Display.h"
 
-#define N_SQUARES_W 20
-#define N_SQUARES_H 20
+#define N_SQUARES_W 16
+#define N_SQUARES_H 8
 
 #define SQUARE_W (DISPLAY_X / N_SQUARES_W)
 #define SQUARE_H (DISPLAY_Y / N_SQUARES_H)
@@ -40,6 +40,7 @@ Network::Network()
 	/* "big enough" static buffer */
 	this->ud = (NetworkUpdate*)malloc( size );
 	this->ResetNetworkUpdate();
+	this->bytes_sent = 0;
 }
 
 Network::~Network()
@@ -53,9 +54,9 @@ size_t Network::EncodeDisplayRaw(struct NetworkDisplayUpdate *dst, Uint8 *screen
 	const int raw_w = SQUARE_W / 2;
 	dst->type = DISPLAY_UPDATE_RAW;
 
-	for (int y = y_start; y < y_start + SQUARE_W; y++)
+	for (int y = y_start; y < y_start + SQUARE_H; y++)
 	{
-		for (int x = x_start; x < x_start + SQUARE_H; x += 2)
+		for (int x = x_start; x < x_start + SQUARE_W; x += 2)
 		{
 			Uint8 a = screen[ y * DISPLAY_X + x ];
 			Uint8 b = screen[ y * DISPLAY_X + (x + 1) ];
@@ -77,9 +78,9 @@ size_t Network::EncodeDisplayRLE(struct NetworkDisplayUpdate *dst, Uint8 *screen
 
 	dst->type = DISPLAY_UPDATE_RLE;
 
-	for (int y = y_start; y < y_start + SQUARE_W; y++)
+	for (int y = y_start; y < y_start + SQUARE_H; y++)
 	{
-		for (int x = x_start; x < x_start + SQUARE_H; x++)
+		for (int x = x_start; x < x_start + SQUARE_W; x++)
 		{
 			if (color != screen[ y * DISPLAY_X + x ] ||
 					len >= 255)
@@ -93,6 +94,13 @@ size_t Network::EncodeDisplayRLE(struct NetworkDisplayUpdate *dst, Uint8 *screen
 			}
 			len++;
 		}
+	}
+	if (len != 0)
+	{
+		dst->data[out] = len;
+		dst->data[out + 1] = color;
+
+		out += 2;
 	}
 
 	return out;
@@ -141,12 +149,13 @@ bool Network::DecodeDisplayRLE(Uint8 *screen, struct NetworkDisplayUpdate *src,
 	int p = 0;
 	int x = x_start;
 	int y = y_start;
+	int sz = src->size - sizeof(NetworkDisplayUpdate);
 
 	/* Something is wrong if this is true... */
-	if (src->size % 2 != 0)
+	if (sz % 2 != 0)
 		return false;
 
-	while (p < src->size)
+	while (p < sz)
 	{
 		Uint8 len = src->data[p];
 		Uint8 color = src->data[p+1];
@@ -173,9 +182,9 @@ bool Network::DecodeDisplayRaw(Uint8 *screen, struct NetworkDisplayUpdate *src,
 {
 	const int raw_w = SQUARE_W / 2;
 
-	for (int y = y_start; y < y_start + SQUARE_W; y++)
+	for (int y = y_start; y < y_start + SQUARE_H; y++)
 	{
-		for (int x = x_start; x < x_start + SQUARE_H; x += 2)
+		for (int x = x_start; x < x_start + SQUARE_W; x += 2)
 		{
 			Uint8 v = src->data[(y - y_start) * raw_w + (x - x_start) / 2];
 			Uint8 a = v >> 4;
@@ -216,7 +225,7 @@ bool Network::CompareSquare(Uint8 *a, Uint8 *b)
 			Uint8 va = a[ y * DISPLAY_X + x ];
 			Uint8 vb = b[ y * DISPLAY_X + x ];
 
-			if (va == vb)
+			if (va != vb)
 				return false;
 		}
 	}
@@ -305,7 +314,7 @@ void Network::ResetNetworkUpdate(void)
 
 	this->ud->type = HEADER;
 	this->ud->size = sizeof(NetworkUpdate);
-	this->cur_ud = (Uint8*)(this->ud + sizeof(NetworkUpdate));
+	this->cur_ud = (Uint8*)(this->ud->data);
 }
 
 
@@ -323,6 +332,15 @@ bool Network::ReceiveUpdateBlock(int sock)
 	return this->ReceiveUpdate(this->ud, sock, NULL);
 }
 
+void Network::AddNetworkUpdate(NetworkUpdate *update)
+{
+	size_t sz = update->size;
+
+	this->cur_ud += sz;
+	this->ud->size += sz;
+}
+
+
 void Network::MarshalData(NetworkUpdate *ud)
 {
 	Uint8 *p = ud->data;
@@ -330,7 +348,7 @@ void Network::MarshalData(NetworkUpdate *ud)
 	int sz = ud->size;
 
 	ud->size = htons(ud->size);
-	while (len < ud->size)
+	while (len < sz)
 	{
 		p = p + len;
 
@@ -343,7 +361,7 @@ void Network::MarshalData(NetworkUpdate *ud)
 		{
 			NetworkDisplayUpdate *tmp = (NetworkDisplayUpdate *)p;
 
-			len = tmp->size;
+			len += tmp->size;
 			tmp->size = htons(tmp->size);
 		} break;
 		case JOYSTICK_UPDATE:
@@ -375,8 +393,8 @@ void Network::DeMarshalData(NetworkUpdate *ud)
 		{
 			NetworkDisplayUpdate *tmp = (NetworkDisplayUpdate *)p;
 
-			len = tmp->size;
-			tmp->size = ntohl(tmp->size);
+			tmp->size = ntohs(tmp->size);
+			len += tmp->size;
 		} break;
 		case JOYSTICK_UPDATE:
 			len = sizeof(NetworkJoystickUpdate);
@@ -385,6 +403,28 @@ void Network::DeMarshalData(NetworkUpdate *ud)
 			/* Unknown data... */
 			return;
 		}
+	}
+}
+
+bool Network::DecodeUpdate(uint8 *screen)
+{
+	unsigned int cookie;
+	NetworkUpdate *p;
+	int i = 0;
+
+	for (p = this->IterateFirst(this->ud, &cookie); p;
+		p = this->IterateNext(this->ud, &cookie))
+	{
+		switch(p->type)
+		{
+		case DISPLAY_UPDATE_RAW:
+		case DISPLAY_UPDATE_RLE:
+			this->DecodeDisplayUpdate(screen, (NetworkDisplayUpdate*)p);
+			break;
+		default:
+			break;
+		}
+		i++;
 	}
 }
 
@@ -398,15 +438,15 @@ NetworkUpdate *Network::IterateFirst(NetworkUpdate *p, unsigned int *cookie)
 		return NULL;
 	*cookie = *cookie + cur->size;
 
-	return (NetworkUpdate *)p->data; 
+	return cur; 
 }
 
 NetworkUpdate *Network::IterateNext(NetworkUpdate *p, unsigned int *cookie)
 {
-	NetworkUpdate *cur = (NetworkUpdate *)(p->data + *cookie);
+	NetworkUpdate *cur = (NetworkUpdate *)(((Uint8*)p) + *cookie);
 
 	/* End of iteration */
-	if ( *cookie >= p->size )
+	if ( *cookie >= p->size || cur->size == 0)
 		return NULL;
 
 	*cookie = *cookie + cur->size;
@@ -438,6 +478,5 @@ NetworkClient::~NetworkClient()
 {
 	free(this->screen);
 }
-
 
 #include "NetworkUnix.h"

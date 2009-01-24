@@ -7,8 +7,9 @@
 /* From glibc docs */
 static int make_socket (uint16_t port)
 {
-	int sock;
 	struct sockaddr_in name;
+	int sock;
+	int d = 1;
 
 	/* Create the socket. */
 	sock = socket (PF_INET, SOCK_STREAM, 0);
@@ -16,6 +17,11 @@ static int make_socket (uint16_t port)
 	{
 		perror ("socket");
 		exit (EXIT_FAILURE);
+	}
+
+	if (setsockopt(sock,SOL_SOCKET,SO_REUSEADDR, &d, sizeof(int)) < 0) {
+	    perror("setsockopt");
+	    exit(1);
 	}
 
 	/* Give the socket a name. */
@@ -89,6 +95,7 @@ bool NetworkServer::CheckNewConnection()
 	else if ( v == 0 )
 		return false;
 
+	size = sizeof(client_name);
 	client_sock = accept(this->listen_sock, (struct sockaddr*)&client_name, &size);
 	if (client_sock < 0)
 	{
@@ -96,7 +103,6 @@ bool NetworkServer::CheckNewConnection()
 		return false;
 	}
 
-	printf("Nej men vobb! En klient har konnektat!\n");
 	/* And add the new one! */
 	this->AddClient(client_sock);
 
@@ -125,7 +131,11 @@ NetworkClient::NetworkClient(const char *hostname, int port)
 		return;
 	}
 
-	NetworkClient::NetworkClient(this->sock);
+	this->screen = (Uint8 *)malloc(DISPLAY_X * DISPLAY_Y);
+	assert(this->screen);
+
+	/* Assume black screen */
+	memset(this->screen, 0, DISPLAY_X * DISPLAY_Y);
 }
 
 bool Network::ReceiveUpdate(NetworkUpdate *dst, int sock, struct timeval *tv)
@@ -137,7 +147,7 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, int sock, struct timeval *tv)
 	FD_ZERO(&fds);
 	FD_SET(sock, &fds);
 
-	v = select(1, &fds, NULL, NULL, tv);
+	v = select(sock + 1, &fds, NULL, NULL, tv);
 	if (v < 0)
 	{
 		fprintf(stderr, "Select failed\n");
@@ -159,6 +169,8 @@ bool Network::SendUpdate(int sock)
 	NetworkUpdate *src = this->ud;
 	int sz = src->size;
 	bool out = true;
+
+	this->bytes_sent += sz;
 
 	this->MarshalData(src);
 	sz = write(sock, (void*)src, sz);

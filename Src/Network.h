@@ -95,6 +95,8 @@ public:
 	
 	size_t DecodeSoundUpdate(struct NetworkSoundUpdate *src, char *buf);
 
+	bool DecodeUpdate(uint8 *screen);
+
 	void ResetNetworkUpdate(void);
 
 	bool SendUpdate(int sock);
@@ -102,6 +104,14 @@ public:
 	bool ReceiveUpdate(int sock);
 
 	bool ReceiveUpdateBlock(int sock);
+
+	size_t GetBytesSent() {
+		return this->bytes_sent;
+	}
+
+	void ResetBytesSent() {
+		this->bytes_sent = 0;
+	}
 
 private:
 	size_t EncodeDisplayRLE(struct NetworkDisplayUpdate *dst, Uint8 *screen,
@@ -117,11 +127,8 @@ private:
 
 	NetworkUpdate *IterateNext(NetworkUpdate *p, unsigned int *cookie);
 
-	void AddNetworkUpdate(struct NetworkUpdate *update)
-	{
-		this->cur_ud += update->size;
-		this->ud->size += update->size;
-	}
+	void AddNetworkUpdate(struct NetworkUpdate *update);
+
 	/**
 	 * Compare two display squares.
 	 *
@@ -145,6 +152,7 @@ private:
 
 	NetworkUpdate *ud;
 	Uint8 *cur_ud;
+	size_t bytes_sent;
 };
 
 class NetworkClient : public Network

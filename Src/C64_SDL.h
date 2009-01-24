@@ -24,6 +24,11 @@
 #define TMP_PATH "tmp"
 #endif
 
+/* TODO: */
+extern int fixme_tmp_network_client;
+extern int fixme_tmp_network_server;
+
+
 static struct timeval tv_start;
 static const char *main_menu_messages[] = {
 		"Invoke key sequence", /* 0 */
@@ -96,6 +101,12 @@ void C64::c64_ctor1(void)
 	strncpy(this->server_hostname, "localhost",
 			sizeof(this->server_hostname));
 	this->server_port = 19760;
+
+	if (fixme_tmp_network_server)
+		this->network_server = new NetworkServer(this->server_port);
+	if (fixme_tmp_network_client)
+		this->network_client = new NetworkClient(this->server_hostname,
+				this->server_port);
 }
 
 void C64::c64_ctor2(void)
@@ -549,6 +560,10 @@ void C64::Run(void)
 
 void C64::VBlank(bool draw_frame)
 {
+	/* From Acorn port */
+	static uint64_t lastFrame;
+        static uint32_t now;
+
 #if defined(GEKKO)
 	WPAD_ScanPads();
 #endif
@@ -577,33 +592,17 @@ void C64::VBlank(bool draw_frame)
 	TheCIA2->CountTOD();
 
 	// Update window if needed
-	if (draw_frame) {
+	if (draw_frame && this->network_client == NULL) {
 		TheDisplay->Update();
-#if 0
-		// Calculate time between VBlanks, display speedometer
-		struct timeval tv;
-		gettimeofday(&tv, NULL);
-		if ((tv.tv_usec -= tv_start.tv_usec) < 0) {
-			tv.tv_usec += 1000000;
-			tv.tv_sec -= 1;
-		}
-		tv.tv_sec -= tv_start.tv_sec;
-		double elapsed_time = (double)tv.tv_sec * 1000000 + tv.tv_usec;
-		speed_index = 20000 / (elapsed_time + 1) * 100;
-
-		// Limit speed to 100% if desired
-		if ((speed_index > 100)) {
-			usleep((unsigned long)(20000 - elapsed_time));
-			speed_index = 100;
-		}
-
-		gettimeofday(&tv_start, NULL);
-
-		TheDisplay->Speedometer((int)speed_index);
-#endif
 	}
-	if (this->network_server) {
-		/* Perhaps accept a new connection */
+        static int frms = 1;
+        frms--;
+	if (this->network_server && frms == 0) {
+	        static uint32_t last_time_update;
+	        static size_t bytes_sent;
+
+	        frms = 6;
+	        /* Perhaps accept a new connection */
 		this->network_server->CheckNewConnection();
 
 		for (int i = 0; i < this->network_server->n_clients; i++) {
@@ -613,6 +612,27 @@ void C64::VBlank(bool draw_frame)
 			remote->EncodeDisplay(master, remote->screen);
 			remote->SendUpdate();
 			remote->ResetNetworkUpdate();
+
+			bytes_sent += remote->GetBytesSent();
+		}
+		if (now - last_time_update > 1000)
+		{
+			printf("%.2f kbytes / second\n",
+					((bytes_sent * 1000.0) / ((float)now - last_time_update)) / 1024.0);
+			for (int i = 0; i < this->network_server->n_clients; i++)
+				this->network_server->clients[i]->ResetBytesSent();
+			bytes_sent = 0;
+			last_time_update = now;
+		}
+	}
+	else if (this->network_client) {
+		/* Got something? */
+		if (this->network_client->ReceiveUpdateBlock())
+		{
+			this->network_client->DecodeUpdate(
+					this->network_client->screen);
+			TheDisplay->Update(this->network_client->screen);
+			this->network_client->ResetNetworkUpdate();
 		}
 	}
 	if (this->have_a_break) {
@@ -676,12 +696,10 @@ void C64::VBlank(bool draw_frame)
 		if (this->quit_thyself)
 			ThePrefs.Save(PREFS_PATH);
 	}
-	/* From Acorn port */
-	static uint64_t lastFrame;
 #if defined(GEKKO)
-        uint32_t now = ticks_to_millisecs(gettime());
+        now = ticks_to_millisecs(gettime());
 #else
-        uint32_t now = SDL_GetTicks();
+        now = SDL_GetTicks();
 #endif
 
         if ( (now - lastFrame) < ThePrefs.MsPerFrame) {

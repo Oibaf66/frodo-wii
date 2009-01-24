@@ -82,6 +82,7 @@ public:
 	void FakeKeyPress(int kc, uint8 *CIA_key_matrix, uint8 *CIA_rev_matrix);
 	void TranslateKey(SDLKey key, bool key_up, uint8 *key_matrix, uint8 *rev_matrix, uint8 *joystick);
 	void UpdateKeyMatrix(int c64_key, bool key_up, uint8 *key_matrix, uint8 *rev_matrix);
+	void Update(uint8 *src_pixels);
 #endif
 	bool NumLock(void);
 	void InitColors(uint8 *colors);

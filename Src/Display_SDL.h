@@ -176,9 +176,8 @@ void C64Display::NewPrefs(Prefs *prefs)
  *  Redraw bitmap
  */
 
-void C64Display::Update(void)
+void C64Display::Update(uint8 *src_pixels)
 {
-	Uint8 *src_pixels = (Uint8*)screen;
 	const Uint16 src_pitch = DISPLAY_X;
 
 	if (ThePrefs.DisplayOption == 0) {
@@ -228,6 +227,10 @@ void C64Display::Update(void)
 	SDL_Flip(real_screen);
 }
 
+void C64Display::Update()
+{
+	this->Update((Uint8*)screen);
+}
 
 /*
  *  Draw string into surface using the C64 ROM font
