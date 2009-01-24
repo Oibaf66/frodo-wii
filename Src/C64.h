@@ -183,7 +183,6 @@ public:
 	double speed_index;
 #endif
 #ifdef HAVE_SDL
-	menu_t main_menu;
 	VirtualKeyboard *virtual_keyboard;
 	TTF_Font *menu_font;
 

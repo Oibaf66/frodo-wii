@@ -16,7 +16,34 @@
 # include <wiiuse/wpad.h>
 #endif
 
+#include "sysdeps.h"
+#include "Display.h"
 #include "menu.h"
+
+typedef struct
+{
+  int n_entries;
+  int index;
+  int sel;
+} submenu_t;
+
+
+typedef struct
+{
+  const char **pp_msgs;
+  TTF_Font  *p_font;
+  int        x1,y1;
+  int        x2,y2;
+  int        text_w;
+  int        text_h;
+
+  int        n_submenus;
+  submenu_t *p_submenus;
+
+  int        cur_sel; /* Main selection */
+  int        start_entry_visible;
+  int        n_entries;
+} menu_t;
 
 #define IS_SUBMENU(p_msg) ( (p_msg)[0] == '^' )
 
@@ -173,7 +200,7 @@ static int is_submenu_title(menu_t *p_menu, int n)
 }
 
 
-void menu_init(menu_t *p_menu, TTF_Font *p_font, const char **pp_msgs,
+static void menu_init(menu_t *p_menu, TTF_Font *p_font, const char **pp_msgs,
 	       int16_t x1, int16_t y1, int16_t x2, int16_t y2)
 {
 	int submenu;
@@ -242,7 +269,7 @@ void menu_init(menu_t *p_menu, TTF_Font *p_font, const char **pp_msgs,
 	p_menu->text_h = p_menu->n_entries * (TTF_FontHeight(p_font) + TTF_FontHeight(p_font) / 4);
 }
 
-void menu_fini(menu_t *p_menu)
+static void menu_fini(menu_t *p_menu)
 {
   free(p_menu->p_submenus);
 }
@@ -359,8 +386,8 @@ uint32_t menu_wait_key_press(void)
 }
 
 
-int menu_select(SDL_Surface *screen, menu_t *p_menu,
-                int *p_submenus)
+static int menu_select_internal(SDL_Surface *screen,
+		menu_t *p_menu, int *p_submenus)
 {
 	int ret = -1;
 
@@ -406,6 +433,22 @@ int menu_select(SDL_Surface *screen, menu_t *p_menu,
 	SDL_FillRect(screen, 0, SDL_MapRGB(screen->format, 0, 0, 0));
 	return ret;
 }
+
+int menu_select(SDL_Surface *screen, TTF_Font *font, const char **msgs,
+                int *submenus)
+{
+	menu_t menu;
+	int out;
+
+	menu_init(&menu, font, msgs,
+			32, 32, FULL_DISPLAY_X - FULL_DISPLAY_X / 4,
+			FULL_DISPLAY_Y - FULL_DISPLAY_Y / 4);
+	out = menu_select_internal(screen, &menu, submenus);
+	menu_fini(&menu);
+
+	return out;
+}
+
 
 #if defined(TEST_MENU)
 char *main_menu[] = {

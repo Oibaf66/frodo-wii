@@ -25,7 +25,6 @@
 #endif
 
 static struct timeval tv_start;
-static int MENU_SIZE_X, MENU_SIZE_Y;
 static const char *main_menu_messages[] = {
 		"Invoke key sequence", /* 0 */
 		"Insert disc or tape", /* 1 */
@@ -78,9 +77,6 @@ void C64::c64_ctor1(void)
 	memset(this->save_game_name, 0, sizeof(this->save_game_name));
 	strcpy(this->save_game_name, "unknown");
 
-	MENU_SIZE_X = FULL_DISPLAY_X - FULL_DISPLAY_X / 4;
-	MENU_SIZE_Y = FULL_DISPLAY_Y - FULL_DISPLAY_Y / 4;
-
 	SDL_RWops *rw;
 	
 	Uint8 *data = (Uint8*)malloc(1 * 1024*1024);
@@ -102,8 +98,6 @@ void C64::c64_ctor1(void)
 	        fprintf(stderr, "Unable to open font\n" );
 	        exit(1);		
 	}
-	menu_init(&this->main_menu, this->menu_font, main_menu_messages,
-			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
 
 	this->virtual_keyboard = new VirtualKeyboard(real_screen, this->menu_font);
 }
@@ -120,7 +114,6 @@ void C64::c64_ctor2(void)
 
 void C64::c64_dtor(void)
 {
-	menu_fini(&this->main_menu);
 }
 
 static int cmpstringp(const void *p1, const void *p2)
@@ -189,14 +182,12 @@ static const char **get_file_list(const char *base_dir)
 void C64::select_disc(Prefs *np)
 {
 	const char **file_list = get_file_list(IMAGE_PATH);
-	menu_t select_disc_menu;
 
 	if (file_list == NULL)
 		return;
 
-	menu_init(&select_disc_menu, this->menu_font, file_list,
-			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
-	int opt = menu_select(real_screen, &select_disc_menu, NULL);
+	int opt = menu_select(real_screen, this->menu_font,
+			file_list, NULL);
 	if (opt >= 0)
 	{
 		const char *name = file_list[opt];
@@ -247,7 +238,6 @@ void C64::select_disc(Prefs *np)
 		}
 		this->prefs_changed = true;
 	}
-        menu_fini(&select_disc_menu);
 
         /* Cleanup everything */
         for ( int i = 0; file_list[i]; i++ )
@@ -275,8 +265,6 @@ void C64::bind_keys(Prefs *np)
 {
 	const char *bind_key_messages[N_WIIMOTE_BINDINGS + 1];
 	bool has_classic_controller = false;
-        menu_t bind_key_menu;
-        menu_t key_menu;
 
 #if defined(GEKKO)
         WPADData *wpad, *wpad_other;
@@ -294,9 +282,8 @@ void C64::bind_keys(Prefs *np)
         for (int i = 0; i < (has_classic_controller ? N_WIIMOTE_BINDINGS : 5); i++)
         	bind_key_messages[i] = this->bind_one_key(np, i);
 
-        menu_init(&bind_key_menu, this->menu_font, bind_key_messages,
-			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
-	int opt = menu_select(real_screen, &bind_key_menu, NULL);
+	int opt = menu_select(real_screen, this->menu_font,
+			bind_key_messages, NULL);
 	if (opt >= 0)
 	{
 	        int key;
@@ -310,12 +297,10 @@ void C64::bind_keys(Prefs *np)
 			np->JoystickKeyBinding[opt] = key;
 		}
 	}
-        menu_fini(&bind_key_menu);
 }
 
 void C64::other_options(Prefs *np)
 {
-        menu_t display_menu;
         int submenus[3] = { np->DisplayOption, 0, !np->Emul1541Proc };
 
 #define SPEED_95 33
@@ -332,9 +317,8 @@ void C64::other_options(Prefs *np)
         	/* If it has some other value... */
         	submenus[1] = 1; break;
         }
-        menu_init(&display_menu, this->menu_font, other_options_messages,
-			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
-	int opt = menu_select(real_screen, &display_menu, submenus);
+	int opt = menu_select(real_screen, this->menu_font,
+			other_options_messages, submenus);
 	if (opt >= 0)
 	{
 		np->DisplayOption = submenus[0];
@@ -352,7 +336,6 @@ void C64::other_options(Prefs *np)
 		}
 		this->prefs_changed = true;
 	}
-        menu_fini(&display_menu);
 }
 
 /* From dreamcast port but heavily modified */
@@ -398,14 +381,10 @@ void C64::select_fake_key_sequence(Prefs *np)
 			"10 PRINT \"HELLO WORLD\"  and  20 GOTO 10",
 			"Type with virtual keyboard",
 			NULL};
-	menu_t fake_key_menu;
 	int opt;
 
-	menu_init(&fake_key_menu, this->menu_font, fake_key_messages,
-			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
-
-	opt = menu_select(real_screen, &fake_key_menu, NULL);
-	menu_fini(&fake_key_menu);
+	opt = menu_select(real_screen, this->menu_font,
+			fake_key_messages, NULL);
 	if (opt < 0)
 		return;
 
@@ -422,12 +401,8 @@ void C64::select_fake_key_sequence(Prefs *np)
 
 void C64::save_load_state(Prefs *np)
 {
-	menu_t save_load_menu;
-	menu_t select_saves_menu;
-
-	menu_init(&save_load_menu, this->menu_font, save_load_state_messages,
-			32, 32, MENU_SIZE_X, MENU_SIZE_Y);
-	int opt = menu_select(real_screen, &save_load_menu, NULL);
+	int opt = menu_select(real_screen, this->menu_font,
+			save_load_state_messages, NULL);
 	switch(opt)
 	{
 	case 1: /* save */
@@ -449,9 +424,8 @@ void C64::save_load_state(Prefs *np)
 
 		if (file_list == NULL)
 			break;
-		menu_init(&select_saves_menu, this->menu_font, file_list,
-				32, 32, MENU_SIZE_X, MENU_SIZE_Y);
-		int save = menu_select(real_screen, &select_saves_menu, NULL);
+		int save = menu_select(real_screen, this->menu_font,
+				file_list, NULL);
 		if (save >= 0)
 		{
 			char save_buf[255];
@@ -471,7 +445,6 @@ void C64::save_load_state(Prefs *np)
 				this->prefs_changed = true;
 			}
 		}
-		menu_fini(&select_saves_menu);
 
 		/* Cleanup everything */
 		for ( int i = 0; file_list[i]; i++ )
@@ -481,7 +454,6 @@ void C64::save_load_state(Prefs *np)
 	default:
 		break;
 	}
-	menu_fini(&save_load_menu);
 }
 
 /*
@@ -575,7 +547,8 @@ void C64::VBlank(bool draw_frame)
 
 		TheSID->PauseSound();
 		submenus[0] = old_swap;
-		opt = menu_select(real_screen, &this->main_menu, submenus);
+		opt = menu_select(real_screen, this->menu_font,
+				main_menu_messages, submenus);
 
 		switch(opt)
 		{
