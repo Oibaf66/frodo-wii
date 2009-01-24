@@ -355,7 +355,35 @@ void C64::other_options(Prefs *np)
         menu_fini(&display_menu);
 }
 
-void C64::run_fake_key_sequence(Prefs *np)
+/* From dreamcast port but heavily modified */
+void C64::run_fake_key_sequence()
+{
+	int kc = this->virtual_keyboard->char_to_keycode(this->fake_key_str[this->fake_key_index]);
+
+	TheDisplay->FakeKeyPress(kc, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
+
+	this->fake_key_keytime --;
+        if (this->fake_key_keytime == 0)
+        {
+                this->fake_key_keytime = 4;
+                this->fake_key_index ++;
+
+		if (this->fake_key_str[this->fake_key_index] == '\0')
+                {
+                        this->fake_key_sequence = false;
+                        this->fake_key_index = 0;
+                        this->fake_key_keytime = 5;
+                }
+        }
+}
+
+void C64::start_fake_key_sequence(const char *str)
+{
+	this->fake_key_str = str;
+	this->fake_key_sequence = true;
+}
+
+void C64::select_fake_key_sequence(Prefs *np)
 {
 	static const char *fake_key_sequences[] = {
 			"\nLOAD \"*\",8,1\nRUN\n",
@@ -368,6 +396,7 @@ void C64::run_fake_key_sequence(Prefs *np)
 			"LOAD \"?\",8",
 			"LIST",
 			"10 PRINT \"HELLO WORLD\"  and  20 GOTO 10",
+			"Type with virtual keyboard",
 			NULL};
 	menu_t fake_key_menu;
 	int opt;
@@ -380,8 +409,15 @@ void C64::run_fake_key_sequence(Prefs *np)
 	if (opt < 0)
 		return;
 
-	this->fake_key_str = fake_key_sequences[opt];
-	this->fake_key_sequence = true;
+	if (opt == 4)
+	{
+		const char *seq = this->virtual_keyboard->get_string();
+
+		if (seq != NULL)
+			this->start_fake_key_sequence(seq);
+	}
+	else
+		this->start_fake_key_sequence(fake_key_sequences[opt]);
 }
 
 void C64::save_load_state(Prefs *np)
@@ -489,27 +525,8 @@ void C64::VBlank(bool draw_frame)
 	if (TheDisplay->quit_requested)
 		quit_thyself = true;
 
-	/* From dreamcast port */
 	if (this->fake_key_sequence)
-	{
-		int kc = this->virtual_keyboard->char_to_keycode(this->fake_key_str[this->fake_key_index]);
-
-		TheDisplay->FakeKeyPress(kc, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
-
-		this->fake_key_keytime --;
-                if (this->fake_key_keytime == 0)
-                {
-                        this->fake_key_keytime = 4;
-                        this->fake_key_index ++;
-
-			if (this->fake_key_str[this->fake_key_index] == '\0')
-                        {
-                                this->fake_key_sequence = false;
-                                this->fake_key_index = 0;
-                                this->fake_key_keytime = 5;
-                        }
-                }
-	}
+		this->run_fake_key_sequence();
 #ifndef GEKKO
 	// Joystick keyboard emulation
 	if (TheDisplay->NumLock())
@@ -563,7 +580,7 @@ void C64::VBlank(bool draw_frame)
 		switch(opt)
 		{
 		case 0: /* Load disc/tape */
-			this->run_fake_key_sequence(&np);
+			this->select_fake_key_sequence(&np);
 			break;
 		case 1: /* Insert disc/tape */
 			this->select_disc(&np);

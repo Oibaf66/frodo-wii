@@ -196,7 +196,9 @@ public:
 	char save_game_name[256];
 
 	void select_disc(Prefs *np);
-	void run_fake_key_sequence(Prefs *np);
+	void select_fake_key_sequence(Prefs *np);
+	void start_fake_key_sequence(const char *str);
+	void run_fake_key_sequence();
 	char * bind_one_key(Prefs *np, int which);
 	void bind_keys(Prefs *np);
 	void other_options(Prefs *np);

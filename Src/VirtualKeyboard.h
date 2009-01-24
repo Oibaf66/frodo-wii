@@ -12,6 +12,8 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
+struct virtkey; 
+
 class VirtualKeyboard
 {
 public:
@@ -23,7 +25,7 @@ public:
 
 private:
 	const char get_char(int kc);
-	int get_key_internal();
+	struct virtkey *get_key_internal();
 	void draw();
 	void select_next(int dx, int dy);
 	void toggle_shift();

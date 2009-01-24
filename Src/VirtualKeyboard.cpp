@@ -15,11 +15,12 @@
 #include "menu.h"
 #include "VirtualKeyboard.h"
 
-typedef struct
+typedef struct virtkey
 {
 	const char *name;
 	int kc;
 	bool is_shift;
+	bool is_done;
 } virtkey_t;
 
 /*
@@ -38,11 +39,13 @@ typedef struct
 #define MATRIX(a,b) (((a) << 3) | (b))
 
 #define K(name, a,b) \
-	{ name, MATRIX(a,b), false }
+	{ name, MATRIX(a,b), false, false }
 #define S(name, a,b) \
-	{ name, MATRIX(a,b), true }
+	{ name, MATRIX(a,b), true, false }
 #define N(name) \
-	{ name, -1, false }
+	{ name, -1, false, false }
+#define D(name) \
+	{ name, -1, false, true }
 
 #define KEY_COLS 15
 #define KEY_ROWS 5
@@ -52,7 +55,7 @@ static virtkey_t keys[KEY_COLS * KEY_ROWS] = {
 	K("Cr", 7,2),      K("Q", 7,6), K("W", 1,1), K("E", 1,6), K("R", 2,1), K("T", 2,6), K("Y", 3,1), K("U", 3,6), K("I", 4,1), K("O", 4,6), K("P", 5,1), K("@", 5,6), K("*", 6,1), K("Au", 6,6),K("Rstr",4,0),
 	K("R/Stp", 7,7),   K(NULL,0,0), K("A", 1,2), K("S", 1,5), K("D", 2,2), K("F", 2,5), K("G", 3,2), K("H", 3,5), K("J", 4,2), K("K", 4,5), K("L", 5,2), K(":", 5,5), K(";", 6,2), K("=", 6,5), K("Ret", 0,1),
 	K("C=", 7,5),      S("Shft",1,7),K(NULL,0,0),K("Z", 1,4), K("X", 2,7), K("C", 2,4), K("V", 3,7), K("B", 3,4), K("N", 4,7), K("M", 4,4), K(",", 5,7), K(".", 5,4), K("/", 6,7), K("Dwn",0,7),K("Rgt", 0,2),
-	N("None"),         K(NULL,0,0), K(NULL,0,0), K("space", 7,4),K(0, 0,0),K(NULL,0,0), K("f1", 0,4),K("f3", 0,5),K("f5", 0,6),K("f7", 0,3),K(NULL,0,0), K(NULL,0,0), K(NULL,0,0), K(NULL,0,0), K("Del", 0,0),
+	N("None"),         K(NULL,0,0), K(NULL,0,0), K("space", 7,4),K(0, 0,0),K(NULL,0,0), K("f1", 0,4),K("f3", 0,5),K("f5", 0,6),K("f7", 0,3),K("Del",0,0),K(NULL,0,0), K(NULL,0,0), K(NULL,0,0), D("DONE"),
 };
 
 static const char *shifted_names[KEY_COLS * KEY_ROWS] = {
@@ -60,7 +63,7 @@ static const char *shifted_names[KEY_COLS * KEY_ROWS] = {
 	NULL,              NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,
 	NULL,              NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        "[",         "]",         NULL,        NULL,
 	NULL,              NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,         "<",         ">",        "?",         "Up",        "Lft",
-	NULL,              NULL,        NULL,        NULL,        NULL,        NULL,        "f2",        "f4",        "f6",        "f8",        NULL,        NULL,        NULL,        NULL,        "Ins",
+	NULL,              NULL,        NULL,        NULL,        NULL,        NULL,        "f2",        "f4",        "f6",        "f8",        "Ins",       NULL,        NULL,        NULL,        NULL,
 };
 
 VirtualKeyboard::VirtualKeyboard(SDL_Surface *screen, TTF_Font *font)
@@ -196,7 +199,6 @@ int VirtualKeyboard::char_to_keycode(char c)
 		}
 	}
 
-	printf("Vobb! c=%d\n", c);
 	return -1;
 }
 
@@ -206,10 +208,8 @@ const char VirtualKeyboard::get_char(int kc)
 	return this->keycode_to_string(kc)[0];
 }
 
-int VirtualKeyboard::get_key_internal()
+struct virtkey *VirtualKeyboard::get_key_internal()
 {
-	int kc = -1;
-
 	while(1)
 	{
 		uint32_t k;
@@ -228,30 +228,34 @@ int VirtualKeyboard::get_key_internal()
 		else if (k & KEY_RIGHT)
 			this->select_next(1, 0);
 		else if (k & KEY_ESCAPE)
-			return -2;
+			return NULL;
 		else if (k & KEY_SELECT)
 		{
-			virtkey_t key = keys[ this->sel_y * KEY_COLS + this->sel_x ];
+			virtkey_t *key = &keys[ this->sel_y * KEY_COLS + this->sel_x ];
 
-			kc = key.kc;
-			if (this->shift_on)
-				kc |= 0x80;
-
-			if (key.is_shift == true)
+			if (key->is_shift == true)
 				this->toggle_shift();
 			else
-				return kc;
+				return key;
 		}
 	}
 
-	return kc;
+	return NULL;
 }
 
 int VirtualKeyboard::get_key()
 {
+	virtkey_t *key;
+
 	SDL_FillRect(this->screen, 0, SDL_MapRGB(screen->format, 0x00, 0x80, 0x80));
 
-	return this->get_key_internal();
+	key = this->get_key_internal();
+	if (key == NULL)
+		return -2;
+
+	if (key->is_shift)
+		return key->kc | 0x80;
+	return key->kc;
 }
 
 const char *VirtualKeyboard::get_string()
@@ -263,18 +267,41 @@ const char *VirtualKeyboard::get_string()
 
 	while (true)
 	{
-		int kc = this->get_key_internal();
+		virtkey_t *key = this->get_key_internal();
+		char c;
 
-		/* Abort or None */
-		if (kc == -2 || kc == -1)
+		/* Abort */
+		if (key == NULL)
 			return NULL;
-		/* Return */
-		if (kc == MATRIX(0, 1))
-			return this->buf;
 
-		this->buf[cnt] = this->get_char(kc);
+		/* Done */
+		if (key->is_done)
+			return this->buf;
+		/* Skip None */
+		if (key->kc == -1)
+			continue;
+
+		/* Special-case for delete */
+		if (strcmp(key->name, "Del") == 0)
+		{
+			if (cnt < 1)
+				continue;
+			this->buf[cnt - 1] = ' ';
+			cnt -= 2;
+		}
+		else
+		{
+			c = this->get_char( this->shift_on ? key->kc | 0x80 : key->kc );
+
+			if (strcmp(key->name, "space") == 0)
+				c = ' ';
+			else if (strcmp(key->name, "Ret") == 0)
+				c = '\n';
+			this->buf[cnt] = c;
+		}
+
 		cnt++;
-		if (cnt >= sizeof(this->buf))
+		if (cnt >= sizeof(this->buf) - 1)
 			return this->buf;
 
 		/* SDL_Flip is done in get_key_internal() */
