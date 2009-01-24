@@ -60,7 +60,7 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 #---------------------------------------------------------------------------------
 # automatically build a list of object files for our project
 #---------------------------------------------------------------------------------
-CFILES		:= char_to_kc.c gcaudio.c
+CFILES		:= gcaudio.c
 CPPFILES	:= Display.cpp main.cpp Prefs.cpp SID.cpp REU.cpp IEC.cpp 1541fs.cpp \
                1541d64.cpp 1541t64.cpp 1541job.cpp SAM.cpp C64_SC.cpp CPUC64_SC.cpp VIC_SC.cpp \
                CIA_SC.cpp CPU1541_SC.cpp menu.cpp CPU_common.cpp VirtualKeyboard.cpp

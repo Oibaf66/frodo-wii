@@ -350,6 +350,7 @@ void C64::run_fake_key_sequence()
         {
                 this->fake_key_keytime = 4;
                 this->fake_key_index ++;
+        	TheDisplay->FakeKeyPress(-1, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
 
 		if (this->fake_key_str[this->fake_key_index] == '\0')
                 {
@@ -370,15 +371,13 @@ void C64::select_fake_key_sequence(Prefs *np)
 {
 	static const char *fake_key_sequences[] = {
 			"\nLOAD \"*\",8,1\nRUN\n",
-			"\nLOAD \"?\",8\n",
+			"\nLOAD \"$\",8\n",
 			"\nLIST\n",
-			"\n10 PRINT \"HELLO WORLD\"\n20 GOTO 10\nRUN\n",
 			NULL};
 	const char *fake_key_messages[] = {
 			"LOAD \"*\",8,1  and  RUN",
-			"LOAD \"?\",8",
+			"LOAD \"$\",8",
 			"LIST",
-			"10 PRINT \"HELLO WORLD\"  and  20 GOTO 10",
 			"Type with virtual keyboard",
 			NULL};
 	int opt;
@@ -388,7 +387,7 @@ void C64::select_fake_key_sequence(Prefs *np)
 	if (opt < 0)
 		return;
 
-	if (opt == 4)
+	if (opt == 3)
 	{
 		const char *seq = this->virtual_keyboard->get_string();
 

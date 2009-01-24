@@ -106,6 +106,8 @@ void VirtualKeyboard::draw()
 			if (this->shift_on && shifted_names[which])
 				what = shifted_names[which];
 
+			if ( key.is_done )
+				r = 0;
 			if ( (x == this->sel_x && y == this->sel_y) ||
 					(this->shift_on && key.is_shift))
 				b = 0;

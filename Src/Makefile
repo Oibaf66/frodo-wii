@@ -28,7 +28,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 ## Files
 GUIOBJS = 
 OBJS    = $(GUIOBJS) main.o Prefs.o SID.o REU.o IEC.o 1541fs.o \
-          1541d64.o 1541t64.o 1541job.o SAM.o CmdPipe.o menu.o char_to_kc.o Network.o \
+          1541d64.o 1541t64.o 1541job.o SAM.o CmdPipe.o menu.o Network.o \
           VirtualKeyboard.o
 SLOBJS  = $(OBJS) C64.o CPUC64.o VIC.o CIA.o CPU1541.o Display.o 
 SLFLAGS = -DPRECISE_CPU_CYCLES=1 -DPRECISE_CIA_CYCLES=1 -DPC_IS_POINTER=0
@@ -39,7 +39,7 @@ SRCS    = $(GUISRCS) main.cpp Display.cpp Prefs.cpp SID.cpp REU.cpp IEC.cpp 1541
           1541d64.cpp 1541t64.cpp 1541job.cpp SAM.cpp CmdPipe.cpp C64.cpp \
           C64_SC.cpp CPUC64.cpp CPUC64_SC.cpp VIC.cpp VIC_SC.cpp CIA.cpp \
           CIA_SC.cpp CPU1541.cpp CPU1541_PC.cpp CPU1541_SC.cpp CPU_common.cpp \
-          menu.cpp char_to_kc.c
+          menu.cpp
 
 ## Rules
 .PHONY: install installdirs uninstall clean distclean depend dep
