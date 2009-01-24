@@ -71,7 +71,7 @@ void C64::c64_ctor1(void)
 
 	this->fake_key_sequence = false;
 	this->fake_key_index = 0;
-	this->fake_key_keytime = 5;
+	this->fake_key_keytime = 4;
         this->fake_key_str = "\nLOAD \"*\",8,1\nRUN\n";
 
 	this->prefs_changed = false;
@@ -470,8 +470,6 @@ void C64::Run(void)
 	thread_func();
 }
 
-extern "C" int get_kc_from_char(char c_in, int *shifted);
-
 /*
  *  Vertical blank: Poll keyboard and joysticks, update window
  */
@@ -494,16 +492,14 @@ void C64::VBlank(bool draw_frame)
 	/* From dreamcast port */
 	if (this->fake_key_sequence)
 	{
-                int shifted;
-                int kc = get_kc_from_char(this->fake_key_str[this->fake_key_index], &shifted);
+		int kc = this->virtual_keyboard->char_to_keycode(this->fake_key_str[this->fake_key_index]);
 
-		TheDisplay->FakeKeyPress(kc, shifted, TheCIA1->KeyMatrix,
-				TheCIA1->RevMatrix);
+		TheDisplay->FakeKeyPress(kc, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
 
 		this->fake_key_keytime --;
                 if (this->fake_key_keytime == 0)
                 {
-                        this->fake_key_keytime = 1;
+                        this->fake_key_keytime = 4;
                         this->fake_key_index ++;
 
 			if (this->fake_key_str[this->fake_key_index] == '\0')
@@ -605,7 +601,7 @@ void C64::VBlank(bool draw_frame)
 			this->NewPrefs(&np);
 			ThePrefs = np;
 		}
-		TheDisplay->FakeKeyPress(-1, false, TheCIA1->KeyMatrix,
+		TheDisplay->FakeKeyPress(-1, TheCIA1->KeyMatrix,
 				TheCIA1->RevMatrix);
 
 		this->have_a_break = false;

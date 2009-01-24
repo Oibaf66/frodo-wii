@@ -312,37 +312,18 @@ int C64Display::BitmapXMod(void)
 	return DISPLAY_X;
 }
 
-void C64Display::FakeKeyPress(int kc, bool shift, uint8 *CIA_key_matrix,
+void C64Display::FakeKeyPress(int kc, uint8 *CIA_key_matrix,
 		uint8 *CIA_rev_matrix)
 {
-        // Clear matrices                                                                                                                       
+	int shifted = kc & 0x80;
+	// Clear matrices
         for (int i = 0; i < 8; i ++)
         {
                 CIA_key_matrix[i] = 0xFF;
                 CIA_rev_matrix[i] = 0xFF;
         }
-
-        if (shift)
-        {
-                CIA_key_matrix[6] &= 0xef;
-                CIA_rev_matrix[4] &= 0xbf;
-        }
-
         if (kc != -1)
-        {
-                int c64_byte, c64_bit, shifted;
-                c64_byte = kc >> 3;
-                c64_bit = kc & 7;
-                shifted = kc & 128;
-                c64_byte &= 7;
-                if (shifted)
-                {
-                        CIA_key_matrix[6] &= 0xef;
-                        CIA_rev_matrix[4] &= 0xbf;
-                }
-                CIA_key_matrix[c64_byte] &= ~(1 << c64_bit);
-                CIA_rev_matrix[c64_bit] &= ~(1 << c64_byte);
-        }
+        	this->UpdateKeyMatrix(kc, false, CIA_key_matrix, CIA_rev_matrix);
 }
 
 void C64Display::UpdateKeyMatrix(int c64_key, bool key_up, uint8 *key_matrix, uint8 *rev_matrix)

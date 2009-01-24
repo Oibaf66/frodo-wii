@@ -49,7 +49,7 @@ typedef struct
 
 static virtkey_t keys[KEY_COLS * KEY_ROWS] = {
 	K("<-",7,1),       K("1", 7,0), K("2", 7,3), K("3", 1,0), K("4", 1,3), K("5", 2,0), K("6", 2,3), K("7", 3,0), K("8", 3,3), K("9", 4,0), K("0", 4,3), K("+", 5,0), K("-", 5,3), K("£", 6,0), K("Hom", 6,3),
-	K("Cr", 7,2),      K("Q", 7,6), K("W", 1,1), K("E", 1,6), K("R", 2,2), K("T", 2,6), K("Y", 3,1), K("U", 3,6), K("I", 4,1), K("O", 6,6), K("P", 5,1), K("@", 5,6), K("*", 6,1), K("Au", 6,6),K("Rstr",4,0),
+	K("Cr", 7,2),      K("Q", 7,6), K("W", 1,1), K("E", 1,6), K("R", 2,1), K("T", 2,6), K("Y", 3,1), K("U", 3,6), K("I", 4,1), K("O", 4,6), K("P", 5,1), K("@", 5,6), K("*", 6,1), K("Au", 6,6),K("Rstr",4,0),
 	K("R/Stp", 7,7),   K(NULL,0,0), K("A", 1,2), K("S", 1,5), K("D", 2,2), K("F", 2,5), K("G", 3,2), K("H", 3,5), K("J", 4,2), K("K", 4,5), K("L", 5,2), K(":", 5,5), K(";", 6,2), K("=", 6,5), K("Ret", 0,1),
 	K("C=", 7,5),      S("Shft",1,7),K(NULL,0,0),K("Z", 1,4), K("X", 2,7), K("C", 2,4), K("V", 3,7), K("B", 3,4), K("N", 4,7), K("M", 4,4), K(",", 5,7), K(".", 5,4), K("/", 6,7), K("Dwn",0,7),K("Rgt", 0,2),
 	N("None"),         K(NULL,0,0), K(NULL,0,0), K("space", 7,4),K(0, 0,0),K(NULL,0,0), K("f1", 0,4),K("f3", 0,5),K("f5", 0,6),K("f7", 0,3),K(NULL,0,0), K(NULL,0,0), K(NULL,0,0), K(NULL,0,0), K("Del", 0,0),
@@ -169,6 +169,35 @@ const char *VirtualKeyboard::keycode_to_string(int kc)
 	}
 
 	return out;
+}
+
+int VirtualKeyboard::char_to_keycode(char c)
+{
+	for (int i = 0; i < KEY_COLS * KEY_ROWS; i++)
+	{
+		virtkey_t key = keys[i];
+
+		if (key.name != NULL)
+		{
+			if (strlen(key.name) == 1)
+			{
+				if (key.name[0] == c)
+					return key.kc;
+				if (shifted_names[i] && strlen(shifted_names[i]) == 1 &&
+						shifted_names[i][0] == c)
+					return key.kc | 0x80;
+			}
+
+			/* OK, ugly special cases, but these are pretty important */
+			if (c == ' ' && strcmp(key.name, "space") == 0)
+				return key.kc;
+			if (c == '\n' && strcmp(key.name, "Ret") == 0)
+				return key.kc;
+		}
+	}
+
+	printf("Vobb! c=%d\n", c);
+	return -1;
 }
 
 const char VirtualKeyboard::get_char(int kc)

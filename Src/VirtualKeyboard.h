@@ -19,6 +19,7 @@ public:
 	int get_key();
 	const char *get_string();
 	const char *keycode_to_string(int kc);
+	int char_to_keycode(char c);
 
 private:
 	const char get_char(int kc);
