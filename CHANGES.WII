@@ -1,3 +1,8 @@
+version 7:
+        TODO: Multiple frodo versions, switch between
+
+        -- Simon Kagstrom <simon.kagstrom@gmail.com>,
+
 version 6:
         TODO: Multiple frodo versions, switch between
         * Handle reset button (back to menu)
@@ -14,7 +19,8 @@ version 6:
 		  is not a PRG to load correctly). Thanks to Dominik Reichardt for pointing
 		  this out
 
-        -- Simon Kagstrom <simon.kagstrom@gmail.com>,
+        -- Simon Kagstrom <simon.kagstrom@gmail.com>, Sat Jan 24 11:48:01 CET 2009
+
 
 version 5:
 		* Some wiimote sanity checks

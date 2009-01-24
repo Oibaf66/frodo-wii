@@ -24,6 +24,7 @@
 /* SDL menu */
 #include "menu.h"
 #include "VirtualKeyboard.h"
+#include "Network.h"
 #endif
 
 #ifdef __BEOS__
@@ -184,6 +185,10 @@ public:
 #endif
 #ifdef HAVE_SDL
 	VirtualKeyboard *virtual_keyboard;
+	NetworkServer *network_server;
+	NetworkClient *network_client;
+	char server_hostname[255];
+	int server_port;
 	TTF_Font *menu_font;
 
 	bool fake_key_sequence;
@@ -201,6 +206,7 @@ public:
 	char * bind_one_key(Prefs *np, int which);
 	void bind_keys(Prefs *np);
 	void other_options(Prefs *np);
+	void networking_menu(Prefs *np);
 	void save_load_state(Prefs *np);
 #endif
 

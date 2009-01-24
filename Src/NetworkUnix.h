@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netdb.h>
 
 /* From glibc docs */
 static int make_socket (uint16_t port)
@@ -30,51 +31,101 @@ static int make_socket (uint16_t port)
 	return sock;
 }
 
+bool init_sockaddr (struct sockaddr_in *name,
+		const char *hostname, uint16_t port)
+{
+	struct hostent *hostinfo;
 
-NetworkServer::NetworkServer()
+	name->sin_family = AF_INET;
+	name->sin_port = htons (port);
+	hostinfo = gethostbyname (hostname);
+	if (hostinfo == NULL)
+	{
+		fprintf (stderr, "Unknown host %s.\n", hostname);
+		return false;
+	}
+	name->sin_addr = *(struct in_addr *) hostinfo->h_addr;
+
+	return true;
+}
+
+
+NetworkServer::NetworkServer(int port)
 {
 	this->n_clients = 0;
-	this->listen_sock = make_socket(27697);
+	this->listen_sock = make_socket(port);
 
-	FD_ZERO(&this->listen_fds);
-	FD_SET(this->listen_sock, &this->listen_fds);
-
-	if (listen(this->listen_sock, 4) < 0)
+	if (listen(this->listen_sock, MAX_NETWORK_CLIENTS) < 0)
 	{
 		perror("listen");
 		exit(1);
 	}
 }
 
-NetworkClient *NetworkServer::CheckNewConnection()
+bool NetworkServer::CheckNewConnection()
 {
 	struct timeval tv;
 	struct sockaddr_in client_name;
 	size_t size;
 	int client_sock;
+	fd_set listen_fds;
+
+	/* No more than that thanks... */
+	if (this->n_clients >= MAX_NETWORK_CLIENTS)
+		return false;
+
+	FD_ZERO(&listen_fds);
+	FD_SET(this->listen_sock, &listen_fds);
 
 	/* If something connects, create a new client */
 	memset(&tv, 0, sizeof(tv));
-	if (select(1, &this->listen_fds, NULL, NULL, &tv) <= 0)
-		return NULL;
+	int v = select(this->listen_sock + 1, &listen_fds, NULL, NULL, &tv);
+
+	if ( v < 0)
+	{
+		perror("select");
+		exit(1);
+	}
+	else if ( v == 0 )
+		return false;
 
 	client_sock = accept(this->listen_sock, (struct sockaddr*)&client_name, &size);
 	if (client_sock < 0)
 	{
 		fprintf(stderr, "Accepting client failed\n");
-		return NULL;
+		return false;
 	}
 
-	return new NetworkClient(client_sock);
+	printf("Nej men vobb! En klient har konnektat!\n");
+	/* And add the new one! */
+	this->AddClient(client_sock);
+
+	return true;
 }
 
-
-NetworkClient::NetworkClient(int sock)
+NetworkClient::NetworkClient(const char *hostname, int port)
 {
-	this->sock = sock;
+	/* Again from glibc docs */
+	struct sockaddr_in servername;
 
-	/* Assume black screen */
-	memset(this->screen, 0, DISPLAY_X * DISPLAY_Y);
+	/* Create the socket. */
+	this->sock = socket (PF_INET, SOCK_STREAM, 0);
+	if (this->sock < 0)
+	{
+		perror ("socket (client)");
+		return;
+	}
+
+	/* Connect to the server. */
+	init_sockaddr (&servername, hostname, port);
+	if (connect(sock, (struct sockaddr *) &servername,
+			sizeof (servername)) != 0)
+	{
+		perror ("connect (client)");
+		return;
+	}
+
+	NetworkClient::NetworkClient(this->sock);
 }
 
 bool Network::ReceiveUpdate(NetworkUpdate *dst, int sock, struct timeval *tv)
@@ -103,13 +154,16 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, int sock, struct timeval *tv)
 	return true;
 }
 
-bool Network::SendUpdate(NetworkUpdate *src, int sock)
+bool Network::SendUpdate(int sock)
 {
+	NetworkUpdate *src = this->ud;
 	int sz = src->size;
+	bool out = true;
 
 	this->MarshalData(src);
 	sz = write(sock, (void*)src, sz);
 	if (sz < src->size)
-		return false;
-	return true;
+		out = false;
+
+	return out;
 }

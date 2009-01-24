@@ -22,8 +22,8 @@
 #include "Network.h"
 #include "Display.h"
 
-#define N_SQUARES_W 6
-#define N_SQUARES_H 4
+#define N_SQUARES_W 20
+#define N_SQUARES_H 20
 
 #define SQUARE_W (DISPLAY_X / N_SQUARES_W)
 #define SQUARE_H (DISPLAY_Y / N_SQUARES_H)
@@ -32,6 +32,20 @@
 #define SQUARE_TO_Y(square) ( ((square) / N_SQUARES_W) * SQUARE_H )
 
 #define RAW_SIZE ( (SQUARE_W * SQUARE_H) / 2 )
+
+Network::Network()
+{
+	const size_t size = NETWORK_UPDATE_SIZE;
+
+	/* "big enough" static buffer */
+	this->ud = (NetworkUpdate*)malloc( size );
+	this->ResetNetworkUpdate();
+}
+
+Network::~Network()
+{
+	free(this->ud);
+}
 
 size_t Network::EncodeDisplayRaw(struct NetworkDisplayUpdate *dst, Uint8 *screen,
 		int x_start, int y_start)
@@ -193,6 +207,45 @@ size_t Network::EncodeDisplaySquare(struct NetworkDisplayUpdate *dst,
 	return dst->size;
 }
 
+bool Network::CompareSquare(Uint8 *a, Uint8 *b)
+{
+	for (int y = 0; y < SQUARE_H; y++)
+	{
+		for (int x = 0; x < SQUARE_W; x++)
+		{
+			Uint8 va = a[ y * DISPLAY_X + x ];
+			Uint8 vb = b[ y * DISPLAY_X + x ];
+
+			if (va == vb)
+				return false;
+		}
+	}
+
+	return true;
+}
+
+size_t Network::EncodeDisplay(Uint8 *master, Uint8 *remote)
+{
+	for ( int sq = 0; sq < N_SQUARES_H * N_SQUARES_W; sq++ )
+	{
+		Uint8 *p_master = &master[ SQUARE_TO_Y(sq) * DISPLAY_X + SQUARE_TO_X(sq) ]; 
+		Uint8 *p_remote= &remote[ SQUARE_TO_Y(sq) * DISPLAY_X + SQUARE_TO_X(sq) ]; 
+
+		if (this->CompareSquare(p_master, p_remote) == false)
+		{
+			NetworkDisplayUpdate *dst = (NetworkDisplayUpdate *)this->cur_ud;
+
+			/* Updated, encode this */
+			this->EncodeDisplaySquare(dst, master, sq);
+			this->AddNetworkUpdate((NetworkUpdate*)dst);
+		}
+	}
+
+	/* Everything encoded, store in remote */
+	memcpy(remote, master, DISPLAY_X * DISPLAY_Y);
+}
+
+
 bool Network::DecodeDisplayUpdate(Uint8 *screen,
 		struct NetworkDisplayUpdate *src)
 {
@@ -246,37 +299,28 @@ size_t Network::DecodeSoundUpdate(struct NetworkSoundUpdate *src, char *buf)
 	return out;
 }
 
-NetworkUpdate *Network::GetNetworkUpdate(void)
+void Network::ResetNetworkUpdate(void)
 {
-	static NetworkUpdate *out;
-	const size_t size = NETWORK_UPDATE_SIZE;
+	memset(this->ud, 0, NETWORK_UPDATE_SIZE);
 
-	if (!out)
-	{
-		/* "big enough" static buffer */
-		out = (NetworkUpdate*)malloc( size );
-	}
-	memset(out, 0, size);
-
-	out->type = HEADER;
-	out->size = 0;
-
-	return out;
+	this->ud->type = HEADER;
+	this->ud->size = sizeof(NetworkUpdate);
+	this->cur_ud = (Uint8*)(this->ud + sizeof(NetworkUpdate));
 }
 
 
-bool Network::ReceiveUpdate(NetworkUpdate *dst, int sock)
+bool Network::ReceiveUpdate(int sock)
 {
 	struct timeval tv;
 
 	memset(&tv, 0, sizeof(tv));
-	return this->ReceiveUpdate(dst, sock, &tv);
+	return this->ReceiveUpdate(this->ud, sock, &tv);
 }
 
 
-bool Network::ReceiveUpdateBlock(NetworkUpdate *dst, int sock)
+bool Network::ReceiveUpdateBlock(int sock)
 {
-	return this->ReceiveUpdate(dst, sock, NULL);
+	return this->ReceiveUpdate(this->ud, sock, NULL);
 }
 
 void Network::MarshalData(NetworkUpdate *ud)
@@ -368,6 +412,31 @@ NetworkUpdate *Network::IterateNext(NetworkUpdate *p, unsigned int *cookie)
 	*cookie = *cookie + cur->size;
 
 	return cur;
+}
+
+void NetworkServer::AddClient(int sock)
+{
+	NetworkClient *cli = new NetworkClient(sock);
+
+	this->clients[this->n_clients] = cli;
+	this->n_clients++;
+}
+
+
+NetworkClient::NetworkClient(int sock)
+{
+	this->sock = sock;
+
+	this->screen = (Uint8 *)malloc(DISPLAY_X * DISPLAY_Y);
+	assert(this->screen);
+
+	/* Assume black screen */
+	memset(this->screen, 0, DISPLAY_X * DISPLAY_Y);
+}
+
+NetworkClient::~NetworkClient()
+{
+	free(this->screen);
 }
 
 

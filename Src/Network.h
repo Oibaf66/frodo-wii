@@ -36,6 +36,7 @@ struct NetworkJoystickUpdate
 {
 	Uint8 type;
 	Uint8 which;
+	Uint16 size;
 	Uint8 data;   /* New value */
 };
 
@@ -52,6 +53,10 @@ struct NetworkUpdate
 class Network
 {
 public:
+	Network();
+
+	~Network();
+
 	/** Encode part of a screen into @a dst
 	 * 
 	 * @param dst the destination update structure
@@ -62,6 +67,8 @@ public:
 	 */
 	size_t EncodeDisplaySquare(struct NetworkDisplayUpdate *dst,
 			Uint8 *screen, int square);
+
+	size_t EncodeDisplay(Uint8 *master, Uint8 *remote);
 
 	/**
 	 * Encode the @a buf sound buffer into @a dst
@@ -88,17 +95,13 @@ public:
 	
 	size_t DecodeSoundUpdate(struct NetworkSoundUpdate *src, char *buf);
 
-	NetworkUpdate *GetNetworkUpdate(void);
+	void ResetNetworkUpdate(void);
 
-	bool SendUpdate(NetworkUpdate *src, int sock);
+	bool SendUpdate(int sock);
 
-	bool ReceiveUpdate(NetworkUpdate *dst, int sock);
+	bool ReceiveUpdate(int sock);
 
-	bool ReceiveUpdateBlock(NetworkUpdate *dst, int sock);
-
-	NetworkUpdate *IterateFirst(NetworkUpdate *p, unsigned int *cookie);
-
-	NetworkUpdate *IterateNext(NetworkUpdate *p, unsigned int *cookie);
+	bool ReceiveUpdateBlock(int sock);
 
 private:
 	size_t EncodeDisplayRLE(struct NetworkDisplayUpdate *dst, Uint8 *screen,
@@ -110,6 +113,25 @@ private:
 	size_t EncodeSoundRaw(struct NetworkSoundUpdate *dst,
 			Uint8 *buffer, size_t len);
 
+	NetworkUpdate *IterateFirst(NetworkUpdate *p, unsigned int *cookie);
+
+	NetworkUpdate *IterateNext(NetworkUpdate *p, unsigned int *cookie);
+
+	void AddNetworkUpdate(struct NetworkUpdate *update)
+	{
+		this->cur_ud += update->size;
+		this->ud->size += update->size;
+	}
+	/**
+	 * Compare two display squares.
+	 *
+	 * @param a the first square (first byte)
+	 * @param b the second square (first byte)
+	 *
+	 * @return true if they are equal
+	 */
+	bool CompareSquare(Uint8 *a, Uint8 *b);
+
 	bool DecodeDisplayRLE(Uint8 *screen, struct NetworkDisplayUpdate *src,
 			int x, int y);
 	bool DecodeDisplayRaw(Uint8 *screen, struct NetworkDisplayUpdate *src,
@@ -120,6 +142,9 @@ private:
 	void MarshalData(NetworkUpdate *ud);
 
 	void DeMarshalData(NetworkUpdate *ud);
+
+	NetworkUpdate *ud;
+	Uint8 *cur_ud;
 };
 
 class NetworkClient : public Network
@@ -127,7 +152,30 @@ class NetworkClient : public Network
 public:
 	NetworkClient(int sock);
 
-	bool ConnectToServer(const char *hostname, int port);
+	~NetworkClient();
+
+	NetworkClient(const char *hostname, int port);
+
+	bool isConnected()
+	{
+		return this->sock >= 0;
+	}
+	
+	bool SendUpdate()
+	{
+		return ((Network*)this)->SendUpdate(this->sock);
+	}
+
+	bool ReceiveUpdate()
+	{
+		return ((Network*)this)->ReceiveUpdate(this->sock);
+	}
+
+
+	bool ReceiveUpdateBlock()
+	{
+		return ((Network*)this)->ReceiveUpdateBlock(this->sock);
+	}
 
 	Uint8 *screen;
 	int joystick_port;
@@ -135,19 +183,22 @@ private:
 	int sock;
 };
 
+#define MAX_NETWORK_CLIENTS 8
+
 class NetworkServer : public Network
 {
 public:
-	NetworkServer();
+	NetworkServer(int port);
 
-	NetworkClient *CheckNewConnection();
+	bool CheckNewConnection();
 
-	NetworkClient **clients;
+	NetworkClient *clients[MAX_NETWORK_CLIENTS];
 	int n_clients;
 
 private:
+	void AddClient(int sock);
+
 	int listen_sock;
-	fd_set listen_fds;
 };
 
 #endif /* NETWORK_H */

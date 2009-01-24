@@ -151,6 +151,7 @@ C64_SC.o: C64.cpp sysdeps.h sysconfig.h C64.h CPUC64.h CPU1541.h CIA.h C64_SDL.h
 C64_SC.o: Prefs.h VIC.h SID.h REU.h IEC.h 1541job.h Display.h
 CPUC64.o: sysdeps.h sysconfig.h CPUC64.h C64.h VIC.h SID.h CIA.h Prefs.h
 CPUC64.o: REU.h IEC.h Display.h Version.h CPU_emulline.h
+Network.o: Network.h NetworkUnix.h
 CPUC64_SC.o: sysdeps.h sysconfig.h CPUC64.h C64.h CPU_common.h VIC.h SID.h
 CPUC64_SC.o: CIA.h Prefs.h REU.h IEC.h Display.h Version.h CPU_emulcycle.h
 VIC.o: sysdeps.h sysconfig.h VIC.h C64.h CPUC64.h Display.h Prefs.h

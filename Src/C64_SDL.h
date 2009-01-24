@@ -39,16 +39,6 @@ static const char *main_menu_messages[] = {
 		NULL,
 };
 
-static const char *other_options_messages[] = {
-		"Display resolution", /* 0 */
-		"^|double-center|stretched",
-		"Speed (approx)",     /* 2 */
-		"^|95|100|110",
-		"Emulate 1541",       /* 4 */
-		"^|On|Off",
-		NULL,
-};
-
 static const char *save_load_state_messages[] = {
 		"Load saved state",    /* 0 */
 		"Save current state",  /* 1 */
@@ -100,6 +90,12 @@ void C64::c64_ctor1(void)
 	}
 
 	this->virtual_keyboard = new VirtualKeyboard(real_screen, this->menu_font);
+	this->network_server = NULL;
+	this->network_client = NULL;
+
+	strncpy(this->server_hostname, "localhost",
+			sizeof(this->server_hostname));
+	this->server_port = 19760;
 }
 
 void C64::c64_ctor2(void)
@@ -299,24 +295,90 @@ void C64::bind_keys(Prefs *np)
 	}
 }
 
+void C64::networking_menu(Prefs *np)
+{
+	int opt;
+
+	do
+	{
+		char buf[2][255];
+		const char *network_client_messages[] = {
+				"Start network server",  /* 0 */
+				buf[0],                  /* 1 */
+				buf[1],                  /* 2 */
+				"Connect to server",     /* 3 */
+				NULL,
+		};
+
+		snprintf(buf[0], 255, "Server hostname (now %s)",
+				this->server_hostname);
+		snprintf(buf[1], 255, "Server port (now %d)",
+				this->server_port);
+		opt = menu_select(real_screen, this->menu_font,
+				network_client_messages, NULL);
+
+		if (opt == 1 || opt == 2)
+		{
+			const char *m = this->virtual_keyboard->get_string();
+
+			if (m && opt == 1)
+				strncpy(this->server_hostname, m,
+						sizeof(this->server_hostname));
+			if (m && opt == 2)
+				this->server_port = atoi(m);
+		}
+		else if (opt == 0) {
+			/* Cannot be both client and server */
+			if (this->network_client != NULL) {
+				delete this->network_client;
+				this->network_client = NULL;
+			}
+			this->network_server = new NetworkServer(this->server_port);
+		}
+		else if (opt == 3)
+		{
+			if (this->network_server != NULL) {
+				delete this->network_server;
+				this->network_server = NULL;
+			}
+
+			this->network_client = new NetworkClient(this->server_hostname,
+					this->server_port);
+		}
+	} while (opt == 1 || opt == 2);
+
+	this->prefs_changed = true;
+}
+
 void C64::other_options(Prefs *np)
 {
-        int submenus[3] = { np->DisplayOption, 0, !np->Emul1541Proc };
+	const char *other_options_messages[] = {
+			"Display resolution", /* 0 */
+			"^|double-center|stretched",
+			"Speed (approx)",     /* 2 */
+			"^|95|100|110",
+			"Emulate 1541",       /* 4 */
+			"^|On|Off",
+			"Networking",         /* 6 */
+			NULL,
+	};
+	int submenus[3] = { np->DisplayOption, 0, !np->Emul1541Proc };
+
 
 #define SPEED_95 33
 #define SPEED_100 28
 #define SPEED_110 25
 
-        switch (np->MsPerFrame)
-        {
-        case SPEED_95:
-        	submenus[1] = 0; break;
-        case SPEED_110:
-        	submenus[1] = 2; break;
-        default:
-        	/* If it has some other value... */
-        	submenus[1] = 1; break;
-        }
+	switch (np->MsPerFrame)
+	{
+	case SPEED_95:
+		submenus[1] = 0; break;
+	case SPEED_110:
+		submenus[1] = 2; break;
+	default:
+		/* If it has some other value... */
+		submenus[1] = 1; break;
+	}
 	int opt = menu_select(real_screen, this->menu_font,
 			other_options_messages, submenus);
 	if (opt >= 0)
@@ -334,6 +396,10 @@ void C64::other_options(Prefs *np)
 		default:
 			np->MsPerFrame = SPEED_110; break;
 		}
+
+		if (opt == 6)
+			this->networking_menu(np);
+
 		this->prefs_changed = true;
 	}
 }
@@ -535,6 +601,19 @@ void C64::VBlank(bool draw_frame)
 
 		TheDisplay->Speedometer((int)speed_index);
 #endif
+	}
+	if (this->network_server) {
+		/* Perhaps accept a new connection */
+		this->network_server->CheckNewConnection();
+
+		for (int i = 0; i < this->network_server->n_clients; i++) {
+			Uint8 *master = this->TheDisplay->BitmapBase();
+			NetworkClient *remote = this->network_server->clients[i];
+
+			remote->EncodeDisplay(master, remote->screen);
+			remote->SendUpdate();
+			remote->ResetNetworkUpdate();
+		}
 	}
 	if (this->have_a_break) {
 		int submenus[1]; 
