@@ -538,6 +538,10 @@ void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joyst
 				break;
 		}
 	}
+#if defined(GEKKO)
+	if (SYS_ResetButtonDown() != 0)
+		quit_requested = true;
+#endif
 }
 
 

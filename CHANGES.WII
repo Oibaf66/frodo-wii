@@ -1,5 +1,9 @@
 version 6:
         TODO: Multiple frodo versions, switch between
+        * Handle reset button (back to menu)
+
+        * General code cleanup, e.g., simplified menu system and reduced the
+          amount of code for that and some other things
 
         * Increase key delay (should hopefully avoid the LOQD problem)
 
