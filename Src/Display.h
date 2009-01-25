@@ -71,6 +71,7 @@ public:
 	void Update(void);
 	void UpdateLEDs(int l0, int l1, int l2, int l3);
 	void Speedometer(int speed);
+	void NetworkTrafficMeter(float kb_per_s);
 	uint8 *BitmapBase(void);
 	int BitmapXMod(void);
 #ifdef __riscos__
@@ -141,6 +142,7 @@ private:
 
 #ifdef HAVE_SDL
 	char speedometer_string[16];		// Speedometer text
+	char networktraffic_string[16];		// Speedometer text
 	void draw_string(SDL_Surface *s, int x, int y, const char *str, uint8 front_color, uint8 back_color);
 #endif
 

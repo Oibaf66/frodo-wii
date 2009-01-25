@@ -129,6 +129,7 @@ C64Display::C64Display(C64 *the_c64) : TheC64(the_c64)
 {
 	quit_requested = false;
 	speedometer_string[0] = 0;
+	networktraffic_string[0] = 0;
 
 	printf("ssof2 %d:%d\n", sizeof(C64Display), sizeof(C64));
 	// Open window
@@ -224,6 +225,8 @@ void C64Display::Update(uint8 *src_pixels)
 		/* Stretch */
 		SDL_SoftStretch(sdl_screen, &srcrect, real_screen, &dstrect);                                                                     
 	}
+
+	draw_string(real_screen, 0, 0, networktraffic_string, black, fill_gray);
 	SDL_Flip(real_screen);
 }
 
@@ -295,6 +298,11 @@ void C64Display::Speedometer(int speed)
 		delay++;
 }
 
+void C64Display::NetworkTrafficMeter(float kb_per_s)
+{
+	sprintf(this->networktraffic_string, "%6.2f KB/S",
+			kb_per_s);
+}
 
 /*
  *  Return pointer to bitmap data

@@ -617,8 +617,8 @@ void C64::VBlank(bool draw_frame)
 		}
 		if (now - last_time_update > 1000)
 		{
-			printf("%.2f kbytes / second\n",
-					((bytes_sent * 1000.0) / ((float)now - last_time_update)) / 1024.0);
+			TheDisplay->NetworkTrafficMeter(((bytes_sent * 1000.0) /
+					((float)now - last_time_update)) / 1024.0);
 			for (int i = 0; i < this->network_server->n_clients; i++)
 				this->network_server->clients[i]->ResetBytesSent();
 			bytes_sent = 0;
