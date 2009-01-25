@@ -615,7 +615,7 @@ void C64::VBlank(bool draw_frame)
 
 			bytes_sent += remote->GetBytesSent();
 		}
-		if (now - last_time_update > 1000)
+		if (now - last_time_update > 300)
 		{
 			TheDisplay->NetworkTrafficMeter(((bytes_sent * 1000.0) /
 					((float)now - last_time_update)) / 1024.0);

@@ -10,10 +10,11 @@ enum
 	HEADER             = 0,
 	DISPLAY_UPDATE_RAW = 1,
 	DISPLAY_UPDATE_RLE = 2,
-	SOUND_UPDATE_RAW   = 3,
-	SOUND_UPDATE_RLE   = 4,
-	KEYBOARD_UPDATE    = 5,
-	JOYSTICK_UPDATE    = 6,
+	DISPLAY_UPDATE_DIFF= 3,
+	SOUND_UPDATE_RAW   = 4,
+	SOUND_UPDATE_RLE   = 5,
+	KEYBOARD_UPDATE    = 6,
+	JOYSTICK_UPDATE    = 7,
 };
 
 struct NetworkDisplayUpdate
@@ -57,6 +58,31 @@ public:
 
 	~Network();
 
+	size_t EncodeDisplay(Uint8 *master, Uint8 *remote);
+
+	bool DecodeUpdate(uint8 *screen);
+
+	void ResetNetworkUpdate(void);
+
+	void DrawTransferredBlocks(SDL_Surface *screen);
+
+	size_t GetBytesSent() {
+		return this->bytes_sent;
+	}
+
+	void ResetBytesSent() {
+		this->bytes_sent = 0;
+	}
+
+	bool SendUpdate(int sock);
+
+	bool ReceiveUpdate(int sock);
+
+	bool ReceiveUpdateBlock(int sock);
+
+protected:
+	size_t DecodeSoundUpdate(struct NetworkSoundUpdate *src, char *buf);
+
 	/** Encode part of a screen into @a dst
 	 * 
 	 * @param dst the destination update structure
@@ -66,9 +92,21 @@ public:
 	 * @return the size of the encoded message
 	 */
 	size_t EncodeDisplaySquare(struct NetworkDisplayUpdate *dst,
-			Uint8 *screen, int square);
+			Uint8 *screen, Uint8 *remote, int square);
 
-	size_t EncodeDisplay(Uint8 *master, Uint8 *remote);
+	size_t EncodeDisplayDiff(struct NetworkDisplayUpdate *dst, Uint8 *screen,
+			int x, int y);
+
+	size_t EncodeDisplayDiff(struct NetworkDisplayUpdate *dst, Uint8 *screen,
+			Uint8 *remote, int x, int y);
+	size_t EncodeDisplayRLE(struct NetworkDisplayUpdate *dst, Uint8 *screen,
+			int x, int y);
+	size_t EncodeDisplayRaw(struct NetworkDisplayUpdate *dst, Uint8 *screen,
+			int x, int y);
+	size_t EncodeSoundRLE(struct NetworkSoundUpdate *dst,
+			Uint8 *buffer, size_t len);
+	size_t EncodeSoundRaw(struct NetworkSoundUpdate *dst,
+			Uint8 *buffer, size_t len);
 
 	/**
 	 * Encode the @a buf sound buffer into @a dst
@@ -92,36 +130,6 @@ public:
 	 * @param src the message to decode
 	 */
 	bool DecodeDisplayUpdate(Uint8 *screen, struct NetworkDisplayUpdate *src);
-	
-	size_t DecodeSoundUpdate(struct NetworkSoundUpdate *src, char *buf);
-
-	bool DecodeUpdate(uint8 *screen);
-
-	void ResetNetworkUpdate(void);
-
-	bool SendUpdate(int sock);
-
-	bool ReceiveUpdate(int sock);
-
-	bool ReceiveUpdateBlock(int sock);
-
-	size_t GetBytesSent() {
-		return this->bytes_sent;
-	}
-
-	void ResetBytesSent() {
-		this->bytes_sent = 0;
-	}
-
-private:
-	size_t EncodeDisplayRLE(struct NetworkDisplayUpdate *dst, Uint8 *screen,
-			int x, int y);
-	size_t EncodeDisplayRaw(struct NetworkDisplayUpdate *dst, Uint8 *screen,
-			int x, int y);
-	size_t EncodeSoundRLE(struct NetworkSoundUpdate *dst,
-			Uint8 *buffer, size_t len);
-	size_t EncodeSoundRaw(struct NetworkSoundUpdate *dst,
-			Uint8 *buffer, size_t len);
 
 	NetworkUpdate *IterateFirst(NetworkUpdate *p, unsigned int *cookie);
 
@@ -139,6 +147,8 @@ private:
 	 */
 	bool CompareSquare(Uint8 *a, Uint8 *b);
 
+	bool DecodeDisplayDiff(Uint8 *screen, struct NetworkDisplayUpdate *src,
+			int x, int y);
 	bool DecodeDisplayRLE(Uint8 *screen, struct NetworkDisplayUpdate *src,
 			int x, int y);
 	bool DecodeDisplayRaw(Uint8 *screen, struct NetworkDisplayUpdate *src,
@@ -151,8 +161,10 @@ private:
 	void DeMarshalData(NetworkUpdate *ud);
 
 	NetworkUpdate *ud;
+	NetworkUpdate *tmp_ud;
 	Uint8 *cur_ud;
 	size_t bytes_sent;
+	Uint32 *square_updated;
 };
 
 class NetworkClient : public Network

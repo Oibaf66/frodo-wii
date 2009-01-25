@@ -56,7 +56,7 @@ bool init_sockaddr (struct sockaddr_in *name,
 }
 
 
-NetworkServer::NetworkServer(int port)
+NetworkServer::NetworkServer(int port) : Network()
 {
 	this->n_clients = 0;
 	this->listen_sock = make_socket(port);
