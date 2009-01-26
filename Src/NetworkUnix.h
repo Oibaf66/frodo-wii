@@ -138,10 +138,41 @@ NetworkClient::NetworkClient(const char *hostname, int port)
 	memset(this->screen, 0, DISPLAY_X * DISPLAY_Y);
 }
 
-bool Network::ReceiveUpdate(NetworkUpdate *dst, int sock, struct timeval *tv)
+bool Network::ReceiveData(void *dst, int sock, size_t sz)
+{
+	size_t received_sz = 0;
+
+	while (received_sz < sz)
+	{
+		int v = read(sock, dst, sz);
+
+		if (v < 0)
+			return false;
+		received_sz += v; 
+	}
+
+	return sz > 0;
+}
+
+bool Network::SendData(void *src, int sock, size_t sz)
+{
+	size_t sent_sz = 0;
+	
+	while (sent_sz < sz)
+	{
+		int v = write(sock, (void*)src, sz);
+
+		if (v < 0)
+			return false;
+		sent_sz += v;
+	}
+
+	return true;
+}
+
+bool Network::Select(int sock, struct timeval *tv)
 {
 	fd_set fds;
-	int sz;
 	int v;
 
 	FD_ZERO(&fds);
@@ -150,32 +181,10 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, int sock, struct timeval *tv)
 	v = select(sock + 1, &fds, NULL, NULL, tv);
 	if (v < 0)
 	{
-		fprintf(stderr, "Select failed\n");
-		return false;
+			fprintf(stderr, "Select failed\n");
+			return false;
 	}
-	sz = read(sock, (void*)dst, NETWORK_UPDATE_SIZE);
 
-	if (sz < 0)
-		return false;
-
-	/* Byte swap stuff */
-	this->DeMarshalData(dst);
-
-	return true;
-}
-
-bool Network::SendUpdate(int sock)
-{
-	NetworkUpdate *src = this->ud;
-	int sz = src->size;
-	bool out = true;
-
-	this->bytes_sent += sz;
-
-	this->MarshalData(src);
-	sz = write(sock, (void*)src, sz);
-	if (sz < src->size)
-		out = false;
-
-	return out;
+	/* v is 0 if the sock is not ready */
+	return v > 0;
 }

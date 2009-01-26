@@ -1,6 +1,12 @@
 version 7:
         TODO: Multiple frodo versions, switch between
 
+		TODO: D-pad less responsive in v6 than v5
+
+		TODO: Crash on + in "Other" menu
+
+		TODO: Fix two-controller issue
+
         -- Simon Kagstrom <simon.kagstrom@gmail.com>,
 
 version 6:

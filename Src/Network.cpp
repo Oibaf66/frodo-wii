@@ -37,9 +37,11 @@ Network::Network()
 {
 	const size_t size = NETWORK_UPDATE_SIZE;
 
-	/* "big enough" static buffer */
+	/* "big enough" buffer */
 	this->ud = (NetworkUpdate*)malloc( size );
 	this->tmp_ud = (NetworkUpdate*)malloc( size );
+	assert(this->ud && this->tmp_ud);
+
 	this->ResetNetworkUpdate();
 	this->bytes_sent = 0;
 
@@ -51,14 +53,15 @@ Network::Network()
 Network::~Network()
 {
 	free(this->ud);
+	free(this->tmp_ud);
 }
 
-size_t Network::EncodeDisplayRaw(struct NetworkDisplayUpdate *dst, Uint8 *screen,
+size_t Network::EncodeDisplayRaw(struct NetworkUpdate *dst, Uint8 *screen,
 		int x_start, int y_start)
 {
 	const int raw_w = SQUARE_W / 2;
-	dst->type = DISPLAY_UPDATE_RAW;
 
+	dst->type = DISPLAY_UPDATE_RAW;
 	for (int y = y_start; y < y_start + SQUARE_H; y++)
 	{
 		for (int x = x_start; x < x_start + SQUARE_W; x += 2)
@@ -74,7 +77,7 @@ size_t Network::EncodeDisplayRaw(struct NetworkDisplayUpdate *dst, Uint8 *screen
 	return RAW_SIZE; 
 }
 
-size_t Network::EncodeDisplayDiff(struct NetworkDisplayUpdate *dst, Uint8 *screen,
+size_t Network::EncodeDisplayDiff(struct NetworkUpdate *dst, Uint8 *screen,
 		Uint8 *remote, int x_start, int y_start)
 {
 	size_t out = 0;
@@ -103,7 +106,7 @@ size_t Network::EncodeDisplayDiff(struct NetworkDisplayUpdate *dst, Uint8 *scree
 	return out;
 }
 
-size_t Network::EncodeDisplayRLE(struct NetworkDisplayUpdate *dst, Uint8 *screen,
+size_t Network::EncodeDisplayRLE(struct NetworkUpdate *dst, Uint8 *screen,
 		int x_start, int y_start)
 {
 	size_t out = 0;
@@ -140,7 +143,7 @@ size_t Network::EncodeDisplayRLE(struct NetworkDisplayUpdate *dst, Uint8 *screen
 	return out;
 }
 
-size_t Network::EncodeSoundRLE(struct NetworkSoundUpdate *dst,
+size_t Network::EncodeSoundRLE(struct NetworkUpdate *dst,
 		Uint8 *buffer, size_t buf_len)
 {
 	size_t out = 0;
@@ -163,11 +166,18 @@ size_t Network::EncodeSoundRLE(struct NetworkSoundUpdate *dst,
 		}
 		len++;
 	}
+	if (len != 0)
+	{
+		dst->data[out] = len;
+		dst->data[out + 1] = volume;
+
+		out += 2;
+	}
 
 	return out;
 }
 
-size_t Network::EncodeSoundRaw(struct NetworkSoundUpdate *dst,
+size_t Network::EncodeSoundRaw(struct NetworkUpdate *dst,
 		Uint8 *buffer, size_t len)
 {
 	dst->type = SOUND_UPDATE_RAW;
@@ -176,13 +186,13 @@ size_t Network::EncodeSoundRaw(struct NetworkSoundUpdate *dst,
 	return len;
 }
 
-bool Network::DecodeDisplayDiff(Uint8 *screen, struct NetworkDisplayUpdate *src,
+bool Network::DecodeDisplayDiff(Uint8 *screen, struct NetworkUpdate *src,
 		int x_start, int y_start)
 {
 	int p = 0;
 	int x = x_start;
 	int y = y_start;
-	int sz = src->size - sizeof(NetworkDisplayUpdate);
+	int sz = src->size - sizeof(NetworkUpdate);
 
 	/* Something is wrong if this is true... */
 	if (sz % 2 != 0)
@@ -204,13 +214,13 @@ bool Network::DecodeDisplayDiff(Uint8 *screen, struct NetworkDisplayUpdate *src,
 	return true;
 }
 
-bool Network::DecodeDisplayRLE(Uint8 *screen, struct NetworkDisplayUpdate *src,
+bool Network::DecodeDisplayRLE(Uint8 *screen, struct NetworkUpdate *src,
 		int x_start, int y_start)
 {
 	int p = 0;
 	int x = x_start;
 	int y = y_start;
-	int sz = src->size - sizeof(NetworkDisplayUpdate);
+	int sz = src->size - sizeof(NetworkUpdate);
 
 	/* Something is wrong if this is true... */
 	if (sz % 2 != 0)
@@ -238,7 +248,7 @@ bool Network::DecodeDisplayRLE(Uint8 *screen, struct NetworkDisplayUpdate *src,
 	return true;
 }
 
-bool Network::DecodeDisplayRaw(Uint8 *screen, struct NetworkDisplayUpdate *src,
+bool Network::DecodeDisplayRaw(Uint8 *screen, struct NetworkUpdate *src,
 		int x_start, int y_start)
 {
 	const int raw_w = SQUARE_W / 2;
@@ -260,32 +270,35 @@ bool Network::DecodeDisplayRaw(Uint8 *screen, struct NetworkDisplayUpdate *src,
 }
 
 /* Public methods */
-size_t Network::EncodeDisplaySquare(struct NetworkDisplayUpdate *dst,
+size_t Network::EncodeDisplaySquare(struct NetworkUpdate *dst,
 		Uint8 *screen, Uint8 *remote, int square)
 {
 	const int square_x = SQUARE_TO_X(square);
 	const int square_y = SQUARE_TO_Y(square);
 	size_t out, diff_out;
 
-	dst->square = square;
+	dst->u.display.square = square;
 
 	/* Try encoding as RLE and diff, but if it's too large, go for RAW */
-	diff_out = this->EncodeDisplayDiff((NetworkDisplayUpdate*)this->tmp_ud, screen,
+	diff_out = this->EncodeDisplayDiff(tmp_ud, screen,
 			remote, square_x, square_y);
+	this->square_updated[square] = out | (2 << 16);
 	out = this->EncodeDisplayRLE(dst, screen, square_x, square_y);
 	this->square_updated[square] = out | (1 << 16);
 
 	if (out > diff_out) {
 		/* The diff is best, use that */
 		this->square_updated[square] = out | (2 << 16);
-		memcpy(dst, this->tmp_ud, out + sizeof(NetworkDisplayUpdate));
+		memcpy(dst->data, this->tmp_ud->data, out);
+		dst->type = this->tmp_ud->type;
 		out = diff_out;
 	}
 	if (out > RAW_SIZE) {
 		out = this->EncodeDisplayRaw(dst, screen, square_x, square_y);
 		this->square_updated[square] = out;
 	}
-	dst->size = out + sizeof(struct NetworkDisplayUpdate);
+
+	dst->size = out + sizeof(struct NetworkUpdate);
 
 	return dst->size;
 }
@@ -312,29 +325,27 @@ size_t Network::EncodeDisplay(Uint8 *master, Uint8 *remote)
 	for ( int sq = 0; sq < N_SQUARES_H * N_SQUARES_W; sq++ )
 	{
 		Uint8 *p_master = &master[ SQUARE_TO_Y(sq) * DISPLAY_X + SQUARE_TO_X(sq) ]; 
-		Uint8 *p_remote= &remote[ SQUARE_TO_Y(sq) * DISPLAY_X + SQUARE_TO_X(sq) ]; 
+		Uint8 *p_remote = &remote[ SQUARE_TO_Y(sq) * DISPLAY_X + SQUARE_TO_X(sq) ]; 
 
 		if (this->CompareSquare(p_master, p_remote) == false)
 		{
-			NetworkDisplayUpdate *dst = (NetworkDisplayUpdate *)this->cur_ud;
+			NetworkUpdate *dst = (NetworkUpdate *)this->cur_ud;
 
 			/* Updated, encode this */
 			this->EncodeDisplaySquare(dst, master, remote, sq);
-			this->AddNetworkUpdate((NetworkUpdate*)dst);
+			this->AddNetworkUpdate(dst);
 		}
 		else
 			this->square_updated[sq] = 0;
 	}
-
-	/* Everything encoded, store in remote */
 	memcpy(remote, master, DISPLAY_X * DISPLAY_Y);
 }
 
 
 bool Network::DecodeDisplayUpdate(Uint8 *screen,
-		struct NetworkDisplayUpdate *src)
+		struct NetworkUpdate *src)
 {
-	int square = src->square;
+	int square = src->u.display.square;
 	const int square_x = SQUARE_TO_X(square);
 	const int square_y = SQUARE_TO_Y(square);
 
@@ -349,7 +360,7 @@ bool Network::DecodeDisplayUpdate(Uint8 *screen,
 	return false;
 }
 
-size_t Network::EncodeSoundBuffer(struct NetworkSoundUpdate *dst, Uint8 *buf, size_t len)
+size_t Network::EncodeSoundBuffer(struct NetworkUpdate *dst, Uint8 *buf, size_t len)
 {
 	size_t out;
 
@@ -358,26 +369,25 @@ size_t Network::EncodeSoundBuffer(struct NetworkSoundUpdate *dst, Uint8 *buf, si
 	out = this->EncodeSoundRLE(dst, buf, len);
 	if (out > len)
 		out = this->EncodeSoundRaw(dst, buf, len);
-	dst->size = out + sizeof(struct NetworkSoundUpdate); 
+	dst->size = out + sizeof(struct NetworkUpdate); 
 
 	return dst->size;
 }
 
-void Network::EncodeJoystickUpdate(struct NetworkJoystickUpdate *dst, Uint8 which, Uint8 v)
+void Network::EncodeJoystickUpdate(struct NetworkUpdate *dst, Uint8 which, Uint8 v)
 {
 	dst->type = JOYSTICK_UPDATE;
-	dst->which = which;
-	dst->data = v;
+	dst->u.joystick.val = v;
 }
 
 
-size_t Network::DecodeSoundUpdate(struct NetworkSoundUpdate *src, char *buf)
+size_t Network::DecodeSoundUpdate(struct NetworkUpdate *src, char *buf)
 {
 	size_t out;
 
 	if (src->type == SOUND_UPDATE_RAW)
 	{
-		out = src->size - sizeof(struct NetworkSoundUpdate);
+		out = src->size - sizeof(struct NetworkUpdate);
 		memcpy(buf, src->data, out);
 	}
 	else
@@ -391,9 +401,9 @@ void Network::ResetNetworkUpdate(void)
 	memset(this->ud, 0, NETWORK_UPDATE_SIZE);
 	memset(this->tmp_ud, 0, NETWORK_UPDATE_SIZE);
 
-	this->ud->type = HEADER;
+	this->ud->type = STOP;
 	this->ud->size = sizeof(NetworkUpdate);
-	this->cur_ud = (Uint8*)(this->ud->data);
+	this->cur_ud = this->ud;
 }
 
 void Network::DrawTransferredBlocks(SDL_Surface *screen)
@@ -415,7 +425,7 @@ void Network::DrawTransferredBlocks(SDL_Surface *screen)
 			SDL_Rect u = {x,     y,     w, 1};
 			SDL_Rect d = {x,     y + h, w, 1};
 			Uint32 raw = this->square_updated[sq];
-			SDL_Rect size = {x,  y,   (raw & 0xffff) / 17, 4};
+			SDL_Rect size = {x,  y,  2 * ((raw & 0xffff) / 17), 4};
 			Uint32 color = 4;
 
 			if ((raw >> 16) == 1)
@@ -447,129 +457,157 @@ bool Network::ReceiveUpdateBlock(int sock)
 	return this->ReceiveUpdate(this->ud, sock, NULL);
 }
 
+bool Network::ReceiveUpdate(NetworkUpdate *dst, int sock, struct timeval *tv)
+{
+	Uint8 *pp = (Uint8*)dst;
+	NetworkUpdate *p;
+
+	if (this->Select(sock, tv) == false)
+		return false;
+	/* Receive until the stop */
+	do
+	{
+		p = (NetworkUpdate*)pp;
+
+		/* Receive the header */
+		if (this->ReceiveData((void*)p, sock, sizeof(NetworkUpdate)) == false)
+			return false;
+
+		pp = pp + sizeof(NetworkUpdate);
+
+		/* And the rest of the update */
+		size_t sz = ntohs(p->size);
+		if (sz > sizeof(NetworkUpdate))
+		{
+			size_t sz_diff = sz - sizeof(NetworkUpdate);
+
+			if (this->ReceiveData((void*)pp, sock, sz_diff) == false)
+				return false;
+			pp = pp + sz_diff; 
+		}
+		if (this->DeMarshalData(p) == false)
+			return false;
+	} while ( !(p->type == STOP && p->u.stop.val == STOP) );
+
+	return true;
+}
+
+bool Network::SendUpdate(int sock)
+{
+	NetworkUpdate *src = this->ud;
+	NetworkUpdate *stop = this->cur_ud;
+	size_t sz;
+
+	/* Add a stop at the end of the update */
+	stop->type = STOP;
+	stop->u.stop.val = STOP;
+	stop->size = sizeof(NetworkUpdate);
+	this->AddNetworkUpdate(stop);
+
+	if (this->MarshalAllData(src) == false)
+		return false;
+
+	sz = this->GetNetworkUpdateSize();
+	if (sz <= 0)
+		return false;
+	if (this->SendData((void*)src, sock, sz) == false)
+		return false;
+	this->bytes_sent += sz;
+
+	return true;
+}
+
+
 void Network::AddNetworkUpdate(NetworkUpdate *update)
 {
 	size_t sz = update->size;
+	Uint8 *next = (Uint8*)this->cur_ud + update->size;
 
-	this->cur_ud += sz;
-	this->ud->size += sz;
+	this->cur_ud = (NetworkUpdate*)next;
 }
 
 
-void Network::MarshalData(NetworkUpdate *ud)
+bool Network::MarshalData(NetworkUpdate *p)
 {
-	Uint8 *p = ud->data;
-	int len = 0;
-	int sz = ud->size;
-
-	ud->size = htons(ud->size);
-	while (len < sz)
+	p->size = htons(p->size);
+	switch (p->type)
 	{
-		p = p + len;
-
-		switch (p[0])
-		{
-		case DISPLAY_UPDATE_RAW:
-		case DISPLAY_UPDATE_RLE:
-		case DISPLAY_UPDATE_DIFF:
-		case SOUND_UPDATE_RAW: /* Not really true, but looks the same */
-		case SOUND_UPDATE_RLE:
-		{
-			NetworkDisplayUpdate *tmp = (NetworkDisplayUpdate *)p;
-
-			len += tmp->size;
-			tmp->size = htons(tmp->size);
-		} break;
-		case JOYSTICK_UPDATE:
-			len = sizeof(NetworkJoystickUpdate);
-			break;
-		default:
-			/* Unknown data... */
-			return;
-		}
+	case DISPLAY_UPDATE_RAW:
+	case DISPLAY_UPDATE_RLE:
+	case DISPLAY_UPDATE_DIFF:
+	case SOUND_UPDATE_RAW:
+	case SOUND_UPDATE_RLE:
+	case JOYSTICK_UPDATE:
+	case STOP:
+		break;
+	default:
+		/* Unknown data... */
+		fprintf(stderr, "Got unknown data %d while marshalling. Something is wrong\n",
+				p->type);
+		return false;
 	}
+
+	return true;
 }
 
-void Network::DeMarshalData(NetworkUpdate *ud)
+bool Network::MarshalAllData(NetworkUpdate *ud)
 {
-	Uint8 *p = ud->data;
-	int len = 0;
+	NetworkUpdate *p = ud;
 
-	ud->size = ntohs(ud->size);
-	while (len < ud->size)
+	while (p->type != STOP)
 	{
-		p = p + len;
+		NetworkUpdate *nxt = this->GetNext(p);
 
-		switch (p[0])
-		{
-		case DISPLAY_UPDATE_RAW:
-		case DISPLAY_UPDATE_RLE:
-		case DISPLAY_UPDATE_DIFF:
-		case SOUND_UPDATE_RAW: /* Not really true, but looks the same */
-		case SOUND_UPDATE_RLE:
-		{
-			NetworkDisplayUpdate *tmp = (NetworkDisplayUpdate *)p;
-
-			tmp->size = ntohs(tmp->size);
-			len += tmp->size;
-		} break;
-		case JOYSTICK_UPDATE:
-			len = sizeof(NetworkJoystickUpdate);
-			break;
-		default:
-			/* Unknown data... */
-			return;
-		}
+		if (this->MarshalData(p) == false)
+			return false;
+		p = nxt;
 	}
+
+	/* The stop tag */
+	return this->MarshalData(p);
+}
+
+bool Network::DeMarshalData(NetworkUpdate *p)
+{
+	p->size = ntohs(p->size);
+
+	switch (p->type)
+	{
+	case DISPLAY_UPDATE_RAW:
+	case DISPLAY_UPDATE_RLE:
+	case DISPLAY_UPDATE_DIFF:
+	case SOUND_UPDATE_RAW:
+	case SOUND_UPDATE_RLE:
+	case JOYSTICK_UPDATE:
+	case STOP:
+		/* Nothing to do, just bytes */
+		break;
+	default:
+		/* Unknown data... */
+		return false;
+	}
+
+	return true;
 }
 
 bool Network::DecodeUpdate(uint8 *screen)
 {
-	unsigned int cookie;
-	NetworkUpdate *p;
-	int i = 0;
+	NetworkUpdate *p = this->ud;
 
-	for (p = this->IterateFirst(this->ud, &cookie); p;
-		p = this->IterateNext(this->ud, &cookie))
+	while (p->type != STOP)
 	{
 		switch(p->type)
 		{
 		case DISPLAY_UPDATE_RAW:
 		case DISPLAY_UPDATE_RLE:
 		case DISPLAY_UPDATE_DIFF:
-			this->DecodeDisplayUpdate(screen, (NetworkDisplayUpdate*)p);
+			this->DecodeDisplayUpdate(screen, p);
 			break;
 		default:
 			break;
 		}
-		i++;
+		p = this->GetNext(p);
 	}
-}
-
-NetworkUpdate *Network::IterateFirst(NetworkUpdate *p, unsigned int *cookie)
-{
-	Uint8 *p8 = (Uint8*)p;
-	NetworkUpdate *cur = (NetworkUpdate *)p->data;
-
-	*cookie = (unsigned int)(p->data - p8);
-	if ( *cookie >= p->size )
-		return NULL;
-	*cookie = *cookie + cur->size;
-
-	return cur; 
-}
-
-NetworkUpdate *Network::IterateNext(NetworkUpdate *p, unsigned int *cookie)
-{
-	NetworkUpdate *cur = (NetworkUpdate *)(((Uint8*)p) + *cookie);
-
-	/* End of iteration */
-	if ( *cookie >= p->size || cur->size == 0)
-		return NULL;
-
-	*cookie = *cookie + cur->size;
-
-	return cur;
 }
 
 void NetworkServer::AddClient(int sock)

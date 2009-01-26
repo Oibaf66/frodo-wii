@@ -610,7 +610,8 @@ void C64::VBlank(bool draw_frame)
 			NetworkClient *remote = this->network_server->clients[i];
 
 			remote->EncodeDisplay(master, remote->screen);
-			remote->SendUpdate();
+			if (remote->SendUpdate() == false)
+				printf("Oh no! Could not send update\n");
 			remote->ResetNetworkUpdate();
 
 			bytes_sent += remote->GetBytesSent();

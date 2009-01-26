@@ -7,7 +7,7 @@
 #define NETWORK_UPDATE_SIZE  (256 * 1024)
 enum
 {
-	HEADER             = 0,
+	STOP               = 99,
 	DISPLAY_UPDATE_RAW = 1,
 	DISPLAY_UPDATE_RLE = 2,
 	DISPLAY_UPDATE_DIFF= 3,
@@ -17,39 +17,27 @@ enum
 	JOYSTICK_UPDATE    = 7,
 };
 
-struct NetworkDisplayUpdate
+struct NetworkUpdate
 {
-	Uint8 type;    /* raw data or RLE */
-	Uint8 square;
 	Uint16 size;
-	Uint8 data[];
-};
-
-struct NetworkSoundUpdate
-{
-	Uint8 type;    /* raw data or RLE */
-	Uint8 dummy;
-	Uint16 size;
-	Uint8 data[];
-};
-
-struct NetworkJoystickUpdate
-{
 	Uint8 type;
-	Uint8 which;
-	Uint16 size;
-	Uint8 data;   /* New value */
-};
 
-struct NetworkUpdate 
-{
-	Uint8 type;
-	Uint8 dummy;
-	Uint16 size;
+	union {
+		struct {
+			Uint8 square;
+		} display;
+		struct {
+			Uint8 val;
+		} joystick;
+		struct {
+			Uint8 val; /* Should be STOP */
+		} stop;
+	} u;
 
 	/* The rest is just data of some type */
 	Uint8 data[];
 };
+
 
 class Network
 {
@@ -81,7 +69,7 @@ public:
 	bool ReceiveUpdateBlock(int sock);
 
 protected:
-	size_t DecodeSoundUpdate(struct NetworkSoundUpdate *src, char *buf);
+	size_t DecodeSoundUpdate(struct NetworkUpdate *src, char *buf);
 
 	/** Encode part of a screen into @a dst
 	 * 
@@ -91,21 +79,21 @@ protected:
 	 *
 	 * @return the size of the encoded message
 	 */
-	size_t EncodeDisplaySquare(struct NetworkDisplayUpdate *dst,
+	size_t EncodeDisplaySquare(struct NetworkUpdate *dst,
 			Uint8 *screen, Uint8 *remote, int square);
 
-	size_t EncodeDisplayDiff(struct NetworkDisplayUpdate *dst, Uint8 *screen,
+	size_t EncodeDisplayDiff(struct NetworkUpdate *dst, Uint8 *screen,
 			int x, int y);
 
-	size_t EncodeDisplayDiff(struct NetworkDisplayUpdate *dst, Uint8 *screen,
+	size_t EncodeDisplayDiff(struct NetworkUpdate *dst, Uint8 *screen,
 			Uint8 *remote, int x, int y);
-	size_t EncodeDisplayRLE(struct NetworkDisplayUpdate *dst, Uint8 *screen,
+	size_t EncodeDisplayRLE(struct NetworkUpdate *dst, Uint8 *screen,
 			int x, int y);
-	size_t EncodeDisplayRaw(struct NetworkDisplayUpdate *dst, Uint8 *screen,
+	size_t EncodeDisplayRaw(struct NetworkUpdate *dst, Uint8 *screen,
 			int x, int y);
-	size_t EncodeSoundRLE(struct NetworkSoundUpdate *dst,
+	size_t EncodeSoundRLE(struct NetworkUpdate *dst,
 			Uint8 *buffer, size_t len);
-	size_t EncodeSoundRaw(struct NetworkSoundUpdate *dst,
+	size_t EncodeSoundRaw(struct NetworkUpdate *dst,
 			Uint8 *buffer, size_t len);
 
 	/**
@@ -117,10 +105,10 @@ protected:
 	 *
 	 * @return the size of the encoded message
 	 */
-	size_t EncodeSoundBuffer(struct NetworkSoundUpdate *dst,
+	size_t EncodeSoundBuffer(struct NetworkUpdate *dst,
 			Uint8 *buf, size_t len);
 
-	void EncodeJoystickUpdate(struct NetworkJoystickUpdate *dst,
+	void EncodeJoystickUpdate(struct NetworkUpdate *dst,
 			Uint8 which, Uint8 v);
 
 	/**
@@ -129,13 +117,14 @@ protected:
 	 * @param screen the screen to draw to
 	 * @param src the message to decode
 	 */
-	bool DecodeDisplayUpdate(Uint8 *screen, struct NetworkDisplayUpdate *src);
-
-	NetworkUpdate *IterateFirst(NetworkUpdate *p, unsigned int *cookie);
-
-	NetworkUpdate *IterateNext(NetworkUpdate *p, unsigned int *cookie);
+	bool DecodeDisplayUpdate(Uint8 *screen, struct NetworkUpdate *src);
 
 	void AddNetworkUpdate(struct NetworkUpdate *update);
+
+	size_t GetNetworkUpdateSize(void)
+	{
+		return (Uint8*)this->cur_ud - (Uint8*)this->ud;
+	}
 
 	/**
 	 * Compare two display squares.
@@ -147,22 +136,35 @@ protected:
 	 */
 	bool CompareSquare(Uint8 *a, Uint8 *b);
 
-	bool DecodeDisplayDiff(Uint8 *screen, struct NetworkDisplayUpdate *src,
+	bool DecodeDisplayDiff(Uint8 *screen, struct NetworkUpdate *src,
 			int x, int y);
-	bool DecodeDisplayRLE(Uint8 *screen, struct NetworkDisplayUpdate *src,
+	bool DecodeDisplayRLE(Uint8 *screen, struct NetworkUpdate *src,
 			int x, int y);
-	bool DecodeDisplayRaw(Uint8 *screen, struct NetworkDisplayUpdate *src,
+	bool DecodeDisplayRaw(Uint8 *screen, struct NetworkUpdate *src,
 			int x, int y);
 
 	bool ReceiveUpdate(NetworkUpdate *dst, int sock, struct timeval *tv);
 
-	void MarshalData(NetworkUpdate *ud);
+	bool ReceiveData(void *dst, int sock, size_t sz);
 
-	void DeMarshalData(NetworkUpdate *ud);
+	bool SendData(void *src, int sock, size_t sz);
 
+	virtual bool Select(int sock, struct timeval *tv);
+
+	bool MarshalData(NetworkUpdate *ud);
+
+	bool MarshalAllData(NetworkUpdate *p);
+
+	bool DeMarshalData(NetworkUpdate *ud);
+
+	NetworkUpdate *GetNext(NetworkUpdate *p)
+	{
+		return (NetworkUpdate*)((Uint8*)p + p->size);
+	}
+	
 	NetworkUpdate *ud;
 	NetworkUpdate *tmp_ud;
-	Uint8 *cur_ud;
+	NetworkUpdate *cur_ud;
 	size_t bytes_sent;
 	Uint32 *square_updated;
 };
@@ -191,11 +193,12 @@ public:
 		return ((Network*)this)->ReceiveUpdate(this->sock);
 	}
 
-
 	bool ReceiveUpdateBlock()
 	{
 		return ((Network*)this)->ReceiveUpdateBlock(this->sock);
 	}
+
+	bool ReceiveData(void *dst, int sock, size_t sz);
 
 	Uint8 *screen;
 	int joystick_port;
