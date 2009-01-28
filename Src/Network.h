@@ -71,15 +71,6 @@ public:
 protected:
 	size_t DecodeSoundUpdate(struct NetworkUpdate *src, char *buf);
 
-	size_t EncodeDisplayDiff(struct NetworkUpdate *dst, Uint8 *screen,
-			int x, int y);
-
-	size_t EncodeDisplayDiff(struct NetworkUpdate *dst, Uint8 *screen,
-			Uint8 *remote, int x, int y);
-	size_t EncodeDisplayRLE(struct NetworkUpdate *dst, Uint8 *screen,
-			int x, int y);
-	size_t EncodeDisplayRaw(struct NetworkUpdate *dst, Uint8 *screen,
-			int x, int y);
 	size_t EncodeSoundRLE(struct NetworkUpdate *dst,
 			Uint8 *buffer, size_t len);
 	size_t EncodeSoundRaw(struct NetworkUpdate *dst,
