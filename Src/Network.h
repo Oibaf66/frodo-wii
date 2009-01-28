@@ -71,17 +71,6 @@ public:
 protected:
 	size_t DecodeSoundUpdate(struct NetworkUpdate *src, char *buf);
 
-	/** Encode part of a screen into @a dst
-	 * 
-	 * @param dst the destination update structure
-	 * @param screen the screen to encode
-	 * @param square the square index of the screen to encode
-	 *
-	 * @return the size of the encoded message
-	 */
-	size_t EncodeDisplaySquare(struct NetworkUpdate *dst,
-			Uint8 *screen, Uint8 *remote, int square);
-
 	size_t EncodeDisplayDiff(struct NetworkUpdate *dst, Uint8 *screen,
 			int x, int y);
 
@@ -95,6 +84,18 @@ protected:
 			Uint8 *buffer, size_t len);
 	size_t EncodeSoundRaw(struct NetworkUpdate *dst,
 			Uint8 *buffer, size_t len);
+
+	/** Encode part of a screen into @a dst in a single sweep
+	 * 
+	 * @param dst the destination update structure
+	 * @param screen the screen to encode
+	 * @param remote the current remote screen
+	 * @param square the square index of the screen to encode
+	 *
+	 * @return the size of the encoded message
+	 */
+	size_t EncodeDisplaySquare(struct NetworkUpdate *dst,
+			Uint8 *screen, Uint8 *remote, int square);
 
 	/**
 	 * Encode the @a buf sound buffer into @a dst
@@ -165,6 +166,9 @@ protected:
 	NetworkUpdate *ud;
 	NetworkUpdate *tmp_ud;
 	NetworkUpdate *cur_ud;
+	Uint8 *raw_buf;
+	Uint8 *rle_buf;
+	Uint8 *diff_buf;
 	size_t bytes_sent;
 	Uint32 *square_updated;
 };

@@ -31,7 +31,10 @@
 #define SQUARE_TO_X(square) ( ((square) % N_SQUARES_W) * SQUARE_W )
 #define SQUARE_TO_Y(square) ( ((square) / N_SQUARES_W) * SQUARE_H )
 
-#define RAW_SIZE ( (SQUARE_W * SQUARE_H) / 2 )
+/* Worst cases for RLE and DIFF */
+#define RAW_SIZE  ( (SQUARE_W * SQUARE_H) / 2 )
+#define RLE_SIZE  ( RAW_SIZE * 4 + 8)
+#define DIFF_SIZE ( RAW_SIZE * 4 + 8)
 
 Network::Network()
 {
@@ -45,6 +48,11 @@ Network::Network()
 	this->ResetNetworkUpdate();
 	this->bytes_sent = 0;
 
+	this->raw_buf = (Uint8*)malloc(RAW_SIZE);
+	this->rle_buf = (Uint8*)malloc(RLE_SIZE);
+	this->diff_buf = (Uint8*)malloc(DIFF_SIZE);
+	assert(this->raw_buf && this->rle_buf && this->diff_buf);
+
 	this->square_updated = (Uint32*)malloc( N_SQUARES_W * N_SQUARES_H * sizeof(Uint32));
 	assert(this->square_updated);
 	memset(this->square_updated, 0, N_SQUARES_W * N_SQUARES_H * sizeof(Uint32));
@@ -54,6 +62,10 @@ Network::~Network()
 {
 	free(this->ud);
 	free(this->tmp_ud);
+	free(this->square_updated);
+	free(this->raw_buf);
+	free(this->rle_buf);
+	free(this->diff_buf);
 }
 
 size_t Network::EncodeDisplayRaw(struct NetworkUpdate *dst, Uint8 *screen,
@@ -269,40 +281,6 @@ bool Network::DecodeDisplayRaw(Uint8 *screen, struct NetworkUpdate *src,
 	return true;
 }
 
-/* Public methods */
-size_t Network::EncodeDisplaySquare(struct NetworkUpdate *dst,
-		Uint8 *screen, Uint8 *remote, int square)
-{
-	const int square_x = SQUARE_TO_X(square);
-	const int square_y = SQUARE_TO_Y(square);
-	size_t out, diff_out;
-
-	dst->u.display.square = square;
-
-	/* Try encoding as RLE and diff, but if it's too large, go for RAW */
-	diff_out = this->EncodeDisplayDiff(tmp_ud, screen,
-			remote, square_x, square_y);
-	this->square_updated[square] = out | (2 << 16);
-	out = this->EncodeDisplayRLE(dst, screen, square_x, square_y);
-	this->square_updated[square] = out | (1 << 16);
-
-	if (out > diff_out) {
-		/* The diff is best, use that */
-		this->square_updated[square] = out | (2 << 16);
-		memcpy(dst->data, this->tmp_ud->data, out);
-		dst->type = this->tmp_ud->type;
-		out = diff_out;
-	}
-	if (out > RAW_SIZE) {
-		out = this->EncodeDisplayRaw(dst, screen, square_x, square_y);
-		this->square_updated[square] = out;
-	}
-
-	dst->size = out + sizeof(struct NetworkUpdate);
-
-	return dst->size;
-}
-
 bool Network::CompareSquare(Uint8 *a, Uint8 *b)
 {
 	for (int y = 0; y < SQUARE_H; y++)
@@ -341,6 +319,91 @@ size_t Network::EncodeDisplay(Uint8 *master, Uint8 *remote)
 	memcpy(remote, master, DISPLAY_X * DISPLAY_Y);
 }
 
+
+size_t Network::EncodeDisplaySquare(struct NetworkUpdate *dst,
+		Uint8 *screen, Uint8 *remote, int square)
+{
+	const int x_start = SQUARE_TO_X(square);
+	const int y_start = SQUARE_TO_Y(square);
+	Uint8 rle_color = screen[ y_start * DISPLAY_X + x_start ];
+	int rle_len = 0, diff_len = 0;
+	size_t rle_sz = 0, diff_sz = 0;
+	const int raw_w = SQUARE_W / 2;
+	int type = DISPLAY_UPDATE_RAW;
+	size_t out;
+
+	for (int y = y_start; y < y_start + SQUARE_H; y++)
+	{
+		memset( &this->raw_buf[(y - y_start) * raw_w], 0, raw_w );
+
+		for (int x = x_start; x < x_start + SQUARE_W; x++)
+		{
+			Uint8 col_s = screen[ y * DISPLAY_X + x ];
+			Uint8 col_r = remote[ y * DISPLAY_X + x ];
+			bool is_odd = (x & 1) == 1;
+			int raw_shift = (is_odd ? 0 : 4);
+
+			/* Every second is shifted */
+			this->raw_buf[ (y - y_start) * raw_w + (x - x_start) / 2 ] |=
+				(col_s << raw_shift);
+
+			if (rle_color != col_s ||
+					rle_len >= 255)
+			{
+				this->rle_buf[rle_sz] = rle_len;
+				this->rle_buf[rle_sz + 1] = rle_color;
+				rle_sz += 2;
+
+				rle_len = 0;
+				rle_color = col_s;
+			}
+
+			if (col_r != col_s || diff_len >= 255)
+			{
+				this->diff_buf[diff_sz] = diff_len;
+				this->diff_buf[diff_sz + 1] = col_s;
+				diff_sz += 2;
+				diff_len = 0;
+			}
+
+			diff_len++;
+			rle_len++;
+		}
+	}
+
+	/* The last section for RLE */
+	if (rle_len != 0)
+	{
+		this->rle_buf[rle_sz] = rle_len;
+		this->rle_buf[rle_sz + 1] = rle_color;
+
+		rle_sz += 2;
+	}
+
+	out = RAW_SIZE;
+	if (diff_sz < rle_sz && diff_sz < RAW_SIZE)
+	{
+		memcpy(dst->data, this->diff_buf, diff_sz);
+		type = DISPLAY_UPDATE_DIFF;
+		out = diff_sz;
+	}
+	else if (rle_sz < RAW_SIZE)
+	{
+		memcpy(dst->data, this->rle_buf, rle_sz);
+		type = DISPLAY_UPDATE_RLE;
+		out = rle_sz;
+	}		
+	else
+		memcpy(dst->data, this->raw_buf, RAW_SIZE);
+
+	/* Setup the structure */
+	dst->type = type;
+	dst->u.display.square = square;
+	dst->size = out + sizeof(struct NetworkUpdate);
+	this->square_updated[square] = out | (type << 16);
+
+	return dst->size;
+}
 
 bool Network::DecodeDisplayUpdate(Uint8 *screen,
 		struct NetworkUpdate *src)
@@ -428,9 +491,9 @@ void Network::DrawTransferredBlocks(SDL_Surface *screen)
 			SDL_Rect size = {x,  y,  2 * ((raw & 0xffff) / 17), 4};
 			Uint32 color = 4;
 
-			if ((raw >> 16) == 1)
+			if ((raw >> 16) == DISPLAY_UPDATE_RLE)
 				color = 5;
-			else if ((raw >> 16) == 2)
+			else if ((raw >> 16) == DISPLAY_UPDATE_DIFF)
 				color = 6;
 
 			SDL_FillRect(screen, &l, 19);
