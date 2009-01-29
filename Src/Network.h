@@ -53,7 +53,10 @@ public:
 
 	size_t EncodeDisplay(Uint8 *master, Uint8 *remote);
 
-	bool DecodeUpdate(uint8 *screen, bool server = false);
+	void EncodeJoystickUpdate(Uint8 v);
+
+
+	bool DecodeUpdate(uint8 *screen, uint8 *js = NULL, bool server = false);
 
 	void ResetNetworkUpdate(void);
 
@@ -106,9 +109,6 @@ protected:
 	 */
 	size_t EncodeSoundBuffer(struct NetworkUpdate *dst,
 			Uint8 *buf, size_t len);
-
-	void EncodeJoystickUpdate(struct NetworkUpdate *dst,
-			Uint8 which, Uint8 v);
 
 	/**
 	 * Decode a display update message onto @a screen

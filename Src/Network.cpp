@@ -350,10 +350,15 @@ size_t Network::EncodeSoundBuffer(struct NetworkUpdate *dst, Uint8 *buf, size_t 
 	return dst->size;
 }
 
-void Network::EncodeJoystickUpdate(struct NetworkUpdate *dst, Uint8 which, Uint8 v)
+void Network::EncodeJoystickUpdate(Uint8 v)
 {
+	struct NetworkUpdate *dst = this->cur_ud;
+
 	dst->type = JOYSTICK_UPDATE;
 	dst->u.joystick.val = v;
+	dst->size = sizeof(NetworkUpdate);
+
+	this->AddNetworkUpdate(dst);
 }
 
 
@@ -568,7 +573,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	return true;
 }
 
-bool Network::DecodeUpdate(uint8 *screen, bool server)
+bool Network::DecodeUpdate(uint8 *screen, uint8 *js, bool server)
 {
 	NetworkUpdate *p = this->ud;
 	bool out = true;
@@ -584,6 +589,10 @@ bool Network::DecodeUpdate(uint8 *screen, bool server)
 				break;
 			if (this->DecodeDisplayUpdate(screen, p) == false)
 				out = false;
+			break;
+		case JOYSTICK_UPDATE:
+			if (js)
+				*js = p->u.joystick.val;
 			break;
 		case DISCONNECT:
 			out = false;

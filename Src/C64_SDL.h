@@ -576,9 +576,14 @@ void C64::network_vblank()
 			Uint8 *master = this->TheDisplay->BitmapBase();
 			NetworkClient *remote = this->network_server->clients[i];
 
+			/* Has the client sent any data? */
 			if (remote->ReceiveUpdate() == true)
 			{
-				if (remote->DecodeUpdate(NULL, true) == false)
+				uint8 *js = &TheCIA1->Joystick2;
+
+				if (ThePrefs.JoystickSwap)
+					js = &TheCIA1->Joystick1;
+				if (remote->DecodeUpdate(NULL, js, true) == false)
 				{
 					/* Disconnect or sending crap, remove this guy! */
 					this->network_server->RemoveClient(remote);
@@ -616,8 +621,13 @@ void C64::network_vblank()
 			this->network_client->Disconnect();
 			delete this->network_client;
 			this->network_client = NULL;
+			return;
 		}
-		else if (this->network_client->ReceiveUpdateBlock())
+
+		this->network_client->EncodeJoystickUpdate(TheCIA1->Joystick2);
+		this->network_client->SendUpdate();
+
+		if (this->network_client->ReceiveUpdateBlock())
 		{
 			/* Got something? */
 			if (this->network_client->DecodeUpdate(this->network_client->screen) == true)
@@ -645,14 +655,15 @@ void C64::VBlank(bool draw_frame)
 	/* From Acorn port */
 	static uint64_t lastFrame;
         static uint32_t now;
+        uint8 j1, j2;
 
 #if defined(GEKKO)
 	WPAD_ScanPads();
 #endif
 
 	// Poll joysticks
-	TheCIA1->Joystick1 = poll_joystick(0);
-	TheCIA1->Joystick2 = poll_joystick(1);
+	j1 = poll_joystick(0);
+	j2 = poll_joystick(1);
 
 	// Poll keyboard
 	TheDisplay->PollKeyboard(TheCIA1->KeyMatrix, TheCIA1->RevMatrix, &joykey);
@@ -664,10 +675,24 @@ void C64::VBlank(bool draw_frame)
 #ifndef GEKKO
 	// Joystick keyboard emulation
 	if (TheDisplay->NumLock())
-		TheCIA1->Joystick1 &= joykey;
+		j1 &= joykey;
 	else
-		TheCIA1->Joystick2 &= joykey;
+		j2 &= joykey;
 #endif
+
+	if (this->network_server)
+	{
+		/* Only poll one joystick for network servers */
+		if (ThePrefs.JoystickSwap)
+			TheCIA1->Joystick2 = j2;
+		else
+			TheCIA1->Joystick1 = j2;
+	}
+	else
+	{
+		TheCIA1->Joystick1 = j1;
+		TheCIA1->Joystick2 = j2;
+	}
 
 	// Count TOD clocks
 	TheCIA1->CountTOD();
