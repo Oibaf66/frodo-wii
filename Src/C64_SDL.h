@@ -554,6 +554,78 @@ void C64::Run(void)
 	thread_func();
 }
 
+void C64::network_vlbank()
+{
+#if defined(GEKKO)
+        Uint32 now = ticks_to_millisecs(gettime());
+#else
+        Uint32 now = SDL_GetTicks();
+#endif
+        static int frms = 1;
+        frms--;
+
+        if (this->network_server && frms == 0) {
+	        static uint32_t last_time_update;
+	        static size_t bytes_sent;
+
+	        frms = 6;
+	        /* Perhaps accept a new connection */
+		this->network_server->CheckNewConnection();
+
+		for (int i = 0; i < this->network_server->n_clients; i++) {
+			Uint8 *master = this->TheDisplay->BitmapBase();
+			NetworkClient *remote = this->network_server->clients[i];
+
+			remote->EncodeDisplay(master, remote->screen);
+			if (remote->SendUpdate() == false)
+			{
+				/* Disconnect or broken data */
+				printf("Could not send update\n");
+				this->network_server->RemoveClient(remote);
+			}
+			else
+			{
+				remote->ResetNetworkUpdate();
+
+				bytes_sent += remote->GetBytesSent();
+			}
+		}
+		if (now - last_time_update > 300)
+		{
+			TheDisplay->NetworkTrafficMeter(((bytes_sent * 1000.0) /
+					((float)now - last_time_update)) / 1024.0);
+			for (int i = 0; i < this->network_server->n_clients; i++)
+				this->network_server->clients[i]->ResetBytesSent();
+			bytes_sent = 0;
+			last_time_update = now;
+		}
+	}
+	else if (this->network_client) {
+		if (this->quit_thyself)
+		{
+			this->network_client->Disconnect();
+			delete this->network_client;
+			this->network_client = NULL;
+		}
+		else if (this->network_client->ReceiveUpdateBlock())
+		{
+			/* Got something? */
+			if (this->network_client->DecodeUpdate(this->network_client->screen) == true)
+			{
+				TheDisplay->Update(this->network_client->screen);
+				this->network_client->ResetNetworkUpdate();
+			}
+			else
+			{
+				/* Disconnect or broken data */
+				this->network_client->Disconnect();
+				delete this->network_client;
+				this->network_client = NULL;
+			}
+		}
+	}
+}
+
 /*
  *  Vertical blank: Poll keyboard and joysticks, update window
  */
@@ -595,47 +667,8 @@ void C64::VBlank(bool draw_frame)
 	if (draw_frame && this->network_client == NULL) {
 		TheDisplay->Update();
 	}
-        static int frms = 1;
-        frms--;
-	if (this->network_server && frms == 0) {
-	        static uint32_t last_time_update;
-	        static size_t bytes_sent;
+	this->network_vlbank();
 
-	        frms = 6;
-	        /* Perhaps accept a new connection */
-		this->network_server->CheckNewConnection();
-
-		for (int i = 0; i < this->network_server->n_clients; i++) {
-			Uint8 *master = this->TheDisplay->BitmapBase();
-			NetworkClient *remote = this->network_server->clients[i];
-
-			remote->EncodeDisplay(master, remote->screen);
-			if (remote->SendUpdate() == false)
-				printf("Oh no! Could not send update\n");
-			remote->ResetNetworkUpdate();
-
-			bytes_sent += remote->GetBytesSent();
-		}
-		if (now - last_time_update > 300)
-		{
-			TheDisplay->NetworkTrafficMeter(((bytes_sent * 1000.0) /
-					((float)now - last_time_update)) / 1024.0);
-			for (int i = 0; i < this->network_server->n_clients; i++)
-				this->network_server->clients[i]->ResetBytesSent();
-			bytes_sent = 0;
-			last_time_update = now;
-		}
-	}
-	else if (this->network_client) {
-		/* Got something? */
-		if (this->network_client->ReceiveUpdateBlock())
-		{
-			this->network_client->DecodeUpdate(
-					this->network_client->screen);
-			TheDisplay->Update(this->network_client->screen);
-			this->network_client->ResetNetworkUpdate();
-		}
-	}
 	if (this->have_a_break) {
 		int submenus[1]; 
 		int opt;

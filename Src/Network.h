@@ -15,6 +15,7 @@ enum
 	SOUND_UPDATE_RLE   = 5,
 	KEYBOARD_UPDATE    = 6,
 	JOYSTICK_UPDATE    = 7,
+	DISCONNECT         = 8,
 };
 
 struct NetworkUpdate
@@ -195,6 +196,12 @@ public:
 
 	bool ReceiveData(void *dst, int sock, size_t sz);
 
+	/**
+	 * Disconnect from the other end. You should delete the object
+	 * after having done this.
+	 */
+	void Disconnect();
+
 	Uint8 *screen;
 	int joystick_port;
 private:
@@ -212,6 +219,8 @@ public:
 
 	NetworkClient *clients[MAX_NETWORK_CLIENTS];
 	int n_clients;
+
+	void RemoveClient(NetworkClient *client);
 
 private:
 	void AddClient(int sock);

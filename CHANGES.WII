@@ -1,4 +1,7 @@
 version 7:
+		TODO: Add ability to select files to load from disks in
+		a menu
+
  		TODO: Would it be possible for you to implement the
  		binding of Joystick directions to buttons?
 

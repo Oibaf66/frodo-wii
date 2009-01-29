@@ -4,12 +4,25 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+static int set_sock_opts(int sock)
+{
+	struct timeval tv;
+	int d = 1;
+
+	memset(&tv, 0, sizeof(tv));
+	tv.tv_sec = 2;
+	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,
+			&tv, sizeof(struct timeval));
+	setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO,
+			&tv, sizeof(struct timeval));
+	setsockopt(sock,SOL_SOCKET,SO_REUSEADDR, &d, sizeof(int));
+}
+
 /* From glibc docs */
 static int make_socket (uint16_t port)
 {
 	struct sockaddr_in name;
 	int sock;
-	int d = 1;
 
 	/* Create the socket. */
 	sock = socket (PF_INET, SOCK_STREAM, 0);
@@ -19,10 +32,7 @@ static int make_socket (uint16_t port)
 		exit (EXIT_FAILURE);
 	}
 
-	if (setsockopt(sock,SOL_SOCKET,SO_REUSEADDR, &d, sizeof(int)) < 0) {
-	    perror("setsockopt");
-	    exit(1);
-	}
+	set_sock_opts(sock);
 
 	/* Give the socket a name. */
 	name.sin_family = AF_INET;
@@ -121,6 +131,8 @@ NetworkClient::NetworkClient(const char *hostname, int port)
 		perror ("socket (client)");
 		return;
 	}
+
+	set_sock_opts(sock);
 
 	/* Connect to the server. */
 	init_sockaddr (&servername, hostname, port);

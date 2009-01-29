@@ -514,6 +514,7 @@ bool Network::MarshalData(NetworkUpdate *p)
 	case SOUND_UPDATE_RAW:
 	case SOUND_UPDATE_RLE:
 	case JOYSTICK_UPDATE:
+	case DISCONNECT:
 	case STOP:
 		break;
 	default:
@@ -555,6 +556,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	case SOUND_UPDATE_RAW:
 	case SOUND_UPDATE_RLE:
 	case JOYSTICK_UPDATE:
+	case DISCONNECT:
 	case STOP:
 		/* Nothing to do, just bytes */
 		break;
@@ -569,6 +571,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 bool Network::DecodeUpdate(uint8 *screen)
 {
 	NetworkUpdate *p = this->ud;
+	bool out = true;
 
 	while (p->type != STOP)
 	{
@@ -577,13 +580,19 @@ bool Network::DecodeUpdate(uint8 *screen)
 		case DISPLAY_UPDATE_RAW:
 		case DISPLAY_UPDATE_RLE:
 		case DISPLAY_UPDATE_DIFF:
-			this->DecodeDisplayUpdate(screen, p);
+			if (this->DecodeDisplayUpdate(screen, p) == false)
+				out = false;
+			break;
+		case DISCONNECT:
+			out = false;
 			break;
 		default:
 			break;
 		}
 		p = this->GetNext(p);
 	}
+
+	return out;
 }
 
 void NetworkServer::AddClient(int sock)
@@ -594,6 +603,24 @@ void NetworkServer::AddClient(int sock)
 	this->n_clients++;
 }
 
+void NetworkServer::RemoveClient(NetworkClient *client)
+{
+	for (int i = 0; i < this->n_clients; i++)
+	{
+		if (this->clients[i] == client)
+		{
+			if (i < this->n_clients - 1)
+			{
+				/* Swap with last */
+				this->clients[i] = this->clients[this->n_clients - 1];
+			}
+			delete this->clients[i];
+			this->n_clients--;
+			return;
+		}
+	}
+	/* Not found */
+}
 
 NetworkClient::NetworkClient(int sock) : Network()
 {
@@ -609,6 +636,18 @@ NetworkClient::NetworkClient(int sock) : Network()
 NetworkClient::~NetworkClient()
 {
 	free(this->screen);
+}
+
+void NetworkClient::Disconnect()
+{
+	NetworkUpdate *disconnect= this->cur_ud;
+	size_t sz;
+
+	/* Add a stop at the end of the update */
+	disconnect->type = DISCONNECT;
+	disconnect->size = sizeof(NetworkUpdate);
+	this->AddNetworkUpdate(disconnect);
+	this->SendUpdate();
 }
 
 #include "NetworkUnix.h"
