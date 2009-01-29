@@ -200,3 +200,8 @@ bool Network::Select(int sock, struct timeval *tv)
 	/* v is 0 if the sock is not ready */
 	return v > 0;
 }
+
+void Network::CloseSocket(int sock)
+{
+	close(sock);
+}

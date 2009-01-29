@@ -67,6 +67,8 @@ public:
 		this->bytes_sent = 0;
 	}
 
+	void CloseSocket(int sock);
+
 	bool SendUpdate(int sock);
 
 	bool ReceiveUpdate(int sock);

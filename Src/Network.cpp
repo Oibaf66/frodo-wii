@@ -614,7 +614,7 @@ void NetworkServer::RemoveClient(NetworkClient *client)
 				/* Swap with last */
 				this->clients[i] = this->clients[this->n_clients - 1];
 			}
-			delete this->clients[i];
+			delete client;
 			this->n_clients--;
 			return;
 		}
@@ -636,6 +636,7 @@ NetworkClient::NetworkClient(int sock) : Network()
 NetworkClient::~NetworkClient()
 {
 	free(this->screen);
+	this->CloseSocket(this->sock);
 }
 
 void NetworkClient::Disconnect()
