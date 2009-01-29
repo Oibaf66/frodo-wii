@@ -199,7 +199,7 @@ public:
 	bool prefs_changed;
 	char save_game_name[256];
 
-	void network_vlbank();
+	void network_vblank();
 
 	void select_disc(Prefs *np);
 	void select_fake_key_sequence(Prefs *np);

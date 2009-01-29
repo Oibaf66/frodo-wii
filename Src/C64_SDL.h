@@ -554,7 +554,7 @@ void C64::Run(void)
 	thread_func();
 }
 
-void C64::network_vlbank()
+void C64::network_vblank()
 {
 #if defined(GEKKO)
         Uint32 now = ticks_to_millisecs(gettime());
@@ -667,7 +667,6 @@ void C64::VBlank(bool draw_frame)
 	if (draw_frame && this->network_client == NULL) {
 		TheDisplay->Update();
 	}
-	this->network_vlbank();
 
 	if (this->have_a_break) {
 		int submenus[1]; 
@@ -730,6 +729,7 @@ void C64::VBlank(bool draw_frame)
 		if (this->quit_thyself)
 			ThePrefs.Save(PREFS_PATH);
 	}
+	this->network_vblank();
 #if defined(GEKKO)
         now = ticks_to_millisecs(gettime());
 #else

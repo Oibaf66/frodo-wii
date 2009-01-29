@@ -1,7 +1,11 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-#include <arpa/inet.h>
+#if defined(GEKKO)
+# include <network.h>
+#else
+ #include <arpa/inet.h>
+#endif
 #include <SDL.h>
 
 #define NETWORK_UPDATE_SIZE  (256 * 1024)
