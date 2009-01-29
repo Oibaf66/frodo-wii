@@ -568,7 +568,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	return true;
 }
 
-bool Network::DecodeUpdate(uint8 *screen)
+bool Network::DecodeUpdate(uint8 *screen, bool server)
 {
 	NetworkUpdate *p = this->ud;
 	bool out = true;
@@ -580,6 +580,8 @@ bool Network::DecodeUpdate(uint8 *screen)
 		case DISPLAY_UPDATE_RAW:
 		case DISPLAY_UPDATE_RLE:
 		case DISPLAY_UPDATE_DIFF:
+			if (screen == NULL)
+				break;
 			if (this->DecodeDisplayUpdate(screen, p) == false)
 				out = false;
 			break;

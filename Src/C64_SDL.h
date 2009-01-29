@@ -576,6 +576,16 @@ void C64::network_vblank()
 			Uint8 *master = this->TheDisplay->BitmapBase();
 			NetworkClient *remote = this->network_server->clients[i];
 
+			if (remote->ReceiveUpdate() == true)
+			{
+				if (remote->DecodeUpdate(NULL, true) == false)
+				{
+					/* Disconnect or sending crap, remove this guy! */
+					this->network_server->RemoveClient(remote);
+					continue;
+				}
+
+			}
 			remote->EncodeDisplay(master, remote->screen);
 			if (remote->SendUpdate() == false)
 			{

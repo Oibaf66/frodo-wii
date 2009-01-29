@@ -53,7 +53,7 @@ public:
 
 	size_t EncodeDisplay(Uint8 *master, Uint8 *remote);
 
-	bool DecodeUpdate(uint8 *screen);
+	bool DecodeUpdate(uint8 *screen, bool server = false);
 
 	void ResetNetworkUpdate(void);
 
