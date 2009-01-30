@@ -124,6 +124,8 @@ NetworkClient::NetworkClient(const char *hostname, int port)
 	/* Again from glibc docs */
 	struct sockaddr_in servername;
 
+	this->Init();
+
 	/* Create the socket. */
 	this->sock = socket (PF_INET, SOCK_STREAM, 0);
 	if (this->sock < 0)
@@ -142,12 +144,6 @@ NetworkClient::NetworkClient(const char *hostname, int port)
 		perror ("connect (client)");
 		return;
 	}
-
-	this->screen = (Uint8 *)malloc(DISPLAY_X * DISPLAY_Y);
-	assert(this->screen);
-
-	/* Assume black screen */
-	memset(this->screen, 0, DISPLAY_X * DISPLAY_Y);
 }
 
 bool Network::ReceiveData(void *dst, int sock, size_t sz)

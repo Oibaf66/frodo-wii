@@ -210,7 +210,10 @@ public:
 
 	Uint8 *screen;
 	int joystick_port;
+	Uint8 cur_joystick_data;
 private:
+	void Init();
+
 	int sock;
 };
 

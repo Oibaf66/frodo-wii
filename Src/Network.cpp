@@ -633,15 +633,20 @@ void NetworkServer::RemoveClient(NetworkClient *client)
 	/* Not found */
 }
 
-NetworkClient::NetworkClient(int sock) : Network()
+void NetworkClient::Init()
 {
-	this->sock = sock;
-
 	this->screen = (Uint8 *)malloc(DISPLAY_X * DISPLAY_Y);
 	assert(this->screen);
 
 	/* Assume black screen */
 	memset(this->screen, 0, DISPLAY_X * DISPLAY_Y);
+}
+
+
+NetworkClient::NetworkClient(int sock)
+{
+	this->Init();
+	this->sock = sock;
 }
 
 NetworkClient::~NetworkClient()

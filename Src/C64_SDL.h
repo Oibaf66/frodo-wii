@@ -616,6 +616,8 @@ void C64::network_vblank()
 		}
 	}
 	else if (this->network_client) {
+		Uint8 js = TheCIA1->Joystick2;
+
 		if (this->quit_thyself)
 		{
 			this->network_client->Disconnect();
@@ -624,10 +626,15 @@ void C64::network_vblank()
 			return;
 		}
 
-		this->network_client->EncodeJoystickUpdate(TheCIA1->Joystick2);
-		this->network_client->SendUpdate();
+		/* Perhaps send joystick data */
+		if (this->network_client->cur_joystick_data != js)
+		{
+			this->network_client->EncodeJoystickUpdate(js);
+			this->network_client->SendUpdate();
+			this->network_client->cur_joystick_data = js; 
+		}
 
-		if (this->network_client->ReceiveUpdateBlock())
+		if (this->network_client->ReceiveUpdate())
 		{
 			/* Got something? */
 			if (this->network_client->DecodeUpdate(this->network_client->screen) == true)
