@@ -62,13 +62,19 @@ public:
 
 	void DrawTransferredBlocks(SDL_Surface *screen);
 
-	size_t GetBytesSent() {
-		return this->bytes_sent;
+	size_t GetKbps() {
+		return this->kbps;
+	}
+
+	bool ThrottleTraffic() {
+		return this->kbps > this->target_kbps;
 	}
 
 	void ResetBytesSent() {
-		this->bytes_sent = 0;
+		this->traffic = 0;
 	}
+
+	void Tick(int ms);
 
 	void CloseSocket(int sock);
 
@@ -167,8 +173,12 @@ protected:
 	Uint8 *raw_buf;
 	Uint8 *rle_buf;
 	Uint8 *diff_buf;
-	size_t bytes_sent;
 	Uint32 *square_updated;
+
+	size_t traffic, last_traffic;
+	int time_since_last_reset;
+	int target_kbps;
+	int kbps;
 };
 
 class NetworkClient : public Network

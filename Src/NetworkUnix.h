@@ -158,6 +158,7 @@ bool Network::ReceiveData(void *dst, int sock, size_t sz)
 			return false;
 		received_sz += v; 
 	}
+	this->traffic += received_sz;
 
 	return sz > 0;
 }

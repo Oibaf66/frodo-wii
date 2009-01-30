@@ -556,19 +556,14 @@ void C64::Run(void)
 
 void C64::network_vblank()
 {
+        static uint32_t last_time_update;
 #if defined(GEKKO)
         Uint32 now = ticks_to_millisecs(gettime());
 #else
         Uint32 now = SDL_GetTicks();
 #endif
-        static int frms = 1;
-        frms--;
 
-        if (this->network_server && frms == 0) {
-	        static uint32_t last_time_update;
-	        static size_t bytes_sent;
-
-	        frms = 6;
+        if (this->network_server) {
 	        /* Perhaps accept a new connection */
 		this->network_server->CheckNewConnection();
 
@@ -576,6 +571,7 @@ void C64::network_vblank()
 			Uint8 *master = this->TheDisplay->BitmapBase();
 			NetworkClient *remote = this->network_server->clients[i];
 
+			remote->Tick( now - last_time_update );
 			/* Has the client sent any data? */
 			if (remote->ReceiveUpdate() == true)
 			{
@@ -589,7 +585,11 @@ void C64::network_vblank()
 					this->network_server->RemoveClient(remote);
 					continue;
 				}
-
+				remote->ResetNetworkUpdate();
+			}
+			if (remote->ThrottleTraffic()) {
+				/* Skip this frame if the data rate is too high */
+				continue;
 			}
 			remote->EncodeDisplay(master, remote->screen);
 			if (remote->SendUpdate() == false)
@@ -598,21 +598,18 @@ void C64::network_vblank()
 				printf("Could not send update\n");
 				this->network_server->RemoveClient(remote);
 			}
-			else
-			{
-				remote->ResetNetworkUpdate();
+			remote->ResetNetworkUpdate();
 
-				bytes_sent += remote->GetBytesSent();
+			if (1)
+			{
+				static uint32_t last_traffic_update;
+
+				if (last_time_update - last_traffic_update > 300)
+				{
+					TheDisplay->NetworkTrafficMeter(remote->GetKbps() / (8 * 1024.0));
+					last_traffic_update = now;
+				}
 			}
-		}
-		if (now - last_time_update > 300)
-		{
-			TheDisplay->NetworkTrafficMeter(((bytes_sent * 1000.0) /
-					((float)now - last_time_update)) / 1024.0);
-			for (int i = 0; i < this->network_server->n_clients; i++)
-				this->network_server->clients[i]->ResetBytesSent();
-			bytes_sent = 0;
-			last_time_update = now;
 		}
 	}
 	else if (this->network_client) {
@@ -632,6 +629,7 @@ void C64::network_vblank()
 			this->network_client->EncodeJoystickUpdate(js);
 			this->network_client->SendUpdate();
 			this->network_client->cur_joystick_data = js; 
+			this->network_client->ResetNetworkUpdate();
 		}
 
 		if (this->network_client->ReceiveUpdate())
@@ -651,6 +649,7 @@ void C64::network_vblank()
 			}
 		}
 	}
+	last_time_update = now;
 }
 
 /*
@@ -660,8 +659,8 @@ void C64::network_vblank()
 void C64::VBlank(bool draw_frame)
 {
 	/* From Acorn port */
-	static uint64_t lastFrame;
-        static uint32_t now;
+	static uint32_t lastFrame;
+        uint32_t now;
         uint8 j1, j2;
 
 #if defined(GEKKO)

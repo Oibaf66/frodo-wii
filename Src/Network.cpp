@@ -46,7 +46,10 @@ Network::Network()
 	assert(this->ud && this->tmp_ud);
 
 	this->ResetNetworkUpdate();
-	this->bytes_sent = 0;
+	this->traffic = 0;
+	this->last_traffic = 0;
+	this->target_kbps = 120000; /* kilobit per seconds */
+	this->kbps = 0;
 
 	this->raw_buf = (Uint8*)malloc(RAW_SIZE);
 	this->rle_buf = (Uint8*)malloc(RLE_SIZE);
@@ -66,6 +69,15 @@ Network::~Network()
 	free(this->raw_buf);
 	free(this->rle_buf);
 	free(this->diff_buf);
+}
+
+void Network::Tick(int ms)
+{
+	int last_kbps = ((this->traffic - this->last_traffic) * 8) * (1000 / ms);
+
+	/* 1/3 of the new value, 2/3 of the old */
+	this->kbps = 2 * (this->kbps / 3) + (last_kbps / 3);
+	this->last_traffic = this->traffic;
 }
 
 size_t Network::EncodeSoundRLE(struct NetworkUpdate *dst,
@@ -493,7 +505,7 @@ bool Network::SendUpdate(int sock)
 		return false;
 	if (this->SendData((void*)src, sock, sz) == false)
 		return false;
-	this->bytes_sent += sz;
+	this->traffic += sz;
 
 	return true;
 }
