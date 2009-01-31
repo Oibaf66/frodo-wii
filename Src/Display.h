@@ -71,7 +71,7 @@ public:
 	void Update(void);
 	void UpdateLEDs(int l0, int l1, int l2, int l3);
 	void Speedometer(int speed);
-	void NetworkTrafficMeter(float kb_per_s);
+	void NetworkTrafficMeter(float kb_per_s, bool has_throttled);
 	uint8 *BitmapBase(void);
 	int BitmapXMod(void);
 #ifdef __riscos__
@@ -82,7 +82,8 @@ public:
 #if defined(HAVE_SDL)
 	void FakeKeyPress(int kc, uint8 *CIA_key_matrix, uint8 *CIA_rev_matrix);
 	void TranslateKey(SDLKey key, bool key_up, uint8 *key_matrix, uint8 *rev_matrix, uint8 *joystick);
-	void UpdateKeyMatrix(int c64_key, bool key_up, uint8 *key_matrix, uint8 *rev_matrix);
+	void UpdateKeyMatrix(int c64_key, bool key_up, uint8 *key_matrix,
+			uint8 *rev_matrix, uint8 *joystick);
 	void Update(uint8 *src_pixels);
 #endif
 	bool NumLock(void);

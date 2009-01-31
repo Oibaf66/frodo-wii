@@ -306,10 +306,10 @@ void C64Display::Speedometer(int speed)
 		delay++;
 }
 
-void C64Display::NetworkTrafficMeter(float kb_per_s)
+void C64Display::NetworkTrafficMeter(float kb_per_s, bool is_throttled)
 {
-	sprintf(this->networktraffic_string, "%6.2f KB/S",
-			kb_per_s);
+	sprintf(this->networktraffic_string, "%6.2f KB/S%s",
+			kb_per_s, is_throttled ? " THROTTLED" : "");
 }
 
 /*
@@ -342,14 +342,26 @@ void C64Display::FakeKeyPress(int kc, uint8 *CIA_key_matrix,
                 CIA_rev_matrix[i] = 0xFF;
         }
         if (kc != -1)
-        	this->UpdateKeyMatrix(kc, false, CIA_key_matrix, CIA_rev_matrix);
+        	this->UpdateKeyMatrix(kc, false, CIA_key_matrix, CIA_rev_matrix,
+        			NULL);
 }
 
-void C64Display::UpdateKeyMatrix(int c64_key, bool key_up, uint8 *key_matrix, uint8 *rev_matrix)
+void C64Display::UpdateKeyMatrix(int c64_key, bool key_up,
+		uint8 *key_matrix, uint8 *rev_matrix, uint8 *joystick)
 {
 	bool shifted = c64_key & 0x80;
 	int c64_byte = (c64_key >> 3) & 7;
 	int c64_bit = c64_key & 7;
+
+	// Handle joystick emulation
+	if (joystick && (c64_key & 0x40)) {
+		c64_key &= 0x1f;
+		if (key_up)
+			*joystick |= c64_key;
+		else
+			*joystick &= ~c64_key;
+		return;
+	}
 
 	if (key_up) {
 		if (shifted) {
@@ -477,17 +489,7 @@ void C64Display::TranslateKey(SDLKey key, bool key_up, uint8 *key_matrix,
 	if (c64_key < 0)
 		return;
 
-	// Handle joystick emulation
-	if (c64_key & 0x40) {
-		c64_key &= 0x1f;
-		if (key_up)
-			*joystick |= c64_key;
-		else
-			*joystick &= ~c64_key;
-		return;
-	}
-
-	this->UpdateKeyMatrix(c64_key, key_up, key_matrix, rev_matrix);
+	this->UpdateKeyMatrix(c64_key, key_up, key_matrix, rev_matrix, joystick);
 }
 
 void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joystick)
@@ -679,13 +681,15 @@ uint8 C64::poll_joystick(int port)
 			if (extra_keys[i])
 			{
 				TheDisplay->UpdateKeyMatrix(kc, false,
-						TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
+						TheCIA1->KeyMatrix, TheCIA1->RevMatrix,
+						&j);
 				is_pressed[i] = true;
 			}
 			else if (is_pressed[i])
 			{
 				TheDisplay->UpdateKeyMatrix(kc, true,
-						TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
+						TheCIA1->KeyMatrix, TheCIA1->RevMatrix,
+						&j);
 				is_pressed[i] = false;
 			}
 		}

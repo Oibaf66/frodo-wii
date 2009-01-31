@@ -46,16 +46,21 @@ typedef struct virtkey
 	{ name, -1, false, false }
 #define D(name) \
 	{ name, -1, false, true }
+#define J(name, v) \
+	{ name, 0x40 | (v), false, false }
 
 #define KEY_COLS 15
-#define KEY_ROWS 5
+#define KEY_ROWS 8
 
 static virtkey_t keys[KEY_COLS * KEY_ROWS] = {
 	K("<-",7,1),       K("1", 7,0), K("2", 7,3), K("3", 1,0), K("4", 1,3), K("5", 2,0), K("6", 2,3), K("7", 3,0), K("8", 3,3), K("9", 4,0), K("0", 4,3), K("+", 5,0), K("-", 5,3), K("£", 6,0), K("Hom", 6,3),
 	K("Cr", 7,2),      K("Q", 7,6), K("W", 1,1), K("E", 1,6), K("R", 2,1), K("T", 2,6), K("Y", 3,1), K("U", 3,6), K("I", 4,1), K("O", 4,6), K("P", 5,1), K("@", 5,6), K("*", 6,1), K("Au", 6,6),K("Rstr",4,0),
 	K("R/Stp", 7,7),   K(NULL,0,0), K("A", 1,2), K("S", 1,5), K("D", 2,2), K("F", 2,5), K("G", 3,2), K("H", 3,5), K("J", 4,2), K("K", 4,5), K("L", 5,2), K(":", 5,5), K(";", 6,2), K("=", 6,5), K("Ret", 0,1),
 	K("C=", 7,5),      S("Shft",1,7),K(NULL,0,0),K("Z", 1,4), K("X", 2,7), K("C", 2,4), K("V", 3,7), K("B", 3,4), K("N", 4,7), K("M", 4,4), K(",", 5,7), K(".", 5,4), K("/", 6,7), K("Dwn",0,7),K("Rgt", 0,2),
-	N("None"),         K(NULL,0,0), K(NULL,0,0), K("space", 7,4),K(0, 0,0),K(NULL,0,0), K("f1", 0,4),K("f3", 0,5),K("f5", 0,6),K("f7", 0,3),K("Del",0,0),K(NULL,0,0), K(NULL,0,0), K(NULL,0,0), D("DONE"),
+	N("None"),         K(NULL,0,0), K(NULL,0,0), K("space", 7,4),K(0, 0,0),K(NULL,0,0), K("f1",0,4), K("f3",0,5), K("f5",0,6), K("f7",0,3), K("Del",0,0),K(NULL,0,0), K(NULL,0,0), K(NULL,0,0), D("DONE"),
+	K(NULL,0,0),       K(NULL,0,0), K(NULL,0,0), K(NULL,0,0), K(0, 0,0),J("Joystick up",1),K(0, 0,0),K(NULL,0,0), K(NULL,0,0), K(NULL,0,0), K(NULL, 0,0),K(NULL,0,0), K(NULL,0,0), K(NULL,0,0), K(NULL, 0,0),
+	J("Joystick left",4),K(0, 0,0), K(NULL,0,0), K(NULL,0,0), K(0,0,0),J("Joystick fire",0x10),K(0,0,0),K(0,0,0), K(NULL,0,0), K(0,0,0),J("Joystick right",8),K(0, 0,0),K(0, 0,0), K(NULL,0,0), K(NULL,0,0),
+	K(NULL,0,0),       K(0, 0,0),   K(NULL,0,0), K(NULL,0,0), K(0,0,0),J("Joystick down",2),K(0,0,0),K(NULL,0,0),K(NULL,0,0), K(NULL,0,0), K(NULL,0,0), K(NULL,0,0), K(NULL, 0,0),K(NULL,0,0), K(NULL, 0,0),
 };
 
 static const char *shifted_names[KEY_COLS * KEY_ROWS] = {

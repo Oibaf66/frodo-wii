@@ -570,6 +570,7 @@ void C64::network_vblank()
 		for (int i = 0; i < this->network_server->n_clients; i++) {
 			Uint8 *master = this->TheDisplay->BitmapBase();
 			NetworkClient *remote = this->network_server->clients[i];
+			static bool has_throttled;
 
 			remote->Tick( now - last_time_update );
 			/* Has the client sent any data? */
@@ -589,6 +590,7 @@ void C64::network_vblank()
 			}
 			if (remote->ThrottleTraffic()) {
 				/* Skip this frame if the data rate is too high */
+				has_throttled = true;
 				continue;
 			}
 			remote->EncodeDisplay(master, remote->screen);
@@ -606,8 +608,10 @@ void C64::network_vblank()
 
 				if (last_time_update - last_traffic_update > 300)
 				{
-					TheDisplay->NetworkTrafficMeter(remote->GetKbps() / (8 * 1024.0));
+					TheDisplay->NetworkTrafficMeter(remote->GetKbps() / (8 * 1024.0),
+							has_throttled);
 					last_traffic_update = now;
+					has_throttled = false;
 				}
 			}
 		}
