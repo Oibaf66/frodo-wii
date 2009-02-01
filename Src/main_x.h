@@ -100,7 +100,7 @@ Frodo::Frodo()
 /*
  *  Process command line arguments
  */
-int fixme_tmp_network_client = 0;
+char *fixme_tmp_network_client = 0;
 int fixme_tmp_network_server = 0;
 
 void Frodo::ArgvReceived(int argc, char **argv)
@@ -108,9 +108,9 @@ void Frodo::ArgvReceived(int argc, char **argv)
 	if (argc == 2 &&
 			strcmp(argv[1], "-s") == 0)
 		fixme_tmp_network_server = 1;
-	if (argc == 2 &&
+	if (argc == 3 &&
 			strcmp(argv[1], "-c") == 0)
-		fixme_tmp_network_client = 1;
+		fixme_tmp_network_client = argv[2];
 }
 
 

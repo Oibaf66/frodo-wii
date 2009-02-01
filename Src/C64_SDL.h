@@ -25,7 +25,7 @@
 #endif
 
 /* TODO: */
-extern int fixme_tmp_network_client;
+extern char *fixme_tmp_network_client;
 extern int fixme_tmp_network_server;
 
 
@@ -105,8 +105,11 @@ void C64::c64_ctor1(void)
 	if (fixme_tmp_network_server)
 		this->network_server = new NetworkServer(this->server_port);
 	if (fixme_tmp_network_client)
+	{
+		strcpy(this->server_hostname, fixme_tmp_network_client);
 		this->network_client = new NetworkClient(this->server_hostname,
 				this->server_port);
+	}
 }
 
 void C64::c64_ctor2(void)
