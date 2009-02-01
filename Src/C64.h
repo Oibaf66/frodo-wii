@@ -41,6 +41,13 @@
 #include "ROlib.h"
 #endif
 
+/* Network connection type */
+enum
+{
+	NONE,
+	MASTER,
+	CLIENT
+};
 
 // Sizes of memory areas
 const int C64_RAM_SIZE = 0x10000;
@@ -185,10 +192,9 @@ public:
 #endif
 #ifdef HAVE_SDL
 	VirtualKeyboard *virtual_keyboard;
-	NetworkServer *network_server;
-	NetworkClient *network_client;
 	char server_hostname[255];
 	int server_port;
+	int network_connection_type;
 	TTF_Font *menu_font;
 
 	bool fake_key_sequence;

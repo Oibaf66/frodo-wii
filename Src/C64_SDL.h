@@ -95,20 +95,21 @@ void C64::c64_ctor1(void)
 	}
 
 	this->virtual_keyboard = new VirtualKeyboard(real_screen, this->menu_font);
-	this->network_server = NULL;
-	this->network_client = NULL;
 
 	strncpy(this->server_hostname, "localhost",
 			sizeof(this->server_hostname));
 	this->server_port = 19760;
+	this->network_connection_type = NONE;
 
-	if (fixme_tmp_network_server)
-		this->network_server = new NetworkServer(this->server_port);
+	if (fixme_tmp_network_server) {
+		Network::StartListener(this->server_port);
+		this->network_connection_type = MASTER;
+	}
 	if (fixme_tmp_network_client)
 	{
 		strcpy(this->server_hostname, fixme_tmp_network_client);
-		this->network_client = new NetworkClient(this->server_hostname,
-				this->server_port);
+		Network::ConnectTo(this->server_hostname, this->server_port);
+		this->network_connection_type = CLIENT;
 	}
 }
 
@@ -317,16 +318,16 @@ void C64::networking_menu(Prefs *np)
 	{
 		char buf[2][255];
 		const char *network_client_messages[] = {
-				"Start network server",  /* 0 */
+				"Listen for connections",/* 0 */
 				buf[0],                  /* 1 */
 				buf[1],                  /* 2 */
-				"Connect to server",     /* 3 */
+				"Connect to remote",     /* 3 */
 				NULL,
 		};
 
-		snprintf(buf[0], 255, "Server hostname (now %s)",
+		snprintf(buf[0], 255, "Remote hostname (now %s)",
 				this->server_hostname);
-		snprintf(buf[1], 255, "Server port (now %d)",
+		snprintf(buf[1], 255, "Port (now %d)",
 				this->server_port);
 		opt = menu_select(real_screen, this->menu_font,
 				network_client_messages, NULL);
@@ -342,22 +343,12 @@ void C64::networking_menu(Prefs *np)
 				this->server_port = atoi(m);
 		}
 		else if (opt == 0) {
-			/* Cannot be both client and server */
-			if (this->network_client != NULL) {
-				delete this->network_client;
-				this->network_client = NULL;
-			}
-			this->network_server = new NetworkServer(this->server_port);
+			Network::StartListener(this->server_port);
+			this->network_connection_type = MASTER;
 		}
-		else if (opt == 3)
-		{
-			if (this->network_server != NULL) {
-				delete this->network_server;
-				this->network_server = NULL;
-			}
-
-			this->network_client = new NetworkClient(this->server_hostname,
-					this->server_port);
+		else if (opt == 3) {
+			Network::ConnectTo(this->server_hostname, this->server_port);
+			this->network_connection_type = CLIENT;
 		}
 	} while (opt == 1 || opt == 2);
 
@@ -566,97 +557,84 @@ void C64::network_vblank()
         Uint32 now = SDL_GetTicks();
 #endif
 
-        if (this->network_server) {
-	        /* Perhaps accept a new connection */
-		this->network_server->CheckNewConnection();
+        /* Perhaps accept a new connection */
+        Network::CheckNewConnection();
 
-		for (int i = 0; i < this->network_server->n_clients; i++) {
-			Uint8 *master = this->TheDisplay->BitmapBase();
-			NetworkClient *remote = this->network_server->clients[i];
-			static bool has_throttled;
+        for (int i = 0; i < Network::n_peers; i++) {
+        	Uint8 *master = this->TheDisplay->BitmapBase();
+        	Network *remote = Network::peers[i];
+		uint8 *js;
+        	static bool has_throttled;
 
-			remote->Tick( now - last_time_update );
-			/* Has the client sent any data? */
-			if (remote->ReceiveUpdate() == true)
-			{
-				uint8 *js = &TheCIA1->Joystick2;
+        	if (this->quit_thyself)
+		{
+			remote->Disconnect();
+			continue;
+		}
 
-				if (ThePrefs.JoystickSwap)
-					js = &TheCIA1->Joystick1;
-				if (remote->DecodeUpdate(NULL, js, true) == false)
-				{
-					/* Disconnect or sending crap, remove this guy! */
-					this->network_server->RemoveClient(remote);
-					continue;
-				}
-				remote->ResetNetworkUpdate();
-			}
-			if (remote->ThrottleTraffic()) {
-				/* Skip this frame if the data rate is too high */
-				has_throttled = true;
-				continue;
-			}
-			remote->EncodeDisplay(master, remote->screen);
-			if (remote->SendUpdate() == false)
-			{
-				/* Disconnect or broken data */
-				printf("Could not send update\n");
-				this->network_server->RemoveClient(remote);
-			}
+        	remote->Tick( now - last_time_update );
+        	if (this->network_connection_type == MASTER) {
+        		if (ThePrefs.JoystickSwap)
+        			js = &TheCIA1->Joystick1;
+        		else
+        			js = &TheCIA1->Joystick2;
+        	} else {
+        		if (ThePrefs.JoystickSwap)
+        			js = &TheCIA1->Joystick2;
+        		else
+        			js = &TheCIA1->Joystick1;
+        	}
+
+        	/* Has the peer sent any data? */
+        	if (remote->ReceiveUpdate() == true)
+        	{
+        		if (remote->DecodeUpdate(remote->GetScreen(), js) == false)
+        		{
+        			/* Disconnect or sending crap, remove this guy! */
+        			Network::RemovePeer(remote);
+        			continue;
+        		}
+                	if (this->network_connection_type == CLIENT)
+                		this->TheDisplay->Update(remote->GetScreen());
+        	}
+		remote->ResetNetworkUpdate();
+
+        	/* Perhaps send updates to the other side (what is determinted by 
+        	 * if this is the master or not) */
+		remote->EncodeJoystickUpdate(*js);
+        	remote->EncodeDisplay(master, remote->GetScreen());
+
+        	if (this->network_connection_type == MASTER &&
+        			remote->ThrottleTraffic()) {
+        		/* Skip this frame if the data rate is too high */
+        		has_throttled = true;
+        		continue;
+        	}
+
+		if (remote->SendUpdate() == false)
+        	{
+        		/* Disconnect or broken data */
+        		printf("Could not send update\n");
+        		Network::RemovePeer(remote);
+        	}
+		else
 			remote->ResetNetworkUpdate();
 
-			if (1)
-			{
-				static uint32_t last_traffic_update;
+        	if (1)
+        	{
+        		static uint32_t last_traffic_update;
 
-				if (last_time_update - last_traffic_update > 300)
-				{
-					TheDisplay->NetworkTrafficMeter(remote->GetKbps() / (8 * 1024.0),
-							has_throttled);
-					last_traffic_update = now;
-					has_throttled = false;
-				}
-			}
-		}
-	}
-	else if (this->network_client) {
-		Uint8 js = TheCIA1->Joystick2;
+        		if (last_time_update - last_traffic_update > 300)
+        		{
+        			TheDisplay->NetworkTrafficMeter(remote->GetKbps() / (8 * 1024.0),
+        					has_throttled);
+        			last_traffic_update = now;
+        			has_throttled = false;
+        		}
+        	}
+        }
 
-		if (this->quit_thyself)
-		{
-			this->network_client->Disconnect();
-			delete this->network_client;
-			this->network_client = NULL;
-			return;
-		}
-
-		/* Perhaps send joystick data */
-		if (this->network_client->cur_joystick_data != js)
-		{
-			this->network_client->EncodeJoystickUpdate(js);
-			this->network_client->SendUpdate();
-			this->network_client->cur_joystick_data = js; 
-			this->network_client->ResetNetworkUpdate();
-		}
-
-		if (this->network_client->ReceiveUpdate())
-		{
-			/* Got something? */
-			if (this->network_client->DecodeUpdate(this->network_client->screen) == true)
-			{
-				TheDisplay->Update(this->network_client->screen);
-				this->network_client->ResetNetworkUpdate();
-			}
-			else
-			{
-				/* Disconnect or broken data */
-				this->network_client->Disconnect();
-				delete this->network_client;
-				this->network_client = NULL;
-			}
-		}
-	}
-	last_time_update = now;
+        last_time_update = now;
 }
 
 /*
@@ -693,7 +671,7 @@ void C64::VBlank(bool draw_frame)
 		j2 &= joykey;
 #endif
 
-	if (this->network_server)
+	if (this->network_connection_type == MASTER)
 	{
 		/* Only poll one joystick for network servers */
 		if (ThePrefs.JoystickSwap)
@@ -712,7 +690,7 @@ void C64::VBlank(bool draw_frame)
 	TheCIA2->CountTOD();
 
 	// Update window if needed
-	if (draw_frame && this->network_client == NULL) {
+	if (draw_frame && this->network_connection_type != CLIENT) {
 		TheDisplay->Update();
 	}
 
@@ -778,6 +756,7 @@ void C64::VBlank(bool draw_frame)
 			ThePrefs.Save(PREFS_PATH);
 	}
 	this->network_vblank();
+
 #if defined(GEKKO)
         now = ticks_to_millisecs(gettime());
 #else

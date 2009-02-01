@@ -36,9 +36,12 @@
 #define RLE_SIZE  ( RAW_SIZE * 4 + 8)
 #define DIFF_SIZE ( RAW_SIZE * 4 + 8)
 
-Network::Network()
+Network::Network(int sock, bool is_master)
 {
 	const size_t size = NETWORK_UPDATE_SIZE;
+
+	this->sock = sock;
+	this->is_master = is_master;
 
 	/* "big enough" buffer */
 	this->ud = (NetworkUpdate*)malloc( size );
@@ -59,6 +62,12 @@ Network::Network()
 	this->square_updated = (Uint32*)malloc( N_SQUARES_W * N_SQUARES_H * sizeof(Uint32));
 	assert(this->square_updated);
 	memset(this->square_updated, 0, N_SQUARES_W * N_SQUARES_H * sizeof(Uint32));
+
+	this->screen = (Uint8 *)malloc(DISPLAY_X * DISPLAY_Y);
+	assert(this->screen);
+
+	/* Assume black screen */
+	memset(this->screen, 0, DISPLAY_X * DISPLAY_Y);
 }
 
 Network::~Network()
@@ -69,6 +78,9 @@ Network::~Network()
 	free(this->raw_buf);
 	free(this->rle_buf);
 	free(this->diff_buf);
+	free(this->screen);
+
+	this->CloseSocket();
 }
 
 void Network::Tick(int ms)
@@ -223,8 +235,10 @@ bool Network::CompareSquare(Uint8 *a, Uint8 *b)
 	return true;
 }
 
-size_t Network::EncodeDisplay(Uint8 *master, Uint8 *remote)
+void Network::EncodeDisplay(Uint8 *master, Uint8 *remote)
 {
+	if (!this->is_master)
+		return;
 	for ( int sq = 0; sq < N_SQUARES_H * N_SQUARES_W; sq++ )
 	{
 		Uint8 *p_master = &master[ SQUARE_TO_Y(sq) * DISPLAY_X + SQUARE_TO_X(sq) ]; 
@@ -366,11 +380,14 @@ void Network::EncodeJoystickUpdate(Uint8 v)
 {
 	struct NetworkUpdate *dst = this->cur_ud;
 
+	if (this->is_master || this->cur_joystick_data == v)
+		return;
 	dst->type = JOYSTICK_UPDATE;
 	dst->u.joystick.val = v;
 	dst->size = sizeof(NetworkUpdate);
 
 	this->AddNetworkUpdate(dst);
+	this->cur_joystick_data = v;
 }
 
 
@@ -436,26 +453,20 @@ void Network::DrawTransferredBlocks(SDL_Surface *screen)
 	}
 }
 
-bool Network::ReceiveUpdate(int sock)
+bool Network::ReceiveUpdate()
 {
 	struct timeval tv;
 
 	memset(&tv, 0, sizeof(tv));
-	return this->ReceiveUpdate(this->ud, sock, &tv);
+	return this->ReceiveUpdate(this->ud, &tv);
 }
 
-
-bool Network::ReceiveUpdateBlock(int sock)
-{
-	return this->ReceiveUpdate(this->ud, sock, NULL);
-}
-
-bool Network::ReceiveUpdate(NetworkUpdate *dst, int sock, struct timeval *tv)
+bool Network::ReceiveUpdate(NetworkUpdate *dst, struct timeval *tv)
 {
 	Uint8 *pp = (Uint8*)dst;
 	NetworkUpdate *p;
 
-	if (this->Select(sock, tv) == false)
+	if (this->Select(this->sock, tv) == false)
 		return false;
 	/* Receive until the stop */
 	do
@@ -463,7 +474,7 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, int sock, struct timeval *tv)
 		p = (NetworkUpdate*)pp;
 
 		/* Receive the header */
-		if (this->ReceiveData((void*)p, sock, sizeof(NetworkUpdate)) == false)
+		if (this->ReceiveData((void*)p, this->sock, sizeof(NetworkUpdate)) == false)
 			return false;
 
 		pp = pp + sizeof(NetworkUpdate);
@@ -474,7 +485,7 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, int sock, struct timeval *tv)
 		{
 			size_t sz_diff = sz - sizeof(NetworkUpdate);
 
-			if (this->ReceiveData((void*)pp, sock, sz_diff) == false)
+			if (this->ReceiveData((void*)pp, this->sock, sz_diff) == false)
 				return false;
 			pp = pp + sz_diff; 
 		}
@@ -485,11 +496,15 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, int sock, struct timeval *tv)
 	return true;
 }
 
-bool Network::SendUpdate(int sock)
+bool Network::SendUpdate()
 {
 	NetworkUpdate *src = this->ud;
 	NetworkUpdate *stop = this->cur_ud;
 	size_t sz;
+
+	/* Nothing to send, that's OK */
+	if ( src == stop )
+		return true;
 
 	/* Add a stop at the end of the update */
 	stop->type = STOP;
@@ -503,7 +518,7 @@ bool Network::SendUpdate(int sock)
 	sz = this->GetNetworkUpdateSize();
 	if (sz <= 0)
 		return false;
-	if (this->SendData((void*)src, sock, sz) == false)
+	if (this->SendData((void*)src, this->sock, sz) == false)
 		return false;
 	this->traffic += sz;
 
@@ -585,7 +600,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	return true;
 }
 
-bool Network::DecodeUpdate(uint8 *screen, uint8 *js, bool server)
+bool Network::DecodeUpdate(uint8 *screen, uint8 *js)
 {
 	NetworkUpdate *p = this->ud;
 	bool out = true;
@@ -597,13 +612,15 @@ bool Network::DecodeUpdate(uint8 *screen, uint8 *js, bool server)
 		case DISPLAY_UPDATE_RAW:
 		case DISPLAY_UPDATE_RLE:
 		case DISPLAY_UPDATE_DIFF:
-			if (screen == NULL)
+			/* No screen updates _to_ the master */
+			if (this->is_master)
 				break;
 			if (this->DecodeDisplayUpdate(screen, p) == false)
 				out = false;
 			break;
 		case JOYSTICK_UPDATE:
-			if (js)
+			/* No joystick updates _from_ the master */
+			if (js && this->is_master)
 				*js = p->u.joystick.val;
 			break;
 		case DISCONNECT:
@@ -618,56 +635,32 @@ bool Network::DecodeUpdate(uint8 *screen, uint8 *js, bool server)
 	return out;
 }
 
-void NetworkServer::AddClient(int sock)
+void Network::AddPeer(Network *peer)
 {
-	NetworkClient *cli = new NetworkClient(sock);
-
-	this->clients[this->n_clients] = cli;
-	this->n_clients++;
+	Network::peers[Network::n_peers] = peer;
+	Network::n_peers++;
 }
 
-void NetworkServer::RemoveClient(NetworkClient *client)
+void Network::RemovePeer(Network *peer)
 {
-	for (int i = 0; i < this->n_clients; i++)
+	for (int i = 0; i < Network::n_peers; i++)
 	{
-		if (this->clients[i] == client)
+		if (Network::peers[i] == peer)
 		{
-			if (i < this->n_clients - 1)
+			if (i < Network::n_peers - 1)
 			{
 				/* Swap with last */
-				this->clients[i] = this->clients[this->n_clients - 1];
+				Network::peers[i] = Network::peers[Network::n_peers - 1];
 			}
-			delete client;
-			this->n_clients--;
+			delete peer;
+			Network::n_peers--;
 			return;
 		}
 	}
 	/* Not found */
 }
 
-void NetworkClient::Init()
-{
-	this->screen = (Uint8 *)malloc(DISPLAY_X * DISPLAY_Y);
-	assert(this->screen);
-
-	/* Assume black screen */
-	memset(this->screen, 0, DISPLAY_X * DISPLAY_Y);
-}
-
-
-NetworkClient::NetworkClient(int sock)
-{
-	this->Init();
-	this->sock = sock;
-}
-
-NetworkClient::~NetworkClient()
-{
-	free(this->screen);
-	this->CloseSocket(this->sock);
-}
-
-void NetworkClient::Disconnect()
+void Network::Disconnect()
 {
 	NetworkUpdate *disconnect= this->cur_ud;
 	size_t sz;
@@ -677,6 +670,12 @@ void NetworkClient::Disconnect()
 	disconnect->size = sizeof(NetworkUpdate);
 	this->AddNetworkUpdate(disconnect);
 	this->SendUpdate();
+
+	Network::RemovePeer(this);
 }
+
+int Network::n_peers;
+int Network::listen_sock;
+Network *Network::peers[MAX_NETWORK_PEERS];
 
 #include "NetworkUnix.h"

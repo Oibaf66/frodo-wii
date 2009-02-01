@@ -8,6 +8,8 @@
 #endif
 #include <SDL.h>
 
+#define MAX_NETWORK_PEERS 8
+
 #define NETWORK_UPDATE_SIZE  (256 * 1024)
 enum
 {
@@ -49,16 +51,16 @@ struct NetworkUpdate
 class Network
 {
 public:
-	Network();
+	Network(int sock, bool is_master);
 
 	~Network();
 
-	size_t EncodeDisplay(Uint8 *master, Uint8 *remote);
+	void EncodeDisplay(Uint8 *master, Uint8 *remote);
 
 	void EncodeJoystickUpdate(Uint8 v);
 
 
-	bool DecodeUpdate(uint8 *screen, uint8 *js = NULL, bool server = false);
+	bool DecodeUpdate(uint8 *screen, uint8 *js = NULL);
 
 	void ResetNetworkUpdate(void);
 
@@ -78,13 +80,41 @@ public:
 
 	void Tick(int ms);
 
-	void CloseSocket(int sock);
+	void CloseSocket();
 
-	bool SendUpdate(int sock);
+	bool SendUpdate();
 
-	bool ReceiveUpdate(int sock);
+	bool ReceiveUpdate();
 
-	bool ReceiveUpdateBlock(int sock);
+	static bool StartListener(int port);
+
+	static bool CheckNewConnection();
+
+	static bool ConnectTo(const char *hostname, int port);
+
+	bool isConnected()
+	{
+		return this->sock >= 0;
+	}
+
+	Uint8 *GetScreen()
+	{
+		return this->screen;
+	}
+
+	/**
+	 * Disconnect from the other end. You should delete the object
+	 * after having done this.
+	 */
+	void Disconnect();
+
+	static void AddPeer(Network *who);
+
+	static void RemovePeer(Network *peer);
+
+	/* Listener-related */
+	static Network *peers[MAX_NETWORK_PEERS];
+	static int n_peers;
 
 protected:
 	size_t DecodeSoundUpdate(struct NetworkUpdate *src, char *buf);
@@ -150,7 +180,7 @@ protected:
 	bool DecodeDisplayRaw(Uint8 *screen, struct NetworkUpdate *src,
 			int x, int y);
 
-	bool ReceiveUpdate(NetworkUpdate *dst, int sock, struct timeval *tv);
+	bool ReceiveUpdate(NetworkUpdate *dst, struct timeval *tv);
 
 	bool ReceiveData(void *dst, int sock, size_t sz);
 
@@ -181,72 +211,17 @@ protected:
 	int time_since_last_reset;
 	int target_kbps;
 	int kbps;
-};
-
-class NetworkClient : public Network
-{
-public:
-	NetworkClient(int sock);
-
-	~NetworkClient();
-
-	NetworkClient(const char *hostname, int port);
-
-	bool isConnected()
-	{
-		return this->sock >= 0;
-	}
-	
-	bool SendUpdate()
-	{
-		return ((Network*)this)->SendUpdate(this->sock);
-	}
-
-	bool ReceiveUpdate()
-	{
-		return ((Network*)this)->ReceiveUpdate(this->sock);
-	}
-
-	bool ReceiveUpdateBlock()
-	{
-		return ((Network*)this)->ReceiveUpdateBlock(this->sock);
-	}
-
-	bool ReceiveData(void *dst, int sock, size_t sz);
-
-	/**
-	 * Disconnect from the other end. You should delete the object
-	 * after having done this.
-	 */
-	void Disconnect();
 
 	Uint8 *screen;
 	int joystick_port;
+	bool is_master; /* Some peers are more equal than others */
 	Uint8 cur_joystick_data;
-private:
-	void Init();
 
+	/* Connection to the peer */
 	int sock;
-};
 
-#define MAX_NETWORK_CLIENTS 8
-
-class NetworkServer : public Network
-{
-public:
-	NetworkServer(int port);
-
-	bool CheckNewConnection();
-
-	NetworkClient *clients[MAX_NETWORK_CLIENTS];
-	int n_clients;
-
-	void RemoveClient(NetworkClient *client);
-
-private:
-	void AddClient(int sock);
-
-	int listen_sock;
+	/* Listener-related */
+	static int listen_sock;
 };
 
 #endif /* NETWORK_H */

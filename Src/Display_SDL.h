@@ -227,13 +227,11 @@ void C64Display::Update(uint8 *src_pixels)
 	}
 
 	draw_string(real_screen, 0, 0, networktraffic_string, black, fill_gray);
-	if (this->TheC64->network_server) {
-		for (int i = 0; i < this->TheC64->network_server->n_clients; i++)
-		{
-			NetworkClient *client = this->TheC64->network_server->clients[i];
+	for (int i = 0; i < Network::n_peers; i++)
+	{
+		Network *peer = Network::peers[i];
 
-			client->DrawTransferredBlocks(real_screen);
-		}
+		peer->DrawTransferredBlocks(real_screen);
 	}
 	SDL_Flip(real_screen);
 }
