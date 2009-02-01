@@ -12,6 +12,7 @@
 enum
 {
 	STOP               = 99,
+	DISCONNECT         = 77,
 	DISPLAY_UPDATE_RAW = 1,
 	DISPLAY_UPDATE_RLE = 2,
 	DISPLAY_UPDATE_DIFF= 3,
@@ -19,7 +20,8 @@ enum
 	SOUND_UPDATE_RLE   = 5,
 	KEYBOARD_UPDATE    = 6,
 	JOYSTICK_UPDATE    = 7,
-	DISCONNECT         = 8,
+	ENTER_MENU         = 8,
+	GET_PEER_INFO      = 9,
 };
 
 struct NetworkUpdate
