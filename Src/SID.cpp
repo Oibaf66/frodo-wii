@@ -30,6 +30,7 @@
 
 #include "SID.h"
 #include "Prefs.h"
+#include "Network.h"
 
 #ifdef __BEOS__
 #include <media/SoundPlayer.h>
@@ -1210,6 +1211,7 @@ void DigitalRenderer::calc_buffer(int16 *buf, long count)
 		int32 sum_output = SampleTab[master_volume] << 8;
 		int32 sum_output_filter = 0;
 
+		Network::PushSound(master_volume);
 		// Loop for all three voices
 		for (int j=0; j<3; j++) {
 			DRVoice *v = &voice[j];

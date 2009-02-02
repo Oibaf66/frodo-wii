@@ -10,7 +10,8 @@
 
 #define MAX_NETWORK_PEERS 8
 
-#define NETWORK_UPDATE_SIZE  (256 * 1024)
+#define NETWORK_UPDATE_SIZE     (256 * 1024)
+#define NETWORK_SOUND_BUF_SIZE   1024
 enum
 {
 	STOP               = 99,
@@ -54,6 +55,8 @@ public:
 	Network(int sock, bool is_master);
 
 	~Network();
+
+	void EncodeSound();
 
 	void EncodeDisplay(Uint8 *master, Uint8 *remote);
 
@@ -111,6 +114,8 @@ public:
 	static void AddPeer(Network *who);
 
 	static void RemovePeer(Network *peer);
+
+	static void PushSound(uint8 vol);
 
 	/* Listener-related */
 	static Network *peers[MAX_NETWORK_PEERS];
@@ -205,6 +210,7 @@ protected:
 	Uint8 *raw_buf;
 	Uint8 *rle_buf;
 	Uint8 *diff_buf;
+	Uint8 *sound_buf;
 	Uint32 *square_updated;
 
 	size_t traffic, last_traffic;
@@ -222,6 +228,11 @@ protected:
 
 	/* Listener-related */
 	static int listen_sock;
+
+	/* Sound */
+	static uint8 sample_buf[NETWORK_SOUND_BUF_SIZE];
+	static int sample_head;
+	static int sample_tail;
 };
 
 #endif /* NETWORK_H */

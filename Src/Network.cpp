@@ -376,6 +376,27 @@ size_t Network::EncodeSoundBuffer(struct NetworkUpdate *dst, Uint8 *buf, size_t 
 	return dst->size;
 }
 
+void Network::EncodeSound()
+{
+	NetworkUpdate *dst = (NetworkUpdate *)this->cur_ud;
+	int cnt = 0;
+
+	/* Nothing to encode? */
+	if (!this->is_master ||
+			Network::sample_head == Network::sample_tail)
+		return;
+	while (Network::sample_tail != Network::sample_head)
+	{
+		Network::sample_tail = (Network::sample_tail + 1) % NETWORK_SOUND_BUF_SIZE;
+	}
+}
+
+void Network::PushSound(uint8 vol)
+{
+	Network::sample_buf[Network::sample_head] = vol;
+	Network::sample_head = (Network::sample_head + 1) % NETWORK_SOUND_BUF_SIZE;
+}
+
 void Network::EncodeJoystickUpdate(Uint8 v)
 {
 	struct NetworkUpdate *dst = this->cur_ud;
@@ -679,5 +700,9 @@ void Network::Disconnect()
 int Network::n_peers;
 int Network::listen_sock;
 Network *Network::peers[MAX_NETWORK_PEERS];
+
+uint8 Network::sample_buf[NETWORK_SOUND_BUF_SIZE];
+int Network::sample_head;
+int Network::sample_tail;
 
 #include "NetworkUnix.h"
