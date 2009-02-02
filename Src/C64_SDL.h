@@ -599,17 +599,17 @@ void C64::network_vblank()
         	}
 		remote->ResetNetworkUpdate();
 
-        	/* Perhaps send updates to the other side (what is determinted by 
-        	 * if this is the master or not) */
-		remote->EncodeJoystickUpdate(*js);
-        	remote->EncodeDisplay(master, remote->GetScreen());
-
-        	if (this->network_connection_type == MASTER &&
+		if (this->network_connection_type == MASTER &&
         			remote->ThrottleTraffic()) {
         		/* Skip this frame if the data rate is too high */
         		has_throttled = true;
         		continue;
         	}
+
+        	/* Perhaps send updates to the other side (what is determined by 
+        	 * if this is the master or not) */
+		remote->EncodeJoystickUpdate(*js);
+        	remote->EncodeDisplay(master, remote->GetScreen());
 
 		if (remote->SendUpdate() == false)
         	{

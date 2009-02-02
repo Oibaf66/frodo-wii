@@ -456,9 +456,12 @@ void Network::DrawTransferredBlocks(SDL_Surface *screen)
 bool Network::ReceiveUpdate()
 {
 	struct timeval tv;
+	bool out;
 
 	memset(&tv, 0, sizeof(tv));
-	return this->ReceiveUpdate(this->ud, &tv);
+	out = this->ReceiveUpdate(this->ud, &tv);
+
+	return out;
 }
 
 bool Network::ReceiveUpdate(NetworkUpdate *dst, struct timeval *tv)
@@ -524,7 +527,6 @@ bool Network::SendUpdate()
 
 	return true;
 }
-
 
 void Network::AddNetworkUpdate(NetworkUpdate *update)
 {
