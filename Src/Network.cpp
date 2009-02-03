@@ -99,6 +99,7 @@ size_t Network::EncodeSoundRLE(struct NetworkUpdate *dst,
 	size_t len = 0;
 	Uint8 volume = buffer[0];
 
+	printf("Not implemented\n");
 	dst->type = SOUND_UPDATE_RLE;
 
 	for (unsigned int i = 0; i < buf_len; i++)
@@ -129,6 +130,7 @@ size_t Network::EncodeSoundRLE(struct NetworkUpdate *dst,
 size_t Network::EncodeSoundRaw(struct NetworkUpdate *dst,
 		Uint8 *buffer, size_t len)
 {
+	printf("Not implemented\n");
 	dst->type = SOUND_UPDATE_RAW;
 	memcpy(dst->data, buffer, len);
 
@@ -138,10 +140,11 @@ size_t Network::EncodeSoundRaw(struct NetworkUpdate *dst,
 bool Network::DecodeDisplayDiff(Uint8 *screen, struct NetworkUpdate *src,
 		int x_start, int y_start)
 {
+	struct NetworkUpdateDisplay *dp = (struct NetworkUpdateDisplay *)src->data;
 	int p = 0;
 	int x = x_start;
 	int y = y_start;
-	int sz = src->size - sizeof(NetworkUpdate);
+	int sz = src->size - sizeof(NetworkUpdate) - sizeof(NetworkUpdateDisplay);
 
 	/* Something is wrong if this is true... */
 	if (sz % 2 != 0)
@@ -149,8 +152,8 @@ bool Network::DecodeDisplayDiff(Uint8 *screen, struct NetworkUpdate *src,
 
 	while (p < sz)
 	{
-		Uint8 len = src->data[p];
-		Uint8 color = src->data[p+1];
+		Uint8 len = dp->data[p];
+		Uint8 color = dp->data[p+1];
 		int x_diff = (x - x_start + len) % SQUARE_W;
 		int y_diff = (x - x_start + len) / SQUARE_W;
 
@@ -166,10 +169,11 @@ bool Network::DecodeDisplayDiff(Uint8 *screen, struct NetworkUpdate *src,
 bool Network::DecodeDisplayRLE(Uint8 *screen, struct NetworkUpdate *src,
 		int x_start, int y_start)
 {
+	struct NetworkUpdateDisplay *dp = (struct NetworkUpdateDisplay *)src->data;
 	int p = 0;
 	int x = x_start;
 	int y = y_start;
-	int sz = src->size - sizeof(NetworkUpdate);
+	int sz = src->size - sizeof(NetworkUpdate) - sizeof(NetworkUpdateDisplay);
 
 	/* Something is wrong if this is true... */
 	if (sz % 2 != 0)
@@ -177,8 +181,8 @@ bool Network::DecodeDisplayRLE(Uint8 *screen, struct NetworkUpdate *src,
 
 	while (p < sz)
 	{
-		Uint8 len = src->data[p];
-		Uint8 color = src->data[p+1];
+		Uint8 len = dp->data[p];
+		Uint8 color = dp->data[p+1];
 
 		while (len > 0)
 		{
@@ -200,13 +204,14 @@ bool Network::DecodeDisplayRLE(Uint8 *screen, struct NetworkUpdate *src,
 bool Network::DecodeDisplayRaw(Uint8 *screen, struct NetworkUpdate *src,
 		int x_start, int y_start)
 {
+	struct NetworkUpdateDisplay *dp = (struct NetworkUpdateDisplay *)src->data;
 	const int raw_w = SQUARE_W / 2;
 
 	for (int y = y_start; y < y_start + SQUARE_H; y++)
 	{
 		for (int x = x_start; x < x_start + SQUARE_W; x += 2)
 		{
-			Uint8 v = src->data[(y - y_start) * raw_w + (x - x_start) / 2];
+			Uint8 v = dp->data[(y - y_start) * raw_w + (x - x_start) / 2];
 			Uint8 a = v >> 4;
 			Uint8 b = v & 0xf;
 
@@ -262,6 +267,7 @@ void Network::EncodeDisplay(Uint8 *master, Uint8 *remote)
 size_t Network::EncodeDisplaySquare(struct NetworkUpdate *dst,
 		Uint8 *screen, Uint8 *remote, int square)
 {
+	struct NetworkUpdateDisplay *dp = (struct NetworkUpdateDisplay *)dst->data;
 	const int x_start = SQUARE_TO_X(square);
 	const int y_start = SQUARE_TO_Y(square);
 	Uint8 rle_color = screen[ y_start * DISPLAY_X + x_start ];
@@ -322,23 +328,23 @@ size_t Network::EncodeDisplaySquare(struct NetworkUpdate *dst,
 	out = RAW_SIZE;
 	if (diff_sz < rle_sz && diff_sz < RAW_SIZE)
 	{
-		memcpy(dst->data, this->diff_buf, diff_sz);
+		memcpy(dp->data, this->diff_buf, diff_sz);
 		type = DISPLAY_UPDATE_DIFF;
 		out = diff_sz;
 	}
 	else if (rle_sz < RAW_SIZE)
 	{
-		memcpy(dst->data, this->rle_buf, rle_sz);
+		memcpy(dp->data, this->rle_buf, rle_sz);
 		type = DISPLAY_UPDATE_RLE;
 		out = rle_sz;
 	}		
 	else
-		memcpy(dst->data, this->raw_buf, RAW_SIZE);
+		memcpy(dp->data, this->raw_buf, RAW_SIZE);
 
 	/* Setup the structure */
-	dst->type = type;
-	dst->u.display.square = square;
-	dst->size = out + sizeof(struct NetworkUpdate);
+	dp->square = square;
+	dst = InitNetworkUpdate(dst, type,
+			sizeof(struct NetworkUpdate) + sizeof(struct NetworkUpdateDisplay) + out);
 	this->square_updated[square] = out | (type << 16);
 
 	return dst->size;
@@ -347,7 +353,8 @@ size_t Network::EncodeDisplaySquare(struct NetworkUpdate *dst,
 bool Network::DecodeDisplayUpdate(Uint8 *screen,
 		struct NetworkUpdate *src)
 {
-	int square = src->u.display.square;
+	struct NetworkUpdateDisplay *dp = (struct NetworkUpdateDisplay *)src->data;
+	int square = dp->square;
 	const int square_x = SQUARE_TO_X(square);
 	const int square_y = SQUARE_TO_Y(square);
 
@@ -366,6 +373,7 @@ size_t Network::EncodeSoundBuffer(struct NetworkUpdate *dst, Uint8 *buf, size_t 
 {
 	size_t out;
 
+	printf("Not implemented\n");
 	dst->size = 0;
 	/* Try encoding as RLE, but if it's too large, go for RAW */
 	out = this->EncodeSoundRLE(dst, buf, len);
@@ -400,12 +408,13 @@ void Network::PushSound(uint8 vol)
 void Network::EncodeJoystickUpdate(Uint8 v)
 {
 	struct NetworkUpdate *dst = this->cur_ud;
+	struct NetworkUpdateJoystick *j = (NetworkUpdateJoystick *)dst->data;
 
 	if (this->is_master || this->cur_joystick_data == v)
 		return;
-	dst->type = JOYSTICK_UPDATE;
-	dst->u.joystick.val = v;
-	dst->size = sizeof(NetworkUpdate);
+	dst = InitNetworkUpdate(dst, JOYSTICK_UPDATE,
+			sizeof(NetworkUpdate) + sizeof(NetworkUpdateJoystick));
+	j->val = v;
 
 	this->AddNetworkUpdate(dst);
 	this->cur_joystick_data = v;
@@ -432,9 +441,7 @@ void Network::ResetNetworkUpdate(void)
 	memset(this->ud, 0, NETWORK_UPDATE_SIZE);
 	memset(this->tmp_ud, 0, NETWORK_UPDATE_SIZE);
 
-	this->ud->type = STOP;
-	this->ud->size = sizeof(NetworkUpdate);
-	this->cur_ud = this->ud;
+	this->cur_ud = InitNetworkUpdate(this->ud, STOP, sizeof(NetworkUpdate));
 }
 
 void Network::DrawTransferredBlocks(SDL_Surface *screen)
@@ -502,9 +509,12 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, struct timeval *tv)
 			return false;
 
 		pp = pp + sizeof(NetworkUpdate);
+		/* Drop if the magic is wrong */
+		if (ntohs(p->magic) != FRODO_NETWORK_MAGIC)
+			return false;
 
 		/* And the rest of the update */
-		size_t sz = ntohs(p->size);
+		size_t sz = ntohl(p->size);
 		if (sz > sizeof(NetworkUpdate))
 		{
 			size_t sz_diff = sz - sizeof(NetworkUpdate);
@@ -515,7 +525,7 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, struct timeval *tv)
 		}
 		if (this->DeMarshalData(p) == false)
 			return false;
-	} while ( !(p->type == STOP && p->u.stop.val == STOP) );
+	} while ( !(p->type == STOP) );
 
 	return true;
 }
@@ -523,7 +533,7 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, struct timeval *tv)
 bool Network::SendUpdate()
 {
 	NetworkUpdate *src = this->ud;
-	NetworkUpdate *stop = this->cur_ud;
+	NetworkUpdate *stop = InitNetworkUpdate(this->cur_ud, STOP, sizeof(NetworkUpdate));
 	size_t sz;
 
 	/* Nothing to send, that's OK */
@@ -531,9 +541,6 @@ bool Network::SendUpdate()
 		return true;
 
 	/* Add a stop at the end of the update */
-	stop->type = STOP;
-	stop->u.stop.val = STOP;
-	stop->size = sizeof(NetworkUpdate);
 	this->AddNetworkUpdate(stop);
 
 	if (this->MarshalAllData(src) == false)
@@ -560,7 +567,6 @@ void Network::AddNetworkUpdate(NetworkUpdate *update)
 
 bool Network::MarshalData(NetworkUpdate *p)
 {
-	p->size = htons(p->size);
 	switch (p->type)
 	{
 	case DISPLAY_UPDATE_RAW:
@@ -578,6 +584,10 @@ bool Network::MarshalData(NetworkUpdate *p)
 				p->type);
 		return false;
 	}
+
+	p->size = htonl(p->size);
+	p->magic = htons(p->magic);
+	p->type = htons(p->type);
 
 	return true;
 }
@@ -601,7 +611,12 @@ bool Network::MarshalAllData(NetworkUpdate *ud)
 
 bool Network::DeMarshalData(NetworkUpdate *p)
 {
-	p->size = ntohs(p->size);
+	p->size = ntohl(p->size);
+	p->magic = ntohs(p->magic);
+	p->type = ntohs(p->type);
+
+	if (p->magic != FRODO_NETWORK_MAGIC)
+		return false;
 
 	switch (p->type)
 	{
@@ -644,7 +659,10 @@ bool Network::DecodeUpdate(uint8 *screen, uint8 *js)
 		case JOYSTICK_UPDATE:
 			/* No joystick updates _from_ the master */
 			if (js && this->is_master)
-				*js = p->u.joystick.val;
+			{
+				NetworkUpdateJoystick *j = (NetworkUpdateJoystick *)p->data;
+				*js = j->val;
+			}
 			break;
 		case DISCONNECT:
 			out = false;
@@ -685,12 +703,10 @@ void Network::RemovePeer(Network *peer)
 
 void Network::Disconnect()
 {
-	NetworkUpdate *disconnect= this->cur_ud;
-	size_t sz;
+	NetworkUpdate *disconnect = InitNetworkUpdate(this->cur_ud, DISCONNECT,
+			sizeof(NetworkUpdate));
 
 	/* Add a stop at the end of the update */
-	disconnect->type = DISCONNECT;
-	disconnect->size = sizeof(NetworkUpdate);
 	this->AddNetworkUpdate(disconnect);
 	this->SendUpdate();
 

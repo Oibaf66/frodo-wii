@@ -9,13 +9,16 @@
 #include <SDL.h>
 
 #define MAX_NETWORK_PEERS 8
+#define FRODO_NETWORK_MAGIC 0x1976
 
 #define NETWORK_UPDATE_SIZE     (256 * 1024)
 #define NETWORK_SOUND_BUF_SIZE   1024
 enum
 {
 	STOP               = 99,
+	LIST_PEERS         = 88,
 	DISCONNECT         = 77,
+	PEER_INFO          = 66,
 	DISPLAY_UPDATE_RAW = 1,
 	DISPLAY_UPDATE_RLE = 2,
 	DISPLAY_UPDATE_DIFF= 3,
@@ -24,30 +27,37 @@ enum
 	KEYBOARD_UPDATE    = 6,
 	JOYSTICK_UPDATE    = 7,
 	ENTER_MENU         = 8,
-	GET_PEER_INFO      = 9,
 };
 
 struct NetworkUpdate
 {
-	Uint16 size;
-	Uint8 type;
-
-	union {
-		struct {
-			Uint8 square;
-		} display;
-		struct {
-			Uint8 val;
-		} joystick;
-		struct {
-			Uint8 val; /* Should be STOP */
-		} stop;
-	} u;
+	uint16 magic;  /* Should be 0x1976 */
+	uint16 type;   /* See above */
+	uint32 size;
 
 	/* The rest is just data of some type */
 	Uint8 data[];
 };
 
+struct NetworkUpdateDisplay
+{
+	Uint8 square;
+	Uint8 data[];
+};
+
+struct NetworkUpdateJoystick
+{
+	Uint8 val;
+};
+
+static inline NetworkUpdate *InitNetworkUpdate(NetworkUpdate *ud, uint16 type, uint32 size)
+{
+	ud->magic = FRODO_NETWORK_MAGIC;
+	ud->size = size;
+	ud->type = type;
+
+	return ud;
+}
 
 class Network
 {
