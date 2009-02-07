@@ -102,11 +102,12 @@ void C64::c64_ctor1(void)
 	this->network_connection_type = NONE;
 
 	if (fixme_tmp_network_server) {
-		Network::StartListener(this->server_port);
+		Network::StartNetwork(this->server_port);
 		this->network_connection_type = MASTER;
 	}
 	if (fixme_tmp_network_client)
 	{
+		printf("Klajent\n");
 		strcpy(this->server_hostname, fixme_tmp_network_client);
 		Network::ConnectTo(this->server_hostname, this->server_port);
 		this->network_connection_type = CLIENT;
@@ -343,7 +344,7 @@ void C64::networking_menu(Prefs *np)
 				this->server_port = atoi(m);
 		}
 		else if (opt == 0) {
-			Network::StartListener(this->server_port);
+			Network::StartNetwork(this->server_port);
 			this->network_connection_type = MASTER;
 		}
 		else if (opt == 3) {

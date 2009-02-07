@@ -65,12 +65,12 @@ class PingPacket(Packet):
 
 class PeerInfo:
     def __init__(self, data):
-        self.private_port = struct.unpack(">H", data, offset = 0)[0]
-        self.public_port = struct.unpack(">H", data, offset = 2)[0]
+        self.private_port = int(struct.unpack(">H", data, offset = 0)[0])
+        self.public_port = int(struct.unpack(">H", data, offset = 2)[0])
         self.private_ip = self.mangle_ip(struct.unpack(">BBBB", data, offset = 4))
         self.public_ip = self.mangle_ip(struct.unpack(">BBBB", data, offset = 8))
-        self.key = struct.unpack(">H", data, offset = 12)[0]
-        self.is_master = struct.unpack(">H", data, offset = 16)[0]
+        self.key = int(struct.unpack(">H", data, offset = 12)[0])
+        self.is_master = int(struct.unpack(">H", data, offset = 16)[0])
         self.name = struct.unpack("32s", data, offset = 20)
         self.name[31] = 0
 
@@ -105,10 +105,29 @@ class Peer:
         self.hash_key = key
         self.srv = srv
 
+        self.private_ip = [0,0,0,0]
+        self.public_ip = [0,0,0,0]
+        self.private_port = 0
+        self.public_port = 0
+
+        self.name = ""
+        self.key = 0
+
+        self.initialized = False
+
     def get_hash_key(self):
         return self.hash_key
 
-    def handle_packet(self, data):
+    def get_key(self):
+        return self.key
+
+    def get_name(self):
+        return self.name
+
+    def send_data(self, data):
+        self.srv.send_data( self.get_hash_key(), data)
+
+    def handle_packet(self, data, addr):
         raw = Packet(data)
         pkg_cls = packet_class_by_type[raw.get_type()]
         pkg = pkg_cls(data)
@@ -116,9 +135,25 @@ class Peer:
         if pkg.type == ACK:
             pass
         elif pkg.type == HELLO:
-            pass
+            # take the public ID from the source of this message
+            ip = socket.gethostbyname(addr[0]).split('.')
+            port = addr[1]
+            ip = [int(ip[0]), int(ip[1]), int(ip[2]), int(ip[3])]
+
+            self.private_ip = pkg.private_ip
+            self.private_port = pkg.private_port
+            self.public_ip = ip
+            self.public_port = port
+
+            self.key = pkg.key
+            self.name = pkg.name
+
+            self.initialized = True
         elif pkg.type == PEER_CONNECT:
-            pass
+            other = src.get_peer_by_name_key(pkg.name, pkg.key)
+            other.send_data( self.marshal() )
+            self.send_data( other.marshal() )
+        return None
 
 class BrokerPacketHandler(SocketServer.DatagramRequestHandler):
     def handle(self):
@@ -127,13 +162,10 @@ class BrokerPacketHandler(SocketServer.DatagramRequestHandler):
 
         peer = srv.get_peer(self.client_addr)
         try:
-            reply = peer.handle_packet()
+            peer.handle_packet()
         except:
             # Sends crap, let's remove it
             srv.remove_peer(peer)
-
-        if reply != None:
-            self.wfile.write(reply)
 
 class Broker(SocketServer.UDPServer):
 
@@ -143,6 +175,9 @@ class Broker(SocketServer.UDPServer):
         self.allow_reuse_address = True
         self.peers = {}
 
+    def send_data(self, dst, data):
+        self.socket.sendto(data, dst)
+
     def get_peer(self, key):
         "Return the peer for a certain key, or a new one if it doesn't exist"
         try:
@@ -150,6 +185,12 @@ class Broker(SocketServer.UDPServer):
         except KeyError, e:
             peer = Peer(key, self)
         return peer
+
+    def get_peer_by_name_key(self, name, key):
+        for k,v in self.peers.iteritems():
+            if name == v.get_name() and key == v.get_key():
+                return v
+        return None
 
     def remove_peer(self, peer):
         del self.peers[ peer.get_hash_key() ]

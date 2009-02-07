@@ -8,7 +8,6 @@
 #endif
 #include <SDL.h>
 
-#define MAX_NETWORK_PEERS 8
 #define FRODO_NETWORK_MAGIC 0x1976
 
 #define NETWORK_UPDATE_SIZE     (256 * 1024)
@@ -92,7 +91,6 @@ struct NetworkUpdateListPeers
 	NetworkUpdatePeerInfo peers[];
 };
 
-
 static inline NetworkUpdate *InitNetworkUpdate(NetworkUpdate *ud, uint16 type, uint32 size)
 {
 	ud->magic = FRODO_NETWORK_MAGIC;
@@ -105,7 +103,7 @@ static inline NetworkUpdate *InitNetworkUpdate(NetworkUpdate *ud, uint16 type, u
 class Network
 {
 public:
-	Network(int sock, bool is_master);
+	Network(int sock, struct sockaddr_in *peer_addr, bool is_master);
 
 	~Network();
 
@@ -142,16 +140,11 @@ public:
 
 	bool ReceiveUpdate();
 
-	static bool StartListener(int port);
+	static bool StartNetwork(int port);
 
 	static bool CheckNewConnection();
 
 	static bool ConnectTo(const char *hostname, int port);
-
-	bool isConnected()
-	{
-		return this->sock >= 0;
-	}
 
 	Uint8 *GetScreen()
 	{
@@ -171,7 +164,7 @@ public:
 	static void PushSound(uint8 vol);
 
 	/* Listener-related */
-	static Network *peers[MAX_NETWORK_PEERS];
+	static Network *peers[1];
 	static int n_peers;
 
 protected:
@@ -258,6 +251,8 @@ protected:
 	bool MarshalData(NetworkUpdate *ud);
 
 	bool MarshalAllData(NetworkUpdate *p);
+
+	bool DeMarshalAllData(NetworkUpdate *ud);
 
 	bool DeMarshalData(NetworkUpdate *ud);
 

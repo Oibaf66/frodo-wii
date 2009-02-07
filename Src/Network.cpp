@@ -36,7 +36,7 @@
 #define RLE_SIZE  ( RAW_SIZE * 4 + 8)
 #define DIFF_SIZE ( RAW_SIZE * 4 + 8)
 
-Network::Network(int sock, bool is_master)
+Network::Network(int sock, struct sockaddr_in *peer_addr, bool is_master)
 {
 	const size_t size = NETWORK_UPDATE_SIZE;
 
@@ -71,8 +71,18 @@ Network::Network(int sock, bool is_master)
 
 	/* Peer addresses */
 	memset(&this->private_addr, 0, sizeof(struct sockaddr_in));
-	memset(&this->public_addr, 0, sizeof(struct sockaddr_in));
+	memcpy(&this->public_addr, peer_addr, sizeof(struct sockaddr_in));
 	this->connection_addr = &this->public_addr;
+
+	/* If we are not the master, connect to the other side */
+	if (!this->is_master)
+	{
+		InitNetworkUpdate(this->cur_ud, PEER_CONNECT,
+				sizeof(NetworkUpdate));
+		this->AddNetworkUpdate(this->cur_ud);
+		this->SendUpdate();
+		this->ResetNetworkUpdate();
+	}
 }
 
 Network::~Network()
@@ -506,30 +516,22 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
 
 	if (this->Select(this->sock, tv) == false)
 		return false;
-	/* Receive until the stop */
-	do
-	{
-		p = (NetworkUpdate*)pp;
-		size_t actual_sz;
+	p = (NetworkUpdate*)pp;
+	size_t actual_sz;
 
-		if (sz_left <= 0)
-			return false;
+	if (sz_left <= 0)
+		return false;
 
-		/* Receive the header */
-		actual_sz = this->ReceiveFrom(pp, this->sock,
-				sz_left, this->connection_addr);
-		if (actual_sz < 0)
-			return false;
+	/* Receive the header */
+	actual_sz = this->ReceiveFrom(pp, this->sock,
+			sz_left, this->connection_addr);
+	if (actual_sz < 0)
+		return false;
 
-		/* Drop if the magic is wrong */
-		if (ntohs(p->magic) != FRODO_NETWORK_MAGIC)
-			return false;
-
-		if (this->DeMarshalData(p) == false)
-			return false;
-		sz_left -= actual_sz;
-		pp = pp + actual_sz;
-	} while ( !(p->type == STOP) );
+	if (this->DeMarshalAllData(p) == false)
+		return false;
+	sz_left -= actual_sz;
+	pp = pp + actual_sz;
 
 	return true;
 }
@@ -587,6 +589,7 @@ bool Network::MarshalData(NetworkUpdate *p)
 	case SOUND_UPDATE_RLE:
 	case JOYSTICK_UPDATE:
 	case DISCONNECT:
+	case PEER_CONNECT:
 	case STOP:
 		break;
 	case LIST_PEERS:
@@ -656,6 +659,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	case SOUND_UPDATE_RLE:
 	case JOYSTICK_UPDATE:
 	case DISCONNECT:
+	case PEER_CONNECT:
 	case STOP:
 		/* Nothing to do, just bytes */
 		break;
@@ -684,6 +688,21 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	}
 
 	return true;
+}
+
+bool Network::DeMarshalAllData(NetworkUpdate *ud)
+{
+	NetworkUpdate *p = ud;
+
+	while (ntohs(p->type) != STOP)
+	{
+		if (this->DeMarshalData(p) == false)
+			return false;
+		p = this->GetNext(p);
+	}
+
+	/* The stop tag */
+	return this->DeMarshalData(p);
 }
 
 bool Network::DecodeUpdate(uint8 *screen, uint8 *js)
@@ -772,13 +791,13 @@ void Network::Disconnect()
 
 int Network::n_peers;
 int Network::listen_sock;
-Network *Network::peers[MAX_NETWORK_PEERS];
+Network *Network::peers[1];
 
 uint8 Network::sample_buf[NETWORK_SOUND_BUF_SIZE];
 int Network::sample_head;
 int Network::sample_tail;
 
-#if defined(GEKKO)
+#if defined(GEKKOd)
 #include "NetworkWii.h"
 #else
 #include "NetworkUnix.h"

@@ -25,7 +25,7 @@ static int make_socket (uint16_t port)
 	int sock;
 
 	/* Create the socket. */
-	sock = socket (PF_INET, SOCK_STREAM, 0);
+	sock = socket (PF_INET, SOCK_DGRAM, 0);
 	if (sock < 0)
 	{
 		perror ("socket");
@@ -66,17 +66,12 @@ bool init_sockaddr (struct sockaddr_in *name,
 }
 
 
-bool Network::StartListener(int port)
+bool Network::StartNetwork(int port)
 {
 	Network::listen_sock = make_socket(port);
 
 	if (Network::listen_sock < 0)
 		return false;
-	if (listen(Network::listen_sock, MAX_NETWORK_PEERS) < 0)
-	{
-		perror("listen");
-		return false;
-	}
 
 	return true;
 }
@@ -84,18 +79,15 @@ bool Network::StartListener(int port)
 bool Network::CheckNewConnection()
 {
 	struct timeval tv;
-	struct sockaddr_in peer_name;
-	size_t size;
-	int peer_sock;
+	struct sockaddr_in peer_addr;
 	fd_set listen_fds;
-	Network *peer;
 
 	/* Not initialized yet */
 	if (Network::listen_sock <= 0)
 		return false;
 
-	/* No more than that thanks... */
-	if (Network::n_peers >= MAX_NETWORK_PEERS)
+	/* Only one peer allowed */
+	if (Network::n_peers > 0)
 		return false;
 
 	FD_ZERO(&listen_fds);
@@ -113,16 +105,16 @@ bool Network::CheckNewConnection()
 	else if ( v == 0 )
 		return false;
 
-	size = sizeof(peer_name);
-	peer_sock = accept(Network::listen_sock, (struct sockaddr*)&peer_name, &size);
-	if (peer_sock < 0)
-	{
-		fprintf(stderr, "Accepting peer failed\n");
-		return false;
-	}
+	printf("Vobb vobb mibb mibb\n");
+	/* The name, please (but drop the packet after this. FIX this...) */
+	char tmp[1];
+	socklen_t from_sz = sizeof(struct sockaddr_in);
+	recvfrom(Network::listen_sock, tmp, 1, 0,
+			(struct sockaddr*)&peer_addr, &from_sz);
 
-	/* And add the new one! */
-	Network::AddPeer(new Network(peer_sock, true));
+	/* And add the new one (the connection data will be read by
+	 * the network object) */
+	Network::AddPeer(new Network(Network::listen_sock, &peer_addr, true));
 
 	return true;
 }
@@ -130,29 +122,24 @@ bool Network::CheckNewConnection()
 bool Network::ConnectTo(const char *hostname, int port)
 {
 	/* Again from glibc docs */
-	struct sockaddr_in servername;
+	struct sockaddr_in server_addr;
 	int sock;
 
 	/* Create the socket. */
-	sock = socket (PF_INET, SOCK_STREAM, 0);
+	sock = socket (PF_INET, SOCK_DGRAM, 0);
 	if (sock < 0)
 	{
 		perror ("socket (client)");
 		return false;
 	}
 
+	printf("Es wird gesendet\n");
 	set_sock_opts(sock);
 
 	/* Connect to the server. */
-	init_sockaddr (&servername, hostname, port);
-	if (connect(sock, (struct sockaddr *) &servername,
-			sizeof (servername)) != 0)
-	{
-		perror ("connect (client)");
-		return false;
-	}
+	init_sockaddr (&server_addr, hostname, port);
 
-	Network::AddPeer( new Network(sock, false) );
+	Network::AddPeer( new Network(sock, &server_addr, false) );
 
 	return true;
 }
