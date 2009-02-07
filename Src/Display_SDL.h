@@ -207,7 +207,6 @@ void C64Display::Update(uint8 *src_pixels)
 		SDL_Rect srcrect = {0, 0, DISPLAY_X, DISPLAY_Y};
 		SDL_Rect dstrect = {0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y};
 		Uint8 *dst_pixels = (Uint8*)sdl_screen->pixels;
-		const Uint16 dst_pitch = sdl_screen->pitch;
 
 		/* Draw 1-1 */
 		for (int y = 0; y < DISPLAY_Y; y++)
@@ -332,7 +331,6 @@ int C64Display::BitmapXMod(void)
 void C64Display::FakeKeyPress(int kc, uint8 *CIA_key_matrix,
 		uint8 *CIA_rev_matrix)
 {
-	int shifted = kc & 0x80;
 	// Clear matrices
         for (int i = 0; i < 8; i ++)
         {

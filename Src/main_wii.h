@@ -16,6 +16,9 @@ extern int init_graphics(void);
  *  Create application object and start it
  */
 
+char *fixme_tmp_network_client = 0;
+int fixme_tmp_network_server = 0;
+
 extern "C" int main(int argc, char **argv)
 {
 	Frodo *the_app;

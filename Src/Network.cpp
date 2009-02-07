@@ -778,4 +778,8 @@ uint8 Network::sample_buf[NETWORK_SOUND_BUF_SIZE];
 int Network::sample_head;
 int Network::sample_tail;
 
+#if defined(GEKKO)
+#include "NetworkWii.h"
+#else
 #include "NetworkUnix.h"
+#endif
