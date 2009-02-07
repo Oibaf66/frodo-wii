@@ -105,7 +105,6 @@ bool Network::CheckNewConnection()
 	else if ( v == 0 )
 		return false;
 
-	printf("Vobb vobb mibb mibb\n");
 	/* The name, please (but drop the packet after this. FIX this...) */
 	char tmp[1];
 	socklen_t from_sz = sizeof(struct sockaddr_in);
@@ -133,7 +132,6 @@ bool Network::ConnectTo(const char *hostname, int port)
 		return false;
 	}
 
-	printf("Es wird gesendet\n");
 	set_sock_opts(sock);
 
 	/* Connect to the server. */
