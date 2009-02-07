@@ -174,6 +174,22 @@ bool Network::ReceiveData(void *dst, int sock, size_t sz)
 	return sz > 0;
 }
 
+ssize_t Network::ReceiveFrom(void *dst, int sock, size_t sz,
+		struct sockaddr_in *from)
+{
+	socklen_t from_sz = from ? sizeof(struct sockaddr_in) : 0;
+
+	return recvfrom(sock, dst, sz, 0, (struct sockaddr*)from, &from_sz);
+}
+
+ssize_t Network::SendTo(void *src, int sock, size_t sz, struct sockaddr_in *to)
+{
+	socklen_t to_sz = sizeof(struct sockaddr_in);
+
+	assert(to);
+	return sendto(sock, src, sz, 0, (struct sockaddr*)to, to_sz);
+}
+
 bool Network::SendData(void *src, int sock, size_t sz)
 {
 	size_t sent_sz = 0;

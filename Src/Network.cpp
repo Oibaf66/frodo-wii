@@ -68,6 +68,11 @@ Network::Network(int sock, bool is_master)
 
 	/* Assume black screen */
 	memset(this->screen, 0, DISPLAY_X * DISPLAY_Y);
+
+	/* Peer addresses */
+	memset(&this->private_addr, 0, sizeof(struct sockaddr_in));
+	memset(&this->public_addr, 0, sizeof(struct sockaddr_in));
+	this->connection_addr = &this->public_addr;
 }
 
 Network::~Network()
@@ -487,15 +492,17 @@ bool Network::ReceiveUpdate()
 	bool out;
 
 	memset(&tv, 0, sizeof(tv));
-	out = this->ReceiveUpdate(this->ud, &tv);
+	out = this->ReceiveUpdate(this->ud, NETWORK_UPDATE_SIZE, &tv);
 
 	return out;
 }
 
-bool Network::ReceiveUpdate(NetworkUpdate *dst, struct timeval *tv)
+bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
+		struct timeval *tv)
 {
 	Uint8 *pp = (Uint8*)dst;
 	NetworkUpdate *p;
+	size_t sz_left = total_sz;
 
 	if (this->Select(this->sock, tv) == false)
 		return false;
@@ -503,28 +510,25 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, struct timeval *tv)
 	do
 	{
 		p = (NetworkUpdate*)pp;
+		size_t actual_sz;
 
-		/* Receive the header */
-		if (this->ReceiveData((void*)p, this->sock, sizeof(NetworkUpdate)) == false)
+		if (sz_left <= 0)
 			return false;
 
-		pp = pp + sizeof(NetworkUpdate);
+		/* Receive the header */
+		actual_sz = this->ReceiveFrom(pp, this->sock,
+				sz_left, this->connection_addr);
+		if (actual_sz < 0)
+			return false;
+
 		/* Drop if the magic is wrong */
 		if (ntohs(p->magic) != FRODO_NETWORK_MAGIC)
 			return false;
 
-		/* And the rest of the update */
-		size_t sz = ntohl(p->size);
-		if (sz > sizeof(NetworkUpdate))
-		{
-			size_t sz_diff = sz - sizeof(NetworkUpdate);
-
-			if (this->ReceiveData((void*)pp, this->sock, sz_diff) == false)
-				return false;
-			pp = pp + sz_diff; 
-		}
 		if (this->DeMarshalData(p) == false)
 			return false;
+		sz_left -= actual_sz;
+		pp = pp + actual_sz;
 	} while ( !(p->type == STOP) );
 
 	return true;
@@ -549,7 +553,7 @@ bool Network::SendUpdate()
 	sz = this->GetNetworkUpdateSize();
 	if (sz <= 0)
 		return false;
-	if (this->SendData((void*)src, this->sock, sz) == false)
+	if (this->SendTo((void*)src, this->sock, sz, this->connection_addr) < 0)
 		return false;
 	this->traffic += sz;
 
@@ -564,6 +568,13 @@ void Network::AddNetworkUpdate(NetworkUpdate *update)
 	this->cur_ud = (NetworkUpdate*)next;
 }
 
+void Network::MangleIp(uint8 *ip)
+{
+	ip[0] = ~ip[0];
+	ip[1] = ~ip[1];
+	ip[2] = ~ip[2];
+	ip[3] = ~ip[3];
+}
 
 bool Network::MarshalData(NetworkUpdate *p)
 {
@@ -578,6 +589,24 @@ bool Network::MarshalData(NetworkUpdate *p)
 	case DISCONNECT:
 	case STOP:
 		break;
+	case LIST_PEERS:
+	{
+		NetworkUpdateListPeers *lp = (NetworkUpdateListPeers *)p->data;
+		for (int i = 0; i < lp->n_peers; i++)
+		{
+			NetworkUpdatePeerInfo *peer = &lp->peers[i];
+
+			peer->key = htons(peer->key);
+			peer->private_port = htons(peer->private_port);
+			peer->public_port = htons(peer->public_port);
+			peer->is_master = htons(peer->is_master);
+			this->MangleIp(peer->private_ip);
+			this->MangleIp(peer->public_ip);
+		}
+		lp->n_peers = htonl(lp->n_peers);
+		this->MangleIp(lp->your_ip);
+		lp->your_port = htons(lp->your_port);
+	} break;
 	default:
 		/* Unknown data... */
 		fprintf(stderr, "Got unknown data %d while marshalling. Something is wrong\n",
@@ -630,6 +659,25 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	case STOP:
 		/* Nothing to do, just bytes */
 		break;
+	case LIST_PEERS:
+	{
+		NetworkUpdateListPeers *lp = (NetworkUpdateListPeers *)p->data;
+
+		lp->n_peers = ntohl(lp->n_peers);
+		for (int i = 0; i < lp->n_peers; i++)
+		{
+			NetworkUpdatePeerInfo *peer = &lp->peers[i];
+
+			peer->key = ntohs(peer->key);
+			peer->private_port = ntohs(peer->private_port);
+			peer->public_port = ntohs(peer->public_port);
+			peer->is_master = ntohs(peer->is_master);
+			this->MangleIp(peer->private_ip);
+			this->MangleIp(peer->public_ip);
+		}
+		this->MangleIp(lp->your_ip);
+		lp->your_port = ntohs(lp->your_port);
+	} break;
 	default:
 		/* Unknown data... */
 		return false;
@@ -664,6 +712,15 @@ bool Network::DecodeUpdate(uint8 *screen, uint8 *js)
 				*js = j->val;
 			}
 			break;
+		case LIST_PEERS:
+		{
+			NetworkUpdateListPeers *lp = (NetworkUpdateListPeers *)p->data; 
+
+		} break;
+		case PING:
+			/* Send an ack */
+			break;
+		case ACK: /* Should never receive this */
 		case DISCONNECT:
 			out = false;
 			break;

@@ -15,10 +15,16 @@
 #define NETWORK_SOUND_BUF_SIZE   1024
 enum
 {
-	STOP               = 99,
-	LIST_PEERS         = 88,
-	DISCONNECT         = 77,
-	PEER_INFO          = 66,
+	/* Connection-related messages */
+	HELLO              = 99, /* Hello, broker */
+	LIST_PEERS         = 98, /* List of peers */
+	PEER_CONNECT       = 97, /* A peer wants to connect */
+	DISCONNECT         = 96, /* Disconnect from a peer */
+	PING               = 95, /* (broker) are you alive? */
+	ACK                = 94, /* Answer to broker */
+	/* Non-data messages */
+	STOP               = 55, /* End of this update sequence */
+	/* Data transfer of various kinds */
 	DISPLAY_UPDATE_RAW = 1,
 	DISPLAY_UPDATE_RLE = 2,
 	DISPLAY_UPDATE_DIFF= 3,
@@ -36,19 +42,56 @@ struct NetworkUpdate
 	uint32 size;
 
 	/* The rest is just data of some type */
-	Uint8 data[];
+	uint8 data[];
 };
 
 struct NetworkUpdateDisplay
 {
-	Uint8 square;
-	Uint8 data[];
+	uint8 square;
+	uint8 data[];
 };
 
 struct NetworkUpdateJoystick
 {
-	Uint8 val;
+	uint8 val;
 };
+
+struct NetworkUpdatePingAck
+{
+	uint8 seq;
+};
+
+/*
+ * Sent by the third-party broker server when someone wants to connect
+ * to this machine.
+ *
+ * See http://www.brynosaurus.com/pub/net/p2pnat/ for how the UDP hole
+ * punching actually works.
+ */
+struct NetworkUpdatePeerInfo
+{
+	uint16 private_port;
+	uint16 public_port;
+
+	uint8 private_ip[4]; /* Wii isn't ipv6 capable anyway AFAIK */
+	uint8 public_ip[4];
+
+	uint16 key;          /* Random value to separate same names */
+	uint16 is_master;
+	uint8 name[32];      /* "SIMON", "LINDA" etc */
+};
+
+struct NetworkUpdateListPeers
+{
+	uint32 n_peers;
+	uint8  your_ip[4];
+	uint16 your_port;
+	uint8  d[2];         /* Pad to 4 bytes */
+
+	/* Followed by the actual peers */
+	NetworkUpdatePeerInfo peers[];
+};
+
 
 static inline NetworkUpdate *InitNetworkUpdate(NetworkUpdate *ud, uint16 type, uint32 size)
 {
@@ -73,7 +116,7 @@ public:
 	void EncodeJoystickUpdate(Uint8 v);
 
 
-	bool DecodeUpdate(uint8 *screen, uint8 *js = NULL);
+	bool DecodeUpdate(uint8 *screen, uint8 *js);
 
 	void ResetNetworkUpdate(void);
 
@@ -195,13 +238,22 @@ protected:
 	bool DecodeDisplayRaw(Uint8 *screen, struct NetworkUpdate *src,
 			int x, int y);
 
-	bool ReceiveUpdate(NetworkUpdate *dst, struct timeval *tv);
+	bool ReceiveUpdate(NetworkUpdate *dst, size_t sz, struct timeval *tv);
 
 	bool ReceiveData(void *dst, int sock, size_t sz);
+
+	/* Simple wrapper around our friend recvfrom */
+	ssize_t ReceiveFrom(void *dst, int sock, size_t sz,
+			struct sockaddr_in *from);
+
+	ssize_t SendTo(void *src, int sock, size_t sz,
+			struct sockaddr_in *to);
 
 	bool SendData(void *src, int sock, size_t sz);
 
 	virtual bool Select(int sock, struct timeval *tv);
+
+	void MangleIp(uint8 *ip);
 
 	bool MarshalData(NetworkUpdate *ud);
 
@@ -235,6 +287,10 @@ protected:
 
 	/* Connection to the peer */
 	int sock;
+
+	struct sockaddr_in private_addr;
+	struct sockaddr_in public_addr;
+	struct sockaddr_in *connection_addr; /* Points to either of the above */
 
 	/* Listener-related */
 	static int listen_sock;
