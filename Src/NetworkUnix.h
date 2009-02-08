@@ -65,7 +65,35 @@ bool init_sockaddr (struct sockaddr_in *name,
 	return true;
 }
 
+bool Network::InitSocket(const char *remote_host, int port)
+{
+	/* Create the socket. */
+	this->sock = socket (PF_INET, SOCK_DGRAM, 0);
+	if (this->sock < 0)
+	{
+		perror ("socket (client)");
+		return false;
+	}
 
+	set_sock_opts(this->sock);
+
+	/* Connect to the server. */
+	init_sockaddr(&this->connection_addr, remote_host, port);
+
+	if (this->is_master)
+	{
+		if (bind(this->sock, (struct sockaddr *)&this->connection_addr,
+				sizeof (this->connection_addr)) < 0)
+		{
+			perror ("bind");
+			return false;
+		}
+	}
+
+	return true;
+}
+
+#if 0
 bool Network::StartNetworkServer(int port)
 {
 	Network::listen_sock = make_socket(port);
@@ -141,6 +169,7 @@ bool Network::ConnectTo(const char *hostname, int port)
 
 	return true;
 }
+#endif
 
 bool Network::ReceiveData(void *dst, int sock, size_t sz)
 {

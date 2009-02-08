@@ -100,16 +100,16 @@ void C64::c64_ctor1(void)
 			sizeof(this->server_hostname));
 	this->server_port = 19760;
 	this->network_connection_type = NONE;
+	this->peer = NULL;
 
 	if (fixme_tmp_network_server) {
-		Network::StartNetworkServer(this->server_port);
+		this->peer = new Network("localhost", this->server_port, true);
 		this->network_connection_type = MASTER;
 	}
 	if (fixme_tmp_network_client)
 	{
-		printf("Klajent\n");
 		strcpy(this->server_hostname, fixme_tmp_network_client);
-		Network::ConnectTo(this->server_hostname, this->server_port);
+		this->peer = new Network(this->server_hostname, this->server_port, false);
 		this->network_connection_type = CLIENT;
 	}
 }
@@ -344,11 +344,13 @@ void C64::networking_menu(Prefs *np)
 				this->server_port = atoi(m);
 		}
 		else if (opt == 0) {
-			Network::StartNetworkServer(this->server_port);
+			this->peer = new Network(this->server_hostname,
+					this->server_port, true);
 			this->network_connection_type = MASTER;
 		}
 		else if (opt == 3) {
-			Network::ConnectTo(this->server_hostname, this->server_port);
+			this->peer = new Network(this->server_hostname,
+					this->server_port, false);
 			this->network_connection_type = CLIENT;
 		}
 	} while (opt == 1 || opt == 2);
@@ -558,19 +560,18 @@ void C64::network_vblank()
         Uint32 now = SDL_GetTicks();
 #endif
 
-        /* Perhaps accept a new connection */
-        Network::CheckNewConnection();
-
-        for (int i = 0; i < Network::n_peers; i++) {
+        if (this->peer) {
         	Uint8 *master = this->TheDisplay->BitmapBase();
-        	Network *remote = Network::peers[i];
+        	Network *remote = this->peer;
 		uint8 *js;
         	static bool has_throttled;
 
         	if (this->quit_thyself)
 		{
 			remote->Disconnect();
-			continue;
+			delete remote;
+			this->peer = NULL;
+			return;
 		}
 
         	remote->Tick( now - last_time_update );
@@ -592,8 +593,9 @@ void C64::network_vblank()
         		if (remote->DecodeUpdate(remote->GetScreen(), js) == false)
         		{
         			/* Disconnect or sending crap, remove this guy! */
-        			Network::RemovePeer(remote);
-        			continue;
+        			delete remote;
+        			this->peer = NULL;
+        			return;
         		}
                 	if (this->network_connection_type == CLIENT)
                 		this->TheDisplay->Update(remote->GetScreen());
@@ -604,7 +606,7 @@ void C64::network_vblank()
         			remote->ThrottleTraffic()) {
         		/* Skip this frame if the data rate is too high */
         		has_throttled = true;
-        		continue;
+        		return;
         	}
 
         	/* Perhaps send updates to the other side (what is determined by 
@@ -616,7 +618,6 @@ void C64::network_vblank()
         	{
         		/* Disconnect or broken data */
         		printf("Could not send update\n");
-        		Network::RemovePeer(remote);
         	}
 		else
 			remote->ResetNetworkUpdate();

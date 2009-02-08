@@ -36,12 +36,12 @@
 #define RLE_SIZE  ( RAW_SIZE * 4 + 8)
 #define DIFF_SIZE ( RAW_SIZE * 4 + 8)
 
-Network::Network(int sock, struct sockaddr_in *peer_addr, bool is_master)
+Network::Network(const char *remote_host, int port, bool is_master)
 {
 	const size_t size = NETWORK_UPDATE_SIZE;
 
-	this->sock = sock;
 	this->is_master = is_master;
+	this->connected = false;
 
 	/* "big enough" buffer */
 	this->ud = (NetworkUpdate*)malloc( size );
@@ -69,19 +69,11 @@ Network::Network(int sock, struct sockaddr_in *peer_addr, bool is_master)
 	/* Assume black screen */
 	memset(this->screen, 0, DISPLAY_X * DISPLAY_Y);
 
-	/* Peer addresses */
-	memset(&this->private_addr, 0, sizeof(struct sockaddr_in));
-	memcpy(&this->public_addr, peer_addr, sizeof(struct sockaddr_in));
-	this->connection_addr = &this->public_addr;
-
-	/* If we are not the master, connect to the other side */
-	if (!this->is_master)
+	/* Peer addresses, if it fails we are out of luck */
+	if (this->InitSocket(remote_host, port) == false)
 	{
-		InitNetworkUpdate(this->cur_ud, PEER_CONNECT,
-				sizeof(NetworkUpdate));
-		this->AddNetworkUpdate(this->cur_ud);
-		this->SendUpdate();
-		this->ResetNetworkUpdate();
+		fprintf(stderr, "Could not init the socket\n");
+		exit(1);
 	}
 }
 
@@ -499,12 +491,14 @@ void Network::DrawTransferredBlocks(SDL_Surface *screen)
 bool Network::ReceiveUpdate()
 {
 	struct timeval tv;
-	bool out;
 
 	memset(&tv, 0, sizeof(tv));
-	out = this->ReceiveUpdate(this->ud, NETWORK_UPDATE_SIZE, &tv);
+	return this->ReceiveUpdate(this->ud, NETWORK_UPDATE_SIZE, &tv);
+}
 
-	return out;
+bool Network::ReceiveUpdateBlocking()
+{
+	return this->ReceiveUpdate(this->ud, NETWORK_UPDATE_SIZE, NULL);
 }
 
 bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
@@ -524,7 +518,7 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
 
 	/* Receive the header */
 	actual_sz = this->ReceiveFrom(pp, this->sock,
-			sz_left, this->connection_addr);
+			sz_left, &this->connection_addr);
 	if (actual_sz < 0)
 		return false;
 
@@ -555,7 +549,8 @@ bool Network::SendUpdate()
 	sz = this->GetNetworkUpdateSize();
 	if (sz <= 0)
 		return false;
-	if (this->SendTo((void*)src, this->sock, sz, this->connection_addr) < 0)
+	if (this->SendTo((void*)src, this->sock,
+			sz, &this->connection_addr) < 0)
 		return false;
 	this->traffic += sz;
 
@@ -752,29 +747,14 @@ bool Network::DecodeUpdate(uint8 *screen, uint8 *js)
 	return out;
 }
 
-void Network::AddPeer(Network *peer)
+bool Network::WaitForConnection()
 {
-	Network::peers[Network::n_peers] = peer;
-	Network::n_peers++;
+	return this->ReceiveUpdateBlocking();
 }
 
-void Network::RemovePeer(Network *peer)
+bool Network::ConnectToPeer()
 {
-	for (int i = 0; i < Network::n_peers; i++)
-	{
-		if (Network::peers[i] == peer)
-		{
-			if (i < Network::n_peers - 1)
-			{
-				/* Swap with last */
-				Network::peers[i] = Network::peers[Network::n_peers - 1];
-			}
-			delete peer;
-			Network::n_peers--;
-			return;
-		}
-	}
-	/* Not found */
+	return this->SendUpdate();
 }
 
 void Network::Disconnect()
@@ -785,13 +765,7 @@ void Network::Disconnect()
 	/* Add a stop at the end of the update */
 	this->AddNetworkUpdate(disconnect);
 	this->SendUpdate();
-
-	Network::RemovePeer(this);
 }
-
-int Network::n_peers;
-int Network::listen_sock;
-Network *Network::peers[1];
 
 uint8 Network::sample_buf[NETWORK_SOUND_BUF_SIZE];
 int Network::sample_head;

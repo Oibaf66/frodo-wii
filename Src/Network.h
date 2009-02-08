@@ -103,7 +103,7 @@ static inline NetworkUpdate *InitNetworkUpdate(NetworkUpdate *ud, uint16 type, u
 class Network
 {
 public:
-	Network(int sock, struct sockaddr_in *peer_addr, bool is_master);
+	Network(const char *remote_host, int port, bool is_master);
 
 	~Network();
 
@@ -140,11 +140,15 @@ public:
 
 	bool ReceiveUpdate();
 
+	bool ReceiveUpdateBlocking();
+
 	static bool StartNetworkServer(int port);
 
 	static bool CheckNewConnection();
 
-	static bool ConnectTo(const char *hostname, int port);
+	bool WaitForConnection();
+
+	bool ConnectToPeer();
 
 	Uint8 *GetScreen()
 	{
@@ -157,15 +161,7 @@ public:
 	 */
 	void Disconnect();
 
-	static void AddPeer(Network *who);
-
-	static void RemovePeer(Network *peer);
-
 	static void PushSound(uint8 vol);
-
-	/* Listener-related */
-	static Network *peers[1];
-	static int n_peers;
 
 protected:
 	size_t DecodeSoundUpdate(struct NetworkUpdate *src, char *buf);
@@ -235,6 +231,8 @@ protected:
 
 	bool ReceiveData(void *dst, int sock, size_t sz);
 
+	bool InitSocket(const char *remote_host, int port);
+
 	/* Simple wrapper around our friend recvfrom */
 	ssize_t ReceiveFrom(void *dst, int sock, size_t sz,
 			struct sockaddr_in *from);
@@ -278,17 +276,12 @@ protected:
 	Uint8 *screen;
 	int joystick_port;
 	bool is_master; /* Some peers are more equal than others */
+	bool connected;
 	Uint8 cur_joystick_data;
 
 	/* Connection to the peer */
 	int sock;
-
-	struct sockaddr_in private_addr;
-	struct sockaddr_in public_addr;
-	struct sockaddr_in *connection_addr; /* Points to either of the above */
-
-	/* Listener-related */
-	static int listen_sock;
+	struct sockaddr_in connection_addr; /* Points to either of the above */
 
 	/* Sound */
 	static uint8 sample_buf[NETWORK_SOUND_BUF_SIZE];
