@@ -102,7 +102,7 @@ void C64::c64_ctor1(void)
 	this->network_connection_type = NONE;
 
 	if (fixme_tmp_network_server) {
-		Network::StartNetwork(this->server_port);
+		Network::StartNetworkServer(this->server_port);
 		this->network_connection_type = MASTER;
 	}
 	if (fixme_tmp_network_client)
@@ -344,7 +344,7 @@ void C64::networking_menu(Prefs *np)
 				this->server_port = atoi(m);
 		}
 		else if (opt == 0) {
-			Network::StartNetwork(this->server_port);
+			Network::StartNetworkServer(this->server_port);
 			this->network_connection_type = MASTER;
 		}
 		else if (opt == 3) {

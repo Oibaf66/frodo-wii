@@ -66,7 +66,7 @@ bool init_sockaddr (struct sockaddr_in *name,
 }
 
 
-bool Network::StartNetwork(int port)
+bool Network::StartNetworkServer(int port)
 {
 	Network::listen_sock = make_socket(port);
 

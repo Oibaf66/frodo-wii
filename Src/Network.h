@@ -140,7 +140,7 @@ public:
 
 	bool ReceiveUpdate();
 
-	static bool StartNetwork(int port);
+	static bool StartNetworkServer(int port);
 
 	static bool CheckNewConnection();
 
