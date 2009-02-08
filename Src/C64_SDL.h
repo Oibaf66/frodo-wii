@@ -103,14 +103,28 @@ void C64::c64_ctor1(void)
 	this->peer = NULL;
 
 	if (fixme_tmp_network_server) {
+		int i;
 		this->peer = new Network("localhost", this->server_port, true);
 		this->network_connection_type = MASTER;
+		for (i = 0; i < 20; i++)
+		{
+			printf("Waiting for connection, try %d of 20\n", i+1);
+			if (this->peer->WaitForConnection() == true)
+				break;
+		}
+		if (i == 20)
+		{
+			printf("No client connected. Bye\n");
+			delete this->peer;
+			this->peer = NULL;
+		}
 	}
 	if (fixme_tmp_network_client)
 	{
 		strcpy(this->server_hostname, fixme_tmp_network_client);
 		this->peer = new Network(this->server_hostname, this->server_port, false);
 		this->network_connection_type = CLIENT;
+		this->peer->ConnectToPeer();
 	}
 }
 

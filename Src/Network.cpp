@@ -496,9 +496,9 @@ bool Network::ReceiveUpdate()
 	return this->ReceiveUpdate(this->ud, NETWORK_UPDATE_SIZE, &tv);
 }
 
-bool Network::ReceiveUpdateBlocking()
+bool Network::ReceiveUpdate(struct timeval *tv)
 {
-	return this->ReceiveUpdate(this->ud, NETWORK_UPDATE_SIZE, NULL);
+	return this->ReceiveUpdate(this->ud, NETWORK_UPDATE_SIZE, tv);
 }
 
 bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
@@ -749,7 +749,14 @@ bool Network::DecodeUpdate(uint8 *screen, uint8 *js)
 
 bool Network::WaitForConnection()
 {
-	return this->ReceiveUpdateBlocking();
+	struct timeval tv;
+
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	if (this->ReceiveUpdate(&tv) == true)
+		return true;
+
+	return false;
 }
 
 bool Network::ConnectToPeer()

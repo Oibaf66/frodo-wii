@@ -140,7 +140,7 @@ public:
 
 	bool ReceiveUpdate();
 
-	bool ReceiveUpdateBlocking();
+	bool ReceiveUpdate(struct timeval *tv);
 
 	static bool StartNetworkServer(int port);
 
