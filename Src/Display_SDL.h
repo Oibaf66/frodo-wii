@@ -611,62 +611,55 @@ uint8 C64::poll_joystick(int port)
 	int extra_keys[N_WIIMOTE_BINDINGS];
 	int controller = port;
 	Uint32 held = 0;
-	Uint32 held_other = 0;
 	Uint32 held_classic = 0;
-	Uint32 held_classic_other = 0;
-        WPADData *wpad, *wpad_other;
+        WPADData *wpad;
 
 	if (ThePrefs.JoystickSwap)
 		controller = !port;
 
         wpad = WPAD_Data(controller);
-        wpad_other = WPAD_Data(!controller);
-        if (!wpad && !wpad_other)
-        	return 0xff;
+        if (!wpad)
+        	return j;
 
         held = wpad->btns_h;
-        held_other = wpad_other->btns_h;
 
 	// Check classic controller as well
 	if (wpad->exp.type == WPAD_EXP_CLASSIC)
 		held_classic = wpad->exp.classic.btns_held; 
-	if (wpad_other->exp.type == WPAD_EXP_CLASSIC)
-		held_classic_other = wpad_other->exp.classic.btns_held;
 
-	if ( (held & WPAD_BUTTON_UP) || (held_classic & CLASSIC_CTRL_BUTTON_LEFT) )
-		j &= 0xfb; // Left
-	if ( (held & WPAD_BUTTON_DOWN) || (held_classic & CLASSIC_CTRL_BUTTON_RIGHT) )
-		j &= 0xf7; // Right
-	if ( (held & WPAD_BUTTON_RIGHT) || (held_classic & CLASSIC_CTRL_BUTTON_UP) )
-		j &= 0xfe; // Up
-	if ( (held & WPAD_BUTTON_LEFT) || (held_classic & CLASSIC_CTRL_BUTTON_DOWN) )
-		j &= 0xfd; // Down
-	if ( (held & WPAD_BUTTON_2) || (held_classic & CLASSIC_CTRL_BUTTON_A) )
-		j &= 0xef; // Button
-	if ( (held & WPAD_BUTTON_HOME) || (held_classic & CLASSIC_CTRL_BUTTON_HOME) )
-		TheC64->enter_menu();
+	extra_keys[WIIMOTE_UP] = held & WPAD_BUTTON_UP;
+	extra_keys[WIIMOTE_DOWN] = held & WPAD_BUTTON_DOWN;
+	extra_keys[WIIMOTE_LEFT] = held & WPAD_BUTTON_LEFT;
+	extra_keys[WIIMOTE_RIGHT] = held & WPAD_BUTTON_RIGHT;
 
-	extra_keys[WIIMOTE_A] = (held | held_other) & WPAD_BUTTON_A;
-	extra_keys[WIIMOTE_B] = (held | held_other) & WPAD_BUTTON_B;
-	extra_keys[WIIMOTE_1] = (held | held_other) & WPAD_BUTTON_1;
+	extra_keys[WIIMOTE_A] = held & WPAD_BUTTON_A;
+	extra_keys[WIIMOTE_B] = held & WPAD_BUTTON_B;
+	extra_keys[WIIMOTE_1] = held & WPAD_BUTTON_1;
+	extra_keys[WIIMOTE_2] = held & WPAD_BUTTON_2;
 
 	/* Classic buttons (might not be connected) */
-	extra_keys[CLASSIC_X] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_X;
-	extra_keys[CLASSIC_Y] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_Y;
-	extra_keys[CLASSIC_B] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_B;
-	extra_keys[CLASSIC_L] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_FULL_L;
-	extra_keys[CLASSIC_R] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_FULL_R;
-	extra_keys[CLASSIC_ZL] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_ZL;
-	extra_keys[CLASSIC_ZR] = (held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_ZR;
+	extra_keys[CLASSIC_UP] = held_classic & CLASSIC_CTRL_BUTTON_UP;
+	extra_keys[CLASSIC_DOWN] = held_classic & CLASSIC_CTRL_BUTTON_DOWN;
+	extra_keys[CLASSIC_LEFT] = held_classic & CLASSIC_CTRL_BUTTON_LEFT;
+	extra_keys[CLASSIC_RIGHT] = held_classic & CLASSIC_CTRL_BUTTON_RIGHT;
 
-	extra_keys[WIIMOTE_PLUS] = ((held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_MINUS) |
-		(held | held_other) & WPAD_BUTTON_PLUS;
-	extra_keys[WIIMOTE_MINUS] = ((held_classic | held_classic_other) & CLASSIC_CTRL_BUTTON_PLUS) |
-		(held | held_other) & WPAD_BUTTON_MINUS;
+	extra_keys[CLASSIC_X] = held_classic & CLASSIC_CTRL_BUTTON_X;
+	extra_keys[CLASSIC_Y] = held_classic & CLASSIC_CTRL_BUTTON_Y;
+	extra_keys[CLASSIC_A] = held_classic & CLASSIC_CTRL_BUTTON_A;
+	extra_keys[CLASSIC_B] = held_classic & CLASSIC_CTRL_BUTTON_B;
+	extra_keys[CLASSIC_L] = held_classic & CLASSIC_CTRL_BUTTON_FULL_L;
+	extra_keys[CLASSIC_R] = held_classic & CLASSIC_CTRL_BUTTON_FULL_R;
+	extra_keys[CLASSIC_ZL] = held_classic & CLASSIC_CTRL_BUTTON_ZL;
+	extra_keys[CLASSIC_ZR] = held_classic & CLASSIC_CTRL_BUTTON_ZR;
+
+	extra_keys[WIIMOTE_PLUS] = (held_classic & CLASSIC_CTRL_BUTTON_MINUS) |
+		held & WPAD_BUTTON_PLUS;
+	extra_keys[WIIMOTE_MINUS] = (held_classic & CLASSIC_CTRL_BUTTON_PLUS) |
+		held & WPAD_BUTTON_MINUS;
 
 	for (int i = 0; i < N_WIIMOTE_BINDINGS; i++)
 	{
-		static bool is_pressed[N_WIIMOTE_BINDINGS];
+		static bool is_pressed[2][N_WIIMOTE_BINDINGS];
 		int kc = ThePrefs.JoystickKeyBinding[i];
 
 		if ( kc >= 0)
@@ -676,14 +669,14 @@ uint8 C64::poll_joystick(int port)
 				TheDisplay->UpdateKeyMatrix(kc, false,
 						TheCIA1->KeyMatrix, TheCIA1->RevMatrix,
 						&j);
-				is_pressed[i] = true;
+				is_pressed[controller][i] = true;
 			}
 			else if (is_pressed[i])
 			{
 				TheDisplay->UpdateKeyMatrix(kc, true,
 						TheCIA1->KeyMatrix, TheCIA1->RevMatrix,
 						&j);
-				is_pressed[i] = false;
+				is_pressed[controller][i] = false;
 			}
 		}
 	}

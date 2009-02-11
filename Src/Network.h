@@ -34,6 +34,17 @@ enum
 	ENTER_MENU         = 8,
 };
 
+enum
+{
+	CONNECT_TO_BROKER,
+	WAIT_FOR_PEER_ADDRESS,
+	CONNECT_TO_PEER,
+	WAIT_FOR_PEER_REPLY,
+
+	/* Client-only */
+	WAIT_FOR_PEER_LIST,
+};
+
 struct NetworkUpdate
 {
 	uint16 magic;  /* Should be 0x1976 */

@@ -753,6 +753,17 @@ bool Network::WaitForConnection()
 
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
+
+	/* See http://www.brynosaurus.com/pub/net/p2pnat/ for how this works.
+	 * To do here:
+	 *
+	 * 1. Send connect to the broker
+	 * 2. Wait for broker to return the peer connection info (private
+	 *    and public address)
+	 * 3. Until connected:
+	 *    3.1 Send connection message to peer
+	 *    3.2 Wait for reply from peer
+	 */
 	if (this->ReceiveUpdate(&tv) == true)
 		return true;
 
@@ -761,6 +772,18 @@ bool Network::WaitForConnection()
 
 bool Network::ConnectToPeer()
 {
+	/*
+	 * To do here:
+	 *
+	 * 1. Send connect to the broker
+	 * 2. Wait for the broker to return list of peers
+	 * 3. Tell the broker who to connect to
+	 * 4. Wait for broker to return the peer connection info (private
+	 *    and public address)
+	 * 5. Until connected:
+	 *    5.1 Send connection message to peer
+	 *    5.2 Wait for reply from peer
+	 */
 	return this->SendUpdate();
 }
 

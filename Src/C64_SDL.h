@@ -274,7 +274,9 @@ void C64::select_disc(Prefs *np)
 
 char *C64::bind_one_key(Prefs *np, int which)
 {
-	static const char *which_to_button_name[] = { "A", "B", "+", "-", "1",
+	static const char *which_to_button_name[] = { "up", "down", "left", "right",
+			"fire","A", "B", "+", "-", "1",
+			"classic up", "classic down", "classic left", "classic right", "classic fire",
 			"classic X", "classic Y", "classic B", "classic L",
 			"classic R", "classic ZR", "classic ZL" };
 	static char strs[N_WIIMOTE_BINDINGS][255];
@@ -305,7 +307,7 @@ void C64::bind_keys(Prefs *np)
 
         memset(bind_key_messages, 0, sizeof(const char*) * (N_WIIMOTE_BINDINGS + 1));
 
-        for (int i = 0; i < (has_classic_controller ? N_WIIMOTE_BINDINGS : 5); i++)
+        for (int i = 0; i < (has_classic_controller ? N_WIIMOTE_BINDINGS : WIIMOTE_2); i++)
         	bind_key_messages[i] = this->bind_one_key(np, i);
 
 	int opt = menu_select(real_screen, this->menu_font,
