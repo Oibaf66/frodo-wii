@@ -47,7 +47,7 @@ static int make_socket (uint16_t port)
 	return sock;
 }
 
-bool init_sockaddr (struct sockaddr_in *name,
+bool Network::InitSockaddr (struct sockaddr_in *name,
 		const char *hostname, uint16_t port)
 {
 	struct hostent *hostinfo;

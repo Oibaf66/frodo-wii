@@ -10,6 +10,8 @@
 #include <fat.h>
 #include <wiiuse/wpad.h>
 
+#include "menu.h"
+
 extern int init_graphics(void);
 
 /*
@@ -46,6 +48,7 @@ extern "C" int main(int argc, char **argv)
 	        fprintf(stderr, "Unable to init TTF: %s\n", TTF_GetError() );
 	        return 0;		
 	}
+	menu_init();
 
 	if (WPAD_Init() != WPAD_ERR_NONE)
 	{

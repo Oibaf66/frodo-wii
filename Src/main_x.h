@@ -33,6 +33,8 @@ extern "C" int main(int argc, char *argv[]);
 #include <SDL.h>
 #endif
 
+#include "menu.h"
+
 extern int init_graphics(void);
 
 
@@ -73,6 +75,7 @@ int main(int argc, char **argv)
                 fprintf(stderr, "Unable to init TTF: %s\n", TTF_GetError() );
 		return 1;
         }
+	menu_init();
 #endif
 	if (!init_graphics())
 		return 1;

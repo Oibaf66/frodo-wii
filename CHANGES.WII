@@ -6,13 +6,17 @@
 		TODO: Crash on + in "Other" menu
 
 version 7:
+		* Wiimote direction keys and "fire" can now be bound to keyboard
+		  keys
+
 		* Allow binding 1 and other extra buttons to joystick directions
-		  and fire 
+		  and fire
+
+		* Simplify menu code even more
 
         -- Simon Kagstrom <simon.kagstrom@gmail.com>,
 
 version 6:
-        TODO: Multiple frodo versions, switch between
         * Handle reset button (back to menu)
 
         * General code cleanup, e.g., simplified menu system and reduced the

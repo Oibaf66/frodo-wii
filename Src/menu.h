@@ -32,10 +32,11 @@ extern "C" {
 void menu_print_font(SDL_Surface *screen, TTF_Font *font, int r, int g, int b,
                        int x, int y, const char *msg);
 
-int menu_select(SDL_Surface *screen, TTF_Font *font, const char **pp_msgs,
-                int *p_submenus);
+int menu_select(const char **pp_msgs, int *p_submenus);
 
 uint32_t menu_wait_key_press(void);
+
+void menu_init();
 
 #if defined(__cplusplus)
 };

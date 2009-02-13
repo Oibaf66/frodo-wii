@@ -72,28 +72,6 @@ void C64::c64_ctor1(void)
 	memset(this->save_game_name, 0, sizeof(this->save_game_name));
 	strcpy(this->save_game_name, "unknown");
 
-	SDL_RWops *rw;
-	
-	Uint8 *data = (Uint8*)malloc(1 * 1024*1024);
-	FILE *fp = fopen(FONT_PATH, "r");
-	if (!fp) {
-		fprintf(stderr, "Could not open font\n");
-		exit(1);
-	}
-	fread(data, 1, 1 * 1024 * 1024, fp);
-	rw = SDL_RWFromMem(data, 1 * 1024 * 1024);
-	if (!rw) {
-		fprintf(stderr, "Could not create RW: %s\n", SDL_GetError());
-		exit(1);
-	}
-
-	this->menu_font = TTF_OpenFontRW(rw, 1, 20);
-	if (!this->menu_font)
-	{
-	        fprintf(stderr, "Unable to open font\n" );
-	        exit(1);		
-	}
-
 	this->virtual_keyboard = new VirtualKeyboard(real_screen, this->menu_font);
 
 	strncpy(this->server_hostname, "localhost",
@@ -109,7 +87,7 @@ void C64::c64_ctor1(void)
 		for (i = 0; i < 20; i++)
 		{
 			printf("Waiting for connection, try %d of 20\n", i+1);
-			if (this->peer->WaitForConnection() == true)
+			if (this->peer->Connect() == true)
 				break;
 		}
 		if (i == 20)
@@ -124,7 +102,7 @@ void C64::c64_ctor1(void)
 		strcpy(this->server_hostname, fixme_tmp_network_client);
 		this->peer = new Network(this->server_hostname, this->server_port, false);
 		this->network_connection_type = CLIENT;
-		this->peer->ConnectToPeer();
+		this->peer->Connect();
 	}
 }
 
@@ -212,8 +190,7 @@ void C64::select_disc(Prefs *np)
 	if (file_list == NULL)
 		return;
 
-	int opt = menu_select(real_screen, this->menu_font,
-			file_list, NULL);
+	int opt = menu_select(file_list, NULL);
 	if (opt >= 0)
 	{
 		const char *name = file_list[opt];
@@ -310,8 +287,7 @@ void C64::bind_keys(Prefs *np)
         for (int i = 0; i < (has_classic_controller ? N_WIIMOTE_BINDINGS : WIIMOTE_2); i++)
         	bind_key_messages[i] = this->bind_one_key(np, i);
 
-	int opt = menu_select(real_screen, this->menu_font,
-			bind_key_messages, NULL);
+	int opt = menu_select(bind_key_messages, NULL);
 	if (opt >= 0)
 	{
 	        int key;
@@ -346,8 +322,7 @@ void C64::networking_menu(Prefs *np)
 				this->server_hostname);
 		snprintf(buf[1], 255, "Port (now %d)",
 				this->server_port);
-		opt = menu_select(real_screen, this->menu_font,
-				network_client_messages, NULL);
+		opt = menu_select(network_client_messages, NULL);
 
 		if (opt == 1 || opt == 2)
 		{
@@ -403,8 +378,7 @@ void C64::other_options(Prefs *np)
 		/* If it has some other value... */
 		submenus[1] = 1; break;
 	}
-	int opt = menu_select(real_screen, this->menu_font,
-			other_options_messages, submenus);
+	int opt = menu_select(other_options_messages, submenus);
 	if (opt >= 0)
 	{
 		np->DisplayOption = submenus[0];
@@ -472,8 +446,7 @@ void C64::select_fake_key_sequence(Prefs *np)
 			NULL};
 	int opt;
 
-	opt = menu_select(real_screen, this->menu_font,
-			fake_key_messages, NULL);
+	opt = menu_select(fake_key_messages, NULL);
 	if (opt < 0)
 		return;
 
@@ -490,8 +463,7 @@ void C64::select_fake_key_sequence(Prefs *np)
 
 void C64::save_load_state(Prefs *np)
 {
-	int opt = menu_select(real_screen, this->menu_font,
-			save_load_state_messages, NULL);
+	int opt = menu_select(save_load_state_messages, NULL);
 	switch(opt)
 	{
 	case 1: /* save */
@@ -513,8 +485,7 @@ void C64::save_load_state(Prefs *np)
 
 		if (file_list == NULL)
 			break;
-		int save = menu_select(real_screen, this->menu_font,
-				file_list, NULL);
+		int save = menu_select(file_list, NULL);
 		if (save >= 0)
 		{
 			char save_buf[255];
@@ -722,8 +693,7 @@ void C64::VBlank(bool draw_frame)
 
 		TheSID->PauseSound();
 		submenus[0] = old_swap;
-		opt = menu_select(real_screen, this->menu_font,
-				main_menu_messages, submenus);
+		opt = menu_select(main_menu_messages, submenus);
 
 		switch(opt)
 		{

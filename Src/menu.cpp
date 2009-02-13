@@ -47,6 +47,8 @@ typedef struct
 
 #define IS_SUBMENU(p_msg) ( (p_msg)[0] == '^' )
 
+static TTF_Font *menu_font;
+
 static submenu_t *find_submenu(menu_t *p_menu, int index)
 {
   int i;
@@ -60,7 +62,7 @@ static submenu_t *find_submenu(menu_t *p_menu, int index)
   return NULL;
 }
 
-void menu_print_font(SDL_Surface *screen, TTF_Font *font, int r, int g, int b,
+void menu_print_font(SDL_Surface *screen, int r, int g, int b,
                        int x, int y, const char *msg)
 {
   SDL_Surface *font_surf;
@@ -434,8 +436,7 @@ static int menu_select_internal(SDL_Surface *screen,
 	return ret;
 }
 
-int menu_select(SDL_Surface *screen, TTF_Font *font, const char **msgs,
-                int *submenus)
+int menu_select(const char **msgs, int *submenus)
 {
 	menu_t menu;
 	int out;
@@ -443,12 +444,36 @@ int menu_select(SDL_Surface *screen, TTF_Font *font, const char **msgs,
 	menu_init(&menu, font, msgs,
 			32, 32, FULL_DISPLAY_X - FULL_DISPLAY_X / 4,
 			FULL_DISPLAY_Y - FULL_DISPLAY_Y / 4);
-	out = menu_select_internal(screen, &menu, submenus);
+	out = menu_select_internal(real_screen, &menu, submenus);
 	menu_fini(&menu);
 
 	return out;
 }
 
+void menu_init()
+{
+	SDL_RWops *rw;
+	
+	Uint8 *data = (Uint8*)malloc(1 * 1024*1024);
+	FILE *fp = fopen(FONT_PATH, "r");
+	if (!fp) {
+		fprintf(stderr, "Could not open font\n");
+		exit(1);
+	}
+	fread(data, 1, 1 * 1024 * 1024, fp);
+	rw = SDL_RWFromMem(data, 1 * 1024 * 1024);
+	if (!rw) {
+		fprintf(stderr, "Could not create RW: %s\n", SDL_GetError());
+		exit(1);
+	}
+
+	menu_font = TTF_OpenFontRW(rw, 1, 20);
+	if (!menu_font)
+	{
+	        fprintf(stderr, "Unable to open font\n" );
+	        exit(1);		
+	}
+}
 
 #if defined(TEST_MENU)
 char *main_menu[] = {
