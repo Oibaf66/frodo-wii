@@ -21,6 +21,7 @@
 #include "sysdeps.h"
 #include "Network.h"
 #include "Display.h"
+#include "menu.h"
 
 #define N_SQUARES_W 16
 #define N_SQUARES_H 8
@@ -75,6 +76,7 @@ Network::Network(const char *remote_host, int port, bool is_master)
 		fprintf(stderr, "Could not init the socket\n");
 		exit(1);
 	}
+	this->network_connection_state = CONNECT_TO_BROKER;
 }
 
 Network::~Network()
@@ -565,14 +567,6 @@ void Network::AddNetworkUpdate(NetworkUpdate *update)
 	this->cur_ud = (NetworkUpdate*)next;
 }
 
-void Network::MangleIp(uint8 *ip)
-{
-	ip[0] = ~ip[0];
-	ip[1] = ~ip[1];
-	ip[2] = ~ip[2];
-	ip[3] = ~ip[3];
-}
-
 bool Network::MarshalData(NetworkUpdate *p)
 {
 	switch (p->type)
@@ -598,11 +592,8 @@ bool Network::MarshalData(NetworkUpdate *p)
 			peer->private_port = htons(peer->private_port);
 			peer->public_port = htons(peer->public_port);
 			peer->is_master = htons(peer->is_master);
-			this->MangleIp(peer->private_ip);
-			this->MangleIp(peer->public_ip);
 		}
 		lp->n_peers = htonl(lp->n_peers);
-		this->MangleIp(lp->your_ip);
 		lp->your_port = htons(lp->your_port);
 	} break;
 	default:
@@ -671,10 +662,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 			peer->private_port = ntohs(peer->private_port);
 			peer->public_port = ntohs(peer->public_port);
 			peer->is_master = ntohs(peer->is_master);
-			this->MangleIp(peer->private_ip);
-			this->MangleIp(peer->public_ip);
 		}
-		this->MangleIp(lp->your_ip);
 		lp->your_port = ntohs(lp->your_port);
 	} break;
 	default:
@@ -747,44 +735,220 @@ bool Network::DecodeUpdate(uint8 *screen, uint8 *js)
 	return out;
 }
 
-bool Network::WaitForConnection()
+bool Network::ConnectToBroker()
 {
+	NetworkUpdate *ud = InitNetworkUpdate(this->ud, CONNECT_TO_BROKER,
+			sizeof(NetworkUpdate) + sizeof(NetworkUpdatePeerInfo)); 
+	NetworkUpdatePeerInfo *pi = (NetworkUpdatePeerInfo *)ud->data;
+	bool out;
+
+	pi->is_master = this->is_master;
+	pi->key = 5;
+	this->AddNetworkUpdate(ud);
+	out = this->SendUpdate();
+	this->ResetNetworkUpdate();
+
+	return out;
+}
+
+bool Network::IpToStr(char *dst, uint8 *ip_in)
+{
+	int ip[4];
+	for (int i = 0; i < 4; i++)
+	{
+		char tmp[3];
+		const char *endp;
+
+		tmp[0] = ip_in[i * 2];
+		tmp[1] = ip_in[i * 2 + 1];
+		tmp[2] = '\0';
+		ip[i] = strtoul(tmp, &endp, 16);
+		if (endp == tmp)
+			return false;
+	}
+	sprintf(dst, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+
+	return true;
+}
+
+bool Network::WaitForPeerAddress()
+{
+	NetworkUpdateListPeers *pi;
 	struct timeval tv;
 
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
 
-	/* See http://www.brynosaurus.com/pub/net/p2pnat/ for how this works.
-	 * To do here:
-	 *
-	 * 1. Send connect to the broker
-	 * 2. Wait for broker to return the peer connection info (private
-	 *    and public address)
-	 * 3. Until connected:
-	 *    3.1 Send connection message to peer
-	 *    3.2 Wait for reply from peer
-	 */
-	if (this->ReceiveUpdate(&tv) == true)
-		return true;
+	this->ResetNetworkUpdate();
+	if (this->ReceiveUpdate(&tv) == false)
+		return false;
+	if (ud->type != PEER_LIST)
+		return false;
 
-	return false;
+	pi = (NetworkUpdateListPeers *)this->ud->data;
+	if (pi->n_peers != 1)
+	{
+		fprintf(stderr, "There is something wrong with the server: Got %d peers on master connect\n"
+				"Contact Simon Kagstrom and ask him to correct it\n",
+				pi->n_peers);
+		return false;
+	}
+
+	/* Setup the peer info */
+	char buf[128];
+
+	/* Not sure what to do if this fails */
+	this->IpToStr(buf, pi->peers[0].public_ip);
+	return this->InitSockaddr(this->connection_addr, buf,
+			pi->peers[0].public_port);
+		
+}
+
+bool Network::WaitForPeerList()
+{
+	NetworkUpdateListPeers *pi;
+	struct timeval tv;
+	const char **msgs;
+
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+
+	this->ResetNetworkUpdate();
+	if (this->ReceiveUpdate(&tv) == false)
+		return false;
+	if (ud->type != PEER_LIST)
+		return false;
+
+	pi = (NetworkUpdateListPeers *)this->ud->data;
+	msgs = (const char**)calloc(pi->n_peers + 1, sizeof(const char*));
+
+	for (int i = 0; pi->n_peers; i++) {
+		msgs[i] = pi->peers[i].name;
+	}
+	int sel = menu_select(msgs, NULL);
+	free(msgs);
+
+	/* FIXME! What to do here??? */
+	if (sel < 0)
+		return false;
+	/* Setup the peer info */
+	char buf[128];
+
+	/* Not sure what to do if this fails */
+	this->IpToStr(buf, pi->peers[sel].public_ip);
+	return this->InitSockaddr(this->connection_addr, buf,
+			pi->peers[sel].public_port);
+		
+}
+
+bool Network::WaitForPeerReply()
+{
+	struct timeval tv;
+	const char **msgs;
+
+	tv.tv_sec = 3;
+	tv.tv_usec = 0;
+
+	this->ResetNetworkUpdate();
+	if (this->ReceiveUpdate(&tv) == false)
+		return false;
+
+	if (this->ud->type != CONNECT_TO_PEER)
+		return false;
+
+	return true;
 }
 
 bool Network::ConnectToPeer()
 {
-	/*
-	 * To do here:
+	NetworkUpdate *ud = InitNetworkUpdate(this->ud, CONNECT_TO_PEER,
+			sizeof(NetworkUpdate)); 
+
+	this->AddNetworkUpdate(ud);
+	out = this->SendUpdate();
+	this->ResetNetworkUpdate();
+
+	return out;
+}
+
+bool Network::ConnectFSM()
+{
+	/* See http://www.brynosaurus.com/pub/net/p2pnat/ for how this works.
 	 *
-	 * 1. Send connect to the broker
-	 * 2. Wait for the broker to return list of peers
-	 * 3. Tell the broker who to connect to
-	 * 4. Wait for broker to return the peer connection info (private
-	 *    and public address)
-	 * 5. Until connected:
-	 *    5.1 Send connection message to peer
-	 *    5.2 Wait for reply from peer
+	 * For the server ("master"):
+	 *   1. Send connect to the broker
+	 *   2. Wait for broker to return the peer connection info (private
+	 *      and public address)
+	 *   3. Until connected:
+	 *      3.1 Send connection message to peer
+	 *      3.2 Wait for reply from peer
+	 *
+	 * For the client:
+	 *   1. Send connect to the broker
+	 *   2. Wait for the broker to return list of peers
+	 *   3. Tell the broker who to connect to
+	 *   4. Wait for broker to return the peer connection info (private
+	 *      and public address)
+	 *   5. Until connected:
+	 *      5.1 Send connection message to peer
+	 *      5.2 Wait for reply from peer
 	 */
-	return this->SendUpdate();
+	switch(this->network_connection_state)
+	{
+	case CONNECT_TO_BROKER:
+		if (this->ConnectToBroker() == true)
+		{
+			if (this->is_master)
+				this->network_connection_state = WAIT_FOR_PEER_ADDRESS;
+			else
+				this->network_connection_state = WAIT_FOR_PEER_LIST;
+		}
+		break;
+	case WAIT_FOR_PEER_ADDRESS:
+		if (this->WaitForPeerAddress() == false)
+			return false;
+		this->network_connection_state = CONNECT_TO_PEER;
+		break;
+	case WAIT_FOR_PEER_LIST:
+		if (this->WaitForPeerList() == false)
+			return false;
+		this->network_connection_state = CONNECT_TO_PEER;
+		break;
+	case CONNECT_TO_PEER:
+		if (this->ConnectToPeer() == false)
+			return false;
+		/* Allow some transit time */
+		sleep(1);
+		this->network_connection_state = WAIT_FOR_PEER_REPLY;
+		break;
+	case WAIT_FOR_PEER_REPLY:
+		/* Connect again in case the first sent was dropped on
+		 * its way to the peer */
+		if (this->ConnectToPeer() == false)
+			return false;
+		if (this->WaitForPeerReply() == false)
+			return false;
+		this->network_connection_state = CONNECTED;
+		break;
+	case CONNECTED:
+	default:
+		return true;
+	}
+
+	return true;;
+}
+
+bool Network::Connect()
+{
+	for (int i = 0; i < this->is_master ? 120 : 10; i++ )
+	{
+		if (this->network_connection_state == CONNECTED)
+			return true;
+		/* Run the state machine */
+		this->ConnectFSM();
+	}
+
+	return false;a
 }
 
 void Network::Disconnect()

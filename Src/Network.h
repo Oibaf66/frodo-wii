@@ -15,9 +15,9 @@
 enum
 {
 	/* Connection-related messages */
-	HELLO              = 99, /* Hello, broker */
+	CONNECT_TO_BROKER  = 99, /* Hello, broker */
 	LIST_PEERS         = 98, /* List of peers */
-	PEER_CONNECT       = 97, /* A peer wants to connect */
+	CONNECT_TO_PEER    = 97, /* A peer wants to connect */
 	DISCONNECT         = 96, /* Disconnect from a peer */
 	PING               = 95, /* (broker) are you alive? */
 	ACK                = 94, /* Answer to broker */
@@ -34,8 +34,9 @@ enum
 	ENTER_MENU         = 8,
 };
 
-enum
+typedef enum
 {
+	CONNECTED,
 	CONNECT_TO_BROKER,
 	WAIT_FOR_PEER_ADDRESS,
 	CONNECT_TO_PEER,
@@ -43,7 +44,7 @@ enum
 
 	/* Client-only */
 	WAIT_FOR_PEER_LIST,
-};
+} network_connection_state_t;
 
 struct NetworkUpdate
 {
@@ -83,8 +84,10 @@ struct NetworkUpdatePeerInfo
 	uint16 private_port;
 	uint16 public_port;
 
-	uint8 private_ip[4]; /* Wii isn't ipv6 capable anyway AFAIK */
-	uint8 public_ip[4];
+	/* Encoded as hex numbers in a string - c0a80a02\0 -> 192.168.10.2.
+	 * Some more space to fit IPv6 stuff */
+	uint8 private_ip[16];
+	uint8 public_ip[16];
 
 	uint16 key;          /* Random value to separate same names */
 	uint16 is_master;
@@ -94,7 +97,7 @@ struct NetworkUpdatePeerInfo
 struct NetworkUpdateListPeers
 {
 	uint32 n_peers;
-	uint8  your_ip[4];
+	uint8  your_ip[16];
 	uint16 your_port;
 	uint8  d[2];         /* Pad to 4 bytes */
 
@@ -157,14 +160,12 @@ public:
 
 	static bool CheckNewConnection();
 
-	bool WaitForConnection();
-
-	bool ConnectToPeer();
-
 	Uint8 *GetScreen()
 	{
 		return this->screen;
 	}
+
+	bool Connect();
 
 	/**
 	 * Disconnect from the other end. You should delete the object
@@ -255,7 +256,10 @@ protected:
 
 	virtual bool Select(int sock, struct timeval *tv);
 
-	void MangleIp(uint8 *ip);
+	bool IpToStr(char *dst, uint8 *ip);
+
+	bool InitSockaddr (struct sockaddr_in *name,
+			const char *hostname, uint16_t port);
 
 	bool MarshalData(NetworkUpdate *ud);
 
@@ -264,6 +268,18 @@ protected:
 	bool DeMarshalAllData(NetworkUpdate *ud);
 
 	bool DeMarshalData(NetworkUpdate *ud);
+
+	bool ConnectToBroker();
+
+	bool ConnectToPeer();
+
+	bool WaitForPeerReply();
+
+	bool WaitForPeerList();
+
+	bool WaitForPeerAddress();
+
+	bool ConnectFSM();
 
 	NetworkUpdate *GetNext(NetworkUpdate *p)
 	{
@@ -292,7 +308,9 @@ protected:
 
 	/* Connection to the peer */
 	int sock;
-	struct sockaddr_in connection_addr; /* Points to either of the above */
+	struct sockaddr_in connection_addr;
+
+	network_connection_state_t network_connection_state;
 
 	/* Sound */
 	static uint8 sample_buf[NETWORK_SOUND_BUF_SIZE];
