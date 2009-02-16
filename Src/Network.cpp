@@ -76,7 +76,7 @@ Network::Network(const char *remote_host, int port, bool is_master)
 		fprintf(stderr, "Could not init the socket\n");
 		exit(1);
 	}
-	this->network_connection_state = CONNECT_TO_BROKER;
+	this->network_connection_state = CONN_CONNECT_TO_BROKER;
 }
 
 Network::~Network()
@@ -578,7 +578,7 @@ bool Network::MarshalData(NetworkUpdate *p)
 	case SOUND_UPDATE_RLE:
 	case JOYSTICK_UPDATE:
 	case DISCONNECT:
-	case PEER_CONNECT:
+	case CONNECT_TO_PEER:
 	case STOP:
 		break;
 	case LIST_PEERS:
@@ -645,7 +645,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	case SOUND_UPDATE_RLE:
 	case JOYSTICK_UPDATE:
 	case DISCONNECT:
-	case PEER_CONNECT:
+	case CONNECT_TO_PEER:
 	case STOP:
 		/* Nothing to do, just bytes */
 		break;
@@ -757,13 +757,13 @@ bool Network::IpToStr(char *dst, uint8 *ip_in)
 	for (int i = 0; i < 4; i++)
 	{
 		char tmp[3];
-		const char *endp;
+		char *endp;
 
 		tmp[0] = ip_in[i * 2];
 		tmp[1] = ip_in[i * 2 + 1];
 		tmp[2] = '\0';
 		ip[i] = strtoul(tmp, &endp, 16);
-		if (endp == tmp)
+		if (endp == (const char*)tmp)
 			return false;
 	}
 	sprintf(dst, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
@@ -782,7 +782,7 @@ bool Network::WaitForPeerAddress()
 	this->ResetNetworkUpdate();
 	if (this->ReceiveUpdate(&tv) == false)
 		return false;
-	if (ud->type != PEER_LIST)
+	if (ud->type != LIST_PEERS)
 		return false;
 
 	pi = (NetworkUpdateListPeers *)this->ud->data;
@@ -799,7 +799,7 @@ bool Network::WaitForPeerAddress()
 
 	/* Not sure what to do if this fails */
 	this->IpToStr(buf, pi->peers[0].public_ip);
-	return this->InitSockaddr(this->connection_addr, buf,
+	return this->InitSockaddr(&this->connection_addr, buf,
 			pi->peers[0].public_port);
 		
 }
@@ -816,14 +816,14 @@ bool Network::WaitForPeerList()
 	this->ResetNetworkUpdate();
 	if (this->ReceiveUpdate(&tv) == false)
 		return false;
-	if (ud->type != PEER_LIST)
+	if (ud->type != LIST_PEERS)
 		return false;
 
 	pi = (NetworkUpdateListPeers *)this->ud->data;
 	msgs = (const char**)calloc(pi->n_peers + 1, sizeof(const char*));
 
 	for (int i = 0; pi->n_peers; i++) {
-		msgs[i] = pi->peers[i].name;
+		msgs[i] = (const char*)pi->peers[i].name;
 	}
 	int sel = menu_select(msgs, NULL);
 	free(msgs);
@@ -836,7 +836,7 @@ bool Network::WaitForPeerList()
 
 	/* Not sure what to do if this fails */
 	this->IpToStr(buf, pi->peers[sel].public_ip);
-	return this->InitSockaddr(this->connection_addr, buf,
+	return this->InitSockaddr(&this->connection_addr, buf,
 			pi->peers[sel].public_port);
 		
 }
@@ -862,7 +862,8 @@ bool Network::WaitForPeerReply()
 bool Network::ConnectToPeer()
 {
 	NetworkUpdate *ud = InitNetworkUpdate(this->ud, CONNECT_TO_PEER,
-			sizeof(NetworkUpdate)); 
+			sizeof(NetworkUpdate));
+	bool out;
 
 	this->AddNetworkUpdate(ud);
 	out = this->SendUpdate();
@@ -895,42 +896,42 @@ bool Network::ConnectFSM()
 	 */
 	switch(this->network_connection_state)
 	{
-	case CONNECT_TO_BROKER:
+	case CONN_CONNECT_TO_BROKER:
 		if (this->ConnectToBroker() == true)
 		{
 			if (this->is_master)
-				this->network_connection_state = WAIT_FOR_PEER_ADDRESS;
+				this->network_connection_state = CONN_WAIT_FOR_PEER_ADDRESS;
 			else
-				this->network_connection_state = WAIT_FOR_PEER_LIST;
+				this->network_connection_state = CONN_WAIT_FOR_PEER_LIST;
 		}
 		break;
-	case WAIT_FOR_PEER_ADDRESS:
+	case CONN_WAIT_FOR_PEER_ADDRESS:
 		if (this->WaitForPeerAddress() == false)
 			return false;
-		this->network_connection_state = CONNECT_TO_PEER;
+		this->network_connection_state = CONN_CONNECT_TO_PEER;
 		break;
-	case WAIT_FOR_PEER_LIST:
+	case CONN_WAIT_FOR_PEER_LIST:
 		if (this->WaitForPeerList() == false)
 			return false;
-		this->network_connection_state = CONNECT_TO_PEER;
+		this->network_connection_state = CONN_CONNECT_TO_PEER;
 		break;
-	case CONNECT_TO_PEER:
+	case CONN_CONNECT_TO_PEER:
 		if (this->ConnectToPeer() == false)
 			return false;
 		/* Allow some transit time */
 		sleep(1);
-		this->network_connection_state = WAIT_FOR_PEER_REPLY;
+		this->network_connection_state = CONN_WAIT_FOR_PEER_REPLY;
 		break;
-	case WAIT_FOR_PEER_REPLY:
+	case CONN_WAIT_FOR_PEER_REPLY:
 		/* Connect again in case the first sent was dropped on
 		 * its way to the peer */
 		if (this->ConnectToPeer() == false)
 			return false;
 		if (this->WaitForPeerReply() == false)
 			return false;
-		this->network_connection_state = CONNECTED;
+		this->network_connection_state = CONN_CONNECTED;
 		break;
-	case CONNECTED:
+	case CONN_CONNECTED:
 	default:
 		return true;
 	}
@@ -942,13 +943,13 @@ bool Network::Connect()
 {
 	for (int i = 0; i < this->is_master ? 120 : 10; i++ )
 	{
-		if (this->network_connection_state == CONNECTED)
+		if (this->network_connection_state == CONN_CONNECTED)
 			return true;
 		/* Run the state machine */
 		this->ConnectFSM();
 	}
 
-	return false;a
+	return false;
 }
 
 void Network::Disconnect()

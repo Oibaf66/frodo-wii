@@ -12,7 +12,7 @@
 
 #define NETWORK_UPDATE_SIZE     (256 * 1024)
 #define NETWORK_SOUND_BUF_SIZE   1024
-enum
+typedef enum
 {
 	/* Connection-related messages */
 	CONNECT_TO_BROKER  = 99, /* Hello, broker */
@@ -32,18 +32,18 @@ enum
 	KEYBOARD_UPDATE    = 6,
 	JOYSTICK_UPDATE    = 7,
 	ENTER_MENU         = 8,
-};
+} network_message_type_t;
 
 typedef enum
 {
-	CONNECTED,
-	CONNECT_TO_BROKER,
-	WAIT_FOR_PEER_ADDRESS,
-	CONNECT_TO_PEER,
-	WAIT_FOR_PEER_REPLY,
+	CONN_CONNECTED,
+	CONN_CONNECT_TO_BROKER,
+	CONN_WAIT_FOR_PEER_ADDRESS,
+	CONN_CONNECT_TO_PEER,
+	CONN_WAIT_FOR_PEER_REPLY,
 
 	/* Client-only */
-	WAIT_FOR_PEER_LIST,
+	CONN_WAIT_FOR_PEER_LIST,
 } network_connection_state_t;
 
 struct NetworkUpdate

@@ -48,6 +48,11 @@ typedef struct
 #define IS_SUBMENU(p_msg) ( (p_msg)[0] == '^' )
 
 static TTF_Font *menu_font;
+#if defined(GEKKO)
+#define FONT_PATH "/apps/frodo/FreeMono.ttf"
+#else
+#define FONT_PATH "FreeMono.ttf"
+#endif
 
 static submenu_t *find_submenu(menu_t *p_menu, int index)
 {
@@ -81,7 +86,7 @@ void menu_print_font(SDL_Surface *screen, int r, int g, int b,
 		  buf[i] = ' ';
   }
 
-  font_surf = TTF_RenderText_Blended(font, buf,
+  font_surf = TTF_RenderText_Blended(menu_font, buf,
                                    color);
   if (!font_surf)
     {
@@ -117,10 +122,10 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu)
       int y = (i - p_menu->start_entry_visible) * line_height;
 
       if (p_menu->cur_sel == i) /* Selected - color */
-	menu_print_font(screen, p_menu->p_font, 255,255,0, x_start,
+	menu_print_font(screen, 255,255,0, x_start,
                    y_start + y, msg);
       else /* Otherwise white */
-	menu_print_font(screen, p_menu->p_font, 255,255,255, x_start,
+	menu_print_font(screen, 255,255,255, x_start,
                    y_start + y, msg);
       if (IS_SUBMENU(msg))
 	{
@@ -441,7 +446,7 @@ int menu_select(const char **msgs, int *submenus)
 	menu_t menu;
 	int out;
 
-	menu_init(&menu, font, msgs,
+	menu_init(&menu, menu_font, msgs,
 			32, 32, FULL_DISPLAY_X - FULL_DISPLAY_X / 4,
 			FULL_DISPLAY_Y - FULL_DISPLAY_Y / 4);
 	out = menu_select_internal(real_screen, &menu, submenus);

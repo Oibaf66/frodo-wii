@@ -78,7 +78,7 @@ bool Network::InitSocket(const char *remote_host, int port)
 	set_sock_opts(this->sock);
 
 	/* Connect to the server. */
-	init_sockaddr(&this->connection_addr, remote_host, port);
+	this->InitSockaddr(&this->connection_addr, remote_host, port);
 
 	if (this->is_master)
 	{

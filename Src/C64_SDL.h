@@ -13,12 +13,10 @@
 #if defined(GEKKO)
 #include <wiiuse/wpad.h>
 #include <ogc/lwp_watchdog.h>
-#define FONT_PATH "/apps/frodo/FreeMono.ttf"
 #define SAVES_PATH "/apps/frodo/saves"
 #define IMAGE_PATH "/apps/frodo/images"
 #define TMP_PATH "/apps/frodo/tmp"
 #else
-#define FONT_PATH "FreeMono.ttf"
 #define SAVES_PATH "saves"
 #define IMAGE_PATH "images"
 #define TMP_PATH "tmp"

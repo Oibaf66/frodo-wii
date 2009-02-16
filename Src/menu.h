@@ -29,8 +29,8 @@ extern "C" {
 #define KEY_PAGEDOWN  64
 #define KEY_PAGEUP   128
 
-void menu_print_font(SDL_Surface *screen, TTF_Font *font, int r, int g, int b,
-                       int x, int y, const char *msg);
+void menu_print_font(SDL_Surface *screen, int r, int g, int b,
+	                       int x, int y, const char *msg);
 
 int menu_select(const char **pp_msgs, int *p_submenus);
 
