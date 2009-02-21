@@ -187,6 +187,7 @@ private:
 public:
 	CmdPipe *gui;
 #elif defined(GEKKO)
+public:
 	void open_close_joystick(int port, int oldjoy, int newjoy);
 	double speed_index;
 #endif

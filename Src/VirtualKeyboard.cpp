@@ -117,7 +117,7 @@ void VirtualKeyboard::draw()
 					(this->shift_on && key.is_shift))
 				b = 0;
 
-			menu_print_font(this->screen, this->font, r, g, b,
+			menu_print_font(this->screen, r, g, b,
 					x * key_w + border_x, y * key_h + border_y,
 					what);
 		}
@@ -313,7 +313,7 @@ const char *VirtualKeyboard::get_string()
 
 		/* SDL_Flip is done in get_key_internal() */
 		SDL_FillRect(this->screen, 0, SDL_MapRGB(screen->format, 0x00, 0x80, 0x80));
-		menu_print_font(this->screen, this->font, 255, 255, 0,
+		menu_print_font(this->screen, 255, 255, 0,
 				40, screen->h - 50,
 				this->buf);
 	}

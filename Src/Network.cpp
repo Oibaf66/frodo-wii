@@ -395,9 +395,6 @@ size_t Network::EncodeSoundBuffer(struct NetworkUpdate *dst, Uint8 *buf, size_t 
 
 void Network::EncodeSound()
 {
-	NetworkUpdate *dst = (NetworkUpdate *)this->cur_ud;
-	int cnt = 0;
-
 	/* Nothing to encode? */
 	if (!this->is_master ||
 			Network::sample_head == Network::sample_tail)
@@ -561,7 +558,6 @@ bool Network::SendUpdate()
 
 void Network::AddNetworkUpdate(NetworkUpdate *update)
 {
-	size_t sz = update->size;
 	Uint8 *next = (Uint8*)this->cur_ud + update->size;
 
 	this->cur_ud = (NetworkUpdate*)next;
@@ -584,7 +580,7 @@ bool Network::MarshalData(NetworkUpdate *p)
 	case LIST_PEERS:
 	{
 		NetworkUpdateListPeers *lp = (NetworkUpdateListPeers *)p->data;
-		for (int i = 0; i < lp->n_peers; i++)
+		for (unsigned int i = 0; i < lp->n_peers; i++)
 		{
 			NetworkUpdatePeerInfo *peer = &lp->peers[i];
 
@@ -654,7 +650,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 		NetworkUpdateListPeers *lp = (NetworkUpdateListPeers *)p->data;
 
 		lp->n_peers = ntohl(lp->n_peers);
-		for (int i = 0; i < lp->n_peers; i++)
+		for (unsigned int i = 0; i < lp->n_peers; i++)
 		{
 			NetworkUpdatePeerInfo *peer = &lp->peers[i];
 
@@ -716,8 +712,6 @@ bool Network::DecodeUpdate(uint8 *screen, uint8 *js)
 			break;
 		case LIST_PEERS:
 		{
-			NetworkUpdateListPeers *lp = (NetworkUpdateListPeers *)p->data; 
-
 		} break;
 		case PING:
 			/* Send an ack */
@@ -844,7 +838,6 @@ bool Network::WaitForPeerList()
 bool Network::WaitForPeerReply()
 {
 	struct timeval tv;
-	const char **msgs;
 
 	tv.tv_sec = 3;
 	tv.tv_usec = 0;
@@ -966,7 +959,7 @@ uint8 Network::sample_buf[NETWORK_SOUND_BUF_SIZE];
 int Network::sample_head;
 int Network::sample_tail;
 
-#if defined(GEKKOd)
+#if defined(GEKKO)
 #include "NetworkWii.h"
 #else
 #include "NetworkUnix.h"

@@ -13,9 +13,7 @@ static int set_sock_opts(int sock)
 			&tv, sizeof(struct timeval));
 	net_setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO,
 			&tv, sizeof(struct timeval));
-	net_setsockopt(sock,SOL_SOCKET,SO_REUSEADDR, &d, sizeof(int));
-
-	return 0;
+	return net_setsockopt(sock,SOL_SOCKET,SO_REUSEADDR, &d, sizeof(int));
 }
 
 /* From glibc docs */
@@ -47,7 +45,7 @@ static int make_socket (uint16_t port)
 	return sock;
 }
 
-bool init_sockaddr (struct sockaddr_in *name,
+bool Network::InitSockaddr (struct sockaddr_in *name,
 		const char *hostname, uint16_t port)
 {
 	struct hostent *hostinfo;
@@ -60,101 +58,55 @@ bool init_sockaddr (struct sockaddr_in *name,
 		fprintf (stderr, "Unknown host %s.\n", hostname);
 		return false;
 	}
+#warning this need to be fixed
 	//name->sin_addr = *(struct in_addr *) hostinfo->h_addr;
 
 	return true;
 }
 
-
-bool Network::StartListener(int port)
+bool Network::InitSocket(const char *remote_host, int port)
 {
-	Network::listen_sock = make_socket(port);
-
-	if (Network::listen_sock < 0)
-		return false;
-	if (net_listen(Network::listen_sock, MAX_NETWORK_PEERS) < 0)
-	{
-		perror("listen");
-		return false;
-	}
-
-	return true;
-}
-
-bool Network::CheckNewConnection()
-{
-	struct timeval tv;
-	struct sockaddr_in peer_name;
-	size_t size;
-	int peer_sock;
-	fd_set listen_fds;
-	Network *peer;
-
-	/* Not initialized yet */
-	if (Network::listen_sock <= 0)
-		return false;
-
-	/* No more than that thanks... */
-	if (Network::n_peers >= MAX_NETWORK_PEERS)
-		return false;
-
-	FD_ZERO(&listen_fds);
-	FD_SET(Network::listen_sock, &listen_fds);
-
-	/* If something connects, create a new client */
-	memset(&tv, 0, sizeof(tv));
-	int v = net_select(Network::listen_sock + 1, &listen_fds, NULL, NULL, &tv);
-
-	if ( v < 0)
-	{
-		perror("select");
-		exit(1);
-	}
-	else if ( v == 0 )
-		return false;
-
-	size = sizeof(peer_name);
-	peer_sock = net_accept(Network::listen_sock, (struct sockaddr*)&peer_name, &size);
-	if (peer_sock < 0)
-	{
-		fprintf(stderr, "Accepting peer failed\n");
-		return false;
-	}
-
-	/* And add the new one! */
-	Network::AddPeer(new Network(peer_sock, true));
-
-	return true;
-}
-
-bool Network::ConnectTo(const char *hostname, int port)
-{
-	/* Again from glibc docs */
-	struct sockaddr_in servername;
-	int sock;
-
 	/* Create the socket. */
-	sock = net_socket (PF_INET, SOCK_STREAM, 0);
-	if (sock < 0)
+	this->sock = net_socket (PF_INET, SOCK_DGRAM, 0);
+	if (this->sock < 0)
 	{
 		perror ("socket (client)");
 		return false;
 	}
 
-	set_sock_opts(sock);
+	set_sock_opts(this->sock);
 
 	/* Connect to the server. */
-	init_sockaddr (&servername, hostname, port);
-	if (net_connect(sock, (struct sockaddr *) &servername,
-			sizeof (servername)) != 0)
+	this->InitSockaddr(&this->connection_addr, remote_host, port);
+
+	if (this->is_master)
 	{
-		perror ("connect (client)");
-		return false;
+		if (net_bind(this->sock, (struct sockaddr *)&this->connection_addr,
+				sizeof (this->connection_addr)) < 0)
+		{
+			perror ("bind");
+			return false;
+		}
 	}
 
-	Network::AddPeer( new Network(sock, false) );
-
 	return true;
+}
+
+bool Network::ReceiveData(void *dst, int sock, size_t sz)
+{
+	size_t received_sz = 0;
+
+	while (received_sz < sz)
+	{
+		int v = net_read(sock, dst, sz);
+
+		if (v < 0)
+			return false;
+		received_sz += v; 
+	}
+	this->traffic += received_sz;
+
+	return sz > 0;
 }
 
 ssize_t Network::ReceiveFrom(void *dst, int sock, size_t sz,
@@ -171,6 +123,22 @@ ssize_t Network::SendTo(void *src, int sock, size_t sz, struct sockaddr_in *to)
 
 	assert(to);
 	return net_sendto(sock, src, sz, 0, (struct sockaddr*)to, to_sz);
+}
+
+bool Network::SendData(void *src, int sock, size_t sz)
+{
+	size_t sent_sz = 0;
+	
+	while (sent_sz < sz)
+	{
+		int v = net_write(sock, (void*)src, sz);
+
+		if (v < 0)
+			return false;
+		sent_sz += v;
+	}
+
+	return true;
 }
 
 bool Network::Select(int sock, struct timeval *tv)

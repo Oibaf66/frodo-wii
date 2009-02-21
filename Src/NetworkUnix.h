@@ -15,7 +15,7 @@ static int set_sock_opts(int sock)
 			&tv, sizeof(struct timeval));
 	setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO,
 			&tv, sizeof(struct timeval));
-	setsockopt(sock,SOL_SOCKET,SO_REUSEADDR, &d, sizeof(int));
+	return setsockopt(sock,SOL_SOCKET,SO_REUSEADDR, &d, sizeof(int));
 }
 
 /* From glibc docs */
