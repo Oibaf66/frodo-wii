@@ -627,6 +627,9 @@ uint8 C64::poll_joystick(int port)
 	if (wpad->exp.type == WPAD_EXP_CLASSIC)
 		held_classic = wpad->exp.classic.btns_held; 
 
+        if ( (held & WPAD_BUTTON_HOME) || (held_classic & CLASSIC_CTRL_BUTTON_HOME) )
+                TheC64->enter_menu();
+
 	extra_keys[WIIMOTE_UP] = held & WPAD_BUTTON_UP;
 	extra_keys[WIIMOTE_DOWN] = held & WPAD_BUTTON_DOWN;
 	extra_keys[WIIMOTE_LEFT] = held & WPAD_BUTTON_LEFT;
@@ -657,10 +660,29 @@ uint8 C64::poll_joystick(int port)
 	extra_keys[WIIMOTE_MINUS] = (held_classic & CLASSIC_CTRL_BUTTON_PLUS) |
 		held & WPAD_BUTTON_MINUS;
 
+	/* Merge common keys */
+	int active_binded_keys[N_WIIMOTE_BINDINGS];
+	memcpy(active_binded_keys, ThePrefs.JoystickKeyBinding, sizeof(active_binded_keys));
+	for (int first = 0; first <= N_WIIMOTE_BINDINGS; first++)
+	{
+		if (!extra_keys[first])
+			continue;
+		for (int second = 0; second <= N_WIIMOTE_BINDINGS; second++)
+		{
+			if (first != second &&
+				active_binded_keys[first] ==
+				active_binded_keys[second]) {
+				/* Unbind this */
+				extra_keys[second] = 0;
+				active_binded_keys[second] = -1;
+			}
+		}
+	}
+
 	for (int i = 0; i < N_WIIMOTE_BINDINGS; i++)
 	{
 		static bool is_pressed[2][N_WIIMOTE_BINDINGS];
-		int kc = ThePrefs.JoystickKeyBinding[i];
+		int kc = active_binded_keys[i];
 
 		if ( kc >= 0)
 		{

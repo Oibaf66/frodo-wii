@@ -6,6 +6,9 @@
 		TODO: Crash on + in "Other" menu
 
 version 7:
+		* Fix bug when multiple buttons are bound to the same keys, we now
+		  simply skip one of the bindings.
+
 		* Wiimote direction keys and "fire" can now be bound to keyboard
 		  keys
 

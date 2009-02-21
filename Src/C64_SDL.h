@@ -249,10 +249,11 @@ void C64::select_disc(Prefs *np)
 
 char *C64::bind_one_key(Prefs *np, int which)
 {
-	static const char *which_to_button_name[] = { "up", "down", "left", "right",
-			"fire","A", "B", "+", "-", "1",
-			"classic up", "classic down", "classic left", "classic right", "classic fire",
-			"classic X", "classic Y", "classic B", "classic L",
+	static const char *which_to_button_name[N_WIIMOTE_BINDINGS] = {
+			"up", "down", "left", "right",
+			"2","A", "B", "+", "-", "1",
+			"classic up", "classic down", "classic left", "classic right", "classic a",
+			"classic X", "classic Y", "classic b", "classic L",
 			"classic R", "classic ZR", "classic ZL" };
 	static char strs[N_WIIMOTE_BINDINGS][255];
 	char *out = strs[which];
