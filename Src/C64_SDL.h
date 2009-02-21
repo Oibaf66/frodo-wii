@@ -251,9 +251,9 @@ char *C64::bind_one_key(Prefs *np, int which)
 {
 	static const char *which_to_button_name[N_WIIMOTE_BINDINGS] = {
 			"up", "down", "left", "right",
-			"2","A", "B", "+", "-", "1",
+			"2", "1", "A", "B", "+", "-",
 			"classic up", "classic down", "classic left", "classic right", "classic a",
-			"classic X", "classic Y", "classic b", "classic L",
+			"classic b", "classic X", "classic Y", "classic L",
 			"classic R", "classic ZR", "classic ZL" };
 	static char strs[N_WIIMOTE_BINDINGS][255];
 	char *out = strs[which];

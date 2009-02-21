@@ -630,10 +630,10 @@ uint8 C64::poll_joystick(int port)
         if ( (held & WPAD_BUTTON_HOME) || (held_classic & CLASSIC_CTRL_BUTTON_HOME) )
                 TheC64->enter_menu();
 
-	extra_keys[WIIMOTE_UP] = held & WPAD_BUTTON_UP;
-	extra_keys[WIIMOTE_DOWN] = held & WPAD_BUTTON_DOWN;
-	extra_keys[WIIMOTE_LEFT] = held & WPAD_BUTTON_LEFT;
-	extra_keys[WIIMOTE_RIGHT] = held & WPAD_BUTTON_RIGHT;
+	extra_keys[WIIMOTE_UP] = held & WPAD_BUTTON_RIGHT;
+	extra_keys[WIIMOTE_DOWN] = held & WPAD_BUTTON_LEFT;
+	extra_keys[WIIMOTE_LEFT] = held & WPAD_BUTTON_UP;
+	extra_keys[WIIMOTE_RIGHT] = held & WPAD_BUTTON_DOWN;
 
 	extra_keys[WIIMOTE_A] = held & WPAD_BUTTON_A;
 	extra_keys[WIIMOTE_B] = held & WPAD_BUTTON_B;
