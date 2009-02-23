@@ -17,7 +17,7 @@ version 7:
 
 		* Simplify menu code even more
 
-        -- Simon Kagstrom <simon.kagstrom@gmail.com>,
+        -- Simon Kagstrom <simon.kagstrom@gmail.com>, Mon Feb 23 19:30:09 CET 2009
 
 version 6:
         * Handle reset button (back to menu)
