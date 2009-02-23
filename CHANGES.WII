@@ -6,6 +6,8 @@
 		TODO: Crash on + in "Other" menu
 
 version 7:
+		* Exit with SYS_RETURNTOMENU to make WAD's work
+
 		* Fix bug when multiple buttons are bound to the same keys, we now
 		  simply skip one of the bindings.
 
