@@ -580,7 +580,7 @@ bool Network::MarshalData(NetworkUpdate *p)
 	case SELECT_PEER:
 	{
 		NetworkUpdateSelectPeer *sp = (NetworkUpdateSelectPeer *)p->data;
-		sp->server_id = htons(sp->server_id);
+		sp->server_id = htonl(sp->server_id);
 	} break;
 	case LIST_PEERS:
 	{
@@ -862,7 +862,6 @@ bool Network::WaitForPeerList()
 	uint16 port = pi->peers[sel].public_port;
 
 	/* Not sure what to do if this fails */
-	printf("Hej: %s:%d\n", pi->peers[sel].public_ip, pi->peers[sel].public_port);
 	this->IpToStr(buf, pi->peers[sel].public_ip);
 
 	/* Finally tell the broker who we selected */

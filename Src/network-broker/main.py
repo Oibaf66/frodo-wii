@@ -53,7 +53,7 @@ class SelectPeerPacket(Packet):
     def demarshal_from_data(self, data):
         """Create a new packet from raw data."""
         Packet.demarshal_from_data(self, data)
-        self.server_id = struct.unpack_from(">L", data, offset = 8)[0]
+        self.server_id = struct.unpack_from("<L", data, offset = 8)[0]
 
     def get_id(self):
         return self.server_id
@@ -145,7 +145,6 @@ class Peer:
                 lp = ListPeersPacket()
 
                 for peer in self.srv.peers.itervalues():
-                    print "A Peer"
                     if peer != self and peer.is_master:
                         lp.add_peer(peer)
                 # And send the packet to this peer
@@ -201,7 +200,6 @@ class BrokerPacketHandler(SocketServer.DatagramRequestHandler):
 
         try:
             peer.handle_packet(pkt)
-            print peer
         except Exception, e:
             # Sends crap, let's remove it
             print "Handling packet failed, removing peer:", e
