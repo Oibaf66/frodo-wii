@@ -6,6 +6,8 @@
 		TODO: Crash on + in "Other" menu
 
 version 8:
+		* Correct binding of shifted keys (thanks to Bob Forgan)
+
 		* Fix binding keys without the classic controller (plus etc were missing)
 
         -- Simon Kagstrom <simon.kagstrom@gmail.com>

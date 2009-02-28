@@ -260,7 +260,7 @@ int VirtualKeyboard::get_key()
 	if (key == NULL)
 		return -2;
 
-	if (key->is_shift)
+	if (this->shift_on)
 		return key->kc | 0x80;
 	return key->kc;
 }
