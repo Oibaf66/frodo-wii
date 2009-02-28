@@ -808,7 +808,6 @@ bool Network::WaitForPeerAddress()
 	char buf[128];
 
 	/* Not sure what to do if this fails */
-	printf("Fläsk: %s:%d\n", pi->peers[0].public_ip, pi->peers[0].public_port);
 	this->IpToStr(buf, pi->peers[0].public_ip);
 	return this->InitSockaddr(&this->connection_addr, buf,
 			pi->peers[0].public_port);
@@ -902,7 +901,6 @@ bool Network::ConnectToPeer()
 
 bool Network::ConnectFSM()
 {
-	printf("Konnect: %d\n", this->network_connection_state);
 	/* See http://www.brynosaurus.com/pub/net/p2pnat/ for how this works.
 	 *
 	 * For the server ("master"):

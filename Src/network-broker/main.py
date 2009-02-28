@@ -130,8 +130,6 @@ class Peer:
     def addr_to_ip_and_port(self, addr):
         ip = struct.unpack("@L", socket.inet_pton(socket.AF_INET, addr[0]))[0]
         port = addr[1]
-
-        print ip, port
         return "%08x" % (ip), port
 
     def handle_packet(self, pkt):
