@@ -5,6 +5,11 @@
 
 		TODO: Crash on + in "Other" menu
 
+version 8:
+		* Fix binding keys without the classic controller (plus etc were missing)
+
+        -- Simon Kagstrom <simon.kagstrom@gmail.com>
+
 version 7:
 		* Exit with SYS_RETURNTOMENU to make WAD's work
 
