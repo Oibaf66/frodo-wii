@@ -19,6 +19,7 @@ typedef enum
 	LIST_PEERS         = 98, /* List of peers */
 	CONNECT_TO_PEER    = 97, /* A peer wants to connect */
 	DISCONNECT         = 96, /* Disconnect from a peer */
+	SELECT_PEER        = 93, /* (client) Select who to connect to */
 	PING               = 95, /* (broker) are you alive? */
 	ACK                = 94, /* Answer to broker */
 	/* Non-data messages */
@@ -40,6 +41,7 @@ typedef enum
 	CONN_CONNECT_TO_BROKER,
 	CONN_WAIT_FOR_PEER_ADDRESS,
 	CONN_CONNECT_TO_PEER,
+	CONN_SELECT_PEER,
 	CONN_WAIT_FOR_PEER_REPLY,
 
 	/* Client-only */
@@ -67,6 +69,12 @@ struct NetworkUpdateJoystick
 	uint8 val;
 };
 
+
+struct NetworkUpdateSelectPeer
+{
+	uint32 server_id;
+};
+
 struct NetworkUpdatePingAck
 {
 	uint8 seq;
@@ -92,6 +100,7 @@ struct NetworkUpdatePeerInfo
 	uint16 key;          /* Random value to separate same names */
 	uint16 is_master;
 	uint8 name[32];      /* "SIMON", "LINDA" etc */
+	uint32 server_id;    /* Used by the server */
 };
 
 struct NetworkUpdateListPeers
@@ -278,6 +287,8 @@ protected:
 	bool WaitForPeerList();
 
 	bool WaitForPeerAddress();
+
+	bool SelectPeer(uint32 id);
 
 	bool ConnectFSM();
 

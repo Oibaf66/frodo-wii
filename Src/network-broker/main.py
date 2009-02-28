@@ -4,41 +4,28 @@ import struct
 
 FRODO_NETWORK_MAGIC = 0x1976
 
-HELLO = 99
-LIST_PEERS = 98
-PEER_CONNECT = 97
-DISCONNECT = 96
-PING = 95
-ACK  = 94
-STOP = 55
-
-# Some of the Frodo network packets. There are more packets, but these
-# are not interesting to the broker (and shouldn't be sent there either!)
-packet_class_by_type = {
-    HELLO        : HelloPacket,
-    LIST_PEERS   : ListPeersPacket,
-    PEER_CONNECT : ListPeersPacket,
-    DISCONNECT   : DisconnectPacket,
-
-    PING         : PingPacket,
-    ACK          : PingPacket, # Ping and ack are the same
-
-    STOP         : StopPacket,
-}
+CONNECT_TO_BROKER  = 99 # Hello, broker
+LIST_PEERS         = 98 # List of peers
+CONNECT_TO_PEER    = 97 # A peer wants to connect
+SELECT_PEER        = 93 # The client selects who to connect to
+DISCONNECT         = 96 # Disconnect from a peer
+PING               = 95 # (broker) are you alive?
+ACK                = 94 # Answer to broker
+STOP               = 55 # No more packets
 
 class Packet:
-    def __init__(self, data):
+    def __init__(self):
+        """Create a new packet"""
+        self.magic = FRODO_NETWORK_MAGIC
+        self.type = 0
+        self.size = 8
+
+    def demarshal_from_data(self, data):
         """Create a new packet from raw data. Data should always be in network
 byte order"""
-        self.magic = struct.unpack(">H", data, offset = 0)[0]
-        self.type = struct.unpack(">H", data, offset = 2)[0]
-        self.size = struct.unpack(">L", data, offset = 4)[0]
-
-    def __init__(self, magic, type, size):
-        """Create a new packet"""
-        self.magic = magic
-        self.type = type
-        self.size = size
+        self.magic = struct.unpack_from(">H", data, offset = 0)[0]
+        self.type = struct.unpack_from(">H", data, offset = 2)[0]
+        self.size = struct.unpack_from(">L", data, offset = 4)[0]
 
     def get_magic(self):
         return self.magic
@@ -52,71 +39,45 @@ byte order"""
     def marshal(self):
         return struct.pack(">HHL", self.magic, self.type, self.size)
 
-class PingPacket(Packet):
-    def __init__(self, seq):
-        Packet.__init__(self, FRODO_NETWORK_MAGIC, TYPE_PING, 9)
-        self.seq = seq
+class StopPacket(Packet):
+    def __init__(self):
+        Packet.__init__(self)
+        self.type = STOP
 
-    def get_seq(self):
-        return self.seq
+class SelectPeerPacket(Packet):
+    def __init__(self):
+        Packet.__init__(self)
+        self.type = SELECT_PEER
+        self.server_id = 0
 
-    def marshal(self):
-        return Packet.marshal(self) + struct.pack(">B", self.seq)
+    def demarshal_from_data(self, data):
+        """Create a new packet from raw data."""
+        Packet.demarshal_from_data(self, data)
+        self.server_id = struct.unpack_from(">L", data, offset = 8)[0]
 
-class PeerInfo:
-    def __init__(self, data):
-        self.private_port = int(struct.unpack(">H", data, offset = 0)[0])
-        self.public_port = int(struct.unpack(">H", data, offset = 2)[0])
-        self.private_ip = self.mangle_ip(struct.unpack(">BBBB", data, offset = 4))
-        self.public_ip = self.mangle_ip(struct.unpack(">BBBB", data, offset = 8))
-        self.key = int(struct.unpack(">H", data, offset = 12)[0])
-        self.is_master = int(struct.unpack(">H", data, offset = 16)[0])
-        self.name = struct.unpack("32s", data, offset = 20)
-        self.name[31] = 0
+    def get_id(self):
+        return self.server_id
 
-    def set_public_address(ip, port):
-        self.public_ip = ip
-        self.public_port = port
 
-    def mangle_ip(self, ip):
-        ip[0] = ~int(ip[0])
-        ip[1] = ~int(ip[1])
-        ip[2] = ~int(ip[2])
-        ip[3] = ~int(ip[3])
+class ConnectToBrokerPacket(Packet):
 
-    def marshal(self):
-        priv_ip = self.mangle_ip(self.private_ip)
-        pub_ip = self.mangle_ip(self.public_ip)
-        return struct.pack(">HH4B4BHH32s",
-                           self.private_port, self.public_port, priv_ip, pub_ip,
-                           self.key, self.is_master, self.name)
-
-class HelloPacket(Packet):
-    def __init__(self, data):
-        Packet.__init__(self, data)
-
-        self.peer_info = PeerInfo(data[8:])
-
-    def marshal(self):
-        return Packet.marshal(self) + self.peer_info.marshal()
-
-class Peer:
-    def __init__(self, key, srv):
-        self.hash_key = key
-        self.srv = srv
-
-        self.private_ip = [0,0,0,0]
-        self.public_ip = [0,0,0,0]
+    def __init__(self):
+        self.key = 0
+        self._is_master = 0
         self.private_port = 0
         self.public_port = 0
-
+        self.private_ip = ""
+        self.public_ip = ""
+        self.type = CONNECT_TO_BROKER
         self.name = ""
-        self.key = 0
+        self.serverid = 0
 
-        self.initialized = False
+    def demarshal_from_data(self, data):
+        Packet.demarshal_from_data(self, data)
 
-    def get_hash_key(self):
-        return self.hash_key
+        self.key = struct.unpack_from(">H", data, offset = 44)[0]
+        self._is_master = struct.unpack_from(">H", data, offset = 46)[0]
+        self.name = struct.unpack_from(">32s", data, offset = 48)[0]
 
     def get_key(self):
         return self.key
@@ -124,47 +85,126 @@ class Peer:
     def get_name(self):
         return self.name
 
-    def send_data(self, data):
-        self.srv.send_data( self.get_hash_key(), data)
+    def is_master(self):
+        return self._is_master
 
-    def handle_packet(self, data, addr):
-        raw = Packet(data)
-        pkg_cls = packet_class_by_type[raw.get_type()]
-        pkg = pkg_cls(data)
+class ListPeersPacket(Packet):
+    def __init__(self):
+        Packet.__init__(self)
+        self.n_peers = 0
+        self.peers = []
+        self.type = LIST_PEERS
+        self.size = self.size + 24
 
-        if pkg.type == ACK:
-            pass
-        elif pkg.type == HELLO:
-            # take the public ID from the source of this message
-            ip = socket.gethostbyname(addr[0]).split('.')
-            port = addr[1]
-            ip = [int(ip[0]), int(ip[1]), int(ip[2]), int(ip[3])]
+    def add_peer(self, peer):
+        self.peers.append(peer)
+        self.n_peers = self.n_peers + 1
+        self.size = self.size + 76
 
-            self.private_ip = pkg.private_ip
-            self.private_port = pkg.private_port
-            self.public_ip = ip
-            self.public_port = port
+    def marshal(self):
+        out = struct.pack(">L16sHxx", self.n_peers, "", 0)
 
-            self.key = pkg.key
-            self.name = pkg.name
+        for peer in self.peers:
+            out = out + struct.pack(">HH16s16sHH32sL",
+                                    0, peer.public_port, "",
+                                    peer.public_ip, peer.key,
+                                    peer.is_master, peer.name,
+                                    peer.id)
 
-            self.initialized = True
-        elif pkg.type == PEER_CONNECT:
-            other = src.get_peer_by_name_key(pkg.name, pkg.key)
-            other.send_data( self.marshal() )
-            self.send_data( other.marshal() )
-        return None
+        return Packet.marshal(self) + out
+
+
+
+class Peer:
+    def __init__(self, addr, srv, id):
+        self.srv = srv
+
+        self.addr = addr
+        self.public_ip, self.public_port = self.addr_to_ip_and_port(addr)
+        # These will be set by the CONNECT_TO_BROKER packet below
+        self.key = 0
+        self.name = ""
+        self.is_master = 0
+        self.id = id
+
+    def addr_to_ip_and_port(self, addr):
+        ip = struct.unpack("@L", socket.inet_pton(socket.AF_INET, addr[0]))[0]
+        port = addr[1]
+
+        print ip, port
+        return "%08x" % (ip), port
+
+    def handle_packet(self, pkt):
+        if pkt.type == CONNECT_TO_BROKER:
+            self.key = pkt.get_key()
+            self.name = pkt.get_name()
+            self.is_master = pkt.is_master()
+
+            # Send list of peers if this is not a master
+            if not self.is_master:
+                lp = ListPeersPacket()
+
+                for peer in self.srv.peers.itervalues():
+                    print "A Peer"
+                    if peer != self and peer.is_master:
+                        lp.add_peer(peer)
+                # And send the packet to this peer
+                self.send_packet(lp.marshal())
+
+        if pkt.type == SELECT_PEER:
+            peer = self.srv.get_peer_by_id( pkt.get_id() )
+
+            # Tell the peer that we have connected
+            lp = ListPeersPacket()
+            lp.add_peer(self)
+            peer.send_packet( lp.marshal() )
+
+            # These two are no longer needed
+            self.srv.remove_peer(peer)
+            self.srv.remove_peer(self)
+
+    def send_packet(self, data):
+        self.srv.socket.sendto(data + StopPacket().marshal(),
+                               0, self.addr)
+
+    def __str__(self):
+        return '%s:%d "%s" %d %d' % (self.public_ip, self.public_port,
+                             self.name, self.key, self.is_master)
 
 class BrokerPacketHandler(SocketServer.DatagramRequestHandler):
+    def get_packet_from_data(self, data):
+        magic = struct.unpack_from(">H", data, offset = 0)[0]
+        type = struct.unpack_from(">H", data, offset = 2)[0]
+
+        if magic != FRODO_NETWORK_MAGIC:
+            raise Exception("Packet magic does not match: %4x vs %4x\n" % (magic,
+                                                                           FRODO_NETWORK_MAGIC) )
+        try:
+            out = packet_class_by_type[type]()
+            out.demarshal_from_data(data)
+            return out
+        except KeyError, e:
+            raise Exception("Unknown packet type %d" % (type))
+
     def handle(self):
         srv = self.server
-        msg = self.rfile.read()
+        data = self.rfile.read()
 
-        peer = srv.get_peer(self.client_addr)
+        print "Got packet from", self.client_address
         try:
-            peer.handle_packet()
-        except:
+            pkt = self.get_packet_from_data(data)
+        except Exception, e:
+            print "Broken packet: ", e
+            return
+
+        peer = srv.get_peer(self.client_address)
+
+        try:
+            peer.handle_packet(pkt)
+            print peer
+        except Exception, e:
             # Sends crap, let's remove it
+            print "Handling packet failed, removing peer:", e
             srv.remove_peer(peer)
 
 class Broker(SocketServer.UDPServer):
@@ -174,6 +214,8 @@ class Broker(SocketServer.UDPServer):
         # Instead of setsockopt( ... REUSEADDR ... )
         self.allow_reuse_address = True
         self.peers = {}
+        self.peers_by_id = {}
+        self.id = 0
 
     def send_data(self, dst, data):
         self.socket.sendto(data, dst)
@@ -183,8 +225,14 @@ class Broker(SocketServer.UDPServer):
         try:
             peer = self.peers[key]
         except KeyError, e:
-            peer = Peer(key, self)
+            peer = Peer(key, self, self.id)
+            self.peers[key] = peer
+            self.peers_by_id[self.id] = peer
+            self.id = self.id + 1
         return peer
+
+    def get_peer_by_id(self, id):
+        return self.peers_by_id[id]
 
     def get_peer_by_name_key(self, name, key):
         for k,v in self.peers.iteritems():
@@ -193,7 +241,15 @@ class Broker(SocketServer.UDPServer):
         return None
 
     def remove_peer(self, peer):
-        del self.peers[ peer.get_hash_key() ]
+        del self.peers[ peer.addr ]
+        del self.peers_by_id[ peer.id ]
+
+# Some of the Frodo network packets. There are more packets, but these
+# are not interesting to the broker (and shouldn't be sent there either!)
+packet_class_by_type = {
+    CONNECT_TO_BROKER : ConnectToBrokerPacket,
+    SELECT_PEER : SelectPeerPacket,
+}
 
 if __name__ == "__main__":
     print "Starting Frodo network broker"

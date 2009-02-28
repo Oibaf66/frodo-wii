@@ -517,7 +517,7 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
 
 	/* Receive the header */
 	actual_sz = this->ReceiveFrom(pp, this->sock,
-			sz_left, &this->connection_addr);
+			sz_left, NULL);
 	if (actual_sz < 0)
 		return false;
 
@@ -577,6 +577,11 @@ bool Network::MarshalData(NetworkUpdate *p)
 	case CONNECT_TO_PEER:
 	case STOP:
 		break;
+	case SELECT_PEER:
+	{
+		NetworkUpdateSelectPeer *sp = (NetworkUpdateSelectPeer *)p->data;
+		sp->server_id = htons(sp->server_id);
+	} break;
 	case LIST_PEERS:
 	{
 		NetworkUpdateListPeers *lp = (NetworkUpdateListPeers *)p->data;
@@ -592,10 +597,19 @@ bool Network::MarshalData(NetworkUpdate *p)
 		lp->n_peers = htonl(lp->n_peers);
 		lp->your_port = htons(lp->your_port);
 	} break;
+	case CONNECT_TO_BROKER:
+	{
+		NetworkUpdatePeerInfo *pi = (NetworkUpdatePeerInfo *)p->data;
+
+		/* The rest is simply ignored */
+		pi->is_master = htons(pi->is_master);
+		pi->key = htons(pi->key);
+	} break;
 	default:
 		/* Unknown data... */
 		fprintf(stderr, "Got unknown data %d while marshalling. Something is wrong\n",
 				p->type);
+		exit(0); // FIXME! TMP!!
 		return false;
 	}
 
@@ -663,6 +677,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	} break;
 	default:
 		/* Unknown data... */
+		printf("Got unknown data: %d\n", p->type);
 		return false;
 	}
 
@@ -737,7 +752,8 @@ bool Network::ConnectToBroker()
 	bool out;
 
 	pi->is_master = this->is_master;
-	pi->key = 5;
+	pi->key = random() % 0xffff;
+	strcpy((char*)pi->name, "Mr vobb");
 	this->AddNetworkUpdate(ud);
 	out = this->SendUpdate();
 	this->ResetNetworkUpdate();
@@ -760,7 +776,7 @@ bool Network::IpToStr(char *dst, uint8 *ip_in)
 		if (endp == (const char*)tmp)
 			return false;
 	}
-	sprintf(dst, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+	sprintf(dst, "%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
 
 	return true;
 }
@@ -792,10 +808,26 @@ bool Network::WaitForPeerAddress()
 	char buf[128];
 
 	/* Not sure what to do if this fails */
+	printf("Fläsk: %s:%d\n", pi->peers[0].public_ip, pi->peers[0].public_port);
 	this->IpToStr(buf, pi->peers[0].public_ip);
 	return this->InitSockaddr(&this->connection_addr, buf,
 			pi->peers[0].public_port);
 		
+}
+
+bool Network::SelectPeer(uint32 id)
+{
+	NetworkUpdate *ud = InitNetworkUpdate(this->ud, SELECT_PEER,
+			sizeof(NetworkUpdate) + sizeof(NetworkUpdateSelectPeer));
+	NetworkUpdateSelectPeer *p = (NetworkUpdateSelectPeer*)ud->data;
+	bool out;
+
+	p->server_id = id;
+	this->AddNetworkUpdate(ud);
+	out = this->SendUpdate();
+	this->ResetNetworkUpdate();
+
+	return out;		
 }
 
 bool Network::WaitForPeerList()
@@ -816,7 +848,7 @@ bool Network::WaitForPeerList()
 	pi = (NetworkUpdateListPeers *)this->ud->data;
 	msgs = (const char**)calloc(pi->n_peers + 1, sizeof(const char*));
 
-	for (int i = 0; pi->n_peers; i++) {
+	for (int i = 0; i < pi->n_peers; i++) {
 		msgs[i] = (const char*)pi->peers[i].name;
 	}
 	int sel = menu_select(msgs, NULL);
@@ -827,12 +859,16 @@ bool Network::WaitForPeerList()
 		return false;
 	/* Setup the peer info */
 	char buf[128];
+	uint16 port = pi->peers[sel].public_port;
 
 	/* Not sure what to do if this fails */
+	printf("Hej: %s:%d\n", pi->peers[sel].public_ip, pi->peers[sel].public_port);
 	this->IpToStr(buf, pi->peers[sel].public_ip);
+
+	/* Finally tell the broker who we selected */
+	this->SelectPeer(pi->peers[sel].server_id);
 	return this->InitSockaddr(&this->connection_addr, buf,
-			pi->peers[sel].public_port);
-		
+			port);
 }
 
 bool Network::WaitForPeerReply()
@@ -867,6 +903,7 @@ bool Network::ConnectToPeer()
 
 bool Network::ConnectFSM()
 {
+	printf("Konnect: %d\n", this->network_connection_state);
 	/* See http://www.brynosaurus.com/pub/net/p2pnat/ for how this works.
 	 *
 	 * For the server ("master"):
@@ -904,6 +941,7 @@ bool Network::ConnectFSM()
 		this->network_connection_state = CONN_CONNECT_TO_PEER;
 		break;
 	case CONN_WAIT_FOR_PEER_LIST:
+		/* Also tells the broker that we want to connect */
 		if (this->WaitForPeerList() == false)
 			return false;
 		this->network_connection_state = CONN_CONNECT_TO_PEER;

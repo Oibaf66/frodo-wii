@@ -80,16 +80,6 @@ bool Network::InitSocket(const char *remote_host, int port)
 	/* Connect to the server. */
 	this->InitSockaddr(&this->connection_addr, remote_host, port);
 
-	if (this->is_master)
-	{
-		if (bind(this->sock, (struct sockaddr *)&this->connection_addr,
-				sizeof (this->connection_addr)) < 0)
-		{
-			perror ("bind");
-			return false;
-		}
-	}
-
 	return true;
 }
 

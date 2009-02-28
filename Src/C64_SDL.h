@@ -74,7 +74,7 @@ void C64::c64_ctor1(void)
 
 	strncpy(this->server_hostname, "localhost",
 			sizeof(this->server_hostname));
-	this->server_port = 19760;
+	this->server_port = 46214;
 	this->network_connection_type = NONE;
 	this->peer = NULL;
 
@@ -97,6 +97,7 @@ void C64::c64_ctor1(void)
 	}
 	if (fixme_tmp_network_client)
 	{
+		printf("Nu blir det åka av!\n");
 		strcpy(this->server_hostname, fixme_tmp_network_client);
 		this->peer = new Network(this->server_hostname, this->server_port, false);
 		this->network_connection_type = CLIENT;
