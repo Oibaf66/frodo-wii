@@ -970,8 +970,29 @@ bool Network::ConnectFSM()
 
 bool Network::Connect()
 {
-	for (int i = 0; i < this->is_master ? 120 : 10; i++ )
+	while (1)
 	{
+		SDL_FillRect(real_screen, 0, SDL_MapRGB(real_screen->format,
+				0x00, 0x80, 0x80));
+		menu_print_font(real_screen, 255,255,0, 20, 20,
+				"Connecting... Hold Esc or 1 to abort");
+		SDL_Flip(real_screen);
+#if defined(GEKKO)
+	        WPADData *wpad, *wpad_other;
+
+		WPAD_ScanPads();
+
+		wpad = WPAD_Data(WPAD_CHAN_0);
+	        wpad_other = WPAD_Data(WPAD_CHAN_1);
+	        remote_keys = wpad->btns_d | wpad_other->btns_d;
+
+	        if (remote_keys & WPAD_BUTTON_1)
+	        	return false;
+#endif
+		SDL_PumpEvents();
+		if (SDL_GetKeyState(NULL)[SDLK_ESCAPE])
+			return false;
+
 		if (this->network_connection_state == CONN_CONNECTED)
 			return true;
 		/* Run the state machine */

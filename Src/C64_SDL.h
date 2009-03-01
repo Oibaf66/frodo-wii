@@ -80,15 +80,10 @@ void C64::c64_ctor1(void)
 
 	if (fixme_tmp_network_server) {
 		int i;
-		this->peer = new Network("localhost", this->server_port, true);
+		this->peer = new Network(this->server_hostname, this->server_port, true);
 		this->network_connection_type = MASTER;
-		for (i = 0; i < 20; i++)
-		{
-			printf("Waiting for connection, try %d of 20\n", i+1);
-			if (this->peer->Connect() == true)
-				break;
-		}
-		if (i == 20)
+		printf("Waiting for connection\n");
+		if (this->peer->Connect() == false)
 		{
 			printf("No client connected. Bye\n");
 			delete this->peer;
@@ -100,7 +95,12 @@ void C64::c64_ctor1(void)
 		strcpy(this->server_hostname, fixme_tmp_network_client);
 		this->peer = new Network(this->server_hostname, this->server_port, false);
 		this->network_connection_type = CLIENT;
-		this->peer->Connect();
+		if (this->peer->Connect() == false)
+		{
+			printf("Could not connect to server. Bye\n");
+			delete this->peer;
+			this->peer = NULL;
+		}
 	}
 }
 
@@ -345,15 +345,17 @@ void C64::networking_menu(Prefs *np)
 					this->server_port = atoi(m);
 			}
 		}
-		else if (opt == 0) {
+		else if (opt == 3 || opt == 4) {
+			bool master = (opt == 3);
+
 			this->peer = new Network(this->server_hostname,
-					this->server_port, true);
-			this->network_connection_type = MASTER;
-		}
-		else if (opt == 3) {
-			this->peer = new Network(this->server_hostname,
-					this->server_port, false);
-			this->network_connection_type = CLIENT;
+					this->server_port, master);
+			this->network_connection_type = master ? MASTER : CLIENT;
+			if (this->peer->Connect() == false)
+			{
+				delete this->peer;
+				this->peer = NULL;
+			}
 		}
 	} while (opt == 1 || opt == 2);
 
