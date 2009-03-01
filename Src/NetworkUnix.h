@@ -197,7 +197,7 @@ ssize_t Network::SendTo(void *src, int sock, size_t sz, struct sockaddr_in *to)
 bool Network::SendData(void *src, int sock, size_t sz)
 {
 	size_t sent_sz = 0;
-	
+
 	while (sent_sz < sz)
 	{
 		int v = write(sock, (void*)src, sz);
