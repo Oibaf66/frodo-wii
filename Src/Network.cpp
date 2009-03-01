@@ -24,6 +24,10 @@
 #include "Prefs.h"
 #include "menu.h"
 
+#if defined(GEKKO)
+# include <wiiuse/wpad.h>
+#endif
+
 #define N_SQUARES_W 16
 #define N_SQUARES_H 8
 
@@ -753,7 +757,7 @@ bool Network::ConnectToBroker()
 	bool out;
 
 	pi->is_master = this->is_master;
-	pi->key = random() % 0xffff;
+	pi->key = ThePrefs.NetworkKey;
 	strcpy((char*)pi->name, ThePrefs.NetworkName);
 	this->AddNetworkUpdate(ud);
 	out = this->SendUpdate();
@@ -983,6 +987,7 @@ bool Network::Connect()
 		SDL_Flip(real_screen);
 #if defined(GEKKO)
 	        WPADData *wpad, *wpad_other;
+	        Uint32 remote_keys;
 
 		WPAD_ScanPads();
 

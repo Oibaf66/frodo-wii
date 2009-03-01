@@ -16,50 +16,22 @@ static int set_sock_opts(int sock)
 	return net_setsockopt(sock,SOL_SOCKET,SO_REUSEADDR, &d, sizeof(int));
 }
 
-/* From glibc docs */
-static int make_socket (uint16_t port)
-{
-	struct sockaddr_in name;
-	int sock;
-
-	/* Create the socket. */
-	sock = net_socket (PF_INET, SOCK_STREAM, 0);
-	if (sock < 0)
-	{
-		perror ("socket");
-		exit (EXIT_FAILURE);
-	}
-
-	set_sock_opts(sock);
-
-	/* Give the socket a name. */
-	name.sin_family = AF_INET;
-	name.sin_port = htons (port);
-	name.sin_addr.s_addr = htonl (INADDR_ANY);
-	if (net_bind (sock, (struct sockaddr *) &name, sizeof (name)) < 0)
-	{
-		perror ("bind");
-		exit (1);
-	}
-
-	return sock;
-}
-
 bool Network::InitSockaddr (struct sockaddr_in *name,
 		const char *hostname, uint16_t port)
 {
-	struct hostent *hostinfo;
+	struct hostent *hostinfo = net_gethostbyname ((char*)hostname);
 
-	name->sin_family = AF_INET;
-	name->sin_port = htons (port);
-	hostinfo = net_gethostbyname ((char*)hostname);
 	if (hostinfo == NULL)
 	{
 		fprintf (stderr, "Unknown host %s.\n", hostname);
 		return false;
 	}
-#warning this need to be fixed
-	//name->sin_addr = *(struct in_addr *) hostinfo->h_addr;
+
+	name->sin_family = AF_INET;
+	name->sin_port = htons (port);
+	name->sin_len = sizeof(struct sockaddr_in);
+        memcpy ((char *) &name->sin_addr, hostinfo->h_addr_list[0],
+        		hostinfo->h_length);
 
 	return true;
 }

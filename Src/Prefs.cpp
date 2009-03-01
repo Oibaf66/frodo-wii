@@ -17,7 +17,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
 #include "sysdeps.h"
 
 #include "Prefs.h"
@@ -102,7 +101,7 @@ Prefs::Prefs()
 	this->DisplayOption = 0;
 	this->MsPerFrame = 28;
 #endif
-	this->NetworkKey = random() % 0xffff;
+	this->NetworkKey = rand() % 0xffff;
 	snprintf(this->NetworkName, 32, "Unset.%d", this->NetworkKey);
 }
 
