@@ -655,9 +655,9 @@ uint8 C64::poll_joystick(int port)
 	extra_keys[CLASSIC_ZL] = held_classic & CLASSIC_CTRL_BUTTON_ZL;
 	extra_keys[CLASSIC_ZR] = held_classic & CLASSIC_CTRL_BUTTON_ZR;
 
-	extra_keys[WIIMOTE_PLUS] = (held_classic & CLASSIC_CTRL_BUTTON_MINUS) |
+	extra_keys[WIIMOTE_PLUS] = (held_classic & CLASSIC_CTRL_BUTTON_PLUS) |
 		held & WPAD_BUTTON_PLUS;
-	extra_keys[WIIMOTE_MINUS] = (held_classic & CLASSIC_CTRL_BUTTON_PLUS) |
+	extra_keys[WIIMOTE_MINUS] = (held_classic & CLASSIC_CTRL_BUTTON_MINUS) |
 		held & WPAD_BUTTON_MINUS;
 
 	/* Merge common keys */
