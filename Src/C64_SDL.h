@@ -24,7 +24,7 @@
 
 /* TODO: */
 extern char *fixme_tmp_network_client;
-extern int fixme_tmp_network_server;
+extern char *fixme_tmp_network_server;
 
 
 static struct timeval tv_start;
@@ -79,7 +79,7 @@ void C64::c64_ctor1(void)
 	this->peer = NULL;
 
 	if (fixme_tmp_network_server) {
-		int i;
+		strcpy(this->server_hostname, fixme_tmp_network_server);
 		this->peer = new Network(this->server_hostname, this->server_port, true);
 		this->network_connection_type = MASTER;
 		printf("Waiting for connection\n");

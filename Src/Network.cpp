@@ -945,6 +945,7 @@ bool Network::ConnectFSM()
 		this->network_connection_state = CONN_CONNECT_TO_PEER;
 		break;
 	case CONN_CONNECT_TO_PEER:
+		printf("Connecting to peer\n");
 		if (this->ConnectToPeer() == false)
 			return false;
 		/* Allow some transit time */
@@ -954,10 +955,13 @@ bool Network::ConnectFSM()
 	case CONN_WAIT_FOR_PEER_REPLY:
 		/* Connect again in case the first sent was dropped on
 		 * its way to the peer */
+		printf("Connecting to peer again\n");
 		if (this->ConnectToPeer() == false)
 			return false;
+		printf("Waiting for peer reply\n");
 		if (this->WaitForPeerReply() == false)
 			return false;
+		printf("Got peer reply\n");
 		this->network_connection_state = CONN_CONNECTED;
 		break;
 	case CONN_CONNECTED:
