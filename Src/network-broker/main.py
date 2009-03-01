@@ -1,6 +1,5 @@
-import socket
+import socket, struct, syslog
 import SocketServer
-import struct
 
 FRODO_NETWORK_MAGIC = 0x1976
 
@@ -12,6 +11,20 @@ DISCONNECT         = 96 # Disconnect from a peer
 PING               = 95 # (broker) are you alive?
 ACK                = 94 # Answer to broker
 STOP               = 55 # No more packets
+
+def log(pri, msg, echo):
+    syslog.syslog(pri, msg)
+    if echo:
+        print msg
+
+def log_error(msg, echo = False):
+    log(syslog.LOG_ERR, msg, echo)
+
+def log_warn(msg, echo = False):
+    log(syslog.LOG_WARNING, msg, echo)
+
+def log_info(msg, echo = False):
+    log(syslog.LOG_INFO, msg, echo)
 
 class Packet:
     def __init__(self):
@@ -161,6 +174,7 @@ class Peer:
             self.srv.remove_peer(self)
 
     def send_packet(self, data):
+        log_info("Sending data to %s:%d" % (self.addr[0], self.addr[1]))
         self.srv.socket.sendto(data + StopPacket().marshal(),
                                0, self.addr)
 
@@ -187,12 +201,14 @@ class BrokerPacketHandler(SocketServer.DatagramRequestHandler):
         srv = self.server
         data = self.rfile.read()
 
-        print "Got packet from", self.client_address
         try:
             pkt = self.get_packet_from_data(data)
         except Exception, e:
-            print "Broken packet: ", e
+            log_error("Broken packet: %s" % e)
             return
+
+        log_info("Received packet %d from %s:%d" % (pkt.get_type(), self.client_address[0],
+                                                    self.client_address[1]))
 
         peer = srv.get_peer(self.client_address)
 
@@ -200,7 +216,7 @@ class BrokerPacketHandler(SocketServer.DatagramRequestHandler):
             peer.handle_packet(pkt)
         except Exception, e:
             # Sends crap, let's remove it
-            print "Handling packet failed, removing peer:", e
+            log_error("Handling packet failed, removing peer: %s" % e)
             srv.remove_peer(peer)
 
 class Broker(SocketServer.UDPServer):
@@ -248,6 +264,7 @@ packet_class_by_type = {
 }
 
 if __name__ == "__main__":
-    print "Starting Frodo network broker"
+    syslog.openlog("frodo")
+    log_info("Starting Frodo network broker", True)
     s = Broker( ("localhost", 46214), BrokerPacketHandler)
     s.serve_forever()
