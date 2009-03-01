@@ -72,7 +72,7 @@ void C64::c64_ctor1(void)
 
 	this->virtual_keyboard = new VirtualKeyboard(real_screen, this->menu_font);
 
-	strncpy(this->server_hostname, "localhost",
+	strncpy(this->server_hostname, "c64-network.game-host.org",
 			sizeof(this->server_hostname));
 	this->server_port = 46214;
 	this->network_connection_type = NONE;
@@ -308,30 +308,42 @@ void C64::networking_menu(Prefs *np)
 
 	do
 	{
-		char buf[2][255];
+		char buf[3][255];
 		const char *network_client_messages[] = {
-				"Listen for connections",/* 0 */
-				buf[0],                  /* 1 */
-				buf[1],                  /* 2 */
-				"Connect to remote",     /* 3 */
+				buf[0],                  /* 0 */
+				buf[1],                  /* 1 */
+				buf[2],                  /* 2 */
+				"Connect as server",     /* 3 */
+				"Connect as client",     /* 4 */
 				NULL,
 		};
 
-		snprintf(buf[0], 255, "Remote hostname (now %s)",
+		snprintf(buf[0], 255, "Set username (%s)",
+				np->NetworkName);
+		snprintf(buf[1], 255, "Server hostname (%s)",
 				this->server_hostname);
-		snprintf(buf[1], 255, "Port (now %d)",
+		snprintf(buf[2], 255, "Port (%d)",
 				this->server_port);
 		opt = menu_select(network_client_messages, NULL);
 
-		if (opt == 1 || opt == 2)
+		if (opt >= 0 && opt <= 2)
 		{
 			const char *m = this->virtual_keyboard->get_string();
 
-			if (m && opt == 1)
-				strncpy(this->server_hostname, m,
-						sizeof(this->server_hostname));
-			if (m && opt == 2)
-				this->server_port = atoi(m);
+			if (m)
+			{
+				if (opt == 0)
+				{
+					memset(np->NetworkName, 0,
+							sizeof(np->NetworkName));
+					strncpy(np->NetworkName, m,
+							sizeof(np->NetworkName));
+				} else if (opt == 1)
+					strncpy(this->server_hostname, m,
+							sizeof(this->server_hostname));
+				if (opt == 2)
+					this->server_port = atoi(m);
+			}
 		}
 		else if (opt == 0) {
 			this->peer = new Network(this->server_hostname,

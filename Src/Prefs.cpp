@@ -102,6 +102,8 @@ Prefs::Prefs()
 	this->DisplayOption = 0;
 	this->MsPerFrame = 28;
 #endif
+	this->NetworkKey = random() % 0xffff;
+	snprintf(this->NetworkName, 32, "Unset.%d", this->NetworkKey);
 }
 
 
@@ -178,6 +180,8 @@ bool Prefs::operator==(const Prefs &rhs) const
 		&& this->DisplayOption == rhs.DisplayOption
 		&& this->MsPerFrame == rhs.MsPerFrame
 #endif
+		&& this->NetworkKey == rhs.NetworkKey
+		&& strcmp(this->NetworkName, rhs.NetworkName) == 0
 	);
 }
 
@@ -359,6 +363,10 @@ void Prefs::Load(char *filename)
 					DisplayOption = atoi(value);
 				else if (!strcmp(keyword, "MsPerFrame"))
 					MsPerFrame = atoi(value);
+				else if (!strcmp(keyword, "NetworkKey"))
+					NetworkKey = atoi(value);
+				else if (!strcmp(keyword, "NetworkName"))
+					strcpy(NetworkName, value);
 #endif
 			}
 		}
@@ -450,6 +458,8 @@ bool Prefs::Save(char *filename)
 
 		fprintf(file, "DisplayOption = %d\n", DisplayOption);
 		fprintf(file, "MsPerFrame = %d\n", MsPerFrame);
+		fprintf(file, "NetworkKey = %d\n", NetworkKey);
+		fprintf(file, "NetworkName = %s\n", NetworkName);
 #endif
 		fclose(file);
 		ThePrefsOnDisk = *this;

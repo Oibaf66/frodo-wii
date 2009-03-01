@@ -21,6 +21,7 @@
 #include "sysdeps.h"
 #include "Network.h"
 #include "Display.h"
+#include "Prefs.h"
 #include "menu.h"
 
 #define N_SQUARES_W 16
@@ -753,7 +754,7 @@ bool Network::ConnectToBroker()
 
 	pi->is_master = this->is_master;
 	pi->key = random() % 0xffff;
-	strcpy((char*)pi->name, "Mr vobb");
+	strcpy((char*)pi->name, ThePrefs.NetworkName);
 	this->AddNetworkUpdate(ud);
 	out = this->SendUpdate();
 	this->ResetNetworkUpdate();

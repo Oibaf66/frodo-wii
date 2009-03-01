@@ -153,6 +153,8 @@ private:
 	int DisplayOption;
 	uint32 MsPerFrame;
 #endif
+	char NetworkName[32];
+	int NetworkKey;
 };
 
 
