@@ -79,16 +79,6 @@ bool Network::InitSocket(const char *remote_host, int port)
 	/* Connect to the server. */
 	this->InitSockaddr(&this->connection_addr, remote_host, port);
 
-	if (this->is_master)
-	{
-		if (net_bind(this->sock, (struct sockaddr *)&this->connection_addr,
-				sizeof (this->connection_addr)) < 0)
-		{
-			perror ("bind");
-			return false;
-		}
-	}
-
 	return true;
 }
 
@@ -128,7 +118,7 @@ ssize_t Network::SendTo(void *src, int sock, size_t sz, struct sockaddr_in *to)
 bool Network::SendData(void *src, int sock, size_t sz)
 {
 	size_t sent_sz = 0;
-	
+
 	while (sent_sz < sz)
 	{
 		int v = net_write(sock, (void*)src, sz);
