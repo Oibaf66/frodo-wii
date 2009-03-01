@@ -159,6 +159,8 @@ class Peer:
                     if peer != self and peer.is_master:
                         lp.add_peer(peer)
                 # And send the packet to this peer
+                log_info("Sending list of peers (%d) to %s:%d" % (lp.n_peers,
+                                                                  self.addr[0], self.addr[1]) )
                 self.send_packet(lp.marshal())
 
         if pkt.type == SELECT_PEER:
@@ -167,6 +169,8 @@ class Peer:
             # Tell the peer that we have connected
             lp = ListPeersPacket()
             lp.add_peer(self)
+            log_info("Sending list of peers for peer selected to %s:%d" % (
+                     self.addr[0], self.addr[1]))
             peer.send_packet( lp.marshal() )
 
             # These two are no longer needed
@@ -174,7 +178,6 @@ class Peer:
             self.srv.remove_peer(self)
 
     def send_packet(self, data):
-        log_info("Sending data to %s:%d" % (self.addr[0], self.addr[1]))
         self.srv.socket.sendto(data + StopPacket().marshal(),
                                0, self.addr)
 
@@ -253,8 +256,11 @@ class Broker(SocketServer.UDPServer):
         return None
 
     def remove_peer(self, peer):
-        del self.peers[ peer.addr ]
-        del self.peers_by_id[ peer.id ]
+        try:
+            del self.peers[ peer.addr ]
+            del self.peers_by_id[ peer.id ]
+        except:
+            log_error("Could not remove %s, something is wrong" % (str(peer.addr)))
 
 # Some of the Frodo network packets. There are more packets, but these
 # are not interesting to the broker (and shouldn't be sent there either!)
