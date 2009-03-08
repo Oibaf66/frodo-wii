@@ -5,7 +5,11 @@
 
 		TODO: Crash on + in "Other" menu
 
+		TODO: Handle Run/Stop in virtual keyboard (?)
+
 version 8:
+		* Make it possible to control the game with the Nunchuk (Aaron Morris) 
+
 		* Correct binding of shifted keys (thanks to Bob Forgan)
 
 		* Fix binding keys without the classic controller (plus etc were missing)
