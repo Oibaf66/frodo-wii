@@ -8,14 +8,14 @@ LIST_PEERS         = 98 # List of peers
 CONNECT_TO_PEER    = 97 # A peer wants to connect
 SELECT_PEER        = 93 # The client selects who to connect to
 DISCONNECT         = 96 # Disconnect from a peer
-PING               = 95 # (broker) are you alive?
-ACK                = 94 # Answer to broker
+PING               = 95 # Are you alive?
+ACK                = 94 # Yep
 STOP               = 55 # No more packets
 
 def log(pri, msg, echo):
     syslog.syslog(pri, msg)
-    if echo:
-        print msg
+#    if echo:
+    print msg
 
 def log_error(msg, echo = False):
     log(syslog.LOG_ERR, msg, echo)
@@ -36,9 +36,9 @@ class Packet:
     def demarshal_from_data(self, data):
         """Create a new packet from raw data. Data should always be in network
 byte order"""
-        self.magic = struct.unpack_from(">H", data, offset = 0)[0]
-        self.type = struct.unpack_from(">H", data, offset = 2)[0]
-        self.size = struct.unpack_from(">L", data, offset = 4)[0]
+        self.magic = struct.unpack(">H", data[0:2])[0]
+        self.type = struct.unpack(">H", data[2:4])[0]
+        self.size = struct.unpack(">L", data[4:8])[0]
 
     def get_magic(self):
         return self.magic
@@ -66,7 +66,7 @@ class SelectPeerPacket(Packet):
     def demarshal_from_data(self, data):
         """Create a new packet from raw data."""
         Packet.demarshal_from_data(self, data)
-        self.server_id = struct.unpack_from("<L", data, offset = 8)[0]
+        self.server_id = struct.unpack("<L", data[8:12])[0]
 
     def get_id(self):
         return self.server_id
@@ -88,9 +88,9 @@ class ConnectToBrokerPacket(Packet):
     def demarshal_from_data(self, data):
         Packet.demarshal_from_data(self, data)
 
-        self.key = struct.unpack_from(">H", data, offset = 44)[0]
-        self._is_master = struct.unpack_from(">H", data, offset = 46)[0]
-        self.name = struct.unpack_from(">32s", data, offset = 48)[0]
+        self.key = struct.unpack(">H", data[44:46])[0]
+        self._is_master = struct.unpack(">H", data[46:48])[0]
+        self.name = struct.unpack(">32s", data[48:48+32])[0]
 
     def get_key(self):
         return self.key
@@ -187,8 +187,8 @@ class Peer:
 
 class BrokerPacketHandler(SocketServer.DatagramRequestHandler):
     def get_packet_from_data(self, data):
-        magic = struct.unpack_from(">H", data, offset = 0)[0]
-        type = struct.unpack_from(">H", data, offset = 2)[0]
+        magic = struct.unpack(">H", data[0:2])[0]
+        type = struct.unpack(">H", data[2:4])[0]
 
         if magic != FRODO_NETWORK_MAGIC:
             raise Exception("Packet magic does not match: %4x vs %4x\n" % (magic,
@@ -272,5 +272,5 @@ packet_class_by_type = {
 if __name__ == "__main__":
     syslog.openlog("frodo")
     log_info("Starting Frodo network broker", True)
-    s = Broker( ("localhost", 46214), BrokerPacketHandler)
+    s = Broker( ("", 46214), BrokerPacketHandler)
     s.serve_forever()
