@@ -61,7 +61,7 @@ extern "C" int main(int argc, char **argv)
 	the_app->ReadyToRun();
 	delete the_app;
 
-	SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
+//	SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 
 	return 0;
 }

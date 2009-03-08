@@ -185,6 +185,8 @@ public:
 	static void PushSound(uint8 vol);
 
 protected:
+	void InitNetwork();
+
 	size_t DecodeSoundUpdate(struct NetworkUpdate *src, char *buf);
 
 	size_t EncodeSoundRLE(struct NetworkUpdate *dst,

@@ -46,6 +46,8 @@ Network::Network(const char *remote_host, int port, bool is_master)
 {
 	const size_t size = NETWORK_UPDATE_SIZE;
 
+	this->InitNetwork();
+
 	this->is_master = is_master;
 	this->connected = false;
 
@@ -814,6 +816,7 @@ bool Network::WaitForPeerAddress()
 
 	/* Not sure what to do if this fails */
 	this->IpToStr(buf, pi->peers[0].public_ip);
+	printf("Converted ip to %s:%d\n", buf, pi->peers[0].public_port);
 	return this->InitSockaddr(&this->connection_addr, buf,
 			pi->peers[0].public_port);
 		
@@ -867,6 +870,7 @@ bool Network::WaitForPeerList()
 
 	/* Not sure what to do if this fails */
 	this->IpToStr(buf, pi->peers[sel].public_ip);
+	printf("Converted ip to %s:%d\n", buf, port);
 
 	/* Finally tell the broker who we selected */
 	this->SelectPeer(pi->peers[sel].server_id);

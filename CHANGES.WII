@@ -8,6 +8,10 @@
 		TODO: Handle Run/Stop in virtual keyboard (?)
 
 version 8:
+		* Lots of networking code which will not work yet 
+
+		* Also add the analog part of the classic controller
+
 		* Make it possible to control the game with the Nunchuk (Aaron Morris) 
 
 		* Correct binding of shifted keys (thanks to Bob Forgan)
