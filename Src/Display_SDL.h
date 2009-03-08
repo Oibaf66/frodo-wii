@@ -599,6 +599,49 @@ void C64::open_close_joysticks(int oldjoy1, int oldjoy2, int newjoy1, int newjoy
 	open_close_joystick(1, oldjoy2, newjoy2);
 }
 
+#if defined(GEKKO)
+void check_analogue_joystick(joystick_t *js,
+		int *extra_keys)
+{
+	int held = 1;
+
+	if (js->mag < 0.9)
+		return;
+
+	// left
+	if (js->ang>=270-45 && js->ang<=270+45)
+		extra_keys[WIIMOTE_LEFT] = held;
+
+	// right
+	if (js->ang>=90-45 && js->ang<=90+45)
+		extra_keys[WIIMOTE_RIGHT] = held;
+
+	// up
+	if (js->ang>=360-45 || js->ang<=45)
+		extra_keys[WIIMOTE_UP] = held;
+
+	// down
+	if (js->ang>=180-45 && js->ang<=180+45)
+		extra_keys[WIIMOTE_DOWN] = held;
+
+	// up/left
+	if (js->ang>=315-20 && js->ang<=315+20)
+		extra_keys[WIIMOTE_LEFT] = extra_keys[WIIMOTE_UP] = held;
+
+	//up/right
+	if (js->ang>=45-20 && js->ang<=45+20)
+		extra_keys[WIIMOTE_RIGHT] = extra_keys[WIIMOTE_UP] = held;
+
+	//down/right
+	if (js->ang>=135-20 && js->ang<=135+20)
+		extra_keys[WIIMOTE_RIGHT] = extra_keys[WIIMOTE_DOWN] = held;
+
+	//down/left
+	if (js->ang>=225-20 && js->ang<=225+20)
+		extra_keys[WIIMOTE_LEFT] = extra_keys[WIIMOTE_DOWN] = held;
+}
+#endif
+
 /*
  *  Poll joystick port, return CIA mask
  */
@@ -660,55 +703,22 @@ uint8 C64::poll_joystick(int port)
 	extra_keys[WIIMOTE_MINUS] = (held_classic & CLASSIC_CTRL_BUTTON_MINUS) |
 		held & WPAD_BUTTON_MINUS;
 
-	// nunchuck .. just map to the d-pad!
+	/* nunchuck and classic analogue.. just map to the d-pad! */
 	if (wpad->exp.type == EXP_NUNCHUK)
 	{
-		held_nunchuck = 1;
+		check_analogue_joystick(&wpad->exp.nunchuk.js, extra_keys);
 
-		// left
-		if ((wpad->exp.nunchuk.js.ang>=270-45 && wpad->exp.nunchuk.js.ang<=270+45) &&
-				wpad->exp.nunchuk.js.mag>=0.9)
-			extra_keys[WIIMOTE_LEFT] = held_nunchuck;
-
-		// right
-		if ((wpad->exp.nunchuk.js.ang>=90-45 && wpad->exp.nunchuk.js.ang<=90+45) &&
-				wpad->exp.nunchuk.js.mag>=0.9)
-			extra_keys[WIIMOTE_RIGHT] = held_nunchuck;
-
-		// up
-		if ((wpad->exp.nunchuk.js.ang>=360-45 || wpad->exp.nunchuk.js.ang<=45) &&
-				wpad->exp.nunchuk.js.mag>=0.9)
-			extra_keys[WIIMOTE_UP] = held_nunchuck;
-
-		// down
-		if ((wpad->exp.nunchuk.js.ang>=180-45 && wpad->exp.nunchuk.js.ang<=180+45) &&
-				wpad->exp.nunchuk.js.mag>=0.9)
-			extra_keys[WIIMOTE_DOWN] = held_nunchuck;
-
-		// up/left
-		if ((wpad->exp.nunchuk.js.ang>=315-20 && wpad->exp.nunchuk.js.ang<=315+20) &&
-				wpad->exp.nunchuk.js.mag>=0.9)
-			extra_keys[WIIMOTE_LEFT] = extra_keys[WIIMOTE_UP] = held_nunchuck;
-
-		//up/right
-		if ((wpad->exp.nunchuk.js.ang>=45-20 && wpad->exp.nunchuk.js.ang<=45+20) &&
-				wpad->exp.nunchuk.js.mag>=0.9)
-			extra_keys[WIIMOTE_RIGHT] = extra_keys[WIIMOTE_UP] = held_nunchuck;
-
-		//down/right
-		if ((wpad->exp.nunchuk.js.ang>=135-20 && wpad->exp.nunchuk.js.ang<=135+20) &&
-				wpad->exp.nunchuk.js.mag>=0.9)
-			extra_keys[WIIMOTE_RIGHT] = extra_keys[WIIMOTE_DOWN] = held_nunchuck;
-
-		//down/left
-		if ((wpad->exp.nunchuk.js.ang>=225-20 && wpad->exp.nunchuk.js.ang<=225+20) &&
-				wpad->exp.nunchuk.js.mag>=0.9)
-			extra_keys[WIIMOTE_LEFT] = extra_keys[WIIMOTE_DOWN] = held_nunchuck;
-
-		//fire
+		/* Fire on the Z button */
 		if (wpad->exp.nunchuk.btns_held & NUNCHUK_BUTTON_Z)
-			extra_keys[WIIMOTE_FIRE] = held_nunchuk;
+			extra_keys[WIIMOTE_2] = 1;
 	}
+	else if (wpad->exp.type == WPAD_EXP_CLASSIC)
+	{
+		/* Map both analogue controllers to joystick dirs */
+		check_analogue_joystick(&wpad->exp.classic.ljs, extra_keys);
+		check_analogue_joystick(&wpad->exp.classic.rjs, extra_keys);
+	}
+
 
 	/* Merge common keys */
 	int active_binded_keys[N_WIIMOTE_BINDINGS];
