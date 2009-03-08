@@ -666,39 +666,49 @@ uint8 C64::poll_joystick(int port)
 		held_nunchuck = 1;
 
 		// left
-		if((wpad->exp.nunchuk.js.ang>=270-45 && wpad->exp.nunchuk.js.ang<=270+45) && wpad->exp.nunchuk.js.mag>=0.9)
+		if ((wpad->exp.nunchuk.js.ang>=270-45 && wpad->exp.nunchuk.js.ang<=270+45) &&
+				wpad->exp.nunchuk.js.mag>=0.9)
 			extra_keys[WIIMOTE_LEFT] = held_nunchuck;
 
 		// right
-		if((wpad->exp.nunchuk.js.ang>=90-45 && wpad->exp.nunchuk.js.ang<=90+45) && wpad->exp.nunchuk.js.mag>=0.9)
+		if ((wpad->exp.nunchuk.js.ang>=90-45 && wpad->exp.nunchuk.js.ang<=90+45) &&
+				wpad->exp.nunchuk.js.mag>=0.9)
 			extra_keys[WIIMOTE_RIGHT] = held_nunchuck;
 
 		// up
-		if((wpad->exp.nunchuk.js.ang>=360-45 || wpad->exp.nunchuk.js.ang<=45) && wpad->exp.nunchuk.js.mag>=0.9)
+		if ((wpad->exp.nunchuk.js.ang>=360-45 || wpad->exp.nunchuk.js.ang<=45) &&
+				wpad->exp.nunchuk.js.mag>=0.9)
 			extra_keys[WIIMOTE_UP] = held_nunchuck;
 
 		// down
-		if((wpad->exp.nunchuk.js.ang>=180-45 && wpad->exp.nunchuk.js.ang<=180+45) && wpad->exp.nunchuk.js.mag>=0.9)
+		if ((wpad->exp.nunchuk.js.ang>=180-45 && wpad->exp.nunchuk.js.ang<=180+45) &&
+				wpad->exp.nunchuk.js.mag>=0.9)
 			extra_keys[WIIMOTE_DOWN] = held_nunchuck;
 
 		// up/left
-		if((wpad->exp.nunchuk.js.ang>=315-20 && wpad->exp.nunchuk.js.ang<=315+20) && wpad->exp.nunchuk.js.mag>=0.9)
+		if ((wpad->exp.nunchuk.js.ang>=315-20 && wpad->exp.nunchuk.js.ang<=315+20) &&
+				wpad->exp.nunchuk.js.mag>=0.9)
 			extra_keys[WIIMOTE_LEFT] = extra_keys[WIIMOTE_UP] = held_nunchuck;
 
 		//up/right
-		if((wpad->exp.nunchuk.js.ang>=45-20 && wpad->exp.nunchuk.js.ang<=45+20) && wpad->exp.nunchuk.js.mag>=0.9)
+		if ((wpad->exp.nunchuk.js.ang>=45-20 && wpad->exp.nunchuk.js.ang<=45+20) &&
+				wpad->exp.nunchuk.js.mag>=0.9)
 			extra_keys[WIIMOTE_RIGHT] = extra_keys[WIIMOTE_UP] = held_nunchuck;
 
 		//down/right
-		if((wpad->exp.nunchuk.js.ang>=135-20 && wpad->exp.nunchuk.js.ang<=135+20) && wpad->exp.nunchuk.js.mag>=0.9)
+		if ((wpad->exp.nunchuk.js.ang>=135-20 && wpad->exp.nunchuk.js.ang<=135+20) &&
+				wpad->exp.nunchuk.js.mag>=0.9)
 			extra_keys[WIIMOTE_RIGHT] = extra_keys[WIIMOTE_DOWN] = held_nunchuck;
 
 		//down/left
-		if((wpad->exp.nunchuk.js.ang>=225-20 && wpad->exp.nunchuk.js.ang<=225+20) && wpad->exp.nunchuk.js.mag>=0.9)
+		if ((wpad->exp.nunchuk.js.ang>=225-20 && wpad->exp.nunchuk.js.ang<=225+20) &&
+				wpad->exp.nunchuk.js.mag>=0.9)
 			extra_keys[WIIMOTE_LEFT] = extra_keys[WIIMOTE_DOWN] = held_nunchuck;
 
+		//fire
+		if (wpad->exp.nunchuk.btns_held & NUNCHUK_BUTTON_Z)
+			extra_keys[WIIMOTE_FIRE] = held_nunchuk;
 	}
-	// eof nunchuck
 
 	/* Merge common keys */
 	int active_binded_keys[N_WIIMOTE_BINDINGS];
