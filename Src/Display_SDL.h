@@ -343,8 +343,12 @@ void C64Display::UpdateKeyMatrix(int c64_key, bool key_up,
 		uint8 *key_matrix, uint8 *rev_matrix, uint8 *joystick)
 {
 	bool shifted = c64_key & 0x80;
-	int c64_byte = (c64_key >> 3) & 7;
-	int c64_bit = c64_key & 7;
+	int c64_byte;
+	int c64_bit;
+
+	c64_key &= ~0x80;
+	c64_byte = (c64_key >> 3) & 7;
+	c64_bit = c64_key & 7;
 
 	// Handle joystick emulation
 	if (joystick && (c64_key & 0x40)) {
@@ -657,6 +661,7 @@ uint8 C64::poll_joystick(int port)
 	Uint32 held_classic = 0;
         WPADData *wpad;
 
+        memset(extra_keys, 0, sizeof(extra_keys));
 	if (ThePrefs.JoystickSwap)
 		controller = !port;
 
@@ -719,7 +724,6 @@ uint8 C64::poll_joystick(int port)
 		check_analogue_joystick(&wpad->exp.classic.rjs, extra_keys);
 	}
 
-
 	/* Merge common keys */
 	int active_binded_keys[N_WIIMOTE_BINDINGS];
 	memcpy(active_binded_keys, ThePrefs.JoystickKeyBinding, sizeof(active_binded_keys));
@@ -729,9 +733,10 @@ uint8 C64::poll_joystick(int port)
 			continue;
 		for (int second = 0; second < N_WIIMOTE_BINDINGS; second++)
 		{
-			if (first != second &&
-				active_binded_keys[first] ==
-				active_binded_keys[second]) {
+			if (first == second)
+				continue;
+			if (active_binded_keys[first] == active_binded_keys[second])
+			{
 				/* Unbind this */
 				extra_keys[second] = 0;
 				active_binded_keys[second] = -1;
@@ -744,22 +749,22 @@ uint8 C64::poll_joystick(int port)
 		static bool is_pressed[2][N_WIIMOTE_BINDINGS];
 		int kc = active_binded_keys[i];
 
-		if ( kc >= 0)
+		if (kc < 0)
+			continue;
+
+		if (extra_keys[i])
 		{
-			if (extra_keys[i])
-			{
-				TheDisplay->UpdateKeyMatrix(kc, false,
-						TheCIA1->KeyMatrix, TheCIA1->RevMatrix,
-						&j);
-				is_pressed[controller][i] = true;
-			}
-			else if (is_pressed[i])
-			{
-				TheDisplay->UpdateKeyMatrix(kc, true,
-						TheCIA1->KeyMatrix, TheCIA1->RevMatrix,
-						&j);
-				is_pressed[controller][i] = false;
-			}
+			TheDisplay->UpdateKeyMatrix(kc, false,
+					TheCIA1->KeyMatrix, TheCIA1->RevMatrix,
+					&j);
+			is_pressed[controller][i] = true;
+		}
+		else if (is_pressed[i])
+		{
+			TheDisplay->UpdateKeyMatrix(kc, true,
+					TheCIA1->KeyMatrix, TheCIA1->RevMatrix,
+					&j);
+			is_pressed[controller][i] = false;
 		}
 	}
 
