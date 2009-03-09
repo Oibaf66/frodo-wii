@@ -283,7 +283,7 @@ void C64::bind_keys(Prefs *np)
 
         memset(bind_key_messages, 0, sizeof(const char*) * (N_WIIMOTE_BINDINGS + 1));
 
-        for (int i = 0; i < (has_classic_controller ? N_WIIMOTE_BINDINGS : CLASSIC_UP - 1); i++)
+        for (int i = 0; i < (has_classic_controller ? N_WIIMOTE_BINDINGS : CLASSIC_UP); i++)
         	bind_key_messages[i] = this->bind_one_key(np, i);
 
 	int opt = menu_select(bind_key_messages, NULL);

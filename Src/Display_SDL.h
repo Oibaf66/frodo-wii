@@ -699,9 +699,9 @@ uint8 C64::poll_joystick(int port)
 	extra_keys[CLASSIC_ZR] = held_classic & CLASSIC_CTRL_BUTTON_ZR;
 
 	extra_keys[WIIMOTE_PLUS] = (held_classic & CLASSIC_CTRL_BUTTON_PLUS) |
-		held & WPAD_BUTTON_PLUS;
+		(held & WPAD_BUTTON_PLUS);
 	extra_keys[WIIMOTE_MINUS] = (held_classic & CLASSIC_CTRL_BUTTON_MINUS) |
-		held & WPAD_BUTTON_MINUS;
+		(held & WPAD_BUTTON_MINUS);
 
 	/* nunchuck and classic analogue.. just map to the d-pad! */
 	if (wpad->exp.type == EXP_NUNCHUK)
@@ -723,11 +723,11 @@ uint8 C64::poll_joystick(int port)
 	/* Merge common keys */
 	int active_binded_keys[N_WIIMOTE_BINDINGS];
 	memcpy(active_binded_keys, ThePrefs.JoystickKeyBinding, sizeof(active_binded_keys));
-	for (int first = 0; first <= N_WIIMOTE_BINDINGS; first++)
+	for (int first = 0; first < N_WIIMOTE_BINDINGS; first++)
 	{
 		if (!extra_keys[first])
 			continue;
-		for (int second = 0; second <= N_WIIMOTE_BINDINGS; second++)
+		for (int second = 0; second < N_WIIMOTE_BINDINGS; second++)
 		{
 			if (first != second &&
 				active_binded_keys[first] ==
