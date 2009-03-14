@@ -18,7 +18,7 @@ version 8:
 
 		* Fix binding keys without the classic controller (plus etc were missing)
 
-        -- Simon Kagstrom <simon.kagstrom@gmail.com>
+        -- Simon Kagstrom <simon.kagstrom@gmail.com>, Wed Mar 11 19:46:11 CET 2009
 
 version 7:
 		* Exit with SYS_RETURNTOMENU to make WAD's work
