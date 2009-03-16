@@ -276,7 +276,8 @@ protected:
 
 	bool MarshalAllData(NetworkUpdate *p);
 
-	bool DeMarshalAllData(NetworkUpdate *ud);
+	bool DeMarshalAllData(NetworkUpdate *ud, size_t max_size,
+			bool *has_stop);
 
 	bool DeMarshalData(NetworkUpdate *ud);
 
@@ -293,6 +294,8 @@ protected:
 	bool SelectPeer(uint32 id);
 
 	bool ConnectFSM();
+
+	size_t FillNetworkBuffer(NetworkUpdate *p);
 
 	NetworkUpdate *GetNext(NetworkUpdate *p)
 	{

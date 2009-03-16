@@ -45,7 +45,7 @@ bool Network::InitSocket(const char *remote_host, int port)
 	if (this->sock < 0)
 	{
 		fprintf (stderr, "Could not init socket. Failed with %d\n", this->sock);
-		sleep(1);
+		sleep(5);
 		return false;
 	}
 	int _true = false;
@@ -132,15 +132,5 @@ void Network::CloseSocket()
 
 void Network::InitNetwork()
 {
-        char myIP[16];
-
-        /* From Snes9x-gx */
-        while (net_init() == -EAGAIN);
-
-        if (if_config(myIP, NULL, NULL, true) < 0)
-        {
-        	fprintf(stderr, "\n\n\nError getting IP address via DHCP.\n");
-        	sleep(2);
-		exit(1);
-        }
+        fprintf(stderr, "\n\n");
 }

@@ -510,28 +510,29 @@ bool Network::ReceiveUpdate(struct timeval *tv)
 bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
 		struct timeval *tv)
 {
-	Uint8 *pp = (Uint8*)dst;
-	NetworkUpdate *p;
+	Uint8 *p = (Uint8*)dst;
 	size_t sz_left = total_sz;
+	bool has_stop = false;
 
 	if (this->Select(this->sock, tv) == false)
 		return false;
-	p = (NetworkUpdate*)pp;
-	size_t actual_sz;
 
 	if (sz_left <= 0)
 		return false;
 
 	/* Receive the header */
-	actual_sz = this->ReceiveFrom(pp, this->sock,
-			sz_left, NULL);
-	if (actual_sz < 0)
-		return false;
+	do {
+		size_t actual_sz = this->ReceiveFrom(p, this->sock,
+				4096, NULL);
+		if (actual_sz < 0)
+			return false;
 
-	if (this->DeMarshalAllData(p) == false)
-		return false;
-	sz_left -= actual_sz;
-	pp = pp + actual_sz;
+		if (this->DeMarshalAllData((NetworkUpdate*)p, actual_sz,
+				&has_stop) == false)
+			return false;
+		sz_left -= actual_sz;
+		p = p + actual_sz;
+	} while (!has_stop);
 
 	return true;
 }
@@ -555,13 +556,49 @@ bool Network::SendUpdate()
 	sz = this->GetNetworkUpdateSize();
 	if (sz <= 0)
 		return false;
-	if (this->SendTo((void*)src, this->sock,
-			sz, &this->connection_addr) < 0)
-		return false;
-	this->traffic += sz;
+	size_t cur_sz = 0;
+	Uint8 *p = (Uint8*)src; 
+	do
+	{
+		size_t size_to_send = this->FillNetworkBuffer((NetworkUpdate*)p);
+		ssize_t v;
+
+		v = this->SendTo((void*)p, this->sock,
+				size_to_send, &this->connection_addr);
+		if (v < 0 || v != size_to_send)
+			return false;
+		cur_sz += size_to_send;
+		p += size_to_send;
+	} while (cur_sz < sz);
+	this->traffic += cur_sz;
 
 	return true;
 }
+
+size_t Network::FillNetworkBuffer(NetworkUpdate *cur)
+{
+	size_t sz = 0;
+	size_t cur_sz;
+	int cnt = 0;
+
+	while(1)
+	{
+		cur_sz = ntohl(cur->size);
+
+		if (sz + cur_sz >= 4096)
+			break;
+
+		cnt++;
+		sz += cur_sz;
+		if (ntohs(cur->type) == STOP)
+			break;
+		cur = (NetworkUpdate*)((Uint8*)cur + cur_sz);
+	}
+	assert(sz <= 4096);
+
+	return sz;
+}
+
 
 void Network::AddNetworkUpdate(NetworkUpdate *update)
 {
@@ -691,18 +728,25 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	return true;
 }
 
-bool Network::DeMarshalAllData(NetworkUpdate *ud)
+bool Network::DeMarshalAllData(NetworkUpdate *ud, size_t max_size,
+		bool *has_stop)
 {
 	NetworkUpdate *p = ud;
+	int cnt = 0;
+	size_t sz = 0;
 
-	while (ntohs(p->type) != STOP)
+	while (ntohs(p->type) != STOP &&
+			sz + ntohl(p->size) < max_size)
 	{
 		if (this->DeMarshalData(p) == false)
 			return false;
+		sz += p->size;
+		cnt++;
 		p = this->GetNext(p);
 	}
 
-	/* The stop tag */
+	/* The stop tag (maybe) */
+	*has_stop = (ntohs(p->type) == STOP);
 	return this->DeMarshalData(p);
 }
 
