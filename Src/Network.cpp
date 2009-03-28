@@ -67,6 +67,8 @@ Network::Network(const char *remote_host, int port, bool is_master)
 	this->diff_buf = (Uint8*)malloc(DIFF_SIZE);
 	assert(this->raw_buf && this->rle_buf && this->diff_buf);
 
+	/* Go from lower right to upper left */
+	this->refresh_square = N_SQUARES_W * N_SQUARES_H - 1;
 	this->square_updated = (Uint32*)malloc( N_SQUARES_W * N_SQUARES_H * sizeof(Uint32));
 	assert(this->square_updated);
 	memset(this->square_updated, 0, N_SQUARES_W * N_SQUARES_H * sizeof(Uint32));
@@ -266,13 +268,24 @@ void Network::EncodeDisplay(Uint8 *master, Uint8 *remote)
 		Uint8 *p_master = &master[ SQUARE_TO_Y(sq) * DISPLAY_X + SQUARE_TO_X(sq) ]; 
 		Uint8 *p_remote = &remote[ SQUARE_TO_Y(sq) * DISPLAY_X + SQUARE_TO_X(sq) ]; 
 
-		if (this->CompareSquare(p_master, p_remote) == false)
+		/* Refresh periodically or if the squares differ */
+		if ( (this->refresh_square == sq && this->kbps < this->target_kbps * 0.7) ||
+				this->CompareSquare(p_master, p_remote) == false)
 		{
 			NetworkUpdate *dst = (NetworkUpdate *)this->cur_ud;
 
 			/* Updated, encode this */
-			this->EncodeDisplaySquare(dst, master, remote, sq);
+			this->EncodeDisplaySquare(dst, master, remote, sq,
+					this->refresh_square == sq);
 			this->AddNetworkUpdate(dst);
+
+			/* This has been refreshed, move to the next one */
+			if (this->refresh_square == sq)
+			{
+				this->refresh_square--;
+				if (this->refresh_square < 0)
+					this->refresh_square = N_SQUARES_H * N_SQUARES_W - 1;
+			}
 		}
 		else
 			this->square_updated[sq] = 0;
@@ -282,7 +295,8 @@ void Network::EncodeDisplay(Uint8 *master, Uint8 *remote)
 
 
 size_t Network::EncodeDisplaySquare(struct NetworkUpdate *dst,
-		Uint8 *screen, Uint8 *remote, int square)
+		Uint8 *screen, Uint8 *remote, int square,
+		bool use_diff)
 {
 	struct NetworkUpdateDisplay *dp = (struct NetworkUpdateDisplay *)dst->data;
 	const int x_start = SQUARE_TO_X(square);
@@ -343,7 +357,7 @@ size_t Network::EncodeDisplaySquare(struct NetworkUpdate *dst,
 	}
 
 	out = RAW_SIZE;
-	if (diff_sz < rle_sz && diff_sz < RAW_SIZE)
+	if (use_diff && (diff_sz < rle_sz && diff_sz < RAW_SIZE))
 	{
 		memcpy(dp->data, this->diff_buf, diff_sz);
 		type = DISPLAY_UPDATE_DIFF;

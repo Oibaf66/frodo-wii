@@ -206,7 +206,8 @@ protected:
 	 * @return the size of the encoded message
 	 */
 	size_t EncodeDisplaySquare(struct NetworkUpdate *dst,
-			Uint8 *screen, Uint8 *remote, int square);
+			Uint8 *screen, Uint8 *remote, int square,
+			bool use_diff = true);
 
 	/**
 	 * Encode the @a buf sound buffer into @a dst
@@ -317,6 +318,9 @@ protected:
 	int time_since_last_reset;
 	int target_kbps;
 	int kbps;
+
+	/* The current square to refresh */
+	int refresh_square;
 
 	Uint8 *screen;
 	int joystick_port;
