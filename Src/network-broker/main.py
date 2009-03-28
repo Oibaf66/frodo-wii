@@ -83,7 +83,7 @@ class ConnectToBrokerPacket(Packet):
         self.public_ip = ""
         self.type = CONNECT_TO_BROKER
         self.name = ""
-        self.serverid = 0
+        self.server_id = 0
 
     def demarshal_from_data(self, data):
         Packet.demarshal_from_data(self, data)
@@ -91,6 +91,7 @@ class ConnectToBrokerPacket(Packet):
         self.key = struct.unpack(">H", data[44:46])[0]
         self._is_master = struct.unpack(">H", data[46:48])[0]
         self.name = struct.unpack(">32s", data[48:48+32])[0]
+        self.server_id = struct.unpack(">L", data[80:84])[0]
 
     def get_key(self):
         return self.key
