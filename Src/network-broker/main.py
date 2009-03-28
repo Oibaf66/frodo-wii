@@ -66,7 +66,7 @@ class SelectPeerPacket(Packet):
     def demarshal_from_data(self, data):
         """Create a new packet from raw data."""
         Packet.demarshal_from_data(self, data)
-        self.server_id = struct.unpack("<L", data[8:12])[0]
+        self.server_id = struct.unpack(">L", data[8:12])[0]
 
     def get_id(self):
         return self.server_id

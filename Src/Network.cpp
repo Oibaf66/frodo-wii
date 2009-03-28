@@ -704,6 +704,11 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	case STOP:
 		/* Nothing to do, just bytes */
 		break;
+	case SELECT_PEER:
+	{
+		NetworkUpdateSelectPeer *sp = (NetworkUpdateSelectPeer *)p->data;
+		sp->server_id = ntohl(sp->server_id);
+	} break;
 	case LIST_PEERS:
 	{
 		NetworkUpdateListPeers *lp = (NetworkUpdateListPeers *)p->data;
