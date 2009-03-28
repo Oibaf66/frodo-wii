@@ -110,19 +110,16 @@ bool Network::SendData(void *src, int sock, size_t sz)
 
 bool Network::Select(int sock, struct timeval *tv)
 {
-	unsigned long available;
+	struct pollsd sds;
+	int v;
 
-	return true;
-	if (net_ioctl (sock, FIONREAD, &available) < 0)
-		fprintf(stderr, "UDP: ioctlsocket (FIONREAD) failed\n");
-	if (available == 0 && tv)
-	{
-		/* OK, this really only "works" because we know that this is
-		 * called during init */
-		sleep(tv->tv_sec);
-		return this->Select(sock, NULL);
-	}
-	return available > 0;
+	sds.socket = sock;
+	sds.events = POLLIN;
+	sds.revents = 0;
+
+	v = net_poll(&sds, 1, tv->tv_sec * 1000 + tv->tv_usec / 1000);
+
+	return v > 0; 
 }
 
 void Network::CloseSocket()
