@@ -276,7 +276,7 @@ void Network::EncodeDisplay(Uint8 *master, Uint8 *remote)
 
 			/* Updated, encode this */
 			this->EncodeDisplaySquare(dst, master, remote, sq,
-					this->refresh_square == sq);
+					this->refresh_square != sq);
 			this->AddNetworkUpdate(dst);
 
 			/* This has been refreshed, move to the next one */
@@ -652,7 +652,7 @@ bool Network::MarshalData(NetworkUpdate *p)
 			peer->private_port = htons(peer->private_port);
 			peer->public_port = htons(peer->public_port);
 			peer->is_master = htons(peer->is_master);
-			peer->server_id = ntohl(peer->server_id);
+			peer->server_id = htonl(peer->server_id);
 		}
 		lp->n_peers = htonl(lp->n_peers);
 		lp->your_port = htons(lp->your_port);
