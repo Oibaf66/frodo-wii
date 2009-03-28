@@ -12,6 +12,17 @@ PING               = 95 # Are you alive?
 ACK                = 94 # Yep
 STOP               = 55 # No more packets
 
+pkt_type_to_str = {
+    CONNECT_TO_BROKER : "connect-to-broker",
+    LIST_PEERS        : "list-peers",
+    CONNECT_TO_PEER   : "connect-to-peer",
+    SELECT_PEER       : "select-peer",
+    DISCONNECT        : "disconnect",
+    PING              : "ping",
+    ACK               : "ack",
+    STOP              : "stop",
+}
+
 def log(pri, msg, echo):
     syslog.syslog(pri, msg)
 #    if echo:
@@ -261,7 +272,13 @@ class BrokerPacketHandler(SocketServer.DatagramRequestHandler):
 
         # Log received packets (except ping ACKs to avoid filling the server)
         if pkt.get_type() != ACK:
-            log_info("Received packet %d from %s:%d" % (pkt.get_type(), self.client_address[0],
+            t = pkt.get_type()
+            s = "%d" % (t)
+            try:
+                s = pkt_type_to_str[t]
+            except KeyError, e:
+                pass
+            log_info("Received packet %s from %s:%d" % (s, self.client_address[0],
                                                         self.client_address[1]))
 
         peer = srv.get_peer(self.client_address)
