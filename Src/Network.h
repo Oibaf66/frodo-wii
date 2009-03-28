@@ -187,6 +187,8 @@ public:
 protected:
 	void InitNetwork();
 
+	void ShutdownNetwork();
+
 	size_t DecodeSoundUpdate(struct NetworkUpdate *src, char *buf);
 
 	size_t EncodeSoundRLE(struct NetworkUpdate *dst,

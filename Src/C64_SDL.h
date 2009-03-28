@@ -759,6 +759,8 @@ void C64::VBlank(bool draw_frame)
 	this->network_vblank();
 
 #if defined(GEKKO)
+	if (this->quit_thyself)
+		SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
         now = ticks_to_millisecs(gettime());
 #else
         now = SDL_GetTicks();

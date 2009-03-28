@@ -25,21 +25,10 @@ int fixme_tmp_network_server = 0;
 extern "C" int main(int argc, char **argv)
 {
 	Frodo *the_app;
-        char myIP[16];
-
 	timeval tv;
+
 	gettimeofday(&tv, NULL);
 	srand(tv.tv_usec);
-
-        /* From Snes9x-gx */
-        while (net_init() == -EAGAIN);
-
-        if (if_config(myIP, NULL, NULL, true) < 0)
-        {
-        	fprintf(stderr, "\n\n\nError getting IP address via DHCP.\n");
-        	sleep(2);
-		exit(1);
-        }
 
 	printf("%s by Christian Bauer\n", VERSION_STRING);
 	if (!init_graphics())

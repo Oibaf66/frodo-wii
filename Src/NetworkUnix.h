@@ -130,3 +130,7 @@ void Network::InitNetwork()
 {
 	/* Do nothing */
 }
+
+void Network::ShutdownNetwork()
+{
+}

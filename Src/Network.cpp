@@ -97,6 +97,7 @@ Network::~Network()
 	free(this->screen);
 
 	this->CloseSocket();
+	this->ShutdownNetwork();
 }
 
 void Network::Tick(int ms)

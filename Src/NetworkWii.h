@@ -124,10 +124,26 @@ bool Network::Select(int sock, struct timeval *tv)
 
 void Network::CloseSocket()
 {
+#define SHUT_RDWR 2
+	net_shutdown(this->sock, 2);
 	net_close(this->sock);
 }
 
 void Network::InitNetwork()
 {
-        fprintf(stderr, "\n\n");
+        char myIP[16];
+
+        /* From Snes9x-gx */
+        while (net_init() == -EAGAIN);
+
+        if (if_config(myIP, NULL, NULL, true) < 0)
+        {
+        	fprintf(stderr, "\n\n\nError getting IP address via DHCP.\n");
+        	sleep(2);
+		exit(1);
+        }
+}
+
+void Network::ShutdownNetwork()
+{
 }
