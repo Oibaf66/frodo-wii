@@ -77,7 +77,7 @@ struct NetworkUpdateSelectPeer
 
 struct NetworkUpdatePingAck
 {
-	uint8 seq;
+	uint32 seq;
 };
 
 /*
@@ -252,6 +252,8 @@ protected:
 			int x, int y);
 	bool DecodeDisplayRaw(Uint8 *screen, struct NetworkUpdate *src,
 			int x, int y);
+
+	void SendPingAck(int seq);
 
 	bool ReceiveUpdate(NetworkUpdate *dst, size_t sz, struct timeval *tv);
 

@@ -539,7 +539,7 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
 	do {
 		size_t actual_sz = this->ReceiveFrom(p, this->sock,
 				4096, NULL);
-		if (actual_sz < 0)
+		if (actual_sz <= 0)
 			return false;
 
 		if (this->DeMarshalAllData((NetworkUpdate*)p, actual_sz,
@@ -636,6 +636,12 @@ bool Network::MarshalData(NetworkUpdate *p)
 	case CONNECT_TO_PEER:
 	case STOP:
 		break;
+	case PING:
+	case ACK:
+	{
+		NetworkUpdatePingAck *pa = (NetworkUpdatePingAck *)p->data;
+		pa->seq = htonl(pa->seq);
+	} break;
 	case SELECT_PEER:
 	{
 		NetworkUpdateSelectPeer *sp = (NetworkUpdateSelectPeer *)p->data;
@@ -719,6 +725,12 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	case STOP:
 		/* Nothing to do, just bytes */
 		break;
+	case PING:
+	case ACK:
+	{
+		NetworkUpdatePingAck *pa = (NetworkUpdatePingAck *)p->data;
+		pa->seq = ntohl(pa->seq);
+	} break;
 	case SELECT_PEER:
 	{
 		NetworkUpdateSelectPeer *sp = (NetworkUpdateSelectPeer *)p->data;
@@ -802,7 +814,7 @@ bool Network::DecodeUpdate(uint8 *screen, uint8 *js)
 		{
 		} break;
 		case PING:
-			/* Send an ack */
+			/* FIXME! Send an ack */
 			break;
 		case ACK: /* Should never receive this */
 		case DISCONNECT:
@@ -854,6 +866,22 @@ bool Network::IpToStr(char *dst, uint8 *ip_in)
 	return true;
 }
 
+/* OK, this is a pretty ugly special case, but it's only used when
+ * communicating with the broker before a peer connection. */
+void Network::SendPingAck(int seq)
+{
+	this->ResetNetworkUpdate();
+
+	NetworkUpdate *ud = InitNetworkUpdate(this->ud, ACK,
+			sizeof(NetworkUpdate) + sizeof(NetworkUpdatePingAck));
+	NetworkUpdatePingAck *p = (NetworkUpdatePingAck*)ud->data;
+
+	p->seq = seq;
+	this->AddNetworkUpdate(ud);
+	this->SendUpdate();
+	this->ResetNetworkUpdate();
+}
+
 bool Network::WaitForPeerAddress()
 {
 	NetworkUpdateListPeers *pi;
@@ -865,7 +893,14 @@ bool Network::WaitForPeerAddress()
 	this->ResetNetworkUpdate();
 	if (this->ReceiveUpdate(&tv) == false)
 		return false;
-	if (ud->type != LIST_PEERS)
+	if (this->ud->type == PING)
+	{
+		NetworkUpdatePingAck *p = (NetworkUpdatePingAck*)ud->data;
+		/* Send ack and go back to this state again */
+		this->SendPingAck(p->seq);
+		return false;
+	}
+	if (this->ud->type != LIST_PEERS)
 		return false;
 
 	pi = (NetworkUpdateListPeers *)this->ud->data;
@@ -915,6 +950,13 @@ bool Network::WaitForPeerList()
 	this->ResetNetworkUpdate();
 	if (this->ReceiveUpdate(&tv) == false)
 		return false;
+	if (this->ud->type == PING)
+	{
+		NetworkUpdatePingAck *p = (NetworkUpdatePingAck*)ud->data;
+		/* Send ack and go back to this state again */
+		this->SendPingAck(p->seq);
+		return false;
+	}
 	if (ud->type != LIST_PEERS)
 		return false;
 
