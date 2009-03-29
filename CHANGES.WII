@@ -6,6 +6,16 @@
 		TODO: Crash on + in "Other" menu
 
 		TODO: Handle Run/Stop in virtual keyboard (?)
+version 9:
+		* Networking support now works (but without sound being transferred). A
+		broker is installed on c64-network.game-host.org. 
+
+		* Link with Yohanes port of SDL, modified by dannymi to get USB
+		keyboards working while still having the Home key do what it
+		should
+
+        -- Simon Kagstrom <simon.kagstrom@gmail.com>
+
 
 version 8:
 		* Lots of networking code which will not work yet 
