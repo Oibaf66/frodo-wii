@@ -1094,8 +1094,11 @@ bool Network::Connect()
 	{
 		SDL_FillRect(real_screen, 0, SDL_MapRGB(real_screen->format,
 				0x00, 0x80, 0x80));
-		menu_print_font(real_screen, 255,255,0, 20, 20,
+		menu_print_font(real_screen, 255,255,0, 30, 30,
 				"Connecting... Hold Esc or 1 to abort");
+		if (this->is_master)
+			menu_print_font(real_screen, 255,255,0, 30, 50,
+					"(Waiting for client connection)");
 		SDL_Flip(real_screen);
 #if defined(GEKKO)
 	        WPADData *wpad, *wpad_other;
