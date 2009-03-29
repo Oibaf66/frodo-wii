@@ -444,7 +444,11 @@ void C64Display::TranslateKey(SDLKey key, bool key_up, uint8 *key_matrix,
 		case SDLK_PAGEUP: c64_key = MATRIX(6,0); break;
 		case SDLK_PAGEDOWN: c64_key = MATRIX(6,5); break;
 
+#if defined(GEKKO)
+		case SDLK_LCTRL:
+#else
 		case SDLK_LCTRL: c64_key = 0x10 | 0x40;  break;
+#endif
 		case SDLK_TAB: c64_key = MATRIX(7,2); break;
 		case SDLK_RCTRL: c64_key = MATRIX(7,5); break;
 		case SDLK_LSHIFT: c64_key = MATRIX(1,7); break;
@@ -452,10 +456,17 @@ void C64Display::TranslateKey(SDLKey key, bool key_up, uint8 *key_matrix,
 		case SDLK_LALT: case SDLK_LMETA: c64_key = MATRIX(7,5); break;
 		case SDLK_RALT: case SDLK_RMETA: c64_key = MATRIX(7,5); break;
 
+#if defined(GEKKO)
+                case SDLK_UP: c64_key = MATRIX(0,7)| 0x80; break;
+                case SDLK_DOWN: c64_key = MATRIX(0,7); break;
+ 	        case SDLK_LEFT: c64_key = MATRIX(0,2) | 0x80; break;
+	        case SDLK_RIGHT: c64_key = MATRIX(0,2); break;
+#else
 		case SDLK_UP: c64_key = 0x01 | 0x40; break;
 		case SDLK_DOWN: c64_key = 0x02 | 0x40; break;
 		case SDLK_LEFT: c64_key = 0x04 | 0x40; break;
 		case SDLK_RIGHT: c64_key = 0x08 | 0x40; break;
+#endif /* GEKKO */
 
 		case SDLK_F1: c64_key = MATRIX(0,4); break;
 		case SDLK_F2: c64_key = MATRIX(0,4) | 0x80; break;
