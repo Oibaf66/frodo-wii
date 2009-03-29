@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import socket, struct, syslog, time, thread
+import socket, struct, syslog, time, thread, ip2country
 import SocketServer
 
 FRODO_NETWORK_MAGIC = 0x1976
@@ -27,8 +27,8 @@ pkt_type_to_str = {
 
 def log(pri, msg, echo):
     syslog.syslog(pri, msg)
-#    if echo:
-    print msg
+    if echo:
+        print msg
 
 def log_error(msg, echo = False):
     log(syslog.LOG_ERR, msg, echo)
@@ -130,8 +130,10 @@ class ConnectToBrokerPacket(Packet):
 
         self.key = struct.unpack(">H", data[44:46])[0]
         self._is_master = struct.unpack(">H", data[46:48])[0]
-        self.name = struct.unpack(">32s", data[48:48+32])[0]
+        self.name = struct.unpack("32s", data[48:48+32])[0]
         self.server_id = struct.unpack(">L", data[80:84])[0]
+
+        self.name = self.name[0:self.name.find('\0')]
 
     def get_key(self):
         return self.key
@@ -159,11 +161,11 @@ class ListPeersPacket(Packet):
         out = struct.pack(">L16sHxx", self.n_peers, "", 0)
 
         for peer in self.peers:
-            out = out + struct.pack(">HH16s16sHH32sL",
+            out = out + struct.pack(">HH16s16sHH31sBL",
                                     0, peer.public_port, "",
                                     peer.public_ip, peer.key,
-                                    peer.is_master, peer.name,
-                                    peer.id)
+                                    peer.is_master, "%s (%s)" % (peer.name, peer.country),
+                                    0, peer.id)
 
         return Packet.marshal(self) + out
 
@@ -175,6 +177,15 @@ class Peer:
 
         self.addr = addr
         self.public_ip, self.public_port = self.addr_to_ip_and_port(addr)
+
+        # Lookup which country this guy is from
+        try:
+            self.country = srv.ip2c.lookup(self.public_ip)[1]
+        except ValueError, e:
+            self.country = None
+        if self.country == None:
+            self.country = "Unknown location"
+
         # These will be set by the CONNECT_TO_BROKER packet below
         self.key = 0
         self.name = ""
@@ -217,6 +228,9 @@ class Peer:
                 log_info("Sending list of peers (%d) to %s:%d" % (lp.n_peers,
                                                                   self.addr[0], self.addr[1]) )
                 self.send_packet(lp.marshal())
+            else:
+                log_info("Added game host %s from %s:%d (%s)" % (self.name, self.addr[0],
+                                                                 self.addr[1], self.country))
 
         if pkt.type == SELECT_PEER:
             peer = self.srv.get_peer_by_id( pkt.get_id() )
@@ -294,7 +308,7 @@ class BrokerPacketHandler(SocketServer.DatagramRequestHandler):
 
 class Broker(SocketServer.UDPServer):
 
-    def __init__(self, host, req_handler):
+    def __init__(self, host, req_handler, ip2c):
         SocketServer.UDPServer.__init__(self, host, req_handler)
         # Instead of setsockopt( ... REUSEADDR ... )
         self.allow_reuse_address = True
@@ -302,6 +316,7 @@ class Broker(SocketServer.UDPServer):
         self.peers_by_id = {}
         self.id = 0
         self.ping_seq = 0
+        self.ip2c = ip2c
 
     def send_data(self, dst, data):
         self.socket.sendto(data, dst)
@@ -361,8 +376,9 @@ packet_class_by_type = {
 }
 
 if __name__ == "__main__":
+    ip2c = ip2country.IP2Country(verbose=0)
     syslog.openlog("frodo")
     log_info("Starting Frodo network broker", True)
-    broker = Broker( ("", 46214), BrokerPacketHandler)
+    broker = Broker( ("", 46214), BrokerPacketHandler, ip2c)
     thread.start_new_thread(ping_thread_fn, (broker, 5))
     broker.serve_forever()
