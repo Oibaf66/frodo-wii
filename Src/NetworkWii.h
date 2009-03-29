@@ -56,8 +56,7 @@ bool Network::InitSocket(const char *remote_host, int port)
 
 	/* Connect to the server. */
 	this->InitSockaddr(&this->connection_addr, remote_host, port);
-	fprintf(stderr, "Bajning: %d\n",
-			net_bind(this->sock,(struct sockaddr *)&this->connection_addr,sizeof(struct sockaddr)));
+
 	return true;
 }
 
