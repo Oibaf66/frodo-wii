@@ -124,7 +124,7 @@ bool Network::Select(int sock, struct timeval *tv)
 void Network::CloseSocket()
 {
 #define SHUT_RDWR 2
-	net_shutdown(this->sock, 2);
+	net_shutdown(this->sock, SHUT_RDWR);
 	net_close(this->sock);
 }
 
