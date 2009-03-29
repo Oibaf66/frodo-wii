@@ -180,7 +180,7 @@ class Peer:
 
         # Lookup which country this guy is from
         try:
-            self.country = srv.ip2c.lookup( self.addr_to_ip_dot_format(addr) )
+            self.country = srv.ip2c.lookup( addr[0] )
         except ValueError, e:
             self.country = None
         if self.country == None:
@@ -199,11 +199,6 @@ class Peer:
         ip = struct.unpack("@L", socket.inet_pton(socket.AF_INET, addr[0]))[0]
         port = addr[1]
         return "%08x" % (ip), port
-
-    def addr_to_ip_dot_format(self, addr):
-        ip = struct.unpack("@L", socket.inet_pton(socket.AF_INET, addr[0]))[0]
-        port = addr[1]
-        return "%d.%d.%d.%d" % ((ip & 0xff000000) >> 24, (ip & 0x00ff0000) >> 16, (ip & 0x0000ff00) >> 8, ip & 0xff)
 
     def handle_packet(self, pkt):
         if pkt.type == CONNECT_TO_BROKER:
