@@ -90,9 +90,6 @@ void Network::InitNetwork()
 {
         char myIP[16];
 
-        /* From Snes9x-gx */
-        while (net_init() == -EAGAIN);
-
         if (if_config(myIP, NULL, NULL, true) < 0)
         {
         	fprintf(stderr, "\n\n\nError getting IP address via DHCP.\n");
