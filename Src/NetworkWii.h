@@ -54,27 +54,10 @@ bool Network::InitSocket(const char *remote_host, int port)
 
 	set_sock_opts(this->sock);
 
-	/* Connect to the server. */
+	/* Setup the socket address */
 	this->InitSockaddr(&this->connection_addr, remote_host, port);
 
 	return true;
-}
-
-bool Network::ReceiveData(void *dst, int sock, size_t sz)
-{
-	size_t received_sz = 0;
-
-	while (received_sz < sz)
-	{
-		int v = net_read(sock, dst, sz);
-
-		if (v < 0)
-			return false;
-		received_sz += v; 
-	}
-	this->traffic += received_sz;
-
-	return sz > 0;
 }
 
 ssize_t Network::ReceiveFrom(void *dst, int sock, size_t sz,
@@ -89,22 +72,6 @@ ssize_t Network::SendTo(void *src, int sock, size_t sz, struct sockaddr_in *to)
 
 	assert(to);
 	return net_sendto(sock, src, sz, 0, (struct sockaddr*)to, to_sz);
-}
-
-bool Network::SendData(void *src, int sock, size_t sz)
-{
-	size_t sent_sz = 0;
-
-	while (sent_sz < sz)
-	{
-		int v = net_write(sock, (void*)src, sz);
-
-		if (v < 0)
-			return false;
-		sent_sz += v;
-	}
-
-	return true;
 }
 
 bool Network::Select(int sock, struct timeval *tv)
