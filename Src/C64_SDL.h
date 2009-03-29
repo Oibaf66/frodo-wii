@@ -313,7 +313,7 @@ void C64::networking_menu(Prefs *np)
 				buf[0],                  /* 0 */
 				buf[1],                  /* 1 */
 				buf[2],                  /* 2 */
-				"Connect as server",     /* 3 */
+				"Host a game",           /* 3 */
 				"Connect as client",     /* 4 */
 				NULL,
 		};
