@@ -180,7 +180,7 @@ class Peer:
 
         # Lookup which country this guy is from
         try:
-            self.country = srv.ip2c.lookup(self.public_ip)[1]
+            self.country = srv.ip2c.lookup(self.public_ip)
         except ValueError, e:
             self.country = None
         if self.country == None:
