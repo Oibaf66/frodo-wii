@@ -4,17 +4,8 @@
 
 static int set_sock_opts(int sock)
 {
-	struct timeval tv;
 	int d = 1;
 
-	memset(&tv, 0, sizeof(tv));
-#if 0
-	tv.tv_sec = 2;
-	net_setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,
-			&tv, sizeof(struct timeval));
-	net_setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO,
-			&tv, sizeof(struct timeval));
-#endif
 	return net_setsockopt(sock,SOL_SOCKET,SO_REUSEADDR, &d, sizeof(int));
 }
 
