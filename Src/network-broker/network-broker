@@ -27,7 +27,8 @@ pkt_type_to_str = {
 
 def log(pri, msg, echo):
     syslog.syslog(pri, msg)
-    print msg
+    if echo:
+        print msg
 
 def log_error(msg, echo = False):
     log(syslog.LOG_ERR, msg, echo)
