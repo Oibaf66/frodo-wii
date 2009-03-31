@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import socket, struct, syslog, time, thread, ip2country
-import SocketServer
+import socket, struct, syslog, time, thread, ip2country, sys
+import SocketServer, stats
 
 FRODO_NETWORK_MAGIC = 0x1976
 
@@ -27,8 +27,7 @@ pkt_type_to_str = {
 
 def log(pri, msg, echo):
     syslog.syslog(pri, msg)
-    if echo:
-        print msg
+    print msg
 
 def log_error(msg, echo = False):
     log(syslog.LOG_ERR, msg, echo)
@@ -206,6 +205,8 @@ class Peer:
             self.name = pkt.get_name()
             self.is_master = pkt.is_master()
 
+            self.srv.log_connection(self.name, self.country)
+
             # Send list of peers if this is not a master
             if not self.is_master:
                 lp = ListPeersPacket()
@@ -308,7 +309,7 @@ class BrokerPacketHandler(SocketServer.DatagramRequestHandler):
 
 class Broker(SocketServer.UDPServer):
 
-    def __init__(self, host, req_handler, ip2c):
+    def __init__(self, host, req_handler, ip2c, stat_data, stat_html):
         SocketServer.UDPServer.__init__(self, host, req_handler)
         # Instead of setsockopt( ... REUSEADDR ... )
         self.allow_reuse_address = True
@@ -317,6 +318,23 @@ class Broker(SocketServer.UDPServer):
         self.id = 0
         self.ping_seq = 0
         self.ip2c = ip2c
+
+        self.stat_html = stat_html
+        self.stat_data = stat_data
+
+        stats.load(self.stat_data)
+
+    def log_connection(self, who, country):
+        stats.add_connection(who, country)
+
+        try:
+            stats.save(self.stat_data)
+        except Exception, e:
+            error_log("saving stats failed with %s" % str(e) )
+        try:
+            stats.generate_html(self.stat_html)
+        except Exception, e:
+            error_log("generating HTML failed with %s" % str(e) )
 
     def send_data(self, dst, data):
         self.socket.sendto(data, dst)
@@ -375,10 +393,19 @@ packet_class_by_type = {
     ACK : PingAckPacket,
 }
 
+def usage():
+    print "Usage: network-broker stat-data-file stat-html-file"
+    sys.exit(1)
+
 if __name__ == "__main__":
+
+    if len(sys.argv) != 3:
+        usage()
+
     ip2c = ip2country.IP2Country(verbose=0)
     syslog.openlog("frodo")
     log_info("Starting Frodo network broker", True)
-    broker = Broker( ("", 46214), BrokerPacketHandler, ip2c)
+    broker = Broker( ("", 46214), BrokerPacketHandler,
+                     ip2c, sys.argv[1], sys.argv[2])
     thread.start_new_thread(ping_thread_fn, (broker, 5))
     broker.serve_forever()
