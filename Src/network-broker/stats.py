@@ -3,6 +3,7 @@ from operator import itemgetter
 
 class Container:
     def __init__(self):
+        self.total_connections = 0
         self.country_count = {}
         self.last_10 = []
 
@@ -16,6 +17,7 @@ class Container:
 
     def add_connection(self, who, country):
         s = "%s (%s)" % (who, country)
+        self.total_connections = self.total_connections + 1
         self.last_10 = [s] + self.last_10[:9]
         self.add_country(country)
 
@@ -28,6 +30,8 @@ class HtmlGenerator:
                                   reverse=True, key=itemgetter(1))
 
         outf.write("<html><body>\n")
+        outf.write("<H2>Frodo-Wii network statistics</H2>\n")
+        outf.write("The total number of connections is <b>%d</b><br>\n" % (self.container.total_connections))
         outf.write("<H3>Last %d connections</H3>\n" % (len(self.container.last_10)) )
         for item in self.container.last_10:
             outf.write("%s<br>\n" % (item) )
