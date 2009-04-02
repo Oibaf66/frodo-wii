@@ -1,6 +1,8 @@
 		TODO: Add ability to select files to load from disks in
 		a menu
 
+		TODO: Fix Unset.19583 - fixed random number...
+
         TODO: Multiple frodo versions, switch between
 
 		TODO: Crash on + in "Other" menu
@@ -10,7 +12,7 @@ version 9:
 		* Networking support now works (but without sound being transferred). A
 		broker is installed on c64-network.game-host.org. 
 
-		* Link with Yohanes port of SDL, modified by dannymi to get USB
+		* Link with Yohanes port of SDL, modified by Danny Milo to get USB
 		keyboards working while still having the Home key do what it
 		should
 
