@@ -147,7 +147,7 @@ private:
 	char networktraffic_string[80];		// Speedometer text
 	void draw_string(SDL_Surface *s, int x, int y, const char *str, uint8 front_color, uint8 back_color);
 	char *on_screen_message;
-	int on_screen_message_start_time;
+	Uint32 on_screen_message_start_time;
 	int on_screen_message_time;
 #endif
 
