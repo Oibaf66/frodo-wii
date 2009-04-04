@@ -102,7 +102,7 @@ Prefs::Prefs()
 	this->MsPerFrame = 28;
 #endif
 	this->NetworkKey = rand() % 0xffff;
-	snprintf(this->NetworkName, 32, "Unset.%d", this->NetworkKey);
+	snprintf(this->NetworkName, 32, "Unset name");
 }
 
 
