@@ -699,6 +699,16 @@ void C64::VBlank(bool draw_frame)
 		else
 			TheCIA1->Joystick1 = j2;
 	}
+	else if (this->network_connection_type == CLIENT)
+	{
+		Uint8 which = j2;
+
+		/* Set both joysticks to the updated value */
+		if (j2 != 0xff)
+			which = j2;
+		TheCIA1->Joystick1 = which;
+		TheCIA1->Joystick2 = which;
+	}
 	else
 	{
 		TheCIA1->Joystick1 = j1;
