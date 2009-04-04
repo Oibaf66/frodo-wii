@@ -72,7 +72,7 @@ void C64::c64_ctor1(void)
 
 	this->virtual_keyboard = new VirtualKeyboard(real_screen, this->menu_font);
 
-	strncpy(this->server_hostname, "c64-network.game-host.org",
+	strncpy(this->server_hostname, "192.168.10.139",
 			sizeof(this->server_hostname));
 	this->server_port = 46214;
 	this->network_connection_type = NONE;
@@ -350,11 +350,13 @@ void C64::networking_menu(Prefs *np)
 
 			this->peer = new Network(this->server_hostname,
 					this->server_port, master);
-			this->network_connection_type = master ? MASTER : CLIENT;
-			if (this->peer->Connect() == false)
+			this->network_connection_type = master ? MASTER_CONNECT : CLIENT;
+			if (this->network_connection_type == CLIENT &&
+					this->peer->Connect() == false)
 			{
 				delete this->peer;
 				this->peer = NULL;
+				this->network_connection_type = NONE;
 			}
 		}
 	} while (opt == 1 || opt == 2);
@@ -568,7 +570,8 @@ void C64::network_vblank()
 
         	if (this->quit_thyself)
 		{
-			remote->Disconnect();
+        		if (this->network_connection_type != MASTER_CONNECT)
+        			remote->Disconnect();
 			delete remote;
 			this->peer = NULL;
 			return;
@@ -580,6 +583,21 @@ void C64::network_vblank()
         			js = &TheCIA1->Joystick1;
         		else
         			js = &TheCIA1->Joystick2;
+        	} else if (this->network_connection_type == MASTER_CONNECT) {
+        		network_connection_error_t err = this->peer->ConnectFSM();
+
+        		TheDisplay->display_status_string("WAITING FOR CONNECTION...", 1);
+
+        		if (err == OK) {
+        			this->network_connection_type = MASTER;
+                		TheDisplay->display_status_string("CLIENT CONNECTED!", 1);
+        		}
+        		else if (err != AGAIN_ERROR)
+        		{
+        			delete remote;
+        			this->peer = NULL;
+        		}
+        		return;
         	} else {
         		if (ThePrefs.JoystickSwap)
         			js = &TheCIA1->Joystick2;

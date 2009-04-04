@@ -109,6 +109,7 @@ public:
 #if defined(__unix) || defined(GEKKO)
 	bool quit_requested;
 #endif
+	void display_status_string(char *str, int seconds);
 
 private:
 	int led_state[4];
@@ -143,8 +144,11 @@ private:
 
 #ifdef HAVE_SDL
 	char speedometer_string[16];		// Speedometer text
-	char networktraffic_string[16];		// Speedometer text
+	char networktraffic_string[80];		// Speedometer text
 	void draw_string(SDL_Surface *s, int x, int y, const char *str, uint8 front_color, uint8 back_color);
+	char *on_screen_message;
+	int on_screen_message_start_time;
+	int on_screen_message_time;
 #endif
 
 #ifdef __unix

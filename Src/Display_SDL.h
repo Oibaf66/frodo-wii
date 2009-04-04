@@ -130,8 +130,10 @@ C64Display::C64Display(C64 *the_c64) : TheC64(the_c64)
 	quit_requested = false;
 	speedometer_string[0] = 0;
 	networktraffic_string[0] = 0;
+	this->on_screen_message = NULL;
+	this->on_screen_message_start_time = 0;
+	this->on_screen_message_time = 0;
 
-	printf("ssof2 %d:%d\n", sizeof(C64Display), sizeof(C64));
 	// Open window
 	SDL_WM_SetCaption(VERSION_STRING, "Frodo");
 	// LEDs off
@@ -226,6 +228,15 @@ void C64Display::Update(uint8 *src_pixels)
 	}
 
 	draw_string(real_screen, 0, 0, networktraffic_string, black, fill_gray);
+	if (this->on_screen_message) {
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+
+		draw_string(real_screen, 60, 30,
+				this->on_screen_message, black, fill_gray);
+		if (tv.tv_sec - this->on_screen_message_start_time > this->on_screen_message_time)
+			this->on_screen_message = NULL;
+	}
 
 	SDL_Flip(real_screen);
 }
@@ -233,6 +244,16 @@ void C64Display::Update(uint8 *src_pixels)
 void C64Display::Update()
 {
 	this->Update((Uint8*)screen);
+}
+
+void C64Display::display_status_string(char *str, int seconds)
+{
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+
+	this->on_screen_message = str;
+	this->on_screen_message_start_time = tv.tv_sec;
+	this->on_screen_message_time = seconds;
 }
 
 /*
@@ -300,8 +321,8 @@ void C64Display::Speedometer(int speed)
 
 void C64Display::NetworkTrafficMeter(float kb_per_s, bool is_throttled)
 {
-	sprintf(this->networktraffic_string, "%6.2f KB/S%s",
-			kb_per_s, is_throttled ? " THROTTLED" : "");
+	snprintf(this->networktraffic_string, sizeof(this->networktraffic_string),
+			"%6.2f KB/S%s", kb_per_s, is_throttled ? " THROTTLED" : "");
 }
 
 /*

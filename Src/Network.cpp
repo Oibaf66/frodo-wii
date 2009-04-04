@@ -892,13 +892,9 @@ void Network::SendPingAck(int seq)
 network_connection_error_t Network::WaitForPeerAddress()
 {
 	NetworkUpdateListPeers *pi;
-	struct timeval tv;
-
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
 
 	this->ResetNetworkUpdate();
-	if (this->ReceiveUpdate(&tv) == false)
+	if (this->ReceiveUpdate() == false)
 		return AGAIN_ERROR;
 	if (this->ud->type == PING)
 	{

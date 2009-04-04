@@ -45,6 +45,7 @@
 enum
 {
 	NONE,
+	MASTER_CONNECT,
 	MASTER,
 	CLIENT
 };

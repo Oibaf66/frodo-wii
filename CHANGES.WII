@@ -9,6 +9,16 @@
 
 		TODO: Handle Run/Stop in virtual keyboard (?)
 version 9:
+		* Fix a buffer overflow in the network status string...
+
+		* Add network version field and display an error message if
+		an un-matching network version is connected
+
+		* Select with zero timeout when waiting for peer addresses 
+
+		* Don't block the server when connecting and instead draw a status
+		string to indicate that we're waiting for a connection
+
 		* Networking support now works (but without sound being transferred). A
 		broker is installed on c64-network.game-host.org. 
 
