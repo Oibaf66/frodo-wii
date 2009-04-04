@@ -58,6 +58,7 @@ typedef enum
 	AGAIN_ERROR,
 	VERSION_ERROR,
 	SERVER_GARBAGE_ERROR,
+	NO_PEERS_ERROR,
 } network_connection_error_t;
 
 struct NetworkUpdate

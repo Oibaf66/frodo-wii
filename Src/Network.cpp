@@ -970,6 +970,8 @@ network_connection_error_t Network::WaitForPeerList()
 		return SERVER_GARBAGE_ERROR;
 
 	pi = (NetworkUpdateListPeers *)this->ud->data;
+	if (pi->n_peers == 0)
+		return NO_PEERS_ERROR;
 	msgs = (const char**)calloc(pi->n_peers + 1, sizeof(const char*));
 
 	for (int i = 0; i < pi->n_peers; i++) {
@@ -1108,6 +1110,7 @@ network_connection_error_t Network::ConnectFSM()
 
 bool Network::Connect()
 {
+	this->network_connection_state = CONN_CONNECT_TO_BROKER;
 	while (1)
 	{
 		SDL_FillRect(real_screen, 0, SDL_MapRGB(real_screen->format,
@@ -1142,6 +1145,11 @@ bool Network::Connect()
 			return true;
 		case AGAIN_ERROR:
 			break;
+		case NO_PEERS_ERROR:
+			menu_print_font(real_screen, 255,255,0, 30, 70,
+					"No servers to connect to.");
+			sleep(1);
+			return false;
 		case VERSION_ERROR:
 			menu_print_font(real_screen, 255,255,0, 30, 70,
 					"Your frodo is too old.");
