@@ -8,6 +8,8 @@
 #endif
 #include <SDL.h>
 
+#define FRODO_NETWORK_PROTOCOL_VERSION 2
+
 #define FRODO_NETWORK_MAGIC 0x1976
 
 #define NETWORK_UPDATE_SIZE     (256 * 1024)
@@ -46,7 +48,17 @@ typedef enum
 
 	/* Client-only */
 	CONN_WAIT_FOR_PEER_LIST,
+
+	FAILED,
 } network_connection_state_t;
+
+typedef enum
+{
+	OK = 0,
+	AGAIN_ERROR,
+	VERSION_ERROR,
+	SERVER_GARBAGE_ERROR,
+} network_connection_error_t;
 
 struct NetworkUpdate
 {
@@ -68,7 +80,6 @@ struct NetworkUpdateJoystick
 {
 	uint8 val;
 };
-
 
 struct NetworkUpdateSelectPeer
 {
@@ -101,6 +112,7 @@ struct NetworkUpdatePeerInfo
 	uint16 is_master;
 	uint8 name[32];      /* "SIMON", "LINDA" etc */
 	uint32 server_id;    /* Used by the server */
+	uint32 version;      /* Version number */
 };
 
 struct NetworkUpdateListPeers
@@ -175,6 +187,8 @@ public:
 	}
 
 	bool Connect();
+
+	network_connection_error_t ConnectFSM();
 
 	/**
 	 * Disconnect from the other end. You should delete the object
@@ -292,13 +306,11 @@ protected:
 
 	bool WaitForPeerReply();
 
-	bool WaitForPeerList();
+	network_connection_error_t WaitForPeerList();
 
-	bool WaitForPeerAddress();
+	network_connection_error_t WaitForPeerAddress();
 
 	bool SelectPeer(uint32 id);
-
-	bool ConnectFSM();
 
 	size_t FillNetworkBuffer(NetworkUpdate *p);
 
@@ -333,6 +345,8 @@ protected:
 	/* Connection to the peer */
 	int sock;
 	struct sockaddr_in connection_addr;
+
+	const char *connection_error_message;
 
 	network_connection_state_t network_connection_state;
 

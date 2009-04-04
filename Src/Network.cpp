@@ -86,6 +86,7 @@ Network::Network(const char *remote_host, int port, bool is_master)
 		exit(1);
 	}
 	this->network_connection_state = CONN_CONNECT_TO_BROKER;
+	this->connection_error_message = "Connection OK";
 }
 
 Network::~Network()
@@ -543,8 +544,10 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
 			return false;
 
 		if (this->DeMarshalAllData((NetworkUpdate*)p, actual_sz,
-				&has_stop) == false)
+				&has_stop) == false) {
+			printf("Demarshal error\n");
 			return false;
+		}
 		sz_left -= actual_sz;
 		p = p + actual_sz;
 	} while (!has_stop);
@@ -659,6 +662,7 @@ bool Network::MarshalData(NetworkUpdate *p)
 			peer->public_port = htons(peer->public_port);
 			peer->is_master = htons(peer->is_master);
 			peer->server_id = htonl(peer->server_id);
+			peer->version = htonl(peer->version);
 		}
 		lp->n_peers = htonl(lp->n_peers);
 		lp->your_port = htons(lp->your_port);
@@ -670,6 +674,7 @@ bool Network::MarshalData(NetworkUpdate *p)
 		/* The rest is simply ignored */
 		pi->is_master = htons(pi->is_master);
 		pi->key = htons(pi->key);
+		pi->version = htonl(pi->version);
 	} break;
 	default:
 		/* Unknown data... */
@@ -750,6 +755,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 			peer->public_port = ntohs(peer->public_port);
 			peer->is_master = ntohs(peer->is_master);
 			peer->server_id = ntohl(peer->server_id);
+			peer->version = ntohl(peer->version);
 		}
 		lp->your_port = ntohs(lp->your_port);
 	} break;
@@ -838,6 +844,7 @@ bool Network::ConnectToBroker()
 
 	pi->is_master = this->is_master;
 	pi->key = ThePrefs.NetworkKey;
+	pi->version = FRODO_NETWORK_PROTOCOL_VERSION;
 	strcpy((char*)pi->name, ThePrefs.NetworkName);
 	this->AddNetworkUpdate(ud);
 	out = this->SendUpdate();
@@ -882,7 +889,7 @@ void Network::SendPingAck(int seq)
 	this->ResetNetworkUpdate();
 }
 
-bool Network::WaitForPeerAddress()
+network_connection_error_t Network::WaitForPeerAddress()
 {
 	NetworkUpdateListPeers *pi;
 	struct timeval tv;
@@ -892,16 +899,16 @@ bool Network::WaitForPeerAddress()
 
 	this->ResetNetworkUpdate();
 	if (this->ReceiveUpdate(&tv) == false)
-		return false;
+		return AGAIN_ERROR;
 	if (this->ud->type == PING)
 	{
 		NetworkUpdatePingAck *p = (NetworkUpdatePingAck*)ud->data;
 		/* Send ack and go back to this state again */
 		this->SendPingAck(p->seq);
-		return false;
+		return AGAIN_ERROR;
 	}
 	if (this->ud->type != LIST_PEERS)
-		return false;
+		return SERVER_GARBAGE_ERROR;
 
 	pi = (NetworkUpdateListPeers *)this->ud->data;
 	if (pi->n_peers != 1)
@@ -909,8 +916,10 @@ bool Network::WaitForPeerAddress()
 		fprintf(stderr, "There is something wrong with the server: Got %d peers on master connect\n"
 				"Contact Simon Kagstrom and ask him to correct it\n",
 				pi->n_peers);
-		return false;
+		return SERVER_GARBAGE_ERROR;
 	}
+	if (pi->peers[0].version != FRODO_NETWORK_PROTOCOL_VERSION)
+		return VERSION_ERROR;
 
 	/* Setup the peer info */
 	char buf[128];
@@ -918,9 +927,13 @@ bool Network::WaitForPeerAddress()
 	/* Not sure what to do if this fails */
 	this->IpToStr(buf, pi->peers[0].public_ip);
 	printf("Converted ip to %s:%d\n", buf, pi->peers[0].public_port);
-	return this->InitSockaddr(&this->connection_addr, buf,
-			pi->peers[0].public_port);
-		
+	if (this->InitSockaddr(&this->connection_addr, buf,
+			pi->peers[0].public_port) == false)
+	{
+		printf("Init sockaddr error\n");
+		return SERVER_GARBAGE_ERROR;
+	}
+	return OK;
 }
 
 bool Network::SelectPeer(uint32 id)
@@ -938,7 +951,7 @@ bool Network::SelectPeer(uint32 id)
 	return out;		
 }
 
-bool Network::WaitForPeerList()
+network_connection_error_t Network::WaitForPeerList()
 {
 	NetworkUpdateListPeers *pi;
 	struct timeval tv;
@@ -949,41 +962,47 @@ bool Network::WaitForPeerList()
 
 	this->ResetNetworkUpdate();
 	if (this->ReceiveUpdate(&tv) == false)
-		return false;
+		return AGAIN_ERROR;
 	if (this->ud->type == PING)
 	{
 		NetworkUpdatePingAck *p = (NetworkUpdatePingAck*)ud->data;
 		/* Send ack and go back to this state again */
 		this->SendPingAck(p->seq);
-		return false;
+		return AGAIN_ERROR;
 	}
 	if (ud->type != LIST_PEERS)
-		return false;
+		return SERVER_GARBAGE_ERROR;
 
 	pi = (NetworkUpdateListPeers *)this->ud->data;
 	msgs = (const char**)calloc(pi->n_peers + 1, sizeof(const char*));
 
 	for (int i = 0; i < pi->n_peers; i++) {
 		msgs[i] = (const char*)pi->peers[i].name;
+		if (pi->peers[i].version != FRODO_NETWORK_PROTOCOL_VERSION)
+		{
+			free(msgs);
+			return VERSION_ERROR;
+		}
 	}
 	int sel = menu_select(msgs, NULL);
 	free(msgs);
 
 	/* FIXME! What to do here??? */
 	if (sel < 0)
-		return false;
+		return SERVER_GARBAGE_ERROR;
 	/* Setup the peer info */
 	char buf[128];
 	uint16 port = pi->peers[sel].public_port;
 
 	/* Not sure what to do if this fails */
 	this->IpToStr(buf, pi->peers[sel].public_ip);
-	printf("Converted ip to %s:%d\n", buf, port);
 
 	/* Finally tell the broker who we selected */
 	this->SelectPeer(pi->peers[sel].server_id);
-	return this->InitSockaddr(&this->connection_addr, buf,
-			port);
+	if (this->InitSockaddr(&this->connection_addr, buf,
+			port) == false)
+		return SERVER_GARBAGE_ERROR;
+	return OK;
 }
 
 bool Network::WaitForPeerReply()
@@ -1016,8 +1035,10 @@ bool Network::ConnectToPeer()
 	return out;
 }
 
-bool Network::ConnectFSM()
+network_connection_error_t Network::ConnectFSM()
 {
+	network_connection_error_t err;
+
 	/* See http://www.brynosaurus.com/pub/net/p2pnat/ for how this works.
 	 *
 	 * For the server ("master"):
@@ -1050,20 +1071,23 @@ bool Network::ConnectFSM()
 		}
 		break;
 	case CONN_WAIT_FOR_PEER_ADDRESS:
-		if (this->WaitForPeerAddress() == false)
-			return false;
-		this->network_connection_state = CONN_CONNECT_TO_PEER;
+		err = this->WaitForPeerAddress();
+		if (err == OK)
+			this->network_connection_state = CONN_CONNECT_TO_PEER;
+		else
+			return err;
 		break;
 	case CONN_WAIT_FOR_PEER_LIST:
 		/* Also tells the broker that we want to connect */
-		if (this->WaitForPeerList() == false)
-			return false;
-		this->network_connection_state = CONN_CONNECT_TO_PEER;
+		err = this->WaitForPeerList();
+		if (err == OK)
+			this->network_connection_state = CONN_CONNECT_TO_PEER;
+		else
+			return err;
 		break;
 	case CONN_CONNECT_TO_PEER:
-		printf("Connecting to peer\n");
 		if (this->ConnectToPeer() == false)
-			return false;
+			return AGAIN_ERROR;
 		/* Allow some transit time */
 		sleep(1);
 		this->network_connection_state = CONN_WAIT_FOR_PEER_REPLY;
@@ -1071,21 +1095,19 @@ bool Network::ConnectFSM()
 	case CONN_WAIT_FOR_PEER_REPLY:
 		/* Connect again in case the first sent was dropped on
 		 * its way to the peer */
-		printf("Connecting to peer again\n");
 		if (this->ConnectToPeer() == false)
-			return false;
-		printf("Waiting for peer reply\n");
-		if (this->WaitForPeerReply() == false)
-			return false;
-		printf("Got peer reply\n");
-		this->network_connection_state = CONN_CONNECTED;
+			return AGAIN_ERROR;
+		if (this->WaitForPeerReply() == true)
+			this->network_connection_state = CONN_CONNECTED;
+		else
+			return AGAIN_ERROR;
 		break;
 	case CONN_CONNECTED:
 	default:
-		return true;
+		return OK;
 	}
 
-	return true;;
+	return AGAIN_ERROR;
 }
 
 bool Network::Connect()
@@ -1117,10 +1139,31 @@ bool Network::Connect()
 		if (SDL_GetKeyState(NULL)[SDLK_ESCAPE])
 			return false;
 
-		if (this->network_connection_state == CONN_CONNECTED)
-			return true;
 		/* Run the state machine */
-		this->ConnectFSM();
+		switch (this->ConnectFSM())
+		{
+		case OK:
+			return true;
+		case AGAIN_ERROR:
+			break;
+		case VERSION_ERROR:
+			menu_print_font(real_screen, 255,255,0, 30, 70,
+					"Your frodo is too old.");
+			menu_print_font(real_screen, 255,255,0, 30, 90,
+					"See http://frodo-wii.googlecode.com");
+			sleep(1);
+			return false;
+		case SERVER_GARBAGE_ERROR:
+			menu_print_font(real_screen, 255,255,0, 30, 70,
+					"Network error");
+			sleep(1);
+			return false;
+		default:
+			menu_print_font(real_screen, 255,255,0, 30, 70,
+					"Unknown network error");
+			sleep(1);
+			return false;
+		}
 	}
 
 	return false;

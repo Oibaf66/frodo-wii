@@ -3,6 +3,7 @@
 import socket, struct, syslog, time, thread, ip2country, sys
 import SocketServer, stats
 
+FRODO_NETWORK_PROTOCOL_VERSION = 2
 FRODO_NETWORK_MAGIC = 0x1976
 
 CONNECT_TO_BROKER  = 99 # Hello, broker
@@ -132,6 +133,7 @@ class ConnectToBrokerPacket(Packet):
         self._is_master = struct.unpack(">H", data[46:48])[0]
         self.name = struct.unpack("32s", data[48:48+32])[0]
         self.server_id = struct.unpack(">L", data[80:84])[0]
+        self.version = struct.unpack(">L", data[84:88])[0]
 
         self.name = self.name[0:self.name.find('\0')]
 
@@ -155,17 +157,18 @@ class ListPeersPacket(Packet):
     def add_peer(self, peer):
         self.peers.append(peer)
         self.n_peers = self.n_peers + 1
-        self.size = self.size + 76
+        self.size = self.size + 80
 
     def marshal(self):
         out = struct.pack(">L16sHxx", self.n_peers, "", 0)
 
         for peer in self.peers:
-            out = out + struct.pack(">HH16s16sHH31sBL",
+            # Force the version - we don't allow old stuff
+            out = out + struct.pack(">HH16s16sHH31sBLL",
                                     0, peer.public_port, "",
                                     peer.public_ip, peer.key,
                                     peer.is_master, "%s (%s)" % (peer.name, peer.country),
-                                    0, peer.id)
+                                    0, peer.id, FRODO_NETWORK_PROTOCOL_VERSION)
 
         return Packet.marshal(self) + out
 
