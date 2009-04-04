@@ -8,6 +8,7 @@
 		TODO: Crash on + in "Other" menu
 
 		TODO: Handle Run/Stop in virtual keyboard (?)
+
 version 9:
 		* Fix a buffer overflow in the network status string...
 
@@ -26,7 +27,7 @@ version 9:
 		keyboards working while still having the Home key do what it
 		should
 
-        -- Simon Kagstrom <simon.kagstrom@gmail.com>
+        -- Simon Kagstrom <simon.kagstrom@gmail.com>, Sat Apr  4 15:02:05 CEST 2009
 
 
 version 8:
