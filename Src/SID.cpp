@@ -279,10 +279,8 @@ void MOS6581::SetState(MOS6581State *ss)
 
 #if defined(AMIGA) || defined(__riscos__)
 const uint32 SAMPLE_FREQ = 22050;	// Sample output frequency in Hz
-#elif defined(GEKKO)
-const uint32 SAMPLE_FREQ = 48000;
 #else
-const uint32 SAMPLE_FREQ = 44100;	// Sample output frequency in Hz
+const uint32 SAMPLE_FREQ = 32000;	// Sample output frequency in Hz
 #endif
 const uint32 SID_FREQ = 985248;		// SID frequency in Hz
 const uint32 CALC_FREQ = 50;			// Frequency at which calc_buffer is called in Hz (should be 50Hz)

@@ -13,7 +13,7 @@
 #include <gccore.h>
 #include <string.h>
 
-#define SAMPLERATE 48000
+#define SAMPLERATE 32000
 
 #define MIXBUFSIZE_BYTES 16000
 #define MIXBUFSIZE_SHORT (MIXBUFSIZE_BYTES / 2)
@@ -90,7 +90,7 @@ static void AudioSwitchBuffers()
 void InitialiseAudio()
 {
 	AUDIO_Init(NULL); // Start audio subsystem
-	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
+	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_32KHZ);
 	AUDIO_RegisterDMACallback( AudioSwitchBuffers );
 	memset(soundbuffer, 0, SOUNDBUFSIZE*2);
 	memset(mixbuffer, 0, MIXBUFSIZE_BYTES);

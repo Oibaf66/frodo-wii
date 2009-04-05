@@ -9,6 +9,14 @@
 
 		TODO: Handle Run/Stop in virtual keyboard (?)
 
+version 10:
+		* Use 32KHz sound samplerate. This fixes much of the cracking sound
+		problems from v9. It also allows sound to be transferred via the network
+		to both Linux/Wii (sharing the same sample rate) and lowering the
+		network transfer rate. 
+
+		-- Simon Kagstrom <simon.kagstrom@gmail.com>,
+
 version 9:
 		* Fix a buffer overflow in the network status string...
 
