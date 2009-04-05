@@ -73,8 +73,8 @@ void DigitalRenderer::init_sound(void)
 	arg = 32000;
 	ioctl(devfd, SNDCTL_DSP_SPEED, &arg);
 	ioctl(devfd, SOUND_PCM_READ_RATE, &arg);
-	//if (arg < 43000 || arg > 45000)
-	//	return;
+	if (arg < 30000 || arg > 45000)
+		return;
 
 	ioctl(devfd, SNDCTL_DSP_GETBLKSIZE, &sndbufsize);
 	sound_buffer = new int16[sndbufsize];
