@@ -1,4 +1,4 @@
-import sys, pickle
+import sys, pickle, time
 from operator import itemgetter
 
 class Container:
@@ -6,6 +6,14 @@ class Container:
         self.total_connections = 0
         self.country_count = {}
         self.last_10 = []
+
+    def copy_from_other(self, other):
+        try:
+            self.total_connections = other.total_connections
+            self.country_count = other.country_count
+            self.last_10 = other.last_10
+        except:
+            pass
 
     def add_country(self, country):
         try:
@@ -16,7 +24,8 @@ class Container:
         self.country_count[country] = cur + 1
 
     def add_connection(self, who, country):
-        s = "%s (%s)" % (who, country)
+        time_now = time.strftime("%Y-%m-%d %H:%M", time.gmtime())
+        s = "%s - %s (%s)" % (time_now, who, country)
         self.total_connections = self.total_connections + 1
         self.last_10 = [s] + self.last_10[:9]
         self.add_country(country)
@@ -62,12 +71,14 @@ def generate_html(filename):
 def load(filename):
     global g_stat
 
+    g_stat = Container()
     try:
         of = open(filename, "r")
-        g_stat = pickle.load(of)
+        other = pickle.load(of)
+        g_stat.copy_from_other(other)
         of.close()
     except:
-        g_stat = Container()
+        pass
 
 def add_connection(who, country):
     g_stat.add_connection(who, country)
