@@ -608,7 +608,8 @@ void C64::network_vblank()
         	/* Has the peer sent any data? */
         	if (remote->ReceiveUpdate() == true)
         	{
-        		if (remote->DecodeUpdate(remote->GetScreen(), js) == false)
+        		if (remote->DecodeUpdate(remote->GetScreen(),
+        				js, this->TheSID) == false)
         		{
         			/* Disconnect or sending crap, remove this guy! */
         			delete remote;
@@ -621,16 +622,16 @@ void C64::network_vblank()
 		remote->ResetNetworkUpdate();
 
 		if (this->network_connection_type == MASTER &&
-        			remote->ThrottleTraffic()) {
+        			!remote->ThrottleTraffic()) {
         		/* Skip this frame if the data rate is too high */
         		has_throttled = true;
-        		return;
+                	remote->EncodeDisplay(master, remote->GetScreen());
         	}
 
         	/* Perhaps send updates to the other side (what is determined by 
         	 * if this is the master or not) */
 		remote->EncodeJoystickUpdate(*js);
-        	remote->EncodeDisplay(master, remote->GetScreen());
+		remote->EncodeSound();
 
 		if (remote->SendUpdate() == false)
         	{

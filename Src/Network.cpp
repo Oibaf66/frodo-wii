@@ -48,7 +48,7 @@ Network::Network(const char *remote_host, int port, bool is_master)
 
 	this->InitNetwork();
 
-	this->is_master = is_master;
+	Network::is_master = is_master;
 	this->connected = false;
 
 	/* "big enough" buffer */
@@ -262,7 +262,7 @@ bool Network::CompareSquare(Uint8 *a, Uint8 *b)
 
 void Network::EncodeDisplay(Uint8 *master, Uint8 *remote)
 {
-	if (!this->is_master)
+	if (!Network::is_master)
 		return;
 	for ( int sq = 0; sq < N_SQUARES_H * N_SQUARES_W; sq++ )
 	{
@@ -408,8 +408,8 @@ size_t Network::EncodeSoundBuffer(struct NetworkUpdate *dst, Uint8 *buf, size_t 
 	printf("Not implemented\n");
 	dst->size = 0;
 	/* Try encoding as RLE, but if it's too large, go for RAW */
-	out = this->EncodeSoundRLE(dst, buf, len);
-	if (out > len)
+//	out = this->EncodeSoundRLE(dst, buf, len);
+//	if (out > len)
 		out = this->EncodeSoundRaw(dst, buf, len);
 	dst->size = out + sizeof(struct NetworkUpdate); 
 
@@ -418,14 +418,29 @@ size_t Network::EncodeSoundBuffer(struct NetworkUpdate *dst, Uint8 *buf, size_t 
 
 void Network::EncodeSound()
 {
+	NetworkUpdate *dst = (NetworkUpdate *)this->cur_ud;
+	static Uint8 tmp_buf[NETWORK_SOUND_BUF_SIZE];
+	int offset = 0;
+
 	/* Nothing to encode? */
-	if (!this->is_master ||
+	if (!Network::is_master ||
 			Network::sample_head == Network::sample_tail)
 		return;
-	while (Network::sample_tail != Network::sample_head)
+
+	if (Network::sample_tail > Network::sample_head)
 	{
-		Network::sample_tail = (Network::sample_tail + 1) % NETWORK_SOUND_BUF_SIZE;
+		memcpy(tmp_buf + offset, Network::sample_buf + Network::sample_tail,
+				NETWORK_SOUND_BUF_SIZE - Network::sample_tail);
+		offset += NETWORK_SOUND_BUF_SIZE - Network::sample_tail;
+		Network::sample_tail = 0;
 	}
+	memcpy(tmp_buf + offset, Network::sample_buf + Network::sample_tail,
+			Network::sample_head - Network::sample_tail);
+	offset += Network::sample_head - Network::sample_tail;
+	Network::sample_tail = Network::sample_head;
+
+	this->EncodeSoundBuffer(dst, tmp_buf, offset);
+	this->AddNetworkUpdate(dst);
 }
 
 void Network::PushSound(uint8 vol)
@@ -439,7 +454,7 @@ void Network::EncodeJoystickUpdate(Uint8 v)
 	struct NetworkUpdate *dst = this->cur_ud;
 	struct NetworkUpdateJoystick *j = (NetworkUpdateJoystick *)dst->data;
 
-	if (this->is_master || this->cur_joystick_data == v)
+	if (Network::is_master || this->cur_joystick_data == v)
 		return;
 	dst = InitNetworkUpdate(dst, JOYSTICK_UPDATE,
 			sizeof(NetworkUpdate) + sizeof(NetworkUpdateJoystick));
@@ -450,14 +465,15 @@ void Network::EncodeJoystickUpdate(Uint8 v)
 }
 
 
-size_t Network::DecodeSoundUpdate(struct NetworkUpdate *src, char *buf)
+size_t Network::DecodeSoundUpdate(struct NetworkUpdate *src, MOS6581 *dst)
 {
 	size_t out;
 
 	if (src->type == SOUND_UPDATE_RAW)
 	{
 		out = src->size - sizeof(struct NetworkUpdate);
-		memcpy(buf, src->data, out);
+		for (int i = 0; i < out; i++)
+			dst->PushVolume(src->data[i]);
 	}
 	else
 		out = 0; 
@@ -790,7 +806,7 @@ bool Network::DeMarshalAllData(NetworkUpdate *ud, size_t max_size,
 	return this->DeMarshalData(p);
 }
 
-bool Network::DecodeUpdate(uint8 *screen, uint8 *js)
+bool Network::DecodeUpdate(uint8 *screen, uint8 *js, MOS6581 *dst)
 {
 	NetworkUpdate *p = this->ud;
 	bool out = true;
@@ -803,14 +819,14 @@ bool Network::DecodeUpdate(uint8 *screen, uint8 *js)
 		case DISPLAY_UPDATE_RLE:
 		case DISPLAY_UPDATE_DIFF:
 			/* No screen updates _to_ the master */
-			if (this->is_master)
+			if (Network::is_master)
 				break;
 			if (this->DecodeDisplayUpdate(screen, p) == false)
 				out = false;
 			break;
 		case JOYSTICK_UPDATE:
 			/* No joystick updates _from_ the master */
-			if (js && this->is_master)
+			if (js && Network::is_master)
 			{
 				NetworkUpdateJoystick *j = (NetworkUpdateJoystick *)p->data;
 				*js = j->val;
@@ -842,7 +858,7 @@ bool Network::ConnectToBroker()
 	NetworkUpdatePeerInfo *pi = (NetworkUpdatePeerInfo *)ud->data;
 	bool out;
 
-	pi->is_master = this->is_master;
+	pi->is_master = Network::is_master;
 	pi->key = ThePrefs.NetworkKey;
 	pi->version = FRODO_NETWORK_PROTOCOL_VERSION;
 	strcpy((char*)pi->name, ThePrefs.NetworkName);
@@ -1062,7 +1078,7 @@ network_connection_error_t Network::ConnectFSM()
 	case CONN_CONNECT_TO_BROKER:
 		if (this->ConnectToBroker() == true)
 		{
-			if (this->is_master)
+			if (Network::is_master)
 				this->network_connection_state = CONN_WAIT_FOR_PEER_ADDRESS;
 			else
 				this->network_connection_state = CONN_WAIT_FOR_PEER_LIST;
@@ -1117,7 +1133,7 @@ bool Network::Connect()
 				0x00, 0x80, 0x80));
 		menu_print_font(real_screen, 255,255,0, 30, 30,
 				"Connecting... Hold Esc or 1 to abort");
-		if (this->is_master)
+		if (Network::is_master)
 			menu_print_font(real_screen, 255,255,0, 30, 50,
 					"(Waiting for client connection)");
 		SDL_Flip(real_screen);
@@ -1186,6 +1202,7 @@ void Network::Disconnect()
 uint8 Network::sample_buf[NETWORK_SOUND_BUF_SIZE];
 int Network::sample_head;
 int Network::sample_tail;
+bool Network::is_master = true; /* Assume until set false */
 
 #if defined(GEKKO)
 #include "NetworkWii.h"

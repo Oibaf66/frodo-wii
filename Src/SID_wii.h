@@ -2,12 +2,13 @@
  *  SID_linux.i - 6581 emulation, Linux specific stuff
  *
  *  Frodo (C) 1994-1997,2002 Christian Bauer
- *  Linux sound stuff by Bernd Schmidt
+ *  Wii sound stuff by Simon Kagstrom
  */
 
 #include "gcaudio.h"
 
 #include "VIC.h"
+#include "Network.h"
 
 /*
  *  Initialization
@@ -69,6 +70,7 @@ void DigitalRenderer::EmulateLine(void)
 	if (!ready)
 		return;
 
+	Network::PushSound(volume);
 	sample_buf[sample_in_ptr] = volume;
 	sample_in_ptr = (sample_in_ptr + 1) % SAMPLE_BUF_SIZE;
 

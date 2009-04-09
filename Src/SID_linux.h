@@ -36,7 +36,7 @@
 #define HAVE_CWSID 1
 
 #include "VIC.h"
-
+#include "Network.h"
 
 /*
  *  Initialization
@@ -115,16 +115,13 @@ void DigitalRenderer::Resume(void)
  * Fill buffer, sample volume (for sampled voice)
  */
 
-void DigitalRenderer::EmulateLine(void)
+void DigitalRenderer::PushVolume(uint8 vol)
 {
 	static int divisor = 0;
 	static int to_output = 0;
 	static int buffer_pos = 0;
 
-	if (!ready)
-		return;
-
-	sample_buf[sample_in_ptr] = volume;
+	sample_buf[sample_in_ptr] = vol;
 	sample_in_ptr = (sample_in_ptr + 1) % SAMPLE_BUF_SIZE;
 
 	// Now see how many samples have to be added for this line
@@ -143,6 +140,15 @@ void DigitalRenderer::EmulateLine(void)
 	}
 }
 
+void DigitalRenderer::EmulateLine(void)
+{
+	if (!ready)
+		return;
+	Network::PushSound(volume);
+	if (Network::is_master)
+		this->PushVolume(volume);
+}
+
 
 /*
  *  Renderer for Catweasel card
@@ -156,6 +162,7 @@ public:
 
 	virtual void Reset(void);
 	virtual void EmulateLine(void) {}
+	virtual void PushVolume(uint8) {}
 	virtual void WriteRegister(uint16 adr, uint8 byte);
 	virtual void NewPrefs(Prefs *prefs) {}
 	virtual void Pause(void) {}

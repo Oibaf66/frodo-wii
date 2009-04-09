@@ -363,6 +363,7 @@ public:
 	virtual ~DigitalRenderer();
 
 	virtual void Reset(void);
+	virtual void PushVolume(uint8 volume);
 	virtual void EmulateLine(void);
 	virtual void WriteRegister(uint16 adr, uint8 byte);
 	virtual void NewPrefs(Prefs *prefs);

@@ -8,6 +8,8 @@
 #endif
 #include <SDL.h>
 
+#include "SID.h"
+
 #define FRODO_NETWORK_PROTOCOL_VERSION 2
 
 #define FRODO_NETWORK_MAGIC 0x1976
@@ -150,7 +152,7 @@ public:
 	void EncodeJoystickUpdate(Uint8 v);
 
 
-	bool DecodeUpdate(uint8 *screen, uint8 *js);
+	bool DecodeUpdate(uint8 *screen, uint8 *js, MOS6581 *dst);
 
 	void ResetNetworkUpdate(void);
 
@@ -199,12 +201,13 @@ public:
 
 	static void PushSound(uint8 vol);
 
+	static bool is_master; /* Some peers are more equal than others */
 protected:
 	void InitNetwork();
 
 	void ShutdownNetwork();
 
-	size_t DecodeSoundUpdate(struct NetworkUpdate *src, char *buf);
+	size_t DecodeSoundUpdate(struct NetworkUpdate *src, MOS6581 *dst);
 
 	size_t EncodeSoundRLE(struct NetworkUpdate *dst,
 			Uint8 *buffer, size_t len);
@@ -339,7 +342,6 @@ protected:
 
 	Uint8 *screen;
 	int joystick_port;
-	bool is_master; /* Some peers are more equal than others */
 	bool connected;
 	Uint8 cur_joystick_data;
 

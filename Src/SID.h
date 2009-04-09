@@ -49,6 +49,7 @@ public:
 	void GetState(MOS6581State *ss);
 	void SetState(MOS6581State *ss);
 	void EmulateLine(void);
+	void PushVolume(uint8); /* For the network */
 
 private:
 	void open_close_renderer(int old_type, int new_type);
@@ -66,6 +67,7 @@ public:
 	virtual ~SIDRenderer() {}
 	virtual void Reset(void)=0;
 	virtual void EmulateLine(void)=0;
+	virtual void PushVolume(uint8)=0;
 	virtual void WriteRegister(uint16 adr, uint8 byte)=0;
 	virtual void NewPrefs(Prefs *prefs)=0;
 	virtual void Pause(void)=0;
@@ -121,6 +123,12 @@ inline void MOS6581::EmulateLine(void)
 		the_renderer->EmulateLine();
 }
 
+
+inline void MOS6581::PushVolume(uint8 vol)
+{
+	if (the_renderer != NULL)
+		the_renderer->PushVolume(vol);
+}
 
 /*
  *  Read from register
