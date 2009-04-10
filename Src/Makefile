@@ -134,7 +134,7 @@ main.o: Basic_ROM.h Kernal_ROM.h Char_ROM.h 1541_ROM.h
 Display.o: sysdeps.h sysconfig.h Display.h main.h Prefs.h Display_SDL.h
 Display_SC.o: sysdeps.h sysconfig.h Display.h main.h Prefs.h Display_SDL.h
 Prefs.o: sysdeps.h sysconfig.h Prefs.h Display.h C64.h main.h
-SID.o: sysdeps.h sysconfig.h SID.h Prefs.h
+SID.o: sysdeps.h sysconfig.h SID.h Prefs.h SID_linux.h
 REU.o: sysdeps.h sysconfig.h REU.h CPUC64.h C64.h Prefs.h
 IEC.o: sysdeps.h sysconfig.h IEC.h 1541fs.h 1541d64.h 1541t64.h Prefs.h
 IEC.o: Display.h main.h
