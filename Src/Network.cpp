@@ -406,7 +406,6 @@ size_t Network::EncodeSoundBuffer(struct NetworkUpdate *dst, Uint8 *buf, size_t 
 	out = this->EncodeSoundRLE(dst, buf, len);
 	if (out > len)
 		out = this->EncodeSoundRaw(dst, buf, len);
-	printf("Encoding %d bytes of data\n", out);
 
 	return out;
 }
@@ -482,7 +481,6 @@ size_t Network::DecodeSoundUpdate(struct NetworkUpdate *src, MOS6581 *dst)
 {
 	size_t out;
 
-	printf("Decoding %d bytes of sound data\n", src->size - sizeof(struct NetworkUpdate));
 	if (src->type == SOUND_UPDATE_RAW)
 	{
 		out = src->size - sizeof(struct NetworkUpdate);
