@@ -53,13 +53,12 @@ Network::Network(const char *remote_host, int port, bool is_master)
 
 	/* "big enough" buffer */
 	this->ud = (NetworkUpdate*)malloc( size );
-	this->tmp_ud = (NetworkUpdate*)malloc( size );
-	assert(this->ud && this->tmp_ud);
+	assert(this->ud);
 
 	this->ResetNetworkUpdate();
 	this->traffic = 0;
 	this->last_traffic = 0;
-	this->target_kbps = 120000; /* kilobit per seconds */
+	this->target_kbps = 620000; /* kilobit per seconds */
 	this->kbps = 0;
 
 	this->raw_buf = (Uint8*)malloc(RAW_SIZE);
@@ -92,7 +91,6 @@ Network::Network(const char *remote_host, int port, bool is_master)
 Network::~Network()
 {
 	free(this->ud);
-	free(this->tmp_ud);
 	free(this->square_updated);
 	free(this->raw_buf);
 	free(this->rle_buf);
@@ -119,7 +117,6 @@ size_t Network::EncodeSoundRLE(struct NetworkUpdate *dst,
 	size_t len = 0;
 	Uint8 volume = buffer[0];
 
-	printf("Not implemented\n");
 	dst->type = SOUND_UPDATE_RLE;
 
 	for (unsigned int i = 0; i < buf_len; i++)
@@ -143,6 +140,8 @@ size_t Network::EncodeSoundRLE(struct NetworkUpdate *dst,
 
 		out += 2;
 	}
+	InitNetworkUpdate(dst, SOUND_UPDATE_RLE,
+			sizeof(struct NetworkUpdate) + out);
 
 	return out;
 }
@@ -150,10 +149,8 @@ size_t Network::EncodeSoundRLE(struct NetworkUpdate *dst,
 size_t Network::EncodeSoundRaw(struct NetworkUpdate *dst,
 		Uint8 *buffer, size_t len)
 {
-	printf("Not implemented\n");
-	dst->type = SOUND_UPDATE_RAW;
-	memcpy(dst->data, buffer, len);
-
+	InitNetworkUpdate(dst, SOUND_UPDATE_RAW,
+			sizeof(struct NetworkUpdate) + len);
 	return len;
 }
 
@@ -405,15 +402,13 @@ size_t Network::EncodeSoundBuffer(struct NetworkUpdate *dst, Uint8 *buf, size_t 
 {
 	size_t out;
 
-	printf("Not implemented\n");
-	dst->size = 0;
 	/* Try encoding as RLE, but if it's too large, go for RAW */
-//	out = this->EncodeSoundRLE(dst, buf, len);
-//	if (out > len)
+	out = this->EncodeSoundRLE(dst, buf, len);
+	if (out > len)
 		out = this->EncodeSoundRaw(dst, buf, len);
-	dst->size = out + sizeof(struct NetworkUpdate); 
+	printf("Encoding %d bytes of data\n", out);
 
-	return dst->size;
+	return out;
 }
 
 void Network::EncodeSound()
@@ -464,19 +459,38 @@ void Network::EncodeJoystickUpdate(Uint8 v)
 	this->cur_joystick_data = v;
 }
 
+size_t Network::DecodeSoundRLE(struct NetworkUpdate *src, MOS6581 *dst)
+{
+	int p = 0;
+	int sz = src->size - sizeof(NetworkUpdate);
+
+	while (p < sz)
+	{
+		Uint8 len = src->data[p + 0];
+		Uint8 volume = src->data[p + 1];
+
+		while (len > 0)
+		{
+			dst->PushVolume(volume);
+			len--;
+		}
+		p += 2;
+	}
+}
 
 size_t Network::DecodeSoundUpdate(struct NetworkUpdate *src, MOS6581 *dst)
 {
 	size_t out;
 
+	printf("Decoding %d bytes of sound data\n", src->size - sizeof(struct NetworkUpdate));
 	if (src->type == SOUND_UPDATE_RAW)
 	{
 		out = src->size - sizeof(struct NetworkUpdate);
 		for (int i = 0; i < out; i++)
 			dst->PushVolume(src->data[i]);
 	}
-	else
-		out = 0; 
+	else if (src->type == SOUND_UPDATE_RLE)
+		out = this->DecodeSoundRLE(src, dst);
 
 	return out;
 }
@@ -484,7 +498,6 @@ size_t Network::DecodeSoundUpdate(struct NetworkUpdate *src, MOS6581 *dst)
 void Network::ResetNetworkUpdate(void)
 {
 	memset(this->ud, 0, NETWORK_UPDATE_SIZE);
-	memset(this->tmp_ud, 0, NETWORK_UPDATE_SIZE);
 
 	this->cur_ud = InitNetworkUpdate(this->ud, STOP, sizeof(NetworkUpdate));
 }
@@ -815,6 +828,14 @@ bool Network::DecodeUpdate(uint8 *screen, uint8 *js, MOS6581 *dst)
 	{
 		switch(p->type)
 		{
+		case SOUND_UPDATE_RAW:
+		case SOUND_UPDATE_RLE:
+			/* No sound updates _to_ the master */
+			if (Network::is_master)
+				break;
+			if (this->DecodeSoundUpdate(p, dst) == false)
+				out = false;
+			break;
 		case DISPLAY_UPDATE_RAW:
 		case DISPLAY_UPDATE_RLE:
 		case DISPLAY_UPDATE_DIFF:

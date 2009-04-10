@@ -207,6 +207,8 @@ protected:
 
 	void ShutdownNetwork();
 
+	size_t DecodeSoundRLE(struct NetworkUpdate *src, MOS6581 *dst);
+
 	size_t DecodeSoundUpdate(struct NetworkUpdate *src, MOS6581 *dst);
 
 	size_t EncodeSoundRLE(struct NetworkUpdate *dst,
@@ -324,7 +326,6 @@ protected:
 	}
 	
 	NetworkUpdate *ud;
-	NetworkUpdate *tmp_ud;
 	NetworkUpdate *cur_ud;
 	Uint8 *raw_buf;
 	Uint8 *rle_buf;

@@ -72,7 +72,7 @@ void C64::c64_ctor1(void)
 
 	this->virtual_keyboard = new VirtualKeyboard(real_screen, this->menu_font);
 
-	strncpy(this->server_hostname, "c64-network.game-host.org",
+	strncpy(this->server_hostname, "localhost",//"192.168.10.139",//"c64-network.game-host.org",
 			sizeof(this->server_hostname));
 	this->server_port = 46214;
 	this->network_connection_type = NONE;
@@ -621,15 +621,17 @@ void C64::network_vblank()
         	}
 		remote->ResetNetworkUpdate();
 
-		if (this->network_connection_type == MASTER &&
-        			!remote->ThrottleTraffic()) {
-        		/* Skip this frame if the data rate is too high */
-        		has_throttled = true;
-                	remote->EncodeDisplay(master, remote->GetScreen());
+        	/* Encode and send updates to the other side (what is determined by 
+        	 * if this is the master or not) */
+		if (this->network_connection_type == MASTER)
+		{
+			/* Skip this frame if the data rate is too high */
+			if (remote->ThrottleTraffic())
+				has_throttled = true;
+			else
+				remote->EncodeDisplay(master, remote->GetScreen());
         	}
 
-        	/* Perhaps send updates to the other side (what is determined by 
-        	 * if this is the master or not) */
 		remote->EncodeJoystickUpdate(*js);
 		remote->EncodeSound();
 

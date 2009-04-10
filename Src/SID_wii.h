@@ -62,15 +62,11 @@ void DigitalRenderer::Resume(void)
  * Fill buffer, sample volume (for sampled voice)
  */
 
-void DigitalRenderer::EmulateLine(void)
+void DigitalRenderer::PushVolume(uint8 volume)
 {
 	static int divisor = 0;
 	static int to_output = 0;
 
-	if (!ready)
-		return;
-
-	Network::PushSound(volume);
 	sample_buf[sample_in_ptr] = volume;
 	sample_in_ptr = (sample_in_ptr + 1) % SAMPLE_BUF_SIZE;
 
@@ -92,4 +88,13 @@ void DigitalRenderer::EmulateLine(void)
 
 		PlaySound(sound_buffer, datalen);
 	}
+}
+
+void DigitalRenderer::EmulateLine(void)
+{
+	if (!ready)
+		return;
+	Network::PushSound(volume);
+	if (Network::is_master)
+		this->PushVolume(volume);
 }

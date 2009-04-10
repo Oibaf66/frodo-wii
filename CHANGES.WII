@@ -10,6 +10,8 @@
 		TODO: Handle Run/Stop in virtual keyboard (?)
 
 version 10:
+		* Sound transfer for network play has been implemented
+
 		* Use 32KHz sound samplerate. This improves the cracking sound
 		problems from v9 a bit. It also allows sound to be transferred via
 		the network	to both Linux/Wii (sharing the same sample rate) and
