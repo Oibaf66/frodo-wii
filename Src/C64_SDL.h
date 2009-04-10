@@ -72,7 +72,7 @@ void C64::c64_ctor1(void)
 
 	this->virtual_keyboard = new VirtualKeyboard(real_screen, this->menu_font);
 
-	strncpy(this->server_hostname, "localhost",//"192.168.10.139",//"c64-network.game-host.org",
+	strncpy(this->server_hostname, "c64-network.game-host.org",
 			sizeof(this->server_hostname));
 	this->server_port = 46214;
 	this->network_connection_type = NONE;
