@@ -15,7 +15,7 @@
 #define FRODO_NETWORK_MAGIC 0x1976
 
 #define NETWORK_UPDATE_SIZE     (256 * 1024)
-#define NETWORK_SOUND_BUF_SIZE   1024
+#define NETWORK_SOUND_BUF_SIZE   4096
 typedef enum
 {
 	/* Connection-related messages */
@@ -215,6 +215,8 @@ protected:
 			Uint8 *buffer, size_t len);
 	size_t EncodeSoundRaw(struct NetworkUpdate *dst,
 			Uint8 *buffer, size_t len);
+
+	size_t GetSoundBufferSize();
 
 	/** Encode part of a screen into @a dst in a single sweep
 	 * 

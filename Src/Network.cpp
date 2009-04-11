@@ -132,6 +132,9 @@ size_t Network::EncodeSoundRLE(struct NetworkUpdate *dst,
 			volume = buffer[i];
 		}
 		len++;
+		/* Abort if the encoding becomes larger than the raw encoding */
+		if (len >= buf_len)
+			return buf_len + 2;
 	}
 	if (len != 0)
 	{
@@ -406,8 +409,14 @@ size_t Network::EncodeSoundBuffer(struct NetworkUpdate *dst, Uint8 *buf, size_t 
 	out = this->EncodeSoundRLE(dst, buf, len);
 	if (out > len)
 		out = this->EncodeSoundRaw(dst, buf, len);
-
 	return out;
+}
+
+size_t Network::GetSoundBufferSize()
+{
+	if (Network::sample_tail > Network::sample_head)
+		return NETWORK_SOUND_BUF_SIZE - Network::sample_tail + Network::sample_head;
+	return Network::sample_head- Network::sample_tail;
 }
 
 void Network::EncodeSound()
@@ -418,7 +427,7 @@ void Network::EncodeSound()
 
 	/* Nothing to encode? */
 	if (!Network::is_master ||
-			Network::sample_head == Network::sample_tail)
+			this->GetSoundBufferSize() < NETWORK_SOUND_BUF_SIZE / 2)
 		return;
 
 	if (Network::sample_tail > Network::sample_head)
