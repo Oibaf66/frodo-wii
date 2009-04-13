@@ -439,6 +439,8 @@ void Network::EncodeSound()
 	static Uint8 tmp_buf[NETWORK_SOUND_BUF_SIZE];
 	int offset = 0;
 
+	/* This is not enabled yet... */
+	return;
 	/* Nothing to encode? */
 	if (!Network::is_master ||
 			this->GetSoundBufferSize() < NETWORK_SOUND_BUF_SIZE / 2)
