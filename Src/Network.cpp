@@ -879,8 +879,12 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 			}
 			break;
 		case TEXT_MESSAGE:
-			display->display_status_string((char*)p->data, 3);
-			break;
+		{
+			static char display_buf[80];
+
+			strncpy(display_buf, (char*)p->data, 80);
+			display->display_status_string(display_buf, 4);
+		} break;
 		case LIST_PEERS:
 		{
 		} break;

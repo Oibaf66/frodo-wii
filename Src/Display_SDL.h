@@ -528,8 +528,7 @@ void C64Display::TranslateKey(SDLKey key, bool key_up, uint8 *key_matrix,
 		shift_on = true;
 	else if (c64_key == MATRIX(1,7) || c64_key == MATRIX(6,4))
 		shift_on = false;
-	if (!key_up && this->entering_text_message &&
-			c64_key != MATRIX(1,7) && c64_key != MATRIX(6,4))
+	else if (!key_up && this->entering_text_message)
 	{
 		char c = virtual_keyboard->keycode_to_char(c64_key | (shift_on ? 0x80 : 0) );
 
@@ -600,6 +599,8 @@ void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joyst
 
 					case SDLK_SCROLLOCK:
 						this->entering_text_message = !this->entering_text_message;
+						if (this->entering_text_message)
+							this->text_message[0] = '\0';
 						break;
 
 					case SDLK_KP_PLUS:	// '+' on keypad: Increase SkipFrames
