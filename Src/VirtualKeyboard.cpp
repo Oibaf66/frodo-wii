@@ -209,10 +209,19 @@ int VirtualKeyboard::char_to_keycode(char c)
 	return -1;
 }
 
-const char VirtualKeyboard::get_char(int kc)
+const char VirtualKeyboard::keycode_to_char(int kc)
 {
+	const char *s = this->keycode_to_string(kc);
+
+	if (strcmp(s, "space") == 0)
+		return ' ';
+	if (strcmp(s, "Ret") == 0)
+		return '\n';
+	if (strcmp(s, "Del") == 0)
+		return '\b';
+
 	/* NULL is never, ever returned */
-	return this->keycode_to_string(kc)[0];
+	return s[0];
 }
 
 struct virtkey *VirtualKeyboard::get_key_internal()
@@ -298,12 +307,8 @@ const char *VirtualKeyboard::get_string()
 		}
 		else
 		{
-			c = this->get_char( this->shift_on ? key->kc | 0x80 : key->kc );
+			c = this->keycode_to_char( this->shift_on ? key->kc | 0x80 : key->kc );
 
-			if (strcmp(key->name, "space") == 0)
-				c = ' ';
-			else if (strcmp(key->name, "Ret") == 0)
-				c = '\n';
 			this->buf[cnt] = c;
 		}
 
@@ -321,3 +326,5 @@ const char *VirtualKeyboard::get_string()
 	/* Not reachable */
 	return NULL;
 }
+
+VirtualKeyboard *virtual_keyboard;

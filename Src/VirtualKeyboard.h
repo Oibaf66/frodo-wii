@@ -21,16 +21,11 @@ public:
 	int get_key();
 	const char *get_string();
 	const char *keycode_to_string(int kc);
-
-	char keycode_to_char(int kc)
-	{
-		return this->keycode_to_string(kc)[0];
-	}
+	const char keycode_to_char(int kc);
 
 	int char_to_keycode(char c);
 
 private:
-	const char get_char(int kc);
 	struct virtkey *get_key_internal();
 	void draw();
 	void select_next(int dx, int dy);
@@ -44,3 +39,6 @@ private:
 
 	char buf[255];
 };
+
+extern VirtualKeyboard *virtual_keyboard;
+
