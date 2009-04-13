@@ -876,6 +876,9 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 				*js = j->val;
 			}
 			break;
+		case TEXT_MESSAGE:
+			display->display_status_string((char*)p->data, 3);
+			break;
 		case LIST_PEERS:
 		{
 		} break;
