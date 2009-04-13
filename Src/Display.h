@@ -85,6 +85,7 @@ public:
 	void UpdateKeyMatrix(int c64_key, bool key_up, uint8 *key_matrix,
 			uint8 *rev_matrix, uint8 *joystick);
 	void Update(uint8 *src_pixels);
+	char *GetTextMessage();
 #endif
 	bool NumLock(void);
 	void InitColors(uint8 *colors);
@@ -146,6 +147,10 @@ private:
 	char speedometer_string[16];		// Speedometer text
 	char networktraffic_string[80];		// Speedometer text
 	void draw_string(SDL_Surface *s, int x, int y, const char *str, uint8 front_color, uint8 back_color);
+	char text_message[80];
+	char *text_message_send;
+	int text_message_idx;
+	bool entering_text_message;
 	char *on_screen_message;
 	Uint32 on_screen_message_start_time;
 	int on_screen_message_time;

@@ -71,6 +71,7 @@ void C64::c64_ctor1(void)
 	strcpy(this->save_game_name, "unknown");
 
 	this->virtual_keyboard = new VirtualKeyboard(real_screen, this->menu_font);
+	virtual_keyboard = this->virtual_keyboard;
 
 	strncpy(this->server_hostname, "c64-network.game-host.org",
 			sizeof(this->server_hostname));
@@ -631,6 +632,10 @@ void C64::network_vblank()
 			else
 				remote->EncodeDisplay(master, remote->GetScreen());
         	}
+
+		char *msg = TheDisplay->GetTextMessage();
+		if (msg)
+			remote->EncodeTextMessage(msg);
 
 		remote->EncodeJoystickUpdate(*js);
 		remote->EncodeSound();

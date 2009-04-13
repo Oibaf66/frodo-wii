@@ -133,6 +133,10 @@ C64Display::C64Display(C64 *the_c64) : TheC64(the_c64)
 	this->on_screen_message = NULL;
 	this->on_screen_message_start_time = 0;
 	this->on_screen_message_time = 0;
+	memset(this->text_message, 0, sizeof(this->text_message));
+	this->text_message_idx = 0;
+	this->entering_text_message = false;
+	this->text_message_send = NULL;
 
 	// Open window
 	SDL_WM_SetCaption(VERSION_STRING, "Frodo");
@@ -235,6 +239,10 @@ void C64Display::Update(uint8 *src_pixels)
 				this->on_screen_message, black, fill_gray);
 		if (time_now - this->on_screen_message_start_time > this->on_screen_message_time * 1000)
 			this->on_screen_message = NULL;
+	}
+	if (this->entering_text_message) {
+		draw_string(real_screen, 60, 30,
+				this->text_message, black, shadow_gray);
 	}
 
 	SDL_Flip(real_screen);
@@ -401,7 +409,9 @@ void C64Display::UpdateKeyMatrix(int c64_key, bool key_up,
 void C64Display::TranslateKey(SDLKey key, bool key_up, uint8 *key_matrix,
 		uint8 *rev_matrix, uint8 *joystick)
 {
+	static bool shift_on = false;
 	int c64_key = -1;
+
 	switch (key) {
 		case SDLK_a: c64_key = MATRIX(1,2); break;
 		case SDLK_b: c64_key = MATRIX(3,4); break;
@@ -513,8 +523,49 @@ void C64Display::TranslateKey(SDLKey key, bool key_up, uint8 *key_matrix,
 
 	if (c64_key < 0)
 		return;
+	/* Ugly handling of shift. Sorry about that */
+	if (!key_up && (c64_key == MATRIX(1,7) || c64_key == MATRIX(6,4)))
+		shift_on = true;
+	else if (c64_key == MATRIX(1,7) || c64_key == MATRIX(6,4))
+		shift_on = false;
+	if (!key_up && this->entering_text_message &&
+			c64_key != MATRIX(1,7) && c64_key != MATRIX(6,4))
+	{
+		char c = virtual_keyboard->keycode_to_char(c64_key | (shift_on ? 0x80 : 0) );
+
+		if (this->text_message_idx >= sizeof(this->text_message) - 2 ||
+				c == '\n')
+		{
+			this->text_message[this->text_message_idx] = '\0';
+			this->text_message_send = this->text_message;
+			this->text_message_idx = 0;
+			this->entering_text_message = false;
+			return;
+		}
+		if (c == '\b')
+		{
+			this->text_message_idx--;
+			if (this->text_message_idx < 0)
+				this->text_message_idx = 0;
+			this->text_message[this->text_message_idx] = '\0';
+			return;
+		}
+
+		this->text_message[this->text_message_idx] = c;
+		this->text_message[this->text_message_idx + 1] = '\0';
+		this->text_message_idx++;
+		return;
+	}
 
 	this->UpdateKeyMatrix(c64_key, key_up, key_matrix, rev_matrix, joystick);
+}
+
+char *C64Display::GetTextMessage()
+{
+	char *out = this->text_message_send;
+	this->text_message_send = NULL;
+
+	return out;
 }
 
 void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joystick)
@@ -548,7 +599,7 @@ void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joyst
 						break;
 
 					case SDLK_SCROLLOCK:
-						num_locked = true;
+						this->entering_text_message = !this->entering_text_message;
 						break;
 
 					case SDLK_KP_PLUS:	// '+' on keypad: Increase SkipFrames
@@ -572,10 +623,7 @@ void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joyst
 
 			// Key released
 			case SDL_KEYUP:
-				if (event.key.keysym.sym == SDLK_SCROLLOCK)
-					num_locked = false;
-				else
-					TranslateKey(event.key.keysym.sym, true, key_matrix, rev_matrix, joystick);
+				TranslateKey(event.key.keysym.sym, true, key_matrix, rev_matrix, joystick);
 				break;
 
 			// Quit Frodo
