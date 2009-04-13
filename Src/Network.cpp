@@ -58,7 +58,7 @@ Network::Network(const char *remote_host, int port, bool is_master)
 	this->ResetNetworkUpdate();
 	this->traffic = 0;
 	this->last_traffic = 0;
-	this->target_kbps = 620000; /* kilobit per seconds */
+	this->target_kbps = 160000; /* kilobit per seconds */
 	this->kbps = 0;
 
 	this->raw_buf = (Uint8*)malloc(RAW_SIZE);
