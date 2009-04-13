@@ -766,7 +766,7 @@ void C64::VBlank(bool draw_frame)
 		case 7: /* Save / load game */
 			this->save_load_state(&np);
 			break;
-		case 8: /* Quit */
+		case 9: /* Quit */
 			quit_thyself = true;				
 			break;
 		case -1:
