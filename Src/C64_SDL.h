@@ -31,9 +31,9 @@ static struct timeval tv_start;
 static const char *main_menu_messages[] = {
 		"Invoke key sequence", /* 0 */
 		"Insert disc or tape", /* 1 */
-		"Reset C64",           /* 2 */
-		"Bind key to joystick",/* 3 */
-		"Other options",       /* 4 */
+		"Bind key to joystick",/* 2 */
+		"Other options",       /* 3 */
+		"Networking",          /* 4 */
 		"Controller 1 joystick port", /* 5 */
 		"^|1|2",
 		"Save/Load state",     /* 7 */
@@ -374,7 +374,7 @@ void C64::other_options(Prefs *np)
 			"^|95|100|110",
 			"Emulate 1541",       /* 4 */
 			"^|On|Off",
-			"Networking",         /* 6 */
+			"Reset C64",         /* 6 */
 			NULL,
 	};
 	int submenus[3] = { np->DisplayOption, 0, !np->Emul1541Proc };
@@ -412,7 +412,7 @@ void C64::other_options(Prefs *np)
 		}
 
 		if (opt == 6)
-			this->networking_menu(np);
+			Reset();
 
 		this->prefs_changed = true;
 	}
@@ -752,21 +752,21 @@ void C64::VBlank(bool draw_frame)
 		case 1: /* Insert disc/tape */
 			this->select_disc(&np);
 			break;
-		case 2: /* Reset */
-			Reset();
-			break;
-		case 3: /* Bind keys to joystick */
+		case 2: /* Bind keys to joystick */
 			this->bind_keys(&np);
 			break;
-		case 4: /* Other options */
+		case 3: /* Other options */
 			this->other_options(&np);
+			break;
+		case 4: /* Networking */
+			this->networking_menu(&np);
 			break;
 		case 5: /* Swap joysticks */
 			break;
 		case 7: /* Save / load game */
 			this->save_load_state(&np);
 			break;
-		case 9: /* Quit */
+		case 8: /* Quit */
 			quit_thyself = true;				
 			break;
 		case -1:

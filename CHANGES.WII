@@ -10,7 +10,14 @@
 		TODO: Handle Run/Stop in virtual keyboard (?)
 
 version 10:
-		* Sound transfer for network play has been implemented
+		* Implemented sending text messages over the network to "taunt"
+		the other player (obviously a very important feature). Pressing
+		ScrLk enables this.
+
+		* Rearranged menus (networking is more promptly displayed) 
+
+		* Sound transfer for network play has been implemented, but is not
+		active
 
 		* Use 32KHz sound samplerate. This improves the cracking sound
 		problems from v9 a bit. It also allows sound to be transferred via
