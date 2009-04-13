@@ -16,6 +16,7 @@
 
 #define NETWORK_UPDATE_SIZE     (256 * 1024)
 #define NETWORK_SOUND_BUF_SIZE   4096
+
 typedef enum
 {
 	/* Connection-related messages */
