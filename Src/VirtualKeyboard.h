@@ -21,6 +21,12 @@ public:
 	int get_key();
 	const char *get_string();
 	const char *keycode_to_string(int kc);
+
+	char keycode_to_char(int kc)
+	{
+		return this->keycode_to_string(kc)[0];
+	}
+
 	int char_to_keycode(char c);
 
 private:
