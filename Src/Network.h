@@ -9,6 +9,7 @@
 #include <SDL.h>
 
 #include "SID.h"
+#include "Display.h"
 
 #define FRODO_NETWORK_PROTOCOL_VERSION 2
 
@@ -38,6 +39,7 @@ typedef enum
 	KEYBOARD_UPDATE    = 6,
 	JOYSTICK_UPDATE    = 7,
 	ENTER_MENU         = 8,
+	TEXT_MESSAGE       = 9,
 } network_message_type_t;
 
 typedef enum
@@ -152,8 +154,10 @@ public:
 
 	void EncodeJoystickUpdate(Uint8 v);
 
+	void EncodeTextMessage(char *str);
 
-	bool DecodeUpdate(uint8 *screen, uint8 *js, MOS6581 *dst);
+
+	bool DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst);
 
 	void ResetNetworkUpdate(void);
 
@@ -247,10 +251,9 @@ protected:
 	/**
 	 * Decode a display update message onto @a screen
 	 *
-	 * @param screen the screen to draw to
 	 * @param src the message to decode
 	 */
-	bool DecodeDisplayUpdate(Uint8 *screen, struct NetworkUpdate *src);
+	bool DecodeDisplayUpdate(struct NetworkUpdate *src);
 
 	void AddNetworkUpdate(struct NetworkUpdate *update);
 
@@ -269,11 +272,11 @@ protected:
 	 */
 	bool CompareSquare(Uint8 *a, Uint8 *b);
 
-	bool DecodeDisplayDiff(Uint8 *screen, struct NetworkUpdate *src,
+	bool DecodeDisplayDiff(struct NetworkUpdate *src,
 			int x, int y);
-	bool DecodeDisplayRLE(Uint8 *screen, struct NetworkUpdate *src,
+	bool DecodeDisplayRLE(struct NetworkUpdate *src,
 			int x, int y);
-	bool DecodeDisplayRaw(Uint8 *screen, struct NetworkUpdate *src,
+	bool DecodeDisplayRaw(struct NetworkUpdate *src,
 			int x, int y);
 
 	void SendPingAck(int seq);

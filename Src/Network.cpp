@@ -157,7 +157,7 @@ size_t Network::EncodeSoundRaw(struct NetworkUpdate *dst,
 	return len;
 }
 
-bool Network::DecodeDisplayDiff(Uint8 *screen, struct NetworkUpdate *src,
+bool Network::DecodeDisplayDiff(struct NetworkUpdate *src,
 		int x_start, int y_start)
 {
 	struct NetworkUpdateDisplay *dp = (struct NetworkUpdateDisplay *)src->data;
@@ -179,14 +179,14 @@ bool Network::DecodeDisplayDiff(Uint8 *screen, struct NetworkUpdate *src,
 
 		x = x_start + x_diff;
 		y = y + y_diff;
-		screen[y * DISPLAY_X + x] = color;
+		this->screen[y * DISPLAY_X + x] = color;
 		p += 2;
 	}
 
 	return true;
 }
 
-bool Network::DecodeDisplayRLE(Uint8 *screen, struct NetworkUpdate *src,
+bool Network::DecodeDisplayRLE(struct NetworkUpdate *src,
 		int x_start, int y_start)
 {
 	struct NetworkUpdateDisplay *dp = (struct NetworkUpdateDisplay *)src->data;
@@ -206,7 +206,7 @@ bool Network::DecodeDisplayRLE(Uint8 *screen, struct NetworkUpdate *src,
 
 		while (len > 0)
 		{
-			screen[y * DISPLAY_X + x] = color;
+			this->screen[y * DISPLAY_X + x] = color;
 			len--;
 			x++;
 			if ((x - x_start) % SQUARE_W == 0)
@@ -221,7 +221,7 @@ bool Network::DecodeDisplayRLE(Uint8 *screen, struct NetworkUpdate *src,
 	return true;
 }
 
-bool Network::DecodeDisplayRaw(Uint8 *screen, struct NetworkUpdate *src,
+bool Network::DecodeDisplayRaw(struct NetworkUpdate *src,
 		int x_start, int y_start)
 {
 	struct NetworkUpdateDisplay *dp = (struct NetworkUpdateDisplay *)src->data;
@@ -235,8 +235,8 @@ bool Network::DecodeDisplayRaw(Uint8 *screen, struct NetworkUpdate *src,
 			Uint8 a = v >> 4;
 			Uint8 b = v & 0xf;
 
-			screen[ y * DISPLAY_X + x ] = a;
-			screen[ y * DISPLAY_X + x + 1 ] = b;
+			this->screen[ y * DISPLAY_X + x ] = a;
+			this->screen[ y * DISPLAY_X + x + 1 ] = b;
 		}
 	}
 
@@ -382,8 +382,7 @@ size_t Network::EncodeDisplaySquare(struct NetworkUpdate *dst,
 	return dst->size;
 }
 
-bool Network::DecodeDisplayUpdate(Uint8 *screen,
-		struct NetworkUpdate *src)
+bool Network::DecodeDisplayUpdate(struct NetworkUpdate *src)
 {
 	struct NetworkUpdateDisplay *dp = (struct NetworkUpdateDisplay *)src->data;
 	int square = dp->square;
@@ -391,11 +390,11 @@ bool Network::DecodeDisplayUpdate(Uint8 *screen,
 	const int square_y = SQUARE_TO_Y(square);
 
 	if (src->type == DISPLAY_UPDATE_DIFF)
-		return this->DecodeDisplayDiff(screen, src, square_x, square_y);
+		return this->DecodeDisplayDiff(src, square_x, square_y);
 	else if (src->type == DISPLAY_UPDATE_RAW)
-		return this->DecodeDisplayRaw(screen, src, square_x, square_y);
+		return this->DecodeDisplayRaw(src, square_x, square_y);
 	else if (src->type == DISPLAY_UPDATE_RLE)
-		return this->DecodeDisplayRLE(screen, src, square_x, square_y);
+		return this->DecodeDisplayRLE(src, square_x, square_y);
 
 	/* Error */
 	return false;
@@ -417,6 +416,21 @@ size_t Network::GetSoundBufferSize()
 	if (Network::sample_tail > Network::sample_head)
 		return NETWORK_SOUND_BUF_SIZE - Network::sample_tail + Network::sample_head;
 	return Network::sample_head- Network::sample_tail;
+}
+
+void Network::EncodeTextMessage(char *str)
+{
+	NetworkUpdate *dst = (NetworkUpdate *)this->cur_ud;
+	char *p = (char*)dst->data;
+	size_t len = strlen(str) + 1;
+
+	len += (len & 3);
+	dst = InitNetworkUpdate(dst, TEXT_MESSAGE,
+			sizeof(NetworkUpdate) + len);
+	memset(p, 0, len);
+	strncpy(p, str, len - 1);
+
+	this->AddNetworkUpdate(dst);
 }
 
 void Network::EncodeSound()
@@ -673,6 +687,7 @@ bool Network::MarshalData(NetworkUpdate *p)
 	case JOYSTICK_UPDATE:
 	case DISCONNECT:
 	case CONNECT_TO_PEER:
+	case TEXT_MESSAGE:
 	case STOP:
 		break;
 	case PING:
@@ -763,6 +778,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	case JOYSTICK_UPDATE:
 	case DISCONNECT:
 	case CONNECT_TO_PEER:
+	case TEXT_MESSAGE:
 	case STOP:
 		/* Nothing to do, just bytes */
 		break;
@@ -826,7 +842,7 @@ bool Network::DeMarshalAllData(NetworkUpdate *ud, size_t max_size,
 	return this->DeMarshalData(p);
 }
 
-bool Network::DecodeUpdate(uint8 *screen, uint8 *js, MOS6581 *dst)
+bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 {
 	NetworkUpdate *p = this->ud;
 	bool out = true;
@@ -849,7 +865,7 @@ bool Network::DecodeUpdate(uint8 *screen, uint8 *js, MOS6581 *dst)
 			/* No screen updates _to_ the master */
 			if (Network::is_master)
 				break;
-			if (this->DecodeDisplayUpdate(screen, p) == false)
+			if (this->DecodeDisplayUpdate(p) == false)
 				out = false;
 			break;
 		case JOYSTICK_UPDATE:

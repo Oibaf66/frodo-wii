@@ -608,7 +608,7 @@ void C64::network_vblank()
         	/* Has the peer sent any data? */
         	if (remote->ReceiveUpdate() == true)
         	{
-        		if (remote->DecodeUpdate(remote->GetScreen(),
+        		if (remote->DecodeUpdate(this->TheDisplay,
         				js, this->TheSID) == false)
         		{
         			/* Disconnect or sending crap, remove this guy! */
