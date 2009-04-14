@@ -3,7 +3,7 @@
 import socket, struct, syslog, time, thread, ip2country, sys
 import SocketServer, stats
 
-FRODO_NETWORK_PROTOCOL_VERSION = 2
+FRODO_NETWORK_PROTOCOL_VERSION = 3
 FRODO_NETWORK_MAGIC = 0x1976
 
 CONNECT_TO_BROKER  = 99 # Hello, broker

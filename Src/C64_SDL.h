@@ -382,7 +382,7 @@ void C64::other_options(Prefs *np)
 
 #define SPEED_95 30
 #define SPEED_100 20
-#define SPEED_110 16
+#define SPEED_110 18
 
 	switch (np->MsPerFrame)
 	{
