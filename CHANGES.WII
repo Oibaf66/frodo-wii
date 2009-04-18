@@ -10,6 +10,10 @@
 		TODO: Handle Run/Stop in virtual keyboard (?)
 
 version 10:
+		* Added ability to recurse into directories (partly by Holger Eilts)
+
+		* Large redesign of menu layout and colors (Holger Eilts)
+
 		* Implemented sending text messages over the network to "taunt"
 		the other player (obviously a very important feature). Pressing
 		ScrLk enables this.

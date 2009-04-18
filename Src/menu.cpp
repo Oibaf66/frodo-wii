@@ -207,7 +207,15 @@ bool msgYesNo(char *text, bool default_opt, int x, int y)
 
 static int cmpstringp(const void *p1, const void *p2)
 {
-    return strcmp(* (char * const *) p1, * (char * const *) p2);
+	const char *p1_s = *(const char**)p1;
+	const char *p2_s = *(const char**)p2;
+
+	/* Put directories first */
+	if (*p1_s == '[' && *p2_s != '[')
+		return -1;
+	if (*p1_s != '[' && *p2_s == '[')
+		return 1;
+	return strcmp(* (char * const *) p1, * (char * const *) p2);
 }
 
 /* Return true if name ends with ext (for filenames) */
@@ -254,21 +262,32 @@ static const char **get_file_list(const char *base_dir)
 	{
 		const char *exts[] = {".d64", ".D64", ".prg", ".PRG",
 				".p00", ".P00", ".s00", ".S00",
-				".t64", ".T64", ".sav", ".SAV"};
-		if (ext_matches_list(de->d_name, exts))
+				".t64", ".T64", ".sav", ".SAV", NULL};
+		if (de->d_type == DT_REG && ext_matches_list(de->d_name, exts))
 		{
 			char *p;
 
 			p = strdup(de->d_name);
 			file_list[cur++] = p;
 			file_list[cur] = NULL;
-			if (cur > cnt - 2)
-			{
-				cnt = cnt + 32;
-				file_list = (const char**)realloc(file_list, cnt * sizeof(char*));
-				if (!file_list)
-					return NULL;
-			}
+		}
+		else if (de->d_type == DT_DIR)
+		{
+			char *p;
+			size_t len = strlen(de->d_name) + 4;
+
+			p = (char*)malloc( len );
+			snprintf(p, len, "[%s]", de->d_name);
+			file_list[cur++] = p;
+			file_list[cur] = NULL;
+		}
+
+		if (cur > cnt - 2)
+		{
+			cnt = cnt + 32;
+			file_list = (const char**)realloc(file_list, cnt * sizeof(char*));
+			if (!file_list)
+				return NULL;
 		}
 	}
 	closedir(d);
@@ -915,7 +934,8 @@ int menu_select_sized(char *title, SDL_Rect *rc, const char **msgs, int *submenu
 const char *menu_select_file(const char *dir_path)
 {
 	const char **file_list = get_file_list(dir_path);
-	const char *out;
+	char *sel;
+	char *out;
 	int opt;
 
 	if (file_list == NULL)
@@ -925,13 +945,40 @@ const char *menu_select_file(const char *dir_path)
 
 	if (opt < 0)
 		return NULL;
-	out = strdup(file_list[opt]);
+	sel = strdup(file_list[opt]);
 
 	/* Cleanup everything - file_list is NULL-terminated */
         for ( int i = 0; file_list[i]; i++ )
         	free((void*)file_list[i]);
         free(file_list);
 
+	if (!sel)
+		return NULL;
+        /* If this is a folder, enter it recursively */
+        if (sel[0] == '[')
+        {
+        	char buf[255];
+        	int len = strlen(sel);
+        	int s;
+        	const char *p;
+
+        	/* Remove trailing ] */
+        	sel[len-1] = '\0';
+        	s = snprintf(buf, 128, "%s/%s", dir_path, sel + 1);
+
+        	/* We don't need this anymore */
+        	free((void*)sel);
+        	/* Too deep recursion! */
+        	if (s >= sizeof(buf))
+        		return NULL;
+        	return menu_select_file(buf);
+        }
+
+	out = (char*)malloc(strlen(dir_path) + strlen(sel) + 4);
+	snprintf(out, strlen(dir_path) + strlen(sel) + 4,
+			"%s/%s", dir_path, sel);
+
+	free(sel);
         return out;
 }
 
