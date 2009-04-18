@@ -21,8 +21,6 @@
 #include "menu.h"
 #include "menutexts.h"
 
-char kbin[256];
-
 typedef struct
 {
 	int n_entries;
@@ -529,10 +527,6 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu, int sel)
 			}
 		}
 	}
-	if (strlen(kbin))
-	{
-		menu_print_font(screen,  255,255,255, x_start, y_start + y, kbin);
-	}
 }
 
 static int get_next_seq_y(menu_t *p_menu, int v, int dy)
@@ -768,10 +762,8 @@ uint32_t menu_wait_key_press(void)
 			}
 			break;
 		}
-		if (keys != 0 || strlen(kbin))
-		{
+		if (keys != 0)
 			return keys;
-		}
 		SDL_Delay(100);
 	}
 	return keys;
