@@ -1,5 +1,9 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 /********************************************************************************************/
-static fpos_t GetFilePos(int Track, int Sector)
+static long GetFilePos(int Track, int Sector)
 {
 	fpos_t pos;
 
@@ -69,7 +73,7 @@ static fpos_t GetFilePos(int Track, int Sector)
 	return pos;
 }
 /**********************************************************************************************************/
-const char **DirD64(char *FileName) //mode = 0: quiet mode
+const char **DirD64(const char *FileName) //mode = 0: quiet mode
 {
 	fpos_t pos, newpos, oldpos;
 	unsigned char buffer[256];
