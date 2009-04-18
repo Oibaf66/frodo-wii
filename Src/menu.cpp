@@ -826,12 +826,8 @@ int menu_select_sized(char *title, SDL_Rect *rc, const char **msgs, int *submenu
 	else
 		info = true;
 
-	if (rc == NULL)
-		menu_init(title, &menu, menu_font, msgs,
-				0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y);
-	else
-		menu_init(title, &menu, menu_font, msgs,
-				rc->x, rc->y, rc->w, rc->h);
+	menu_init(title, &menu, menu_font, msgs,
+			rc->x, rc->y, rc->w, rc->h);
 
 	if (sel >= 0)
 		select_one(&menu, sel);
