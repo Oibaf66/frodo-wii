@@ -22,6 +22,8 @@
 #define TMP_PATH "tmp"
 #endif
 
+#include "menutexts.h"
+
 /* TODO: */
 extern char *fixme_tmp_network_client;
 extern char *fixme_tmp_network_server;

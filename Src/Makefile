@@ -29,7 +29,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 GUIOBJS = 
 OBJS    = $(GUIOBJS) main.o Prefs.o SID.o REU.o IEC.o 1541fs.o \
           1541d64.o 1541t64.o 1541job.o SAM.o CmdPipe.o menu.o Network.o \
-          VirtualKeyboard.o
+          VirtualKeyboard.o menutexts.o
 SLOBJS  = $(OBJS) C64.o CPUC64.o VIC.o CIA.o CPU1541.o Display.o 
 SLFLAGS = -DPRECISE_CPU_CYCLES=1 -DPRECISE_CIA_CYCLES=1 -DPC_IS_POINTER=0
 SCOBJS  = $(OBJS) C64_SC.o CPUC64_SC.o VIC_SC.o CIA_SC.o CPU1541_SC.o CPU_common.o Display_SC.o
