@@ -101,132 +101,61 @@ void C64::c64_dtor(void)
 {
 }
 
-static int cmpstringp(const void *p1, const void *p2)
-{
-    return strcmp(* (char * const *) p1, * (char * const *) p2);
-}
-
-/* Return true if name ends with ext (for filenames) */
-static bool ext_matches(const char *name, const char *ext)
-{
-	int len = strlen(name);
-	int ext_len = strlen(ext);
-
-	if (len <= ext_len)
-		return false;
-	return (strcmp(name + len - ext_len, ext) == 0);
-	
-}
-
-static const char **get_file_list(const char *base_dir)
-{
-	DIR *d = opendir(base_dir);
-	const char **file_list;
-	int cur = 0;
-	struct dirent *de;
-	int cnt = 16;
-
-	if (!d)
-		return NULL;
-
-	file_list = (const char**)malloc(cnt * sizeof(char*));
-	file_list[cur++] = strdup("None"); 
-	file_list[cur] = NULL;
-
-	for (de = readdir(d);
-	de;
-	de = readdir(d))
-	{
-		if (ext_matches(de->d_name, ".d64") || ext_matches(de->d_name, ".D64") ||
-				ext_matches(de->d_name, ".prg") || ext_matches(de->d_name, ".PRG") ||
-				ext_matches(de->d_name, ".p00") || ext_matches(de->d_name, ".P00") ||
-				ext_matches(de->d_name, ".s00") || ext_matches(de->d_name, ".S00") ||
-				ext_matches(de->d_name, ".t64") || ext_matches(de->d_name, ".T64") ||
-				ext_matches(de->d_name, ".sav"))
-		{
-			char *p;
-
-			p = strdup(de->d_name);
-			file_list[cur++] = p;
-			file_list[cur] = NULL;
-			if (cur > cnt - 2)
-			{
-				cnt = cnt + 32;
-				file_list = (const char**)realloc(file_list, cnt * sizeof(char*));
-				if (!file_list)
-					return NULL;
-			}
-		}
-	}
-	closedir(d);
-        qsort(&file_list[1], cur-1, sizeof(const char *), cmpstringp);
-
-        return file_list;
-}
-
 void C64::select_disc(Prefs *np)
 {
-	const char **file_list = get_file_list(IMAGE_PATH);
+	const char *name = menu_select_file(IMAGE_PATH);
 
-	if (file_list == NULL)
+	if (name== NULL)
 		return;
 
-	int opt = menu_select(file_list, NULL);
-	if (opt >= 0)
+	if (strcmp(name, "None") == 0)
 	{
-		const char *name = file_list[opt];
-
-		if (strcmp(file_list[opt], "None") == 0)
-		{
-			strcpy(np->DrivePath[0], "\0");
-			strcpy(this->save_game_name, "unknown");
-		}
-		else
-		{
-			snprintf(np->DrivePath[0], 255, "%s/%s",
-					IMAGE_PATH, name);
-			strncpy(this->save_game_name, name, 255);
-			if (strstr(name, ".prg") || strstr(name, ".PRG") ||
-				 strstr(name, ".p00") || strstr(name, ".P00") ||
-				 strstr(name, ".s00") || strstr(name, ".S00")) {
-				FILE *src, *dst;
-
-				/* Clean temp dir first (we only want one file) */
-				unlink(TMP_PATH"/a");
-
-				src = fopen(np->DrivePath[0], "r");
-				if (src != NULL)
-				{
-					snprintf(np->DrivePath[0], 255, "%s", TMP_PATH);
-
-					/* Special handling of .prg: Copy to TMP_PATH and
-					 * load that as a dir */
-					dst = fopen(TMP_PATH"/a", "w");
-					if (dst)
-					{
-						Uint8 buf[1024];
-						size_t v;
-
-						do {
-							v = fread(buf, 1, 1024, src);
-							fwrite(buf, 1, v, dst);
-						} while (v > 0);
-						fclose(dst);
-					}
-					fclose(src);
-				}
-			}
-
-			NewPrefs(np);
-			ThePrefs = *np;
-		}
-		this->prefs_changed = true;
+		strcpy(np->DrivePath[0], "\0");
+		strcpy(this->save_game_name, "unknown");
 	}
+	else
+	{
+		snprintf(np->DrivePath[0], 255, "%s/%s",
+				IMAGE_PATH, name);
+		strncpy(this->save_game_name, name, 255);
+		if (strstr(name, ".prg") || strstr(name, ".PRG") ||
+				strstr(name, ".p00") || strstr(name, ".P00") ||
+				strstr(name, ".s00") || strstr(name, ".S00")) {
+			FILE *src, *dst;
 
-        /* Cleanup everything */
-        for ( int i = 0; file_list[i]; i++ )
-        	free((void*)file_list[i]);
-        free(file_list);
+			/* Clean temp dir first (we only want one file) */
+			unlink(TMP_PATH"/a");
+
+			src = fopen(np->DrivePath[0], "r");
+			if (src != NULL)
+			{
+				snprintf(np->DrivePath[0], 255, "%s", TMP_PATH);
+
+				/* Special handling of .prg: Copy to TMP_PATH and
+				 * load that as a dir */
+				dst = fopen(TMP_PATH"/a", "w");
+				if (dst)
+				{
+					Uint8 buf[1024];
+					size_t v;
+
+					do {
+						v = fread(buf, 1, 1024, src);
+						fwrite(buf, 1, v, dst);
+					} while (v > 0);
+					fclose(dst);
+				}
+				fclose(src);
+			}
+		}
+
+		NewPrefs(np);
+		ThePrefs = *np;
+	}
+	this->prefs_changed = true;
+
+	/* Cleanup*/
+	free((void*)name);
 }
 
 
@@ -469,35 +398,28 @@ void C64::save_load_state(Prefs *np)
 	case 0: /* load/delete */
 	case 2:
 	{
-		const char **file_list = get_file_list(SAVES_PATH);
+		const char *name = menu_select_file(SAVES_PATH);
+		char save_buf[255];
+		char prefs_buf[255];
 
-		if (file_list == NULL)
+		if (name == NULL)
 			break;
-		int save = menu_select(file_list, NULL);
-		if (save >= 0)
-		{
-			char save_buf[255];
-			char prefs_buf[255];
 
-			snprintf(save_buf, 255, "%s/%s", SAVES_PATH,  file_list[save]);
-			snprintf(prefs_buf, 255, "%s.prefs", save_buf);
-			if (opt == 2)
-			{
-				unlink(save_buf);
-				unlink(prefs_buf);
-			}
-			else /* Load the snapshot */
-			{
-				this->LoadSnapshot(save_buf);
-				np->Load(prefs_buf);
-				this->prefs_changed = true;
-			}
+		snprintf(save_buf, 255, "%s/%s", SAVES_PATH,  name);
+		snprintf(prefs_buf, 255, "%s.prefs", save_buf);
+		if (opt == 2)
+		{
+			unlink(save_buf);
+			unlink(prefs_buf);
+		}
+		else /* Load the snapshot */
+		{
+			this->LoadSnapshot(save_buf);
+			np->Load(prefs_buf);
+			this->prefs_changed = true;
 		}
 
-		/* Cleanup everything */
-		for ( int i = 0; file_list[i]; i++ )
-			free((void*)file_list[i]);
-		free(file_list);
+		free((void*)name);
 	} break;
 	default:
 		break;

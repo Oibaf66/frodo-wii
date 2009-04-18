@@ -33,8 +33,10 @@ extern "C" {
 void menu_print_font(SDL_Surface *screen, int r, int g, int b, int x, int y, const char *msg);
 void menu_print_font64(SDL_Surface *screen, int r, int g, int b, int x, int y, const char *msg);
 
+/* Various option selects */
 int menu_select(const char **pp_msgs, int *p_submenus);
 int menu_select_sized(char *title, SDL_Rect *rc, const char **msgs, int *submenus, int sel);
+const char *menu_select_file(const char *dir_path);
 
 uint32_t menu_wait_key_press(void);
 

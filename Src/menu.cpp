@@ -204,6 +204,71 @@ bool msgYesNo(char *text, bool default_opt, int x, int y)
 }
 
 
+
+static int cmpstringp(const void *p1, const void *p2)
+{
+    return strcmp(* (char * const *) p1, * (char * const *) p2);
+}
+
+/* Return true if name ends with ext (for filenames) */
+static bool ext_matches(const char *name, const char *ext)
+{
+	int len = strlen(name);
+	int ext_len = strlen(ext);
+
+	if (len <= ext_len)
+		return false;
+	return (strcmp(name + len - ext_len, ext) == 0);
+	
+}
+
+static const char **get_file_list(const char *base_dir)
+{
+	DIR *d = opendir(base_dir);
+	const char **file_list;
+	int cur = 0;
+	struct dirent *de;
+	int cnt = 16;
+
+	if (!d)
+		return NULL;
+
+	file_list = (const char**)malloc(cnt * sizeof(char*));
+	file_list[cur++] = strdup("None"); 
+	file_list[cur] = NULL;
+
+	for (de = readdir(d);
+	de;
+	de = readdir(d))
+	{
+		if (ext_matches(de->d_name, ".d64") || ext_matches(de->d_name, ".D64") ||
+				ext_matches(de->d_name, ".prg") || ext_matches(de->d_name, ".PRG") ||
+				ext_matches(de->d_name, ".p00") || ext_matches(de->d_name, ".P00") ||
+				ext_matches(de->d_name, ".s00") || ext_matches(de->d_name, ".S00") ||
+				ext_matches(de->d_name, ".t64") || ext_matches(de->d_name, ".T64") ||
+				ext_matches(de->d_name, ".sav"))
+		{
+			char *p;
+
+			p = strdup(de->d_name);
+			file_list[cur++] = p;
+			file_list[cur] = NULL;
+			if (cur > cnt - 2)
+			{
+				cnt = cnt + 32;
+				file_list = (const char**)realloc(file_list, cnt * sizeof(char*));
+				if (!file_list)
+					return NULL;
+			}
+		}
+	}
+	closedir(d);
+        qsort(&file_list[1], cur-1, sizeof(const char *), cmpstringp);
+
+        return file_list;
+}
+
+
 static submenu_t *find_submenu(menu_t *p_menu, int index)
 {
 	int i;
@@ -836,6 +901,29 @@ int menu_select_sized(char *title, SDL_Rect *rc, const char **msgs, int *submenu
 	menu_fini(&menu);
 
 	return out;
+}
+
+const char *menu_select_file(const char *dir_path)
+{
+	const char **file_list = get_file_list(dir_path);
+	const char *out;
+	int opt;
+
+	if (file_list == NULL)
+		return NULL;
+
+	opt = menu_select(file_list, NULL, 0);
+
+	if (opt < 0)
+		return NULL;
+	out = strdup(file_list[opt]);
+
+	/* Cleanup everything - file_list is NULL-terminated */
+        for ( int i = 0; file_list[i]; i++ )
+        	free((void*)file_list[i]);
+        free(file_list);
+
+        return out;
 }
 
 static TTF_Font *read_font(const char *path)
