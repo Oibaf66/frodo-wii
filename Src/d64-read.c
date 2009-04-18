@@ -5,11 +5,10 @@
 /********************************************************************************************/
 static long GetFilePos(int Track, int Sector)
 {
-	fpos_t pos;
+	long pos;
 
 	char buffer[256];
 	pos = 0;
-
 
 	if (Track >= 1 && Track <= 17)
 	{
@@ -75,7 +74,7 @@ static long GetFilePos(int Track, int Sector)
 /**********************************************************************************************************/
 const char **DirD64(const char *FileName) //mode = 0: quiet mode
 {
-	fpos_t pos, newpos, oldpos;
+	long pos, newpos, oldpos;
 	unsigned char buffer[256];
 	unsigned char ext[256];
 	unsigned char name[256];
@@ -108,7 +107,7 @@ const char **DirD64(const char *FileName) //mode = 0: quiet mode
 	}
 
 	pos = GetFilePos(18, 0);
-	fsetpos(File, &pos);
+	fseek(File, pos, SEEK_SET);
 
 	Track = 0;
 	Sector = 0;
@@ -199,7 +198,7 @@ const char **DirD64(const char *FileName) //mode = 0: quiet mode
 	totalblocks = 0;
 	do
 	{
-		if (fsetpos(File, &pos))
+		if (fseek(File, pos, SEEK_SET))
 		{
 			break;
 		}
@@ -283,9 +282,9 @@ const char **DirD64(const char *FileName) //mode = 0: quiet mode
 			newpos = GetFilePos((int)track, (int)sector);
 			if (newpos)
 			{
-				fgetpos(File, &oldpos);
+				oldpos = ftell(File);
 
-				if (!fsetpos(File, &newpos))
+				if (!fseek(File, newpos, SEEK_SET))
 				{
 					fread(&Temp, 2, 1, File);
 					fread(&Temp, 2, 1, File);
@@ -293,7 +292,7 @@ const char **DirD64(const char *FileName) //mode = 0: quiet mode
 				else
 					break;
 
-				if (fsetpos(File, &oldpos))
+				if (fseek(File, oldpos, SEEK_SET))
 					break;
 			}
 

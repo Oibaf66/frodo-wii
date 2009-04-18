@@ -427,7 +427,7 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu, int sel)
 	{
 		r.x = p_menu->x1;
 		r.y = p_menu->y1;
-		r.w = p_menu->x2;
+		r.w = p_menu->x2 - p_menu->x1;
 		r.h = line_height-1;
 		if (sel < 0)
 			SDL_FillRect(screen, &r, SDL_MapRGB(screen->format, 0x40, 0x00, 0x00));
@@ -583,7 +583,7 @@ static int is_submenu_title(menu_t *p_menu, int n)
 }
 
 
-static void menu_init(char *title, menu_t *p_menu, TTF_Font *p_font, const char **pp_msgs,
+static void menu_init(menu_t *p_menu, const char *title, TTF_Font *p_font, const char **pp_msgs,
 		int16_t x1, int16_t y1, int16_t x2, int16_t y2)
 {
 	int submenu;
@@ -776,76 +776,30 @@ extern const char **get_prg_list(char *t64);
 
 extern char curdir[256];
 
-static int menu_select_internal(SDL_Surface *screen, menu_t *p_menu, int *p_submenus, int sel, bool info)
+static int menu_select_internal(SDL_Surface *screen,
+		menu_t *p_menu, int *p_submenus, int sel,
+		void (*select_next_cb)(menu_t *p, void *data) = NULL,
+		void *select_next_cb_data = NULL)
 {
 	int ret = -1;
-	int i;
-	char buffer[256];
-	SDL_Rect rc;
-	SDL_Rect urc;
-	SDL_Rect frc;
 
-	for (i = 0; i < p_menu->n_submenus; i++)
+	for (int i = 0; i < p_menu->n_submenus; i++)
 		p_menu->p_submenus[i].sel = p_submenus[i];
 
 	while(1)
 	{
+		SDL_Rect r = {p_menu->x1, p_menu->y1,
+				p_menu->x2 - p_menu->x1, p_menu->y2 - p_menu->y1};
 		uint32_t keys;
-		urc.x = p_menu->x1; urc.y = p_menu->y1; urc.w = p_menu->x2; urc.h = p_menu->y2;
-		frc.x = p_menu->x1-1; frc.y = p_menu->y1-1; frc.w = p_menu->x2+2; frc.h = p_menu->y2+2;
-		if (frc.x < 0)
-			frc.x = 0;
-		if (frc.y < 0)
-			frc.y = 0;
-		while (frc.x + frc.w > FULL_DISPLAY_X)
-			frc.w--;
-		while (frc.y + frc.h > FULL_DISPLAY_Y)
-			frc.h--;
-		if (sel < 0)
-			SDL_FillRect(screen, &frc, SDL_MapRGB(screen->format, 0x40, 0x00, 0x00));
-		else
-			SDL_FillRect(screen, &frc, SDL_MapRGB(screen->format, 0x00, 0x00, 0xff));
-		SDL_FillRect(screen, &urc, SDL_MapRGB(screen->format, 0x00, 0x00, 0x00));
-		menu_draw(screen, p_menu, sel);
+		int sel_last = p_menu->cur_sel;
 
-		if (p_menu->pp_msgs[p_menu->cur_sel][0] == '[')
-		{
-			rc.x = FULL_DISPLAY_X - 26*12;
-			rc.y = 12;
-			rc.w = 25*12;
-			rc.h = FULL_DISPLAY_Y - 16;
+		SDL_FillRect(screen, &r, SDL_MapRGB(screen->format, 0x00, 0x80, 0x80));
 
-			rc.x--;
-			rc.y--;
-			rc.w+=2;
-			rc.h+=2;
-			SDL_FillRect(screen, &rc, SDL_MapRGB(screen->format, 0x40, 0x00, 0));
-			rc.x++;
-			rc.y++;
-			rc.w-=2;
-			rc.h-=2;
-			SDL_FillRect(screen, &rc, SDL_MapRGB(screen->format, 0, 0, 0));
-			rc.x--;
-			rc.y--;
-			rc.w+=2;
-			rc.h = rc.y + 15;
-			SDL_FillRect(screen, &rc, SDL_MapRGB(screen->format, 0x40, 0x00, 0));
-			rc.x = FULL_DISPLAY_X - 26*12-1;
-			rc.y = 12-1;
-			rc.w = 25*12+2;
-			rc.h = FULL_DISPLAY_Y - 16 +2;
-			menu_print_font(screen, 0x00,0x00,0x00, rc.x, rc.y, "Folder");
-			SDL_UpdateRect(screen, rc.x, rc.y, rc.w, rc.h);
+		menu_draw(screen, p_menu, 0);
+		SDL_Flip(screen);
 
-		}
-		/*******/
-		SDL_UpdateRect(screen, frc.x, frc.y, frc.w, frc.h);
-		if (sel >= 0)
-			keys = menu_wait_key_press();
-		else
-		{
-			break;
-		}
+		keys = menu_wait_key_press();
+
 		if (keys & KEY_UP)
 			select_next(p_menu, 0, -1);
 		else if (keys & KEY_DOWN)
@@ -859,47 +813,31 @@ static int menu_select_internal(SDL_Surface *screen, menu_t *p_menu, int *p_subm
 		else if (keys & KEY_RIGHT)
 			select_next(p_menu, 1, 0);
 		else if (keys & KEY_ESCAPE)
-		{
 			break;
-		}
 		else if (keys & KEY_SELECT)
 		{
 			ret = p_menu->cur_sel;
+			int i;
+
 			for (i=0; i<p_menu->n_submenus; i++)
 				p_submenus[i] = p_menu->p_submenus[i].sel;
 			break;
 		}
+		/* Invoke the callback when an entry is selected */
+		if (sel_last != p_menu->cur_sel &&
+				select_next_cb != NULL)
+			select_next_cb(p_menu, select_next_cb_data);
 	}
-	SDL_FillRect(screen, &frc, SDL_MapRGB(screen->format, 0, 0, 0));
 
+	SDL_FillRect(screen, 0, SDL_MapRGB(screen->format, 0, 0, 0));
 	return ret;
 }
 
+int menu_select_sized(const char *title, const char **msgs, int *submenus, int sel,
+		int x, int y, int x2, int y2,
+		void (*select_next_cb)(menu_t *p, void *data) = NULL,
+		void *select_next_cb_data = NULL)
 
-int menu_select(const char **msgs, int *submenus, int sel)
-{
-	menu_t menu;
-	int out;
-
-	menu_init((char*)"", &menu, menu_font, msgs,
-			32, 32, FULL_DISPLAY_X-64, FULL_DISPLAY_Y-64);
-
-	if (sel >= 0)
-		select_one(&menu, sel);
-
-	out = menu_select_internal(real_screen, &menu, submenus, sel, false);
-
-	menu_fini(&menu);
-
-	return out;
-}
-
-int menu_select(const char **msgs, int *submenus)
-{
-	return menu_select(msgs, submenus, 0);
-}
-
-int menu_select_sized(char *title, SDL_Rect *rc, const char **msgs, int *submenus, int sel)
 {
 	menu_t menu;
 	int out;
@@ -911,19 +849,67 @@ int menu_select_sized(char *title, SDL_Rect *rc, const char **msgs, int *submenu
 	else
 		info = true;
 
-	menu_init(title, &menu, menu_font, msgs,
-			rc->x, rc->y, rc->w, rc->h);
+	menu_init(&menu, title, menu_font, msgs,
+			x, y, x2, y2);
 
 	if (sel >= 0)
 		select_one(&menu, sel);
-	out = menu_select_internal(real_screen, &menu, submenus, sel, info);
+	out = menu_select_internal(real_screen, &menu, submenus, sel,
+			select_next_cb, select_next_cb_data);
 
 	menu_fini(&menu);
 
 	return out;
 }
 
-const char *menu_select_file(const char *dir_path)
+static int menu_select(const char *title, const char **msgs, int *submenus, int sel)
+{
+	return menu_select_sized(title, msgs, submenus, sel,
+			32, 32, FULL_DISPLAY_X-64, FULL_DISPLAY_Y-64);
+}
+
+int menu_select(const char **msgs, int *submenus)
+{
+	return menu_select("", msgs, submenus, 0);
+}
+
+extern "C" const char **DirD64(const char *FileName);
+
+static void d64_list_cb(menu_t *p, void *data)
+{
+	const char *dp = (const char*)data;
+	const char *exts[] = {".d64", ".D64", NULL};
+	const char *name = p->pp_msgs[p->cur_sel];
+	SDL_Rect r = {FULL_DISPLAY_X / 2, 32,
+			FULL_DISPLAY_X / 2, FULL_DISPLAY_Y};
+
+	SDL_FillRect(real_screen, &r, SDL_MapRGB(real_screen->format, 0x00, 0x90, 0x90));
+	if (ext_matches_list(name, exts))
+	{
+		char buf[255];
+		const char **dir;
+		menu_t menu;
+
+		snprintf(buf, 255, "%s/%s", dp, name);
+		dir = DirD64(buf);
+		if (!dir)
+			return;
+
+		menu_init(&menu, "D64 contents", menu_font, dir,
+				FULL_DISPLAY_X / 2, 32,
+				FULL_DISPLAY_X - 64, FULL_DISPLAY_Y - 64);
+		menu_draw(real_screen, &menu, 0);
+		menu_fini(&menu);
+
+		/* Cleanup dir list */
+	        for ( int i = 0; dir[i]; i++ )
+	        	free((void*)dir[i]);
+	        free(dir);
+	}
+}
+
+static const char *menu_select_file_internal(const char *dir_path,
+		int x, int y, int x2, int y2)
 {
 	const char **file_list = get_file_list(dir_path);
 	char *sel;
@@ -933,7 +919,8 @@ const char *menu_select_file(const char *dir_path)
 	if (file_list == NULL)
 		return NULL;
 
-	opt = menu_select(file_list, NULL, 0);
+	opt = menu_select_sized("Select file", file_list, NULL, 0,
+			x, y, x2, y2, cb, (void*)dir_path);
 
 	if (opt < 0)
 		return NULL;
@@ -972,6 +959,12 @@ const char *menu_select_file(const char *dir_path)
 
 	free(sel);
         return out;
+}
+
+const char *menu_select_file(const char *dir_path)
+{
+	return menu_select_file_internal(dir_path,
+			32, 32, FULL_DISPLAY_X/2, FULL_DISPLAY_Y-64);
 }
 
 static TTF_Font *read_font(const char *path)
