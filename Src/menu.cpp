@@ -899,7 +899,7 @@ int menu_select(const char **msgs, int *submenus, int sel)
 	int out;
 
 	menu_init((char*)"", &menu, menu_font, msgs,
-			0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y);
+			32, 32, FULL_DISPLAY_X-64, FULL_DISPLAY_Y-64);
 
 	if (sel >= 0)
 		select_one(&menu, sel);
