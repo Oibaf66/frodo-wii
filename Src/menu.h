@@ -28,13 +28,21 @@ extern "C" {
 #define KEY_ESCAPE    32
 #define KEY_PAGEDOWN  64
 #define KEY_PAGEUP   128
+#define KEY_HELP     256
 
-void menu_print_font(SDL_Surface *screen, int r, int g, int b,
-	                       int x, int y, const char *msg);
+void menu_print_font(SDL_Surface *screen, int r, int g, int b, int x, int y, const char *msg);
+void menu_print_font64(SDL_Surface *screen, int r, int g, int b, int x, int y, const char *msg);
 
 int menu_select(const char **pp_msgs, int *p_submenus);
+int menu_select_sized(char *title, SDL_Rect *rc, const char **msgs, int *submenus, int sel);
 
 uint32_t menu_wait_key_press(void);
+
+extern bool msgKill(SDL_Rect *rc);
+extern int msgInfo(char *text, int duration, SDL_Rect *rc);
+
+extern bool msgYesNo(char *text, bool def,int x, int y);
+
 
 void menu_init();
 

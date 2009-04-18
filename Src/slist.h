@@ -1,3 +1,6 @@
+#ifndef __slist_h
+#define __slist_h
+
 struct _S_LIST
 {
 	int Elements;
@@ -16,3 +19,4 @@ extern int 		S_AddToList(S_List *List, char *String);
 extern void 	S_DestroyList(S_List *List);
 /************************************************************/
 
+#endif /* __slist_h */
