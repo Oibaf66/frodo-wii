@@ -30,26 +30,6 @@ extern char *fixme_tmp_network_server;
 
 
 static struct timeval tv_start;
-static const char *main_menu_messages[] = {
-		"Invoke key sequence", /* 0 */
-		"Insert disc or tape", /* 1 */
-		"Bind key to joystick",/* 2 */
-		"Other options",       /* 3 */
-		"Networking",          /* 4 */
-		"Controller 1 joystick port", /* 5 */
-		"^|1|2",
-		"Save/Load state",     /* 7 */
-		" ",
-		"Quit",                /* 9 */
-		NULL,
-};
-
-static const char *save_load_state_messages[] = {
-		"Load saved state",    /* 0 */
-		"Save current state",  /* 1 */
-		"Delete state",        /* 2 */
-		NULL,
-};
 
 /*
  *  Constructor, system-dependent things
@@ -369,16 +349,6 @@ void C64::networking_menu(Prefs *np)
 
 void C64::other_options(Prefs *np)
 {
-	const char *other_options_messages[] = {
-			"Display resolution", /* 0 */
-			"^|double-center|stretched",
-			"Speed (approx)",     /* 2 */
-			"^|95|100|110",
-			"Emulate 1541",       /* 4 */
-			"^|On|Off",
-			"Reset C64",         /* 6 */
-			NULL,
-	};
 	int submenus[3] = { np->DisplayOption, 0, !np->Emul1541Proc };
 
 
