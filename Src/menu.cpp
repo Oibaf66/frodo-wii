@@ -222,6 +222,17 @@ static bool ext_matches(const char *name, const char *ext)
 	
 }
 
+static bool ext_matches_list(const char *name, const char **exts)
+{
+	for (const char **p = exts; *p; p++)
+	{
+		if (ext_matches(name, *p))
+			return true;
+	}
+
+	return false;
+}
+
 static const char **get_file_list(const char *base_dir)
 {
 	DIR *d = opendir(base_dir);
@@ -241,12 +252,10 @@ static const char **get_file_list(const char *base_dir)
 	de;
 	de = readdir(d))
 	{
-		if (ext_matches(de->d_name, ".d64") || ext_matches(de->d_name, ".D64") ||
-				ext_matches(de->d_name, ".prg") || ext_matches(de->d_name, ".PRG") ||
-				ext_matches(de->d_name, ".p00") || ext_matches(de->d_name, ".P00") ||
-				ext_matches(de->d_name, ".s00") || ext_matches(de->d_name, ".S00") ||
-				ext_matches(de->d_name, ".t64") || ext_matches(de->d_name, ".T64") ||
-				ext_matches(de->d_name, ".sav"))
+		const char *exts[] = {".d64", ".D64", ".prg", ".PRG",
+				".p00", ".P00", ".s00", ".S00",
+				".t64", ".T64", ".sav", ".SAV"};
+		if (ext_matches_list(de->d_name, exts))
 		{
 			char *p;
 
