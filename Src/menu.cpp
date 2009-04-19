@@ -908,6 +908,50 @@ static void d64_list_cb(menu_t *p, void *data)
 	}
 }
 
+static const char *get_d64_file(const char *name)
+{
+	const char **dir;
+	char *out = NULL;
+
+	dir = DirD64(name);
+	if (!dir)
+		return NULL;
+
+	int which = menu_select("Select D64 file", dir, NULL, 0);
+
+	if (which >= 0)
+	{
+		char *p = (char*)dir[which];
+
+		for (int i = 0; i < strlen(p); i++)
+		{
+			if (*p == '\"')
+				break;
+			p++;
+		}
+		p++;
+		for (int i = 0; i < strlen(p); i++)
+		{
+			if (p[i] == '\"')
+			{
+				p[i] = '\0';
+				break;
+			}
+		}
+		/* Copy and uppercase */
+		out = strdup(p);
+		for (int i = 0; i < strlen(out); i++)
+			out[i] = toupper(out[i]);
+	}
+
+	/* Cleanup dir list */
+        for ( int i = 0; dir[i]; i++ )
+        	free((void*)dir[i]);
+        free(dir);
+
+        return out;
+}
+
 static const char *menu_select_file_internal(const char *dir_path,
 		int x, int y, int x2, int y2)
 {
@@ -920,7 +964,8 @@ static const char *menu_select_file_internal(const char *dir_path,
 		return NULL;
 
 	opt = menu_select_sized("Select file", file_list, NULL, 0,
-			x, y, x2, y2, cb, (void*)dir_path);
+			x, y, x2, y2,
+			d64_list_cb, (void*)dir_path);
 
 	if (opt < 0)
 		return NULL;
@@ -959,6 +1004,18 @@ static const char *menu_select_file_internal(const char *dir_path,
 
 	free(sel);
         return out;
+}
+
+const char *menu_select_file_start(const char *dir_path, const char **d64_name)
+{
+	const char *file = menu_select_file_internal(dir_path,
+			32, 32, FULL_DISPLAY_X/2, FULL_DISPLAY_Y-64);
+
+	if (!file)
+		return NULL;
+	*d64_name = get_d64_file(file);
+
+	return file;
 }
 
 const char *menu_select_file(const char *dir_path)

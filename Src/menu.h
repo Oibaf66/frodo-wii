@@ -38,6 +38,7 @@ int menu_select(const char **pp_msgs, int *p_submenus);
 int menu_select_sized(char *title, const char **msgs, int *submenus, int sel,
 		int x, int y, int w, int h);
 const char *menu_select_file(const char *dir_path);
+const char *menu_select_file_start(const char *dir_path, const char **d64_name);
 
 uint32_t menu_wait_key_press(void);
 
