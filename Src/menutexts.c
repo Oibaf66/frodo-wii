@@ -22,42 +22,42 @@ const char *welcome[] = {
 };
 
 const char *new_main_menu_messages[] = {
-		/*02*/		".File", 
+		/*02*/		"File", 
 		/*03*/		"^|Insert|Start", 
-		/*04*/		".States",     
+		/*04*/		"States",     
 		/*05*/		"^|Load|Save|Delete",     
-		/*06*/		".Keyboard", 
+		/*06*/		"Keyboard", 
 		/*07*/		"^|Type|Macro|Bind",
 		/*08*/		"#1-------------------------------------",
-		/*09*/		".Reset the C=64",           
-		/*10*/  	".Networking",
-		/*11*/  	".Options",
-		/*12*/		".Advanced Options", 
-		/*13*/		".Help",                
-		/*15*/		".Quit",                
+		/*09*/		"Reset the C=64",           
+		/*10*/  	"Networking",
+		/*11*/  	"Options",
+		/*12*/		"Advanced Options", 
+		/*13*/		"Help",                
+		/*15*/		"Quit",                
 		NULL
 };
 const char *new_options_menu_messages[] = {
-		/*02*/  	".Map Wiimote 1 to:",
+		/*02*/  	"Map Wiimote 1 to:",
 		/*03*/		"^|Port 1|Port 2",
 		/*04*/		" ", 
-		/*05*/		".True 1541 emulation",       
+		/*05*/		"True 1541 emulation",       
 		/*06*/		"^|NO|YES",
 		/*07*/		" ", 
-		/*08*/		".1541 Floppy Drive LED", /* 0 */
+		/*08*/		"1541 Floppy Drive LED", /* 0 */
 		/*09*/	  	"^|OFF|ON",
 		/*10*/		"#1-------------------------------------",
 		/*11*/		"#1'2'=SELECT, '1'=CANCEL",                
 		NULL
 };
 const char *new_advanced_options_menu_messages[] = {
-		/*02*/		".Display resolution",
+		/*02*/		"Display resolution",
 		/*03*/		"^|double-center|stretched",
 		/*04*/		" ", 
-		/*05*/		".Speed (approx.)",
+		/*05*/		"Speed (approx.)",
 		/*06*/		"^|95|100|110",
 		/*07*/		" ",
-		/*08*/		".Sprite collisions",
+		/*08*/		"Sprite collisions",
 		/*09*/		"^|OFF|ON",
 		/*13*/		"#1-------------------------------------",
 		/*14*/		"#1'2'=SELECT, '1'=CANCEL",                
@@ -66,10 +66,10 @@ const char *new_advanced_options_menu_messages[] = {
 const char *new_help_menu_messages[] = {
 		/*00*/		"#1.HELP MENU                           ",
 		/*01*/		"#1-------------------------------------", 
-		/*02*/		".Wiimote key mappings", /* 0 */
+		/*02*/		"Wiimote key mappings", /* 0 */
 		/*03*/		"^|Wiimote Info|Set Default", /* 0 */
 		/*04*/		" ", 
-		/*05*/		".Show USB-keyboard layout", /* 0 */
+		/*05*/		"Show USB-keyboard layout", /* 0 */
 		/*06*/		"#1-------------------------------------",
 		/*07*/		"#1'2'=SELECT, '1'=CANCEL",                
 		NULL
@@ -88,37 +88,5 @@ const char *layout_messages[] = {
 		"#2HOM = Menu",
 		"#1-------------------------------------", 
 		"Back",
-		NULL,
-};
-
-const char *main_menu_messages[] = {
-		"Invoke key sequence", /* 0 */
-		"Insert disc or tape", /* 1 */
-		"Bind key to joystick",/* 2 */
-		"Other options",       /* 3 */
-		"Networking",          /* 4 */
-		"Controller 1 joystick port", /* 5 */
-		"^|1|2",
-		"Save/Load state",     /* 7 */
-		" ",
-		"Quit",                /* 9 */
-		NULL,
-};
-
-const char *save_load_state_messages[] = {
-		"Load saved state",    /* 0 */
-		"Save current state",  /* 1 */
-		"Delete state",        /* 2 */
-		NULL,
-};
-
-const char *other_options_messages[] = {
-		"Display resolution", /* 0 */
-		"^|double-center|stretched",
-		"Speed (approx)",     /* 2 */
-		"^|95|100|110",
-		"Emulate 1541",       /* 4 */
-		"^|On|Off",
-		"Reset C64",         /* 6 */
 		NULL,
 };
