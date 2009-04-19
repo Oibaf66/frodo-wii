@@ -865,7 +865,7 @@ int menu_select_sized(const char *title, const char **msgs, int *submenus, int s
 static int menu_select(const char *title, const char **msgs, int *submenus, int sel)
 {
 	return menu_select_sized(title, msgs, submenus, sel,
-			32, 32, FULL_DISPLAY_X-64, FULL_DISPLAY_Y-64);
+			0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y);
 }
 
 int menu_select(const char **msgs, int *submenus)
@@ -880,7 +880,7 @@ static void d64_list_cb(menu_t *p, void *data)
 	const char *dp = (const char*)data;
 	const char *exts[] = {".d64", ".D64", NULL};
 	const char *name = p->pp_msgs[p->cur_sel];
-	SDL_Rect r = {FULL_DISPLAY_X / 2, 32,
+	SDL_Rect r = {FULL_DISPLAY_X / 2, 0,
 			FULL_DISPLAY_X / 2, FULL_DISPLAY_Y};
 
 	SDL_FillRect(real_screen, &r, SDL_MapRGB(real_screen->format, 0x00, 0x90, 0x90));
@@ -896,8 +896,8 @@ static void d64_list_cb(menu_t *p, void *data)
 			return;
 
 		menu_init(&menu, "D64 contents", menu_font, dir,
-				FULL_DISPLAY_X / 2, 32,
-				FULL_DISPLAY_X - 64, FULL_DISPLAY_Y - 64);
+				FULL_DISPLAY_X / 2, 0,
+				FULL_DISPLAY_X, FULL_DISPLAY_Y);
 		menu_draw(real_screen, &menu, 0);
 		menu_fini(&menu);
 
@@ -1009,7 +1009,7 @@ static const char *menu_select_file_internal(const char *dir_path,
 const char *menu_select_file_start(const char *dir_path, const char **d64_name)
 {
 	const char *file = menu_select_file_internal(dir_path,
-			32, 32, FULL_DISPLAY_X/2, FULL_DISPLAY_Y-64);
+			0, 0, FULL_DISPLAY_X/2, FULL_DISPLAY_Y);
 
 	if (!file)
 		return NULL;
@@ -1021,7 +1021,7 @@ const char *menu_select_file_start(const char *dir_path, const char **d64_name)
 const char *menu_select_file(const char *dir_path)
 {
 	return menu_select_file_internal(dir_path,
-			32, 32, FULL_DISPLAY_X/2, FULL_DISPLAY_Y-64);
+			0, 0, FULL_DISPLAY_X/2, FULL_DISPLAY_Y);
 }
 
 static TTF_Font *read_font(const char *path)
