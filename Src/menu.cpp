@@ -564,7 +564,6 @@ static void select_next(menu_t *p_menu, int dx, int dy)
 
 static void select_one(menu_t *p_menu, int sel)
 {
-
 	if (sel >= p_menu->n_entries)
 		sel = 0;
 	p_menu->cur_sel = sel;
