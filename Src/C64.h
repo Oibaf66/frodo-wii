@@ -210,15 +210,16 @@ public:
 
 	void network_vblank();
 
-	void select_disc(Prefs *np);
-	void select_fake_key_sequence(Prefs *np);
+	void select_disc(Prefs *np, bool start);
 	void start_fake_key_sequence(const char *str);
 	void run_fake_key_sequence();
 	char * bind_one_key(Prefs *np, int which);
 	void bind_keys(Prefs *np);
+	void select_fake_key_sequence(Prefs *np);
+	void advanced_options(Prefs *np);
 	void other_options(Prefs *np);
 	void networking_menu(Prefs *np);
-	void save_load_state(Prefs *np);
+	void save_load_state(Prefs *np, int do_what);
 #endif
 
 #ifdef WIN32

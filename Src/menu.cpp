@@ -311,7 +311,7 @@ static submenu_t *find_submenu(menu_t *p_menu, int index)
 void menu_print_font(SDL_Surface *screen, int r, int g, int b,
 		int x, int y, const char *msg)
 {
-#define _MAX_STRING 24
+#define _MAX_STRING 64
 	SDL_Surface *font_surf;
 	SDL_Rect dst = {x, y,  0, 0};
 	SDL_Color color = {r, g, b};
@@ -353,7 +353,7 @@ void menu_print_font(SDL_Surface *screen, int r, int g, int b,
 void menu_print_font64(SDL_Surface *screen, int r, int g, int b, int x, int y, const char *msg)
 {
 #undef _MAX_STRING
-#define _MAX_STRING 26
+#define _MAX_STRING 64
 	SDL_Surface *font_surf;
 	SDL_Rect dst = {x, y,  0, 0};
 	SDL_Color color = {r, g, b};
@@ -1010,10 +1010,12 @@ const char *menu_select_file_start(const char *dir_path, const char **d64_name)
 {
 	const char *file = menu_select_file_internal(dir_path,
 			0, 0, FULL_DISPLAY_X/2, FULL_DISPLAY_Y);
+	const char *exts[] = {".d64", ".D64", NULL};
 
 	if (!file)
 		return NULL;
-	*d64_name = get_d64_file(file);
+	if (ext_matches_list(file, exts))
+		*d64_name = get_d64_file(file);
 
 	return file;
 }

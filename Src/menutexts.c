@@ -10,37 +10,36 @@ const char *welcome[] = {
 		/*05*/		" PRG image. Use the virtual keyboard or assign the ", 
 		/*06*/		" key strokes to buttons on the Wiimote.            ",
 		/*07*/		" Save the game state in the main menu of the game. ", 
-		/*08*/		" Next time you can load that state instead of the  ",
-		/*09*/		" game to have all configured stuff along with that ",
-		/*10*/		" game.                                             ",
-		/*11*/		"                                                   ",
-		/*12*/		" This version features USB-keyboard support and    ", 
-		/*13*/		" D64 content listing. Use first Wiimote as port 1  ", 
-		/*14*/		" joystick and the second as port 2 joystick.       ",
+		/*08*/		" Next time you can load that state instead and have",
+		/*09*/		" the game and everything configured directly.      ",
+		/*10*/		"                                                   ",
+		/*11*/		" In the networking menu, you can host a game over  ",
+		/*12*/		" the network or browse for active games. During    ", 
+		/*13*/		" network play, you can send messages to your peer  ", 
+		/*14*/		" by pressing ScrLk on the USB keyboard.            ",
 		/*15*/		"                                                   ", 
 		/*16*/		".-------------------------------------------------.",
-		/*17*/		"^|       Enter Frodo       |    Don't show again    ", 
 		NULL
 };
 
 const char *new_main_menu_messages[] = {
 		/*00*/		"#1.MAIN MENU                       ",
 		/*01*/		"#1-------------------------------------", 
-		/*02*/		".Image", 
-		/*03*/		"^|Load|Start|Remove", 
+		/*02*/		".File", 
+		/*03*/		"^|Insert|Start", 
 		/*04*/		".States",     
-		/*05*/		"^|Load|Save|Delete|Rename ",     
+		/*05*/		"^|Load|Save|Delete",     
 		/*06*/		".Keyboard", 
 		/*07*/		"^|Type|Macro|Bind",
 		/*08*/		"#1-------------------------------------",
 		/*09*/		".Reset the C=64",           
-		/*10*/  	".Options",
-		/*11*/		".Advanced Options", 
-		/*12*/		".Controls",                
-		/*13*/		"#1-------------------------------------",
-		/*14*/		".Quit",                
-		/*15*/		"#1-------------------------------------",
-		/*16*/		"#1'2'=SELECT, '1'=CANCEL",                
+		/*10*/  	".Networking",
+		/*11*/  	".Options",
+		/*12*/		".Advanced Options", 
+		/*13*/		".Help",                
+		/*14*/		"#1-------------------------------------",
+		/*15*/		".Quit",                
+		/*17*/		"#1'2'=SELECT, '1'=CANCEL",                
 		NULL
 };
 const char *new_options_menu_messages[] = {
@@ -52,8 +51,8 @@ const char *new_options_menu_messages[] = {
 		/*05*/		".True 1541 emulation",       
 		/*06*/		"^|NO|YES",
 		/*07*/		" ", 
-		/*08*/	  ".1541 Floppy Drive LED", /* 0 */
-		/*09*/	  "^|OFF|ON",
+		/*08*/		".1541 Floppy Drive LED", /* 0 */
+		/*09*/	  	"^|OFF|ON",
 		/*10*/		"#1-------------------------------------",
 		/*11*/		"#1'2'=SELECT, '1'=CANCEL",                
 		NULL
@@ -61,23 +60,20 @@ const char *new_options_menu_messages[] = {
 const char *new_advanced_options_menu_messages[] = {
 		/*00*/		"#1.ADVANCED OPTIONS MENU           ",
 		/*01*/		"#1-------------------------------------", 
-		/*02*/		".Display resolution", /* 0 */
+		/*02*/		".Display resolution",
 		/*03*/		"^|double-center|stretched",
 		/*04*/		" ", 
-		/*05*/		".Speed (approx.)",     /* 2 */
+		/*05*/		".Speed (approx.)",
 		/*06*/		"^|95|100|110",
-		/*07*/		" ", 
-		/*08*/		".Sprite collisions", /* 0 */
+		/*07*/		" ",
+		/*08*/		".Sprite collisions",
 		/*09*/		"^|OFF|ON",
-		/*10*/		" ", 
-		/*11*/		".Autostart", /* 0 */
-		/*12*/		"^|Save|Clear", /* 0 */
 		/*13*/		"#1-------------------------------------",
 		/*14*/		"#1'2'=SELECT, '1'=CANCEL",                
 		NULL
 };
 const char *new_help_menu_messages[] = {
-		/*00*/		"#1.CONTROLS MENU                        ",
+		/*00*/		"#1.HELP MENU                           ",
 		/*01*/		"#1-------------------------------------", 
 		/*02*/		".Wiimote key mappings", /* 0 */
 		/*03*/		"^|Wiimote Info|Set Default", /* 0 */

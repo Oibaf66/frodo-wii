@@ -101,9 +101,15 @@ void C64::c64_dtor(void)
 {
 }
 
-void C64::select_disc(Prefs *np)
+void C64::select_disc(Prefs *np, bool start)
 {
-	const char *name = menu_select_file(IMAGE_PATH);
+	const char *name;
+	const char *d64_name = NULL;
+
+	if (!start)
+		name = menu_select_file(IMAGE_PATH);
+	else
+		name = menu_select_file_start(IMAGE_PATH, &d64_name);
 
 	if (name== NULL)
 		return;
@@ -155,6 +161,18 @@ void C64::select_disc(Prefs *np)
 
 	/* Cleanup*/
 	free((void*)name);
+
+	/* And maybe start the game */
+	if (d64_name)
+	{
+		static char buf[255];
+
+		snprintf(buf, 255, "\nLOAD \"%s\",8,1\nRUN\n", d64_name);
+		this->start_fake_key_sequence((const char*)buf);
+		free((void*)d64_name);
+	}
+	else if (start)
+		this->start_fake_key_sequence("\nLOAD \"*\",8,1\nRUN\n");
 }
 
 
@@ -275,10 +293,10 @@ void C64::networking_menu(Prefs *np)
 	this->prefs_changed = true;
 }
 
-void C64::other_options(Prefs *np)
+void C64::advanced_options(Prefs *np)
 {
-	int submenus[3] = { np->DisplayOption, 0, !np->Emul1541Proc };
-
+	int submenus[4] = { np->DisplayOption, 0,
+			np->SpriteCollisions, 0 };
 
 #define SPEED_95 30
 #define SPEED_100 20
@@ -294,11 +312,13 @@ void C64::other_options(Prefs *np)
 		/* If it has some other value... */
 		submenus[1] = 1; break;
 	}
-	int opt = menu_select(other_options_messages, submenus);
+
+	int opt = menu_select(new_advanced_options_menu_messages,
+			submenus);
 	if (opt >= 0)
 	{
 		np->DisplayOption = submenus[0];
-		np->Emul1541Proc = submenus[2] == 0 ? true : false;
+		np->SpriteCollisions = submenus[2];
 
 		switch(submenus[1])
 		{
@@ -311,8 +331,20 @@ void C64::other_options(Prefs *np)
 			np->MsPerFrame = SPEED_110; break;
 		}
 
-		if (opt == 6)
-			Reset();
+		this->prefs_changed = true;
+	}
+}
+
+void C64::other_options(Prefs *np)
+{
+	int old_swap = ThePrefs.JoystickSwap == true ? 1 : 0; 
+	int submenus[3] = { old_swap, !np->Emul1541Proc, 0 };
+
+	int opt = menu_select(new_options_menu_messages,
+			submenus);
+	if (opt >= 0)
+	{
+		np->Emul1541Proc = submenus[1] == 0 ? true : false;
 
 		this->prefs_changed = true;
 	}
@@ -358,7 +390,6 @@ void C64::select_fake_key_sequence(Prefs *np)
 			"LOAD \"*\",8,1  and  RUN",
 			"LOAD \"$\",8",
 			"LIST",
-			"Type with virtual keyboard",
 			NULL};
 	int opt;
 
@@ -366,20 +397,11 @@ void C64::select_fake_key_sequence(Prefs *np)
 	if (opt < 0)
 		return;
 
-	if (opt == 3)
-	{
-		const char *seq = this->virtual_keyboard->get_string();
-
-		if (seq != NULL)
-			this->start_fake_key_sequence(seq);
-	}
-	else
-		this->start_fake_key_sequence(fake_key_sequences[opt]);
+	this->start_fake_key_sequence(fake_key_sequences[opt]);
 }
 
-void C64::save_load_state(Prefs *np)
+void C64::save_load_state(Prefs *np, int opt)
 {
-	int opt = menu_select(save_load_state_messages, NULL);
 	switch(opt)
 	{
 	case 1: /* save */
@@ -626,40 +648,57 @@ void C64::VBlank(bool draw_frame)
 	}
 
 	if (this->have_a_break) {
-		int submenus[1]; 
+		int submenus[3] = {1, 0, 0};
 		int opt;
-		int old_swap = ThePrefs.JoystickSwap == true ? 1 : 0; 
 
 		Prefs np = ThePrefs;
 		this->prefs_changed = false;
 
 		TheSID->PauseSound();
-		submenus[0] = old_swap;
-		opt = menu_select(main_menu_messages, submenus);
+		opt = menu_select(new_main_menu_messages, submenus);
 
 		switch(opt)
 		{
-		case 0: /* Load disc/tape */
-			this->select_fake_key_sequence(&np);
+		case 2: /* Insert disc/tape */
+			this->select_disc(&np, submenus[0] == 1);
 			break;
-		case 1: /* Insert disc/tape */
-			this->select_disc(&np);
+		case 4: /* Save / load game */
+			this->save_load_state(&np, submenus[1]);
 			break;
-		case 2: /* Bind keys to joystick */
-			this->bind_keys(&np);
+		case 6: /* Bind keys to joystick */
+			switch (submenus[2])
+			{
+			case 0: /* type */
+			{
+				const char *seq = this->virtual_keyboard->get_string();
+
+				if (seq != NULL)
+					this->start_fake_key_sequence(seq);
+			} break;
+			case 1: /* Macro */
+				this->select_fake_key_sequence(&np); break;
+			default:
+			case 2: /* Bind to controller */
+				this->bind_keys(&np); break;
+			}
 			break;
-		case 3: /* Other options */
-			this->other_options(&np);
+		case 9: /* Reset the C64 */
+			Reset();
 			break;
-		case 4: /* Networking */
+		case 10: /* Networking */
 			this->networking_menu(&np);
 			break;
-		case 5: /* Swap joysticks */
+		case 11: /* Other options */
+			this->other_options(&np);
 			break;
-		case 7: /* Save / load game */
-			this->save_load_state(&np);
+		case 12: /* Advanced options */
+			this->advanced_options(&np);
 			break;
-		case 9: /* Quit */
+		case 13:
+		{
+			menu_select(welcome, NULL);
+		} break;
+		case 15: /* Quit */
 			quit_thyself = true;				
 			break;
 		case -1:
@@ -670,8 +709,6 @@ void C64::VBlank(bool draw_frame)
 			np.JoystickSwap = false;
 		else
 			np.JoystickSwap = true;
-		if (submenus[0] != old_swap)
-			this->prefs_changed = true;
 
 		if (this->prefs_changed)
 		{
@@ -683,7 +720,7 @@ void C64::VBlank(bool draw_frame)
 
 		this->have_a_break = false;
 		if (this->quit_thyself)
-			ThePrefs.Save(PREFS_PATH);
+			ThePrefs.Save((const char*)PREFS_PATH);
 	}
 	this->network_vblank();
 
