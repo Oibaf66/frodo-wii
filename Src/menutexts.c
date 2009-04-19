@@ -3,28 +3,25 @@
 #include "menutexts.h"
 
 const char *welcome[] = {
-		/*01*/		"#1             WELCOME TO FRODO ON WII               ",
-		/*02*/		" ------------------------------------------------- ",
-		/*03*/		" In the system, hit HOME on the Wiimote to get to  ", 
-		/*04*/		" the config-page. Load or autostart a D64, T64, or ", 
-		/*05*/		" PRG image. Use the virtual keyboard or assign the ", 
-		/*06*/		" key strokes to buttons on the Wiimote.            ",
-		/*07*/		" Save the game state in the main menu of the game. ", 
-		/*08*/		" Next time you can load that state instead and have",
-		/*09*/		" the game and everything configured directly.      ",
-		/*10*/		"                                                   ",
-		/*11*/		" In the networking menu, you can host a game over  ",
-		/*12*/		" the network or browse for active games. During    ", 
-		/*13*/		" network play, you can send messages to your peer  ", 
-		/*14*/		" by pressing ScrLk on the USB keyboard.            ",
-		/*15*/		"                                                   ", 
-		/*16*/		".-------------------------------------------------.",
+		/*03*/		"In the system, hit HOME on the Wiimote to get to  ", 
+		/*04*/		"the config-page. Load or autostart a D64, T64,    ", 
+		/*05*/		"or PRG image. Use the virtual keyboard or assign  ", 
+		/*06*/		"key strokes to buttons on the Wiimote.            ",
+		/*07*/		"You can save the game state in the main menu.     ", 
+		/*08*/		"The next time you can load that state instead     ",
+		/*09*/		"and restore the game and everything configured.   ",
+		/*10*/		"                                                  ",
+		/*11*/		"In the networking menu, you can host a game over  ",
+		/*12*/		"the network or browse for active games. During    ", 
+		/*13*/		"network play, you can send messages to your peer  ", 
+		/*14*/		"by pressing ScrLk on the USB keyboard.            ",
+		/*10*/		"                                                  ",
+		/*10*/		"In each menu, the '2' button selects and entry    ",
+		/*10*/		"and '1' cancels.                                  ",
 		NULL
 };
 
 const char *new_main_menu_messages[] = {
-		/*00*/		"#1.MAIN MENU                       ",
-		/*01*/		"#1-------------------------------------", 
 		/*02*/		".File", 
 		/*03*/		"^|Insert|Start", 
 		/*04*/		".States",     
@@ -37,14 +34,10 @@ const char *new_main_menu_messages[] = {
 		/*11*/  	".Options",
 		/*12*/		".Advanced Options", 
 		/*13*/		".Help",                
-		/*14*/		"#1-------------------------------------",
 		/*15*/		".Quit",                
-		/*17*/		"#1'2'=SELECT, '1'=CANCEL",                
 		NULL
 };
 const char *new_options_menu_messages[] = {
-		/*00*/		"#1.OPTIONS MENU                    ",
-		/*01*/		"#1-------------------------------------", 
 		/*02*/  	".Map Wiimote 1 to:",
 		/*03*/		"^|Port 1|Port 2",
 		/*04*/		" ", 
@@ -58,8 +51,6 @@ const char *new_options_menu_messages[] = {
 		NULL
 };
 const char *new_advanced_options_menu_messages[] = {
-		/*00*/		"#1.ADVANCED OPTIONS MENU           ",
-		/*01*/		"#1-------------------------------------", 
 		/*02*/		".Display resolution",
 		/*03*/		"^|double-center|stretched",
 		/*04*/		" ", 

@@ -861,15 +861,15 @@ int menu_select_sized(const char *title, const char **msgs, int *submenus, int s
 	return out;
 }
 
-static int menu_select(const char *title, const char **msgs, int *submenus, int sel)
+int menu_select(const char *title, const char **msgs, int *submenus)
 {
-	return menu_select_sized(title, msgs, submenus, sel,
+	return menu_select_sized(title, msgs, submenus, 0,
 			32, 32, FULL_DISPLAY_X-32, FULL_DISPLAY_Y-64);
 }
 
 int menu_select(const char **msgs, int *submenus)
 {
-	return menu_select("", msgs, submenus, 0);
+	return menu_select("", msgs, submenus);
 }
 
 extern "C" const char **DirD64(const char *FileName);
@@ -916,7 +916,7 @@ static const char *get_d64_file(const char *name)
 	if (!dir)
 		return NULL;
 
-	int which = menu_select("Select D64 file", dir, NULL, 0);
+	int which = menu_select("Select D64 file", dir, NULL);
 
 	if (which >= 0)
 	{

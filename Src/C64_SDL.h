@@ -253,7 +253,7 @@ void C64::networking_menu(Prefs *np)
 				this->server_hostname);
 		snprintf(buf[2], 255, "Port (%d)",
 				this->server_port);
-		opt = menu_select(network_client_messages, NULL);
+		opt = menu_select("Networking", network_client_messages, NULL);
 
 		if (opt >= 0 && opt <= 2)
 		{
@@ -313,7 +313,8 @@ void C64::advanced_options(Prefs *np)
 		submenus[1] = 1; break;
 	}
 
-	int opt = menu_select(new_advanced_options_menu_messages,
+	int opt = menu_select("Advanced options",
+			new_advanced_options_menu_messages,
 			submenus);
 	if (opt >= 0)
 	{
@@ -340,7 +341,7 @@ void C64::other_options(Prefs *np)
 	int old_swap = ThePrefs.JoystickSwap == true ? 1 : 0; 
 	int submenus[3] = { old_swap, !np->Emul1541Proc, 0 };
 
-	int opt = menu_select(new_options_menu_messages,
+	int opt = menu_select("Options", new_options_menu_messages,
 			submenus);
 	if (opt >= 0)
 	{
@@ -393,7 +394,7 @@ void C64::select_fake_key_sequence(Prefs *np)
 			NULL};
 	int opt;
 
-	opt = menu_select(fake_key_messages, NULL);
+	opt = menu_select("Keyboard macros", fake_key_messages, NULL);
 	if (opt < 0)
 		return;
 
@@ -655,17 +656,17 @@ void C64::VBlank(bool draw_frame)
 		this->prefs_changed = false;
 
 		TheSID->PauseSound();
-		opt = menu_select(new_main_menu_messages, submenus);
+		opt = menu_select("Main menu", new_main_menu_messages, submenus);
 
 		switch(opt)
 		{
-		case 2: /* Insert disc/tape */
+		case 0: /* Insert disc/tape */
 			this->select_disc(&np, submenus[0] == 1);
 			break;
-		case 4: /* Save / load game */
+		case 2: /* Save / load game */
 			this->save_load_state(&np, submenus[1]);
 			break;
-		case 6: /* Bind keys to joystick */
+		case 4: /* Bind keys to joystick */
 			switch (submenus[2])
 			{
 			case 0: /* type */
@@ -682,23 +683,23 @@ void C64::VBlank(bool draw_frame)
 				this->bind_keys(&np); break;
 			}
 			break;
-		case 9: /* Reset the C64 */
+		case 7: /* Reset the C64 */
 			Reset();
 			break;
-		case 10: /* Networking */
+		case 8: /* Networking */
 			this->networking_menu(&np);
 			break;
-		case 11: /* Other options */
+		case 9: /* Other options */
 			this->other_options(&np);
 			break;
-		case 12: /* Advanced options */
+		case 10: /* Advanced options */
 			this->advanced_options(&np);
 			break;
-		case 13:
+		case 11:
 		{
-			menu_select(welcome, NULL);
+			menu_select("Frodo help", welcome, NULL);
 		} break;
-		case 15: /* Quit */
+		case 12: /* Quit */
 			quit_thyself = true;				
 			break;
 		case -1:
