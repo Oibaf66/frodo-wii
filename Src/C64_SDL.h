@@ -121,8 +121,14 @@ void C64::select_disc(Prefs *np, bool start)
 	}
 	else
 	{
+		const char *save_game = strrchr(name, '/');
+
+		if (!save_game)
+			save_game = name;
+		else
+			save_game = save_game + 1; /* Skip '/' */
 		strncpy(np->DrivePath[0], name, 255);
-		strncpy(this->save_game_name, name, 255);
+		strncpy(this->save_game_name, save_game, 255);
 		if (strstr(name, ".prg") || strstr(name, ".PRG") ||
 				strstr(name, ".p00") || strstr(name, ".P00") ||
 				strstr(name, ".s00") || strstr(name, ".S00")) {
@@ -410,7 +416,7 @@ void C64::save_load_state(Prefs *np, int opt)
 		char save_buf[255];
 		char prefs_buf[255];
 
-		snprintf(save_buf, 255, "%s.sav",
+		snprintf(save_buf, 255, "%s/%s.sav", SAVES_PATH,
 				this->save_game_name);
 		snprintf(prefs_buf, 255, "%s.prefs", save_buf);
 
