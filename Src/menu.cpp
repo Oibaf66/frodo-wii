@@ -538,18 +538,6 @@ static int get_next_seq_y(menu_t *p_menu, int v, int dy)
 	return v + dy;
 }
 
-static void select_one(menu_t *p_menu, int sel)
-{
-
-	if (sel >= p_menu->n_entries)
-		sel = 0;
-	p_menu->cur_sel = sel;
-	if (p_menu->pp_msgs[p_menu->cur_sel][0] == ' ' ||
-			p_menu->pp_msgs[p_menu->cur_sel][0] == '#' ||
-			IS_SUBMENU(p_menu->pp_msgs[p_menu->cur_sel]))
-		p_menu->cur_sel = 0;
-}
-
 static void select_next(menu_t *p_menu, int dx, int dy)
 {
 	int next;
@@ -572,6 +560,18 @@ static void select_next(menu_t *p_menu, int dx, int dy)
 	}
 	else if (dx == -1 && !strcmp(p_menu->pp_msgs[0], "[..]"))
 		p_menu->cur_sel = 0;
+}
+
+static void select_one(menu_t *p_menu, int sel)
+{
+
+	if (sel >= p_menu->n_entries)
+		sel = 0;
+	p_menu->cur_sel = sel;
+	if (p_menu->pp_msgs[p_menu->cur_sel][0] == ' ' ||
+			p_menu->pp_msgs[p_menu->cur_sel][0] == '#' ||
+			IS_SUBMENU(p_menu->pp_msgs[p_menu->cur_sel]))
+		select_next(p_menu, 0, 1);
 }
 
 static int is_submenu_title(menu_t *p_menu, int n)
