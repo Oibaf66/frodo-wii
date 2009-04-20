@@ -258,24 +258,30 @@ static const char **get_file_list(const char *base_dir)
 	de;
 	de = readdir(d))
 	{
+		char buf[255];
 		const char *exts[] = {".d64", ".D64", ".prg", ".PRG",
 				".p00", ".P00", ".s00", ".S00",
 				".t64", ".T64", ".sav", ".SAV", NULL};
-		if (de->d_type == DT_REG && ext_matches_list(de->d_name, exts))
-		{
-			char *p;
+		struct stat st;
 
-			p = strdup(de->d_name);
-			file_list[cur++] = p;
-			file_list[cur] = NULL;
-		}
-		else if (de->d_type == DT_DIR)
+		snprintf(buf, 255, "%s/%s", base_dir, de->d_name);
+		if (stat(buf, &st) < 0)
+			continue;
+		if (S_ISDIR(st.st_mode))
 		{
 			char *p;
 			size_t len = strlen(de->d_name) + 4;
 
 			p = (char*)malloc( len );
 			snprintf(p, len, "[%s]", de->d_name);
+			file_list[cur++] = p;
+			file_list[cur] = NULL;
+		}
+		else if (ext_matches_list(de->d_name, exts))
+		{
+			char *p;
+
+			p = strdup(de->d_name);
 			file_list[cur++] = p;
 			file_list[cur] = NULL;
 		}
