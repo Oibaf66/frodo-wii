@@ -344,7 +344,7 @@ void C64::advanced_options(Prefs *np)
 
 void C64::other_options(Prefs *np)
 {
-	int old_swap = ThePrefs.JoystickSwap == true ? 1 : 0; 
+	int old_swap = np->JoystickSwap == true ? 1 : 0; 
 	int submenus[3] = { old_swap, !np->Emul1541Proc, 0 };
 
 	int opt = menu_select("Options", new_options_menu_messages,
@@ -352,6 +352,7 @@ void C64::other_options(Prefs *np)
 	if (opt >= 0)
 	{
 		np->Emul1541Proc = submenus[1] == 0 ? true : false;
+		np->JoystickSwap = submenus[0] == 0 ? false : true;
 
 		this->prefs_changed = true;
 	}
@@ -712,10 +713,6 @@ void C64::VBlank(bool draw_frame)
 		default:
 			break;
 		}
-		if (submenus[0] == 0)
-			np.JoystickSwap = false;
-		else
-			np.JoystickSwap = true;
 
 		if (this->prefs_changed)
 		{
