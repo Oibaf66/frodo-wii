@@ -463,7 +463,7 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu, int sel)
 			else if (IS_SUBMENU(msg))
 			{
 				if (p_menu->cur_sel == i-1)
-					menu_print_font(screen, 0x80,0x80,0x80,
+					menu_print_font(screen, 0x80,0xff,0x80,
 							x_start, y_start + y, msg);
 				else
 					menu_print_font(screen, 0x40,0x40,0x40,
@@ -522,7 +522,7 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu, int sel)
 							r = (SDL_Rect){ x_start + (n+1) * w-1, y_start + (i+ 1 - p_menu->start_entry_visible) * ((h + h/4)) -3, (n_chars - 1) * w, 2};
 							if (p_menu->cur_sel == i-1)
 								SDL_FillRect(screen, &r,
-										SDL_MapRGB(screen->format, 0x80,0x80,0x80));
+										SDL_MapRGB(screen->format, 0x0,0xff,0x80));
 							else
 								SDL_FillRect(screen, &r,
 										SDL_MapRGB(screen->format, 0x40,0x40,0x40));
