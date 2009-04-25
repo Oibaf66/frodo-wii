@@ -119,6 +119,7 @@ dist: $(BUILD)
 	cp meta.xml $@/apps/frodo/
 	cp icon.png $@/apps/frodo/
 	cp FreeMono.ttf $@/apps/frodo/
+	cp C64.ttf $@/apps/frodo/
 	cp frodorc $@/apps/frodo/
 	cd $@ && tar -czf ../frodo-wii-bin.tar.gz *
 
