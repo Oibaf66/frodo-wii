@@ -10,6 +10,8 @@
 		TODO: Handle Run/Stop in virtual keyboard (?)
 
 version 10:
+		* Link against Tantrics new SDL build. Improves sound quite a bit.
+
 		* Quit to the homebrew menu unless networking has been enabled ("hard"
 		quit fixes a networking issue)
 
