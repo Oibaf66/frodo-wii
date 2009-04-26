@@ -27,10 +27,10 @@ INCLUDES	:=
 
 PCFLAGS = -DPRECISE_CPU_CYCLES=1 -DPRECISE_CIA_CYCLES=1 -DPC_IS_POINTER=0
 SCFLAGS = $(PCFLAGS) -DFRODO_SC
-CFLAGS	= -O3 -g -Wall $(MACHDEP) $(INCLUDE) -U__unix -DHAVE_SDL $(SCFLAGS) -I$(DEVKITPRO)/SDL/include 
+CFLAGS	= -O3 -g -Wall $(MACHDEP) $(INCLUDE) -U__unix -DHAVE_SDL $(SCFLAGS) -I$(LIBOGC_INC)/SDL
 CXXFLAGS = $(CFLAGS)
 
-LDFLAGS	= -L$(DEVKITPRO)/SDL/lib -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
+LDFLAGS	= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
