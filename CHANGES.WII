@@ -10,6 +10,9 @@
 		TODO: Handle Run/Stop in virtual keyboard (?)
 
 version 10:
+		* Quit to the homebrew menu unless networking has been enabled ("hard"
+		quit fixes a networking issue)
+
 		* Added ability to recurse into directories (partly by Holger Eilts)
 
 		* Large redesign of menu layout and colors (Holger Eilts)

@@ -78,6 +78,7 @@ Network::Network(const char *remote_host, int port, bool is_master)
 	/* Assume black screen */
 	memset(this->screen, 0, DISPLAY_X * DISPLAY_Y);
 
+	Network::networking_started = true;
 	/* Peer addresses, if it fails we are out of luck */
 	if (this->InitSocket(remote_host, port) == false)
 	{
@@ -1256,6 +1257,7 @@ uint8 Network::sample_buf[NETWORK_SOUND_BUF_SIZE];
 int Network::sample_head;
 int Network::sample_tail;
 bool Network::is_master = true; /* Assume until set false */
+bool Network::networking_started = false;
 
 #if defined(GEKKO)
 #include "NetworkWii.h"

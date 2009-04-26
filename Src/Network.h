@@ -364,6 +364,9 @@ protected:
 	static uint8 sample_buf[NETWORK_SOUND_BUF_SIZE];
 	static int sample_head;
 	static int sample_tail;
+
+public:
+	static bool networking_started;
 };
 
 #endif /* NETWORK_H */
