@@ -14,7 +14,7 @@ const char *welcome[] = {
 		/*11*/		"In the networking menu, you can host a game over  ",
 		/*12*/		"the network or browse for active games. During    ", 
 		/*13*/		"network play, you can send messages to your peer  ", 
-		/*14*/		"by pressing ScrLk on the USB keyboard.            ",
+		/*14*/		"by pressing F10 on the USB keyboard.              ",
 		/*10*/		"                                                  ",
 		/*10*/		"In each menu, the '2' button selects and entry    ",
 		/*10*/		"and '1' cancels.                                  ",

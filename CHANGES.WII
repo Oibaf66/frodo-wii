@@ -16,7 +16,7 @@ version 10:
 
 		* Implemented sending text messages over the network to "taunt"
 		the other player (obviously a very important feature). Pressing
-		ScrLk enables this.
+		F10 enables this.
 
 		* Rearranged menus (networking is more promptly displayed) 
 

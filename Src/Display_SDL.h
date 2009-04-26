@@ -581,8 +581,11 @@ void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joyst
 						SAM(TheC64);
 						break;
 
-					case SDLK_F10:	// F10: Quit
-						quit_requested = true;
+					case SDLK_F10:	// F10/ScrLk: Enter text (for network taunts)
+					case SDLK_SCROLLOCK:
+						this->entering_text_message = !this->entering_text_message;
+						if (this->entering_text_message)
+							this->text_message[0] = '\0';
 						break;
 
 					case SDLK_F11:	// F11: NMI (Restore)
@@ -595,12 +598,6 @@ void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joyst
 
 					case SDLK_HOME:	// Home: Pause and enter menu
 						TheC64->enter_menu();
-						break;
-
-					case SDLK_SCROLLOCK:
-						this->entering_text_message = !this->entering_text_message;
-						if (this->entering_text_message)
-							this->text_message[0] = '\0';
 						break;
 
 					case SDLK_KP_PLUS:	// '+' on keypad: Increase SkipFrames
