@@ -577,10 +577,6 @@ void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joyst
 			case SDL_KEYDOWN:
 				switch (event.key.keysym.sym) {
 
-					case SDLK_F9:	// F9: Invoke SAM
-						SAM(TheC64);
-						break;
-
 					case SDLK_F10:	// F10/ScrLk: Enter text (for network taunts)
 					case SDLK_SCROLLOCK:
 						this->entering_text_message = !this->entering_text_message;
