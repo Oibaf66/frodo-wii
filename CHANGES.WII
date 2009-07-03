@@ -10,6 +10,9 @@
 		TODO: Handle Run/Stop in virtual keyboard (?)
 
 version 11:
+		* New SDL with GX graphics (although the impact for Frodo is
+		quite minimal!)
+
 		* Disable SAM (no need for it on the Wii!)
 
 		-- Simon Kagstrom <simon.kagstrom@gmail.com>, 
