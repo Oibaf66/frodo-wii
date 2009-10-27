@@ -19,8 +19,8 @@ CXX = g++
 CC = gcc
 CFLAGS =-DFRODO_SC -O2 -g -I/usr/include/SDL -I$(DEVKITPRO)/libogc/include -D_GNU_SOURCE=1 -D_REENTRANT -DHAVE_SDL -DORBIT2=1 -pthread -I/usr/include/libglade-2.0 -I/usr/include/gtk-2.0 -I/usr/include/libxml2 -I/usr/lib/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/freetype2 -I/usr/include/libpng12 -I/usr/include/pixman-1 -I/usr/include/libgnomeui-2.0 -I/usr/include/libart-2.0 -I/usr/include/gconf/2 -I/usr/include/gnome-keyring-1 -I/usr/include/libgnome-2.0 -I/usr/include/libbonoboui-2.0 -I/usr/include/libgnomecanvas-2.0 -I/usr/include/gnome-vfs-2.0 -I/usr/lib/gnome-vfs-2.0/include -I/usr/include/orbit-2.0 -I/usr/include/libbonobo-2.0 -I/usr/include/bonobo-activation-2.0 -I/usr/include/gail-1.0    -I./ -DKBD_LANG=0
 DEFS = -DHAVE_CONFIG_H -DDATADIR=\"$(datadir)/frodo/\" -DBINDIR=\"$(bindir)/\" -DHAVE_SDL
-LDFLAGS =  -Wl,-E
-LIBS =  -L/usr/lib -lSDL -lSDL_ttf -pthread -lglade-2.0 -lxml2 -lgnomeui-2 -lSM -lICE -lbonoboui-2 -lgnomevfs-2 -lgnomecanvas-2 -lgnome-2 -lpopt -lbonobo-2 -lbonobo-activation -lORBit-2 -lart_lgpl_2 -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lm -lpangocairo-1.0 -lpango-1.0 -lcairo -lgconf-2 -lgthread-2.0 -lrt -lgmodule-2.0 -ldl -lgobject-2.0 -lglib-2.0   
+LDFLAGS =
+LIBS =  -L/usr/lib -lSDL -lSDL_ttf -pthread
 INSTALL = /usr/bin/install -c
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
@@ -46,7 +46,7 @@ SRCS    = $(GUISRCS) main.cpp Display.cpp Prefs.cpp SID.cpp REU.cpp IEC.cpp 1541
 .SUFFIXES:
 .SUFFIXES: .o .cpp .h
 
-all: sysconfig.h Frodo FrodoSC
+all: sysconfig.h FrodoSC
 
 Frodo: $(SLOBJS)
 	$(CXX) -o Frodo $(LDFLAGS) $(SLOBJS) $(LIBS)
