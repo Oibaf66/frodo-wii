@@ -22,6 +22,8 @@
 #define TMP_PATH "tmp"
 #endif
 
+#define C64_NETWORK_BROKER "c64-network.game-host.org"
+
 #include "menutexts.h"
 
 /* TODO: */
@@ -55,7 +57,7 @@ void C64::c64_ctor1(void)
 	this->virtual_keyboard = new VirtualKeyboard(real_screen, this->menu_font);
 	virtual_keyboard = this->virtual_keyboard;
 
-	strncpy(this->server_hostname, "c64-network.game-host.org",
+	strncpy(this->server_hostname, C64_NETWORK_BROKER,
 			sizeof(this->server_hostname));
 	this->server_port = 46214;
 	this->network_connection_type = NONE;
