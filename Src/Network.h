@@ -11,7 +11,7 @@
 #include "SID.h"
 #include "Display.h"
 
-#define FRODO_NETWORK_PROTOCOL_VERSION 3
+#define FRODO_NETWORK_PROTOCOL_VERSION 4
 
 #define FRODO_NETWORK_MAGIC 0x1976
 
