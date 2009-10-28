@@ -42,13 +42,13 @@
 #define RLE_SIZE  ( RAW_SIZE * 4 + 8)
 #define DIFF_SIZE ( RAW_SIZE * 4 + 8)
 
-Network::Network(const char *remote_host, int port, bool is_master)
+Network::Network(const char *remote_host, int port)
 {
 	const size_t size = NETWORK_UPDATE_SIZE;
 
 	this->InitNetwork();
 
-	Network::is_master = is_master;
+	Network::is_master = true; /* Assume true */
 	this->connected = false;
 
 	/* "big enough" buffer */
@@ -1040,17 +1040,19 @@ network_connection_error_t Network::WaitForPeerList()
 		return SERVER_GARBAGE_ERROR;
 
 	pi = (NetworkUpdateListPeers *)this->ud->data;
-	if (pi->n_peers == 0)
-		return NO_PEERS_ERROR;
-	msgs = (const char**)calloc(pi->n_peers + 1, sizeof(const char*));
+	msgs = (const char**)calloc(pi->n_peers + 2, sizeof(const char*));
 
+	msgs[0] = "None (wait for peer to connect)";
+	printf("Got %d peers\n", pi->n_peers);
 	for (int i = 0; i < pi->n_peers; i++) {
-		msgs[i] = (const char*)pi->peers[i].name;
+		msgs[i + 1] = (const char*)pi->peers[i].name;
+#if 0
 		if (pi->peers[i].version != FRODO_NETWORK_PROTOCOL_VERSION)
 		{
 			free(msgs);
 			return VERSION_ERROR;
 		}
+#endif
 	}
 	int sel = menu_select(msgs, NULL);
 	free(msgs);
@@ -1058,6 +1060,15 @@ network_connection_error_t Network::WaitForPeerList()
 	/* FIXME! What to do here??? */
 	if (sel < 0)
 		return SERVER_GARBAGE_ERROR;
+	if (sel == 0) {
+		/* We want to wait for a connection, and are therefore
+		 * implicitly a master */
+		is_master = true;
+		return NO_PEERS_ERROR;
+	}
+	Network::is_master = false;
+	/* Correct the index */
+	sel--;
 	/* Setup the peer info */
 	char buf[128];
 	uint16 port = pi->peers[sel].public_port;
@@ -1130,14 +1141,10 @@ network_connection_error_t Network::ConnectFSM()
 	switch(this->network_connection_state)
 	{
 	case CONN_CONNECT_TO_BROKER:
-		if (this->ConnectToBroker() == true)
-		{
-			if (Network::is_master)
-				this->network_connection_state = CONN_WAIT_FOR_PEER_ADDRESS;
-			else
-				this->network_connection_state = CONN_WAIT_FOR_PEER_LIST;
-		}
-		break;
+	{
+		if (this->ConnectToBroker())
+			this->network_connection_state = CONN_WAIT_FOR_PEER_LIST;
+	} break;
 	case CONN_WAIT_FOR_PEER_ADDRESS:
 		err = this->WaitForPeerAddress();
 		if (err == OK)
@@ -1150,6 +1157,8 @@ network_connection_error_t Network::ConnectFSM()
 		err = this->WaitForPeerList();
 		if (err == OK)
 			this->network_connection_state = CONN_CONNECT_TO_PEER;
+		else if (err == NO_PEERS_ERROR)
+			this->network_connection_state = CONN_WAIT_FOR_PEER_ADDRESS;
 		else
 			return err;
 		break;
@@ -1171,6 +1180,7 @@ network_connection_error_t Network::ConnectFSM()
 			return AGAIN_ERROR;
 		break;
 	case CONN_CONNECTED:
+		/* The lowest number is the default master */
 	default:
 		return OK;
 	}

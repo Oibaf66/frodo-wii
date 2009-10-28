@@ -144,7 +144,7 @@ static inline NetworkUpdate *InitNetworkUpdate(NetworkUpdate *ud, uint16 type, u
 class Network
 {
 public:
-	Network(const char *remote_host, int port, bool is_master);
+	Network(const char *remote_host, int port);
 
 	~Network();
 

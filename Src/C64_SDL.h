@@ -65,24 +65,12 @@ void C64::c64_ctor1(void)
 
 	if (fixme_tmp_network_server) {
 		strcpy(this->server_hostname, fixme_tmp_network_server);
-		this->peer = new Network(this->server_hostname, this->server_port, true);
+		this->peer = new Network(this->server_hostname, this->server_port);
 		this->network_connection_type = MASTER;
 		printf("Waiting for connection\n");
 		if (this->peer->Connect() == false)
 		{
 			printf("No client connected. Bye\n");
-			delete this->peer;
-			this->peer = NULL;
-		}
-	}
-	if (fixme_tmp_network_client)
-	{
-		strcpy(this->server_hostname, fixme_tmp_network_client);
-		this->peer = new Network(this->server_hostname, this->server_port, false);
-		this->network_connection_type = CLIENT;
-		if (this->peer->Connect() == false)
-		{
-			printf("Could not connect to server. Bye\n");
 			delete this->peer;
 			this->peer = NULL;
 		}
@@ -250,8 +238,8 @@ void C64::networking_menu(Prefs *np)
 				buf[0],                  /* 0 */
 				buf[1],                  /* 1 */
 				buf[2],                  /* 2 */
-				"Host a game",           /* 3 */
-				"Connect as client",     /* 4 */
+				"#2 ",                   /* 3 */
+				"Connect to the C64 network!", /* 4 */
 				NULL,
 		};
 
@@ -282,21 +270,19 @@ void C64::networking_menu(Prefs *np)
 					this->server_port = atoi(m);
 			}
 		}
-		else if (opt == 3 || opt == 4) {
-			bool master = (opt == 3);
-
-			this->peer = new Network(this->server_hostname,
-					this->server_port, master);
-			this->network_connection_type = master ? MASTER_CONNECT : CLIENT;
-			if (this->network_connection_type == CLIENT &&
-					this->peer->Connect() == false)
+		else if (opt == 4) {
+			if (strncmp(np->NetworkName, "Unset", 5) == 0)
 			{
-				delete this->peer;
-				this->peer = NULL;
-				this->network_connection_type = NONE;
+				char *msg = "Select name first";
+
+				msgYesNo(msg, false, 160, 160);
+				continue;
 			}
+
+			this->peer = new Network(this->server_hostname, this->server_port);
+			this->network_connection_type = CONNECT;
 		}
-	} while (opt == 1 || opt == 2);
+	} while (opt >= 0 && opt <= 2);
 
 	this->prefs_changed = true;
 }
@@ -496,7 +482,7 @@ void C64::network_vblank()
 
         	if (this->quit_thyself)
 		{
-        		if (this->network_connection_type != MASTER_CONNECT)
+        		if (this->network_connection_type != CONNECT)
         			remote->Disconnect();
 			delete remote;
 			this->peer = NULL;
@@ -509,17 +495,23 @@ void C64::network_vblank()
         			js = &TheCIA1->Joystick1;
         		else
         			js = &TheCIA1->Joystick2;
-        	} else if (this->network_connection_type == MASTER_CONNECT) {
+        	} else if (this->network_connection_type == CONNECT) {
         		network_connection_error_t err = this->peer->ConnectFSM();
 
         		TheDisplay->display_status_string("WAITING FOR CONNECTION...", 1);
 
         		if (err == OK) {
-        			this->network_connection_type = MASTER;
-                		TheDisplay->display_status_string("CLIENT CONNECTED!", 1);
+        			if (Network::is_master)
+        				this->network_connection_type = MASTER;
+        			else
+        				this->network_connection_type = CLIENT;
+        			TheDisplay->display_status_string("CONNECTED!", 1);
         		}
         		else if (err != AGAIN_ERROR)
         		{
+        			if (err == VERSION_ERROR) {
+        				TheDisplay->display_status_string("YOUR FRODO IS TOO OLD, DOWNLOAD NEW AT HTTP://FRODO-WII.GOOGLECODE.COM", 5);
+        			}
         			delete remote;
         			this->peer = NULL;
         		}
