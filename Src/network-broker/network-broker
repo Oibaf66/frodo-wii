@@ -3,7 +3,7 @@
 import socket, struct, syslog, time, thread, ip2country, sys
 import SocketServer, stats
 
-FRODO_NETWORK_PROTOCOL_VERSION = 3
+FRODO_NETWORK_PROTOCOL_VERSION = 4
 FRODO_NETWORK_MAGIC = 0x1976
 
 CONNECT_TO_BROKER  = 99 # Hello, broker
@@ -28,7 +28,7 @@ pkt_type_to_str = {
 
 def log(pri, msg, echo):
     syslog.syslog(pri, msg)
-    if echo:
+    if True:
         print msg
 
 def log_error(msg, echo = False):
@@ -147,12 +147,13 @@ class ConnectToBrokerPacket(Packet):
         return self._is_master
 
 class ListPeersPacket(Packet):
-    def __init__(self):
+    def __init__(self, version):
         Packet.__init__(self)
         self.n_peers = 0
         self.peers = []
         self.type = LIST_PEERS
         self.size = self.size + 24
+        self.version = version
 
     def add_peer(self, peer):
         self.peers.append(peer)
@@ -163,16 +164,26 @@ class ListPeersPacket(Packet):
         out = struct.pack(">L16sHxx", self.n_peers, "", 0)
 
         for peer in self.peers:
-            # Force the version - we don't allow old stuff
+            name = "%s (%s)" % (peer.name, peer.country)
+            if peer.country == "":
+                name = peer.name
             out = out + struct.pack(">HH16s16sHH31sBLL",
                                     0, peer.public_port, "",
                                     peer.public_ip, peer.key,
-                                    peer.is_master, "%s (%s)" % (peer.name, peer.country),
-                                    0, peer.id, FRODO_NETWORK_PROTOCOL_VERSION)
+                                    peer.is_master, name,
+                                    0, peer.id, self.version)
 
         return Packet.marshal(self) + out
 
-
+class DummyPeer:
+    def __init__(self, name):
+        self.name = name
+        self.country = ""
+        self.public_port = 0
+        self.public_ip = "0.0.0.0"
+        self.key = 0
+        self.is_master = 0
+        self.id = 0
 
 class Peer:
     def __init__(self, addr, srv, id):
@@ -209,39 +220,46 @@ class Peer:
             self.name = pkt.get_name()
             self.is_master = pkt.is_master()
 
+            # If an old Frodo tries to connect, give a helpful message
+            if pkt.version != FRODO_NETWORK_PROTOCOL_VERSION:
+                lp = ListPeersPacket(pkt.version)
+                lp.add_peer(DummyPeer("Your frodo is too old."))
+                lp.add_peer(DummyPeer("download a new version at"))
+                lp.add_peer(DummyPeer("http://frodo-wii.googlecode.com"))
+                log_info("Version too old, sending upgrade notice to %s:%d" %
+                         (self.addr[0], self.addr[1]) )
+                self.send_packet(lp.marshal())
+                return
+
             self.srv.log_connection(self.name, self.country)
 
             # Send list of peers if this is not a master
-            if not self.is_master:
-                lp = ListPeersPacket()
+            lp = ListPeersPacket(FRODO_NETWORK_PROTOCOL_VERSION)
 
-                # Remove inactive peers
-                rp = []
-                for peer in self.srv.peers.itervalues():
-                    if peer != self and peer.seconds_since_last_ping() > 15:
-                        rp.append(peer)
-                for peer in rp:
-                    log_info("Peer %s:%d has been inactive for %d seconds, removing" % (peer.addr[0],
-                                                                                        peer.addr[1],
-                                                                                        peer.seconds_since_last_ping()))
-                    self.srv.remove_peer(peer)
+            # Remove inactive peers
+            rp = []
+            for peer in self.srv.peers.itervalues():
+                if peer != self and peer.seconds_since_last_ping() > 15:
+                    rp.append(peer)
+            for peer in rp:
+                log_info("Peer %s:%d has been inactive for %d seconds, removing" % (peer.addr[0],
+                                                                                    peer.addr[1],
+                                                                                    peer.seconds_since_last_ping()))
+                self.srv.remove_peer(peer)
 
-                for peer in self.srv.peers.itervalues():
-                    if peer != self and peer.is_master:
-                        lp.add_peer(peer)
-                # And send the packet to this peer
-                log_info("Sending list of peers (%d) to %s:%d" % (lp.n_peers,
-                                                                  self.addr[0], self.addr[1]) )
-                self.send_packet(lp.marshal())
-            else:
-                log_info("Added game host %s from %s:%d (%s)" % (self.name, self.addr[0],
-                                                                 self.addr[1], self.country))
+            for peer in self.srv.peers.itervalues():
+                if peer != self: # and peer.is_master:
+                    lp.add_peer(peer)
+            # And send the packet to this peer
+            log_info("Sending list of peers (%d) to %s:%d" % (lp.n_peers,
+                                                              self.addr[0], self.addr[1]) )
+            self.send_packet(lp.marshal())
 
         if pkt.type == SELECT_PEER:
             peer = self.srv.get_peer_by_id( pkt.get_id() )
 
             # Tell the peer that we have connected
-            lp = ListPeersPacket()
+            lp = ListPeersPacket(FRODO_NETWORK_PROTOCOL_VERSION)
             lp.add_peer(self)
             log_info("Sending list of peers for peer selected to %s:%d" % (
                      self.addr[0], self.addr[1]))
@@ -377,7 +395,8 @@ class Broker(SocketServer.UDPServer):
             del self.peers[ peer.addr ]
             del self.peers_by_id[ peer.id ]
         except:
-            log_error("Could not remove %s, something is wrong" % (str(peer.addr)))
+            log_error("Could not remove %s (probably wrong version)" %
+                      (str(peer.addr)))
 
 def ping_thread_fn(broker, time_to_sleep):
     """Run as a separate thread to ping all peers"""
