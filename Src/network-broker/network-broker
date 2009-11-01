@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import socket, struct, syslog, time, thread, ip2country, sys
-import SocketServer, stats, image
+import SocketServer, random
+# Local imports
+import stats, image
 
 FRODO_NETWORK_PROTOCOL_VERSION = 4
 FRODO_NETWORK_MAGIC = 0x1976
@@ -143,7 +145,6 @@ class ConnectToBrokerPacket(Packet):
             self.avatar = struct.unpack(">L", data[88:92])[0]
             self.screenshot = struct.unpack(">%ds" % (image.SCREENSHOT_SIZE),
                                             data[92:92 + image.SCREENSHOT_SIZE])[0]
-            print "VOBB", self.screenshot
 
     def get_key(self):
         return self.key
@@ -191,7 +192,6 @@ class ListPeersPacket(Packet):
                                     peer.is_master, name,
                                     0, peer.id, self.version)
             if self.version >= 4:
-                print "Marshalling", peer.screenshot
                 out = out + struct.pack(">L%ds" % (image.SCREENSHOT_SIZE),
                                         peer.avatar, peer.screenshot)
 
@@ -260,6 +260,12 @@ class Peer:
             self.screenshot = pkt.get_screenshot()
 
             self.srv.log_connection(self.name, self.country)
+            try:
+                which = random.randrange(0,10)
+                img = image.image_from_data(self.screenshot)
+                img.save("%s%d.png" % (self.srv.image_dir, which))
+            except Exception, e:
+                log_info("Could not convert image data" + str(e))
 
             # Send list of peers if this is not a master
             lp = ListPeersPacket(FRODO_NETWORK_PROTOCOL_VERSION)
@@ -359,7 +365,7 @@ class BrokerPacketHandler(SocketServer.DatagramRequestHandler):
 
 class Broker(SocketServer.UDPServer):
 
-    def __init__(self, host, req_handler, ip2c, stat_data, stat_html):
+    def __init__(self, host, req_handler, ip2c, stat_data, stat_html, image_dir):
         SocketServer.UDPServer.__init__(self, host, req_handler)
         # Instead of setsockopt( ... REUSEADDR ... )
         self.allow_reuse_address = True
@@ -371,6 +377,7 @@ class Broker(SocketServer.UDPServer):
 
         self.stat_html = stat_html
         self.stat_data = stat_data
+        self.image_dir = image_dir
 
         stats.load(self.stat_data)
 
@@ -445,18 +452,18 @@ packet_class_by_type = {
 }
 
 def usage():
-    print "Usage: network-broker stat-data-file stat-html-file"
+    print "Usage: network-broker stat-data-file stat-html-file image-dir"
     sys.exit(1)
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         usage()
 
     ip2c = ip2country.IP2Country(verbose=0)
     syslog.openlog("frodo")
     log_info("Starting Frodo network broker", True)
     broker = Broker( ("", 46214), BrokerPacketHandler,
-                     ip2c, sys.argv[1], sys.argv[2])
+                     ip2c, sys.argv[1], sys.argv[2], sys.argv[3])
     thread.start_new_thread(ping_thread_fn, (broker, 5))
     broker.serve_forever()
