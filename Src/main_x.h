@@ -107,10 +107,9 @@ char *fixme_tmp_network_server = 0;
 
 void Frodo::ArgvReceived(int argc, char **argv)
 {
+	printf("Argc: %d\n", argc);
 	if (argc == 2)
-	{
 		fixme_tmp_network_server = argv[1];
-	}
 }
 
 

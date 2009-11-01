@@ -63,16 +63,10 @@ void C64::c64_ctor1(void)
 	this->peer = NULL;
 
 	if (fixme_tmp_network_server) {
+		printf("Connecting to %s\n", fixme_tmp_network_server);
 		strcpy(this->server_hostname, fixme_tmp_network_server);
 		this->peer = new Network(this->server_hostname, this->server_port);
-		this->network_connection_type = MASTER;
-		printf("Waiting for connection\n");
-		if (this->peer->Connect() == false)
-		{
-			printf("No client connected. Bye\n");
-			delete this->peer;
-			this->peer = NULL;
-		}
+		this->network_connection_type = CONNECT;
 	}
 }
 
