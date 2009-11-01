@@ -141,7 +141,7 @@ class ConnectToBrokerPacket(Packet):
 
         if self.version >= 4:
             self.avatar = struct.unpack(">L", data[88:92])[0]
-            self.screenshot = struct.unpack(">%dB" % (image.SCREENSHOT_SIZE),
+            self.screenshot = struct.unpack(">%ds" % (image.SCREENSHOT_SIZE),
                                             data[92:92 + image.SCREENSHOT_SIZE])[0]
             print "VOBB", self.screenshot
 
@@ -192,7 +192,7 @@ class ListPeersPacket(Packet):
                                     0, peer.id, self.version)
             if self.version >= 4:
                 print "Marshalling", peer.screenshot
-                out = out + struct.pack(">L%dB" % (image.SCREENSHOT_SIZE),
+                out = out + struct.pack(">L%ds" % (image.SCREENSHOT_SIZE),
                                         peer.avatar, peer.screenshot)
 
         return Packet.marshal(self) + out
