@@ -40,9 +40,9 @@ class HtmlGenerator:
 
         outf.write("<html><body>\n")
         outf.write("<H2>Frodo-Wii network statistics</H2>\n")
-        outf.write("The total number of connections is <b>%d</b><br>\n" % (self.container.total_connections))
+        outf.write("The total number of connections is <b>%d</b><br><br>\n" % (self.container.total_connections))
         outf.write("<TABLE border=\"0\" cellpadding=\"0\">\n")
-        outf.write("<TR><TD><H3>Last %d connections</H3></TD><TD colspan=4><H3>Random screenshots</TD></TR>\n" %
+        outf.write("<TR><TD><H3>Last %d connections</H3></TD><TD>&nbsp;</TD<TD colspan=4><H3>Random screenshots</TD></TR>\n" %
                    (len(self.container.last_10)) )
 
         cnt = 0
@@ -51,16 +51,18 @@ class HtmlGenerator:
             if cnt % 4 == 0:
                 cur = cnt
                 images = "<TH ROWSPAN=4><IMG SRC=\"/tmp/images/%d.png\"></TH><TH ROWSPAN=4><IMG SRC=\"/tmp/images/%d.png\"></TH><TH ROWSPAN=4><IMG SRC=\"/tmp/images/%d.png\"></TH><TH ROWSPAN=4><IMG SRC=\"/tmp/images/%d.png\"></TH>" % (cur, cur + 1, cur + 2, cur + 3)
-            outf.write("<TR><TD>%s<br></TD>%s</TR>\n" % (item, images) )
+            outf.write("<TR><TD>%s</TD><TD>&nbsp;</TD>%s</TR>\n" % (item, images) )
             cnt = cnt + 1
+        outf.write("<TR><TD>&nbsp;</TD></TR>")
         outf.write("</TABLE>\n")
 
-        outf.write("<TABLE border=\"0\" cellpadding=\"0\">\n")
+        outf.write("<br><br><TABLE border=\"0\" cellpadding=\"0\">\n")
         outf.write("<TR><TD colspan=4><H3>Country list</H3></TD></TR>\n")
         count = 1
         for country, num in sorted_countries:
-            outf.write("<b>%3d</b>. %s (%d)<br>\n" % (count, country, num) )
+            outf.write("<TR><TD><b>%3d</b></TD><TD>&nbsp;</TD><TD>%s (%d)</TD></TR>\n" % (count, country, num) )
             count = count + 1
+        outf.write("</TABLE>\n")
         outf.write("</body></html>\n")
 
 
