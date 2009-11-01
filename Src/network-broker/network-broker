@@ -261,8 +261,10 @@ class Peer:
 
             self.srv.log_connection(self.name, self.country)
             try:
-                which = random.randrange(0,10)
+                # Save as one of the last few screenshots
+                which = random.randrange(0,12)
                 img = image.image_from_data(self.screenshot)
+                print "Saving", which
                 img.save("%s%d.png" % (self.srv.image_dir, which))
             except Exception, e:
                 log_info("Could not convert image data" + str(e))
@@ -459,6 +461,7 @@ if __name__ == "__main__":
 
     if len(sys.argv) != 4:
         usage()
+    random.seed(time.time())
 
     ip2c = ip2country.IP2Country(verbose=0)
     syslog.openlog("frodo")
