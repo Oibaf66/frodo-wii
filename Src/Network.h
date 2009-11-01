@@ -18,6 +18,10 @@
 #define NETWORK_UPDATE_SIZE     (256 * 1024)
 #define NETWORK_SOUND_BUF_SIZE   4096
 
+#define SCREENSHOT_FACTOR 4
+#define SCREENSHOT_X (DISPLAY_X / SCREENSHOT_FACTOR)
+#define SCREENSHOT_Y (DISPLAY_Y / SCREENSHOT_FACTOR)
+
 typedef enum
 {
 	/* Connection-related messages */
@@ -119,6 +123,10 @@ struct NetworkUpdatePeerInfo
 	uint8 name[32];      /* "SIMON", "LINDA" etc */
 	uint32 server_id;    /* Used by the server */
 	uint32 version;      /* Version number */
+
+	uint32 avatar;		 /* Hash of the avatar */
+	/* RAW-encoded screenshot of how the display looks like */
+	uint8  screenshot[(SCREENSHOT_X * SCREENSHOT_Y) / 2];
 };
 
 struct NetworkUpdateListPeers
@@ -149,6 +157,8 @@ public:
 	~Network();
 
 	void EncodeSound();
+
+	void EncodeScreenshot(Uint8 *dst, Uint8 *master);
 
 	void EncodeDisplay(Uint8 *master, Uint8 *remote);
 
@@ -337,6 +347,7 @@ protected:
 	Uint8 *rle_buf;
 	Uint8 *diff_buf;
 	Uint8 *sound_buf;
+	Uint8 screenshot[SCREENSHOT_X * SCREENSHOT_Y / 2];
 	Uint32 *square_updated;
 
 	size_t traffic, last_traffic;

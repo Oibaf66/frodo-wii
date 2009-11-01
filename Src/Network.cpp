@@ -22,6 +22,8 @@
 #include "Network.h"
 #include "Display.h"
 #include "Prefs.h"
+#include "main.h"
+#include "C64.h"
 #include "menu.h"
 
 #if defined(GEKKO)
@@ -77,6 +79,7 @@ Network::Network(const char *remote_host, int port)
 
 	/* Assume black screen */
 	memset(this->screen, 0, DISPLAY_X * DISPLAY_Y);
+	memset(this->screenshot, 0, sizeof(this->screenshot));
 
 	Network::networking_started = true;
 	/* Peer addresses, if it fails we are out of luck */
@@ -259,6 +262,30 @@ bool Network::CompareSquare(Uint8 *a, Uint8 *b)
 	}
 
 	return true;
+}
+
+void Network::EncodeScreenshot(Uint8 *dst, Uint8 *master)
+{
+	int x, y;
+	int cnt = 0;
+	int p = 0;
+
+	memset(dst, 0, (SCREENSHOT_X * SCREENSHOT_Y) / 2);
+	for (y = 0; y < DISPLAY_Y; y += SCREENSHOT_FACTOR)
+	{
+		for (x = 0; x < DISPLAY_X; x += SCREENSHOT_FACTOR)
+		{
+			Uint8 col_s = master[ y * DISPLAY_X + x ];
+			bool is_odd = (cnt & 1) == 1;
+			int raw_shift = (is_odd ? 0 : 4);
+
+			/* Every second is shifted */
+			dst[ p ] |=	(col_s << raw_shift);
+			if (is_odd)
+				p++;
+			cnt++;
+		}
+	}
 }
 
 void Network::EncodeDisplay(Uint8 *master, Uint8 *remote)
@@ -717,6 +744,7 @@ bool Network::MarshalData(NetworkUpdate *p)
 			peer->is_master = htons(peer->is_master);
 			peer->server_id = htonl(peer->server_id);
 			peer->version = htonl(peer->version);
+			peer->avatar = htonl(peer->avatar);
 		}
 		lp->n_peers = htonl(lp->n_peers);
 		lp->your_port = htons(lp->your_port);
@@ -811,6 +839,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 			peer->is_master = ntohs(peer->is_master);
 			peer->server_id = ntohl(peer->server_id);
 			peer->version = ntohl(peer->version);
+			peer->avatar = ntohl(peer->avatar);
 		}
 		lp->your_port = ntohs(lp->your_port);
 	} break;
@@ -915,6 +944,9 @@ bool Network::ConnectToBroker()
 	pi->is_master = Network::is_master;
 	pi->key = ThePrefs.NetworkKey;
 	pi->version = FRODO_NETWORK_PROTOCOL_VERSION;
+	pi->avatar = ThePrefs.NetworkAvatar;
+	this->EncodeScreenshot(pi->screenshot, TheC64->TheDisplay->BitmapBase());
+
 	strcpy((char*)pi->name, ThePrefs.NetworkName);
 	this->AddNetworkUpdate(ud);
 	out = this->SendUpdate();

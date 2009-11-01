@@ -102,6 +102,7 @@ Prefs::Prefs()
 	this->MsPerFrame = 28;
 #endif
 	this->NetworkKey = rand() % 0xffff;
+	this->NetworkAvatar = 0;
 	snprintf(this->NetworkName, 32, "Unset name");
 }
 
@@ -180,6 +181,7 @@ bool Prefs::operator==(const Prefs &rhs) const
 		&& this->MsPerFrame == rhs.MsPerFrame
 #endif
 		&& this->NetworkKey == rhs.NetworkKey
+		&& this->NetworkAvatar == rhs.NetworkAvatar
 		&& strcmp(this->NetworkName, rhs.NetworkName) == 0
 	);
 }
@@ -366,6 +368,8 @@ void Prefs::Load(char *filename)
 					NetworkKey = atoi(value);
 				else if (!strcmp(keyword, "NetworkName"))
 					strcpy(NetworkName, value);
+				else if (!strcmp(keyword, "NetworkAvatar"))
+					NetworkAvatar = atoi(value);
 #endif
 			}
 		}
@@ -458,6 +462,7 @@ bool Prefs::Save(char *filename)
 		fprintf(file, "DisplayOption = %d\n", DisplayOption);
 		fprintf(file, "MsPerFrame = %d\n", MsPerFrame);
 		fprintf(file, "NetworkKey = %d\n", NetworkKey);
+		fprintf(file, "NetworkAvatar = %d\n", NetworkAvatar);
 		fprintf(file, "NetworkName = %s\n", NetworkName);
 #endif
 		fclose(file);

@@ -103,17 +103,13 @@ Frodo::Frodo()
 /*
  *  Process command line arguments
  */
-char *fixme_tmp_network_client = 0;
 char *fixme_tmp_network_server = 0;
 
 void Frodo::ArgvReceived(int argc, char **argv)
 {
-	if (argc == 3)
+	if (argc == 2)
 	{
-		if (strcmp(argv[1], "-s") == 0)
-			fixme_tmp_network_server = argv[2];
-		else if (strcmp(argv[1], "-c") == 0)
-			fixme_tmp_network_client = argv[2];
+		fixme_tmp_network_server = argv[1];
 	}
 }
 

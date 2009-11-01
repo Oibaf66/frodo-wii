@@ -155,6 +155,7 @@ private:
 #endif
 	char NetworkName[32];
 	int NetworkKey;
+	uint32 NetworkAvatar;
 };
 
 
