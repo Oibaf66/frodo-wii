@@ -42,7 +42,7 @@ class HtmlGenerator:
         outf.write("<H2>Frodo-Wii network statistics</H2>\n")
         outf.write("The total number of connections is <b>%d</b><br><br>\n" % (self.container.total_connections))
         outf.write("<TABLE border=\"0\" cellpadding=\"0\">\n")
-        outf.write("<TR><TD><H3>Last %d connections</H3></TD><TD>&nbsp;</TD<TD colspan=4><H3>Random screenshots</TD></TR>\n" %
+        outf.write("<TR><TD><H3>Last %d connections</H3></TD><TD>&nbsp;</TD<TD colspan=4><H3>Random connection screenshots</TD></TR>\n" %
                    (len(self.container.last_10)) )
 
         cnt = 0
