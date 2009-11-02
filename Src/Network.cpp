@@ -1072,12 +1072,6 @@ network_connection_error_t Network::WaitForPeerList()
 		return SERVER_GARBAGE_ERROR;
 
 	pi = (NetworkUpdateListPeers *)this->ud->data;
-	msgs = (const char**)calloc(pi->n_peers + 2, sizeof(const char*));
-
-	msgs[0] = "None (wait for peer to connect)";
-	printf("Got %d peers\n", pi->n_peers);
-	for (int i = 0; i < pi->n_peers; i++) {
-		msgs[i + 1] = (const char*)pi->peers[i].name;
 #if 0
 		if (pi->peers[i].version != FRODO_NETWORK_PROTOCOL_VERSION)
 		{
@@ -1085,9 +1079,7 @@ network_connection_error_t Network::WaitForPeerList()
 			return VERSION_ERROR;
 		}
 #endif
-	}
-	int sel = menu_select(msgs, NULL);
-	free(msgs);
+	int sel = menu_select_peer(pi->peers, pi->n_peers);
 
 	/* FIXME! What to do here??? */
 	if (sel < 0)

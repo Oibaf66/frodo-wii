@@ -18,6 +18,7 @@
 
 #include "sysdeps.h"
 #include "Display.h"
+#include "Network.h"
 #include "menu.h"
 #include "menutexts.h"
 
@@ -45,6 +46,9 @@ typedef struct
 	int        cur_sel; /* Main selection */
 	int        start_entry_visible;
 	int        n_entries;
+
+	NetworkUpdatePeerInfo *peers;
+	int n_peers;
 } menu_t;
 
 #define IS_SUBMENU(p_msg) ( (p_msg)[0] == '^' )
@@ -606,6 +610,8 @@ static void menu_init(menu_t *p_menu, const char *title, TTF_Font *p_font, const
 
 	p_menu->text_w = 0;
 	p_menu->n_submenus = 0;
+	p_menu->peers = NULL;
+	p_menu->n_peers = 0;
 	strcpy(p_menu->title, title);
 
 	for (p_menu->n_entries = 0; p_menu->pp_msgs[p_menu->n_entries]; p_menu->n_entries++)
@@ -876,6 +882,33 @@ int menu_select(const char *title, const char **msgs, int *submenus)
 int menu_select(const char **msgs, int *submenus)
 {
 	return menu_select("", msgs, submenus);
+}
+
+int menu_select_peer(NetworkUpdatePeerInfo *peers, int n_peers)
+{
+	menu_t menu;
+	int out;
+	const char **msgs;
+
+	msgs = (const char**)calloc(n_peers + 2, sizeof(const char*));
+
+	msgs[0] = "None (wait for peer to connect)";
+	printf("Got %d peers\n", n_peers);
+	for (int i = 0; i < n_peers; i++)
+		msgs[i + 1] = (const char*)peers[i].name;
+
+	menu_init(&menu, "", menu_font, msgs,
+			32, 32, FULL_DISPLAY_X-32, FULL_DISPLAY_Y-64);
+	menu.peers = peers;
+	menu.n_peers = n_peers;
+
+	out = menu_select_internal(real_screen, &menu, NULL, 0,
+			NULL, NULL);
+
+	menu_fini(&menu);
+	free(msgs);
+
+	return out;
 }
 
 extern "C" const char **DirD64(const char *FileName);
