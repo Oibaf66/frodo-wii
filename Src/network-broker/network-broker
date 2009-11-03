@@ -382,6 +382,7 @@ class Broker(SocketServer.UDPServer):
         self.image_dir = image_dir
 
         stats.load(self.stat_data)
+        stats.generate_html(self.stat_html)
 
     def log_connection(self, who, country):
         stats.add_connection(who, country)
