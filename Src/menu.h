@@ -15,6 +15,8 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <stdint.h>
+#include "sysdeps.h"
+#include "Network.h"
 
 #define KEY_UP         1
 #define KEY_DOWN       2

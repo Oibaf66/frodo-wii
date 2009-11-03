@@ -101,6 +101,20 @@ struct NetworkUpdatePingAck
 	uint32 seq;
 };
 
+struct NetworkUpdateSoundInfo
+{
+	uint8 adr;
+	uint8 val;
+	uint8 delay_cycles;
+};
+
+struct NetworkUpdateSound
+{
+	uint16 n_items;
+	uint16 flags;
+	NetworkUpdateSoundInfo info[];
+};
+
 /*
  * Sent by the third-party broker server when someone wants to connect
  * to this machine.
