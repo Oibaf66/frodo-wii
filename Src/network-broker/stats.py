@@ -57,16 +57,24 @@ class HtmlGenerator:
         outf.write("</TABLE>\n")
 
         outf.write("<br><br><TABLE border=\"0\" cellpadding=\"0\">\n")
-        outf.write("<TR><TD colspan=4><H3>Country list</H3></TD></TR>\n")
+        outf.write("<TR><TD colspan=3><H3>List of countries</H3></TD></TR>\n")
         count = 1
 
         n_countries = len(sorted_countries)
-        for i in range(0, n_countries / 2):
+        for i in range(0, n_countries / 3):
             c1, n1 = sorted_countries[i]
-            c2, n2 = sorted_countries[i + n_countries / 2]
-            outf.write("<TR><TD><b>%3d</b></TD><TD>&nbsp;</TD><TD>%s (%d)</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD><b>%3d</b></TD><TD>&nbsp;</TD><TD>%s (%d)</TD></TR>\n" %
-                       (count, c1, n1, count + n_countries / 2, c2, n2) )
+            c2, n2 = sorted_countries[i + n_countries / 3]
+            c3, n3 = sorted_countries[i + (n_countries / 3) * 2]
+            outf.write("<TR><TD><b>%3d</b></TD><TD>&nbsp;</TD><TD>%s (%d)</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD><b>%3d</b></TD><TD>&nbsp;</TD><TD>%s (%d)</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD><b>%3d</b></TD><TD>&nbsp;</TD><TD>%s (%d)</TD></TR>\n" %
+                       (count, c1, n1, count + n_countries / 3, c2, n2, count + (n_countries / 3) * 2, c3, n3) )
             count = count + 1
+        # Output the last if it's odd
+        for i in range(0, n_countries % 3):
+            c1, n1 = sorted_countries[n_countries - i - 1]
+            outf.write("<TR><TD></TD><TD></TD><TD></TD><TD></TD><TD></TD><TD></TD><TD></TD><TD></TD><TD></TD><TD></TD><TD></TD><TD></TD><TD><b>%3d</b></TD><TD>&nbsp;</TD><TD>%s (%d)</TD></TR>\n" %
+                       (n_countries - n_countries % 3 + i + 1, c1, n1) )
+            
+            
         outf.write("</TABLE>\n")
         outf.write("</body></html>\n")
 
