@@ -264,8 +264,8 @@ class Peer:
                 # Save as one of the last few screenshots
                 which = random.randrange(0,12)
                 img = image.image_from_data(self.screenshot)
-                print "Saving", which
-                img.save("%s%d.png" % (self.srv.image_dir, which))
+                if img.interestingness > 0.4 or random.randrange(0, 10) < 2:
+                    img.save("%s%d.png" % (self.srv.image_dir, which))
             except Exception, e:
                 log_info("Could not convert image data" + str(e))
 
