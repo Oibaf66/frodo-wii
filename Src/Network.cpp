@@ -444,7 +444,7 @@ void Network::EncodeJoystickUpdate(Uint8 v)
 	struct NetworkUpdate *dst = this->cur_ud;
 	struct NetworkUpdateJoystick *j = (NetworkUpdateJoystick *)dst->data;
 
-	if (this->network_connection_state == MASTER || this->cur_joystick_data == v)
+	if (TheC64->network_connection_type == MASTER || this->cur_joystick_data == v)
 		return;
 	dst = InitNetworkUpdate(dst, JOYSTICK_UPDATE,
 			sizeof(NetworkUpdate) + sizeof(NetworkUpdateJoystick));
@@ -791,21 +791,21 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 		{
 		case SOUND_UPDATE:
 			/* No sound updates _to_ the master */
-			if (this->network_connection_state == MASTER)
+			if (TheC64->network_connection_type == MASTER)
 				break;
 			break;
 		case DISPLAY_UPDATE_RAW:
 		case DISPLAY_UPDATE_RLE:
 		case DISPLAY_UPDATE_DIFF:
 			/* No screen updates _to_ the master */
-			if (this->network_connection_state == MASTER)
+			if (TheC64->network_connection_type == MASTER)
 				break;
 			if (this->DecodeDisplayUpdate(p) == false)
 				out = false;
 			break;
 		case JOYSTICK_UPDATE:
 			/* No joystick updates _from_ the master */
-			if (js && this->network_connection_state == MASTER)
+			if (js && TheC64->network_connection_type == MASTER)
 			{
 				NetworkUpdateJoystick *j = (NetworkUpdateJoystick *)p->data;
 				*js = j->val;
