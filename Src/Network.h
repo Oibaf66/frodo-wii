@@ -228,7 +228,7 @@ public:
 
 	static void PushSound(uint8 vol);
 
-	static bool is_master; /* Some peers are more equal than others */
+	bool is_master; /* Some peers are more equal than others */
 protected:
 	void InitNetwork();
 

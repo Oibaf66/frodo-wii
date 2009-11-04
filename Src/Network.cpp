@@ -50,7 +50,7 @@ Network::Network(const char *remote_host, int port)
 
 	this->InitNetwork();
 
-	Network::is_master = true; /* Assume true */
+	this->is_master = true; /* Assume true */
 	this->connected = false;
 
 	/* "big enough" buffer */
@@ -290,7 +290,7 @@ void Network::EncodeScreenshot(Uint8 *dst, Uint8 *master)
 
 void Network::EncodeDisplay(Uint8 *master, Uint8 *remote)
 {
-	if (!Network::is_master)
+	if (!this->network_connection_state == MASTER)
 		return;
 	for ( int sq = 0; sq < N_SQUARES_H * N_SQUARES_W; sq++ )
 	{
@@ -470,7 +470,7 @@ void Network::EncodeSound()
 	/* This is not enabled yet... */
 	return;
 	/* Nothing to encode? */
-	if (!Network::is_master ||
+	if (this->network_connection_state != MASTER ||
 			this->GetSoundBufferSize() < NETWORK_SOUND_BUF_SIZE / 2)
 		return;
 
@@ -501,7 +501,7 @@ void Network::EncodeJoystickUpdate(Uint8 v)
 	struct NetworkUpdate *dst = this->cur_ud;
 	struct NetworkUpdateJoystick *j = (NetworkUpdateJoystick *)dst->data;
 
-	if (Network::is_master || this->cur_joystick_data == v)
+	if (this->network_connection_state == MASTER || this->cur_joystick_data == v)
 		return;
 	dst = InitNetworkUpdate(dst, JOYSTICK_UPDATE,
 			sizeof(NetworkUpdate) + sizeof(NetworkUpdateJoystick));
@@ -886,7 +886,7 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 		case SOUND_UPDATE_RAW:
 		case SOUND_UPDATE_RLE:
 			/* No sound updates _to_ the master */
-			if (Network::is_master)
+			if (this->network_connection_state == MASTER)
 				break;
 			if (this->DecodeSoundUpdate(p, dst) == false)
 				out = false;
@@ -895,14 +895,14 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 		case DISPLAY_UPDATE_RLE:
 		case DISPLAY_UPDATE_DIFF:
 			/* No screen updates _to_ the master */
-			if (Network::is_master)
+			if (this->network_connection_state == MASTER)
 				break;
 			if (this->DecodeDisplayUpdate(p) == false)
 				out = false;
 			break;
 		case JOYSTICK_UPDATE:
 			/* No joystick updates _from_ the master */
-			if (js && Network::is_master)
+			if (js && this->network_connection_state == MASTER)
 			{
 				NetworkUpdateJoystick *j = (NetworkUpdateJoystick *)p->data;
 				*js = j->val;
@@ -1087,10 +1087,8 @@ network_connection_error_t Network::WaitForPeerList()
 	if (sel == 0) {
 		/* We want to wait for a connection, and are therefore
 		 * implicitly a master */
-		Network::is_master = true;
 		return NO_PEERS_ERROR;
 	}
-	Network::is_master = false;
 	/* Correct the index */
 	sel--;
 	/* Setup the peer info */
@@ -1179,10 +1177,14 @@ network_connection_error_t Network::ConnectFSM()
 	case CONN_WAIT_FOR_PEER_LIST:
 		/* Also tells the broker that we want to connect */
 		err = this->WaitForPeerList();
-		if (err == OK)
+		if (err == OK) {
 			this->network_connection_state = CONN_CONNECT_TO_PEER;
-		else if (err == NO_PEERS_ERROR)
+			this->is_master = false;
+		}
+		else if (err == NO_PEERS_ERROR) {
 			this->network_connection_state = CONN_WAIT_FOR_PEER_ADDRESS;
+			this->is_master = true;
+		}
 		else
 			return err;
 		break;
@@ -1226,7 +1228,6 @@ void Network::Disconnect()
 uint8 Network::sample_buf[NETWORK_SOUND_BUF_SIZE];
 int Network::sample_head;
 int Network::sample_tail;
-bool Network::is_master = true; /* Assume until set false */
 bool Network::networking_started = false;
 
 #if defined(GEKKO)

@@ -494,7 +494,7 @@ void C64::network_vblank()
         		TheDisplay->display_status_string("WAITING FOR CONNECTION...", 1);
 
         		if (err == OK) {
-        			if (Network::is_master)
+        			if (this->peer->is_master)
         				this->network_connection_type = MASTER;
         			else
         				this->network_connection_type = CLIENT;

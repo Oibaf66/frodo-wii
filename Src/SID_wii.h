@@ -94,7 +94,5 @@ void DigitalRenderer::EmulateLine(void)
 {
 	if (!ready)
 		return;
-	Network::PushSound(volume);
-	if (Network::is_master)
-		this->PushVolume(volume);
+	this->PushVolume(volume);
 }
