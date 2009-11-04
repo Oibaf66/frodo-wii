@@ -78,8 +78,8 @@ Network::Network(const char *remote_host, int port)
 	assert(this->screen);
 
 	this->sound_head = this->sound_tail = 0;
+	this->sound_last_cycles = SDL_GetTicks();
 	memset(this->sound_active, 0, sizeof(this->sound_active));
-	memset(this->sound_network, 0, sizeof(this->sound_network));
 
 	/* Assume black screen */
 	memset(this->screen, 0, DISPLAY_X * DISPLAY_Y);
@@ -427,14 +427,34 @@ void Network::FlushSound(void)
 	struct NetworkUpdateSound *snd = (NetworkUpdateSound *)dst->data;
 	struct NetworkUpdateSoundInfo *snd_info = snd->info;
 
-	static int last_cycles = 0;
-
-	snd->flags = 0;
-	snd->n_items = 0;
-	if (SDL_GetTicks() - last_cycles < 125)
+	if (SDL_GetTicks() - this->sound_last_send < 125)
 		return;
-	printf("Flushing sound (%d bytes in %d ms)\n", bytes, SDL_GetTicks() - last_cycles);
-	last_cycles = SDL_GetTicks();
+	snd->flags = 0;
+	snd->n_items = this->sound_head - this->sound_tail;
+
+	if (this->sound_head < this->sound_tail) {
+		snd->n_items = NETWORK_SOUND_BUF_SIZE;
+		memcpy(snd_info, &this->sound_active[this->sound_tail],
+				(NETWORK_SOUND_BUF_SIZE - this->sound_tail) * sizeof(struct NetworkUpdateSoundInfo));
+		memcpy(snd_info + NETWORK_SOUND_BUF_SIZE - this->sound_tail,
+				&this->sound_active[this->sound_head],
+				this->sound_head * sizeof(struct NetworkUpdateSoundInfo));
+	}
+	else
+	{
+		memcpy(snd_info, &this->sound_active[this->sound_head],
+				(this->sound_head - this->sound_tail) * sizeof(struct NetworkUpdateSoundInfo));
+	}
+
+	/* Reset the buffer again */
+	this->sound_head = this->sound_tail = 0;
+	printf("Flushing sound (%d bytes in %d ms)\n", bytes, SDL_GetTicks() - this->sound_last_send);
+	this->sound_last_send = SDL_GetTicks();
+
+	InitNetworkUpdate(dst, SOUND_UPDATE,
+			sizeof(NetworkUpdateSound) + sizeof(NetworkUpdateSoundInfo) * snd->n_items);
+	this->AddNetworkUpdate(dst);
+
 	bytes = 0;
 }
 

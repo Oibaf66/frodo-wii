@@ -361,10 +361,10 @@ protected:
 	network_connection_state_t network_connection_state;
 
 	NetworkUpdateSoundInfo sound_active[NETWORK_SOUND_BUF_SIZE];
-	NetworkUpdateSoundInfo sound_network[NETWORK_SOUND_BUF_SIZE];
 	int sound_head;
 	int sound_tail;
 	uint32 sound_last_cycles;
+	uint32 sound_last_send;
 
 public:
 	static bool networking_started;
