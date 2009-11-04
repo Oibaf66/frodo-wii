@@ -144,6 +144,8 @@ void DigitalRenderer::EmulateLine(void)
 {
 	if (!ready)
 		return;
+	if (TheC64->network_connection_type == MASTER)
+		TheC64->peer->FlushSound();
 	this->PushVolume(volume);
 }
 

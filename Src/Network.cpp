@@ -77,6 +77,10 @@ Network::Network(const char *remote_host, int port)
 	this->screen = (Uint8 *)malloc(DISPLAY_X * DISPLAY_Y);
 	assert(this->screen);
 
+	this->sound_head = this->sound_tail = 0;
+	memset(this->sound_active, 0, sizeof(this->sound_active));
+	memset(this->sound_network, 0, sizeof(this->sound_network));
+
 	/* Assume black screen */
 	memset(this->screen, 0, DISPLAY_X * DISPLAY_Y);
 	memset(this->screenshot, 0, sizeof(this->screenshot));
@@ -394,6 +398,44 @@ void Network::EncodeTextMessage(char *str)
 	strncpy(p, str, len - 1);
 
 	this->AddNetworkUpdate(dst);
+}
+
+
+static int bytes = 0;
+void Network::PushSound(uint8 adr, uint8 val)
+{
+	NetworkUpdateSoundInfo *cur = &this->sound_active[this->sound_head];
+
+	cur->adr = adr;
+	cur->val = val;
+	cur->delay_cycles = TheC64->CycleCounter - sound_last_cycles;
+
+	/* Update the cycle counter */
+	sound_last_cycles = TheC64->CycleCounter;
+	this->sound_head++;
+
+	if (this->sound_head >= NETWORK_SOUND_BUF_SIZE)
+		this->sound_head = 0;
+	if (this->sound_head >= this->sound_tail)
+		this->sound_tail = (this->sound_head + 1) % NETWORK_SOUND_BUF_SIZE;
+	bytes += 3;
+}
+
+void Network::FlushSound(void)
+{
+	struct NetworkUpdate *dst = this->cur_ud;
+	struct NetworkUpdateSound *snd = (NetworkUpdateSound *)dst->data;
+	struct NetworkUpdateSoundInfo *snd_info = snd->info;
+
+	static int last_cycles = 0;
+
+	snd->flags = 0;
+	snd->n_items = 0;
+	if (SDL_GetTicks() - last_cycles < 125)
+		return;
+	printf("Flushing sound (%d bytes in %d ms)\n", bytes, SDL_GetTicks() - last_cycles);
+	last_cycles = SDL_GetTicks();
+	bytes = 0;
 }
 
 

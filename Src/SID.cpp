@@ -910,10 +910,20 @@ void DigitalRenderer::Reset(void)
  *  Write to register
  */
 
+#include "C64.h"
+extern C64 *TheC64;
+
 void DigitalRenderer::WriteRegister(uint16 adr, uint8 byte)
 {
 	if (!ready)
 		return;
+
+	if (TheC64) {
+		if (TheC64->network_connection_type == MASTER)
+			TheC64->peer->PushSound(adr, byte);
+		else if (TheC64->network_connection_type == CLIENT)
+			return;
+	}
 
 	int v = adr/7;	// Voice number
 

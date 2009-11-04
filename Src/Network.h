@@ -16,7 +16,7 @@
 #define FRODO_NETWORK_MAGIC 0x1976
 
 #define NETWORK_UPDATE_SIZE     (256 * 1024)
-#define NETWORK_SOUND_BUF_SIZE   4096
+#define NETWORK_SOUND_BUF_SIZE   8192
 
 #define SCREENSHOT_FACTOR 4
 #define SCREENSHOT_X (DISPLAY_X / SCREENSHOT_FACTOR)
@@ -178,6 +178,10 @@ public:
 	void EncodeJoystickUpdate(Uint8 v);
 
 	void EncodeTextMessage(char *str);
+
+	void PushSound(uint8 addr, uint8 val);
+
+	void FlushSound(void);
 
 
 	bool DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst);
@@ -355,6 +359,12 @@ protected:
 	const char *connection_error_message;
 
 	network_connection_state_t network_connection_state;
+
+	NetworkUpdateSoundInfo sound_active[NETWORK_SOUND_BUF_SIZE];
+	NetworkUpdateSoundInfo sound_network[NETWORK_SOUND_BUF_SIZE];
+	int sound_head;
+	int sound_tail;
+	uint32 sound_last_cycles;
 
 public:
 	static bool networking_started;
