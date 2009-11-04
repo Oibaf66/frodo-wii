@@ -114,53 +114,6 @@ void Network::Tick(int ms)
 	this->last_traffic = this->traffic;
 }
 
-size_t Network::EncodeSoundRLE(struct NetworkUpdate *dst,
-		Uint8 *buffer, size_t buf_len)
-{
-	size_t out = 0;
-	size_t len = 0;
-	Uint8 volume = buffer[0];
-
-	dst->type = SOUND_UPDATE_RLE;
-
-	for (unsigned int i = 0; i < buf_len; i++)
-	{
-		if (volume != buffer[i] ||
-				len >= 255)
-		{
-			dst->data[out] = len;
-			dst->data[out + 1] = volume;
-			out += 2;
-
-			len = 0;
-			volume = buffer[i];
-		}
-		len++;
-		/* Abort if the encoding becomes larger than the raw encoding */
-		if (len >= buf_len)
-			return buf_len + 2;
-	}
-	if (len != 0)
-	{
-		dst->data[out] = len;
-		dst->data[out + 1] = volume;
-
-		out += 2;
-	}
-	InitNetworkUpdate(dst, SOUND_UPDATE_RLE,
-			sizeof(struct NetworkUpdate) + out);
-
-	return out;
-}
-
-size_t Network::EncodeSoundRaw(struct NetworkUpdate *dst,
-		Uint8 *buffer, size_t len)
-{
-	InitNetworkUpdate(dst, SOUND_UPDATE_RAW,
-			sizeof(struct NetworkUpdate) + len);
-	return len;
-}
-
 bool Network::DecodeDisplayDiff(struct NetworkUpdate *src,
 		int x_start, int y_start)
 {
@@ -428,24 +381,6 @@ bool Network::DecodeDisplayUpdate(struct NetworkUpdate *src)
 	return false;
 }
 
-size_t Network::EncodeSoundBuffer(struct NetworkUpdate *dst, Uint8 *buf, size_t len)
-{
-	size_t out;
-
-	/* Try encoding as RLE, but if it's too large, go for RAW */
-	out = this->EncodeSoundRLE(dst, buf, len);
-	if (out > len)
-		out = this->EncodeSoundRaw(dst, buf, len);
-	return out;
-}
-
-size_t Network::GetSoundBufferSize()
-{
-	if (Network::sample_tail > Network::sample_head)
-		return NETWORK_SOUND_BUF_SIZE - Network::sample_tail + Network::sample_head;
-	return Network::sample_head- Network::sample_tail;
-}
-
 void Network::EncodeTextMessage(char *str)
 {
 	NetworkUpdate *dst = (NetworkUpdate *)this->cur_ud;
@@ -461,40 +396,6 @@ void Network::EncodeTextMessage(char *str)
 	this->AddNetworkUpdate(dst);
 }
 
-void Network::EncodeSound()
-{
-	NetworkUpdate *dst = (NetworkUpdate *)this->cur_ud;
-	static Uint8 tmp_buf[NETWORK_SOUND_BUF_SIZE];
-	int offset = 0;
-
-	/* This is not enabled yet... */
-	return;
-	/* Nothing to encode? */
-	if (this->network_connection_state != MASTER ||
-			this->GetSoundBufferSize() < NETWORK_SOUND_BUF_SIZE / 2)
-		return;
-
-	if (Network::sample_tail > Network::sample_head)
-	{
-		memcpy(tmp_buf + offset, Network::sample_buf + Network::sample_tail,
-				NETWORK_SOUND_BUF_SIZE - Network::sample_tail);
-		offset += NETWORK_SOUND_BUF_SIZE - Network::sample_tail;
-		Network::sample_tail = 0;
-	}
-	memcpy(tmp_buf + offset, Network::sample_buf + Network::sample_tail,
-			Network::sample_head - Network::sample_tail);
-	offset += Network::sample_head - Network::sample_tail;
-	Network::sample_tail = Network::sample_head;
-
-	this->EncodeSoundBuffer(dst, tmp_buf, offset);
-	this->AddNetworkUpdate(dst);
-}
-
-void Network::PushSound(uint8 vol)
-{
-	Network::sample_buf[Network::sample_head] = vol;
-	Network::sample_head = (Network::sample_head + 1) % NETWORK_SOUND_BUF_SIZE;
-}
 
 void Network::EncodeJoystickUpdate(Uint8 v)
 {
@@ -509,41 +410,6 @@ void Network::EncodeJoystickUpdate(Uint8 v)
 
 	this->AddNetworkUpdate(dst);
 	this->cur_joystick_data = v;
-}
-
-size_t Network::DecodeSoundRLE(struct NetworkUpdate *src, MOS6581 *dst)
-{
-	int p = 0;
-	int sz = src->size - sizeof(NetworkUpdate);
-
-	while (p < sz)
-	{
-		Uint8 len = src->data[p + 0];
-		Uint8 volume = src->data[p + 1];
-
-		while (len > 0)
-		{
-			dst->PushVolume(volume);
-			len--;
-		}
-		p += 2;
-	}
-}
-
-size_t Network::DecodeSoundUpdate(struct NetworkUpdate *src, MOS6581 *dst)
-{
-	size_t out;
-
-	if (src->type == SOUND_UPDATE_RAW)
-	{
-		out = src->size - sizeof(struct NetworkUpdate);
-		for (int i = 0; i < out; i++)
-			dst->PushVolume(src->data[i]);
-	}
-	else if (src->type == SOUND_UPDATE_RLE)
-		out = this->DecodeSoundRLE(src, dst);
-
-	return out;
 }
 
 void Network::ResetNetworkUpdate(void)
@@ -712,8 +578,7 @@ bool Network::MarshalData(NetworkUpdate *p)
 	case DISPLAY_UPDATE_RAW:
 	case DISPLAY_UPDATE_RLE:
 	case DISPLAY_UPDATE_DIFF:
-	case SOUND_UPDATE_RAW:
-	case SOUND_UPDATE_RLE:
+	case SOUND_UPDATE:
 	case JOYSTICK_UPDATE:
 	case DISCONNECT:
 	case CONNECT_TO_PEER:
@@ -804,8 +669,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	case DISPLAY_UPDATE_RAW:
 	case DISPLAY_UPDATE_RLE:
 	case DISPLAY_UPDATE_DIFF:
-	case SOUND_UPDATE_RAW:
-	case SOUND_UPDATE_RLE:
+	case SOUND_UPDATE:
 	case JOYSTICK_UPDATE:
 	case DISCONNECT:
 	case CONNECT_TO_PEER:
@@ -883,13 +747,10 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 	{
 		switch(p->type)
 		{
-		case SOUND_UPDATE_RAW:
-		case SOUND_UPDATE_RLE:
+		case SOUND_UPDATE:
 			/* No sound updates _to_ the master */
 			if (this->network_connection_state == MASTER)
 				break;
-			if (this->DecodeSoundUpdate(p, dst) == false)
-				out = false;
 			break;
 		case DISPLAY_UPDATE_RAW:
 		case DISPLAY_UPDATE_RLE:
@@ -1225,9 +1086,6 @@ void Network::Disconnect()
 	this->SendUpdate();
 }
 
-uint8 Network::sample_buf[NETWORK_SOUND_BUF_SIZE];
-int Network::sample_head;
-int Network::sample_tail;
 bool Network::networking_started = false;
 
 #if defined(GEKKO)

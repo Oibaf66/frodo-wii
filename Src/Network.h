@@ -44,6 +44,7 @@ typedef enum
 	JOYSTICK_UPDATE    = 7,
 	ENTER_MENU         = 8,
 	TEXT_MESSAGE       = 9,
+	SOUND_UPDATE	   = 10,
 } network_message_type_t;
 
 typedef enum
@@ -170,8 +171,6 @@ public:
 
 	~Network();
 
-	void EncodeSound();
-
 	void EncodeScreenshot(Uint8 *dst, Uint8 *master);
 
 	void EncodeDisplay(Uint8 *master, Uint8 *remote);
@@ -226,24 +225,11 @@ public:
 	 */
 	void Disconnect();
 
-	static void PushSound(uint8 vol);
-
 	bool is_master; /* Some peers are more equal than others */
 protected:
 	void InitNetwork();
 
 	void ShutdownNetwork();
-
-	size_t DecodeSoundRLE(struct NetworkUpdate *src, MOS6581 *dst);
-
-	size_t DecodeSoundUpdate(struct NetworkUpdate *src, MOS6581 *dst);
-
-	size_t EncodeSoundRLE(struct NetworkUpdate *dst,
-			Uint8 *buffer, size_t len);
-	size_t EncodeSoundRaw(struct NetworkUpdate *dst,
-			Uint8 *buffer, size_t len);
-
-	size_t GetSoundBufferSize();
 
 	/** Encode part of a screen into @a dst in a single sweep
 	 * 
@@ -257,18 +243,6 @@ protected:
 	size_t EncodeDisplaySquare(struct NetworkUpdate *dst,
 			Uint8 *screen, Uint8 *remote, int square,
 			bool use_diff = true);
-
-	/**
-	 * Encode the @a buf sound buffer into @a dst
-	 *
-	 * @param dst the destination update structure
-	 * @param buf the buffer to encode
-	 * @param len the length of the in-buffer
-	 *
-	 * @return the size of the encoded message
-	 */
-	size_t EncodeSoundBuffer(struct NetworkUpdate *dst,
-			Uint8 *buf, size_t len);
 
 	/**
 	 * Decode a display update message onto @a screen
@@ -358,7 +332,6 @@ protected:
 	Uint8 *raw_buf;
 	Uint8 *rle_buf;
 	Uint8 *diff_buf;
-	Uint8 *sound_buf;
 	Uint8 screenshot[SCREENSHOT_X * SCREENSHOT_Y / 2];
 	Uint32 *square_updated;
 
@@ -382,11 +355,6 @@ protected:
 	const char *connection_error_message;
 
 	network_connection_state_t network_connection_state;
-
-	/* Sound */
-	static uint8 sample_buf[NETWORK_SOUND_BUF_SIZE];
-	static int sample_head;
-	static int sample_tail;
 
 public:
 	static bool networking_started;

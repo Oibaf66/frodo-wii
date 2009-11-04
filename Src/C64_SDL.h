@@ -548,7 +548,6 @@ void C64::network_vblank()
 			remote->EncodeTextMessage(msg);
 
 		remote->EncodeJoystickUpdate(*js);
-		remote->EncodeSound();
 
 		if (remote->SendUpdate() == false)
         	{
