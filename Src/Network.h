@@ -103,9 +103,9 @@ struct NetworkUpdatePingAck
 
 struct NetworkUpdateSoundInfo
 {
+	uint16 delay_cycles;
 	uint8 adr;
 	uint8 val;
-	uint8 delay_cycles;
 };
 
 struct NetworkUpdateSound
