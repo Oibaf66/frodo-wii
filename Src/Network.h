@@ -218,8 +218,6 @@ public:
 		return this->screen;
 	}
 
-	bool Connect();
-
 	network_connection_error_t ConnectFSM();
 
 	/**

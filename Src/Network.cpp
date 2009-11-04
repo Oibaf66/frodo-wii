@@ -941,7 +941,7 @@ bool Network::ConnectToBroker()
 	NetworkUpdatePeerInfo *pi = (NetworkUpdatePeerInfo *)ud->data;
 	bool out;
 
-	pi->is_master = Network::is_master;
+	pi->is_master = 0; /* Will be set later */
 	pi->key = ThePrefs.NetworkKey;
 	pi->version = FRODO_NETWORK_PROTOCOL_VERSION;
 	pi->avatar = ThePrefs.NetworkAvatar;
@@ -1087,7 +1087,7 @@ network_connection_error_t Network::WaitForPeerList()
 	if (sel == 0) {
 		/* We want to wait for a connection, and are therefore
 		 * implicitly a master */
-		is_master = true;
+		Network::is_master = true;
 		return NO_PEERS_ERROR;
 	}
 	Network::is_master = false;
@@ -1212,70 +1212,6 @@ network_connection_error_t Network::ConnectFSM()
 	return AGAIN_ERROR;
 }
 
-bool Network::Connect()
-{
-	this->network_connection_state = CONN_CONNECT_TO_BROKER;
-	while (1)
-	{
-		SDL_FillRect(real_screen, 0, SDL_MapRGB(real_screen->format,
-				0x00, 0x80, 0x80));
-		menu_print_font(real_screen, 255,255,0, 30, 30,
-				"Connecting... Hold Esc or 1 to abort");
-		if (Network::is_master)
-			menu_print_font(real_screen, 255,255,0, 30, 50,
-					"(Waiting for client connection)");
-		SDL_Flip(real_screen);
-#if defined(GEKKO)
-	        WPADData *wpad, *wpad_other;
-	        Uint32 remote_keys;
-
-		WPAD_ScanPads();
-
-		wpad = WPAD_Data(WPAD_CHAN_0);
-	        wpad_other = WPAD_Data(WPAD_CHAN_1);
-	        remote_keys = wpad->btns_d | wpad_other->btns_d;
-
-	        if (remote_keys & WPAD_BUTTON_1)
-	        	return false;
-#endif
-		SDL_PumpEvents();
-		if (SDL_GetKeyState(NULL)[SDLK_ESCAPE])
-			return false;
-
-		/* Run the state machine */
-		switch (this->ConnectFSM())
-		{
-		case OK:
-			return true;
-		case AGAIN_ERROR:
-			break;
-		case NO_PEERS_ERROR:
-			menu_print_font(real_screen, 255,255,0, 30, 70,
-					"No servers to connect to.");
-			sleep(1);
-			return false;
-		case VERSION_ERROR:
-			menu_print_font(real_screen, 255,255,0, 30, 70,
-					"Your frodo is too old.");
-			menu_print_font(real_screen, 255,255,0, 30, 90,
-					"See http://frodo-wii.googlecode.com");
-			sleep(1);
-			return false;
-		case SERVER_GARBAGE_ERROR:
-			menu_print_font(real_screen, 255,255,0, 30, 70,
-					"Network error");
-			sleep(1);
-			return false;
-		default:
-			menu_print_font(real_screen, 255,255,0, 30, 70,
-					"Unknown network error");
-			sleep(1);
-			return false;
-		}
-	}
-
-	return false;
-}
 
 void Network::Disconnect()
 {
