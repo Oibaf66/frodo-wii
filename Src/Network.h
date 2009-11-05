@@ -183,6 +183,8 @@ public:
 
 	void FlushSound(void);
 
+	struct NetworkUpdateSoundInfo *UnqueueSound();
+
 
 	bool DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst);
 

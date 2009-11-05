@@ -458,6 +458,18 @@ void Network::FlushSound(void)
 	bytes = 0;
 }
 
+struct NetworkUpdateSoundInfo *Network::UnqueueSound()
+{
+	struct NetworkUpdateSoundInfo *out;
+
+
+	if (this->sound_tail == this->sound_head)
+		return NULL;
+	out = &this->sound_active[this->sound_tail];
+	this->sound_tail = (this->sound_tail + 1) % NETWORK_SOUND_BUF_SIZE;
+
+	return out;
+}
 
 void Network::EncodeJoystickUpdate(Uint8 v)
 {
