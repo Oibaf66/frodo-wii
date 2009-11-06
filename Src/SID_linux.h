@@ -47,6 +47,7 @@ void DigitalRenderer::init_sound(void)
 	int arg;
 	unsigned long format;
 
+	linecnt = 0;
 	ready = false;
 	devfd = open("/dev/dsp", O_WRONLY);
 	if (devfd < 0)
@@ -144,9 +145,12 @@ void DigitalRenderer::EmulateLine(void)
 {
 	if (!ready)
 		return;
-	if (TheC64->network_connection_type == MASTER)
+	/* Flush network sound every ~100ms */
+	if (TheC64->network_connection_type == MASTER &&
+			this->linecnt % 2048 == 0)
 		TheC64->peer->FlushSound();
 	this->PushVolume(volume);
+	this->linecnt++;
 }
 
 

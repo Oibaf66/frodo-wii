@@ -445,6 +445,7 @@ private:
 #if defined(__linux__) || defined(GEKKO)
 	int devfd, sndbufsize, buffer_rate;
 	int16 *sound_buffer;
+	uint32 linecnt;
 #endif
 
 #ifdef SUN

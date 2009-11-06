@@ -427,8 +427,6 @@ void Network::FlushSound(void)
 	struct NetworkUpdateSound *snd = (NetworkUpdateSound *)dst->data;
 	struct NetworkUpdateSoundInfo *snd_info = snd->info;
 
-	if (SDL_GetTicks() - this->sound_last_send < 125)
-		return;
 	snd->flags = 0;
 	snd->n_items = this->sound_head - this->sound_tail;
 
