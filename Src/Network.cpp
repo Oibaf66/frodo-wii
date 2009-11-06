@@ -853,10 +853,21 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 		switch(p->type)
 		{
 		case SOUND_UPDATE:
+		{
 			/* No sound updates _to_ the master */
 			if (TheC64->network_connection_type == MASTER)
 				break;
-			break;
+			NetworkUpdateSound *snd = (NetworkUpdateSound *)p->data;
+			NetworkUpdateSoundInfo *info = (NetworkUpdateSoundInfo *)snd->info;
+
+			printf("Enqueue sounds: %d\n", snd->n_items);
+			for (unsigned int i = 0; i < snd->n_items; i++)
+			{
+				NetworkUpdateSoundInfo *cur = &info[i];
+
+				this->EnqueueSound(cur->delay_cycles, cur->adr, cur->val);
+			}
+		} break;
 		case DISPLAY_UPDATE_RAW:
 		case DISPLAY_UPDATE_RLE:
 		case DISPLAY_UPDATE_DIFF:
