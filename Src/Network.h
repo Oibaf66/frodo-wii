@@ -179,11 +179,13 @@ public:
 
 	void EncodeTextMessage(char *str);
 
-	void PushSound(uint32 linecnt, uint8 addr, uint8 val);
+	void EnqueueSound(uint32 linecnt, uint8 addr, uint8 val);
+
+	void RegisterSidWrite(uint32 linecnt, uint8 addr, uint8 val);
 
 	void FlushSound(void);
 
-	struct NetworkUpdateSoundInfo *UnqueueSound();
+	struct NetworkUpdateSoundInfo *DequeueSound();
 
 
 	bool DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst);

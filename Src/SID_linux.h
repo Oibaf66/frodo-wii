@@ -149,6 +149,24 @@ void DigitalRenderer::EmulateLine(void)
 	if (TheC64->network_connection_type == MASTER &&
 			this->linecnt % 2048 == 0)
 		TheC64->peer->FlushSound();
+	else if (TheC64->network_connection_type == CLIENT)
+	{
+		static NetworkUpdateSoundInfo *cur = NULL;
+
+		if (!cur)
+			cur = TheC64->peer->DequeueSound();
+
+		while (cur) {
+			printf("Delaying for %d cycles\n", cur->delay_cycles);
+			cur->delay_cycles--;
+			if (cur->delay_cycles > 0)
+				break;
+			/* Delayed long enough - write to the SID! */
+			printf("Writing %02x:%02x\n", cur->adr, cur->val);
+			this->WriteRegister(cur->adr, cur->val);
+			cur = TheC64->peer->DequeueSound();
+		}
+	}
 	this->PushVolume(volume);
 	this->linecnt++;
 }

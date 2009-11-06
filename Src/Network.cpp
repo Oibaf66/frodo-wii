@@ -401,31 +401,39 @@ void Network::EncodeTextMessage(char *str)
 }
 
 
-static int bytes = 0;
-void Network::PushSound(uint32 linecnt, uint8 adr, uint8 val)
+void Network::EnqueueSound(uint32 linecnt_diff, uint8 adr, uint8 val)
 {
 	NetworkUpdateSoundInfo *cur = &this->sound_active[this->sound_head];
 
 	cur->adr = adr;
 	cur->val = val;
-	cur->delay_cycles = linecnt - sound_last_cycles;
+	cur->delay_cycles = linecnt_diff;
 
-	/* Update the cycle counter */
-	sound_last_cycles = linecnt;
 	this->sound_head++;
 
 	if (this->sound_head >= NETWORK_SOUND_BUF_SIZE)
 		this->sound_head = 0;
+
+	/* Head has reached tail */
 	if (this->sound_head >= this->sound_tail)
 		this->sound_tail = (this->sound_head + 1) % NETWORK_SOUND_BUF_SIZE;
-	bytes += 3;
+}
+
+static int bytes = 0;
+void Network::RegisterSidWrite(uint32 linecnt, uint8 adr, uint8 val)
+{
+	this->EnqueueSound(linecnt - this->sound_last_cycles, adr, val);
+
+	/* Update the cycle counter */
+	sound_last_cycles = linecnt;
+	bytes += sizeof(NetworkUpdateSound);
 }
 
 void Network::FlushSound(void)
 {
-	struct NetworkUpdate *dst = this->cur_ud;
-	struct NetworkUpdateSound *snd = (NetworkUpdateSound *)dst->data;
-	struct NetworkUpdateSoundInfo *snd_info = snd->info;
+	NetworkUpdate *dst = this->cur_ud;
+	NetworkUpdateSound *snd = (NetworkUpdateSound *)dst->data;
+	NetworkUpdateSoundInfo *snd_info = snd->info;
 
 	snd->flags = 0;
 	snd->n_items = this->sound_head - this->sound_tail;
@@ -443,9 +451,9 @@ void Network::FlushSound(void)
 		memcpy(snd_info, &this->sound_active[this->sound_head],
 				(this->sound_head - this->sound_tail) * sizeof(struct NetworkUpdateSoundInfo));
 	}
+	this->sound_tail = (this->sound_tail + snd->n_items) % NETWORK_SOUND_BUF_SIZE;
 
 	/* Reset the buffer again */
-	this->sound_head = this->sound_tail = 0;
 	printf("Flushing sound (%d bytes in %d ms)\n", bytes, SDL_GetTicks() - this->sound_last_send);
 	this->sound_last_send = SDL_GetTicks();
 
@@ -456,10 +464,9 @@ void Network::FlushSound(void)
 	bytes = 0;
 }
 
-struct NetworkUpdateSoundInfo *Network::UnqueueSound()
+struct NetworkUpdateSoundInfo *Network::DequeueSound()
 {
 	struct NetworkUpdateSoundInfo *out;
-
 
 	if (this->sound_tail == this->sound_head)
 		return NULL;
@@ -707,7 +714,7 @@ bool Network::MarshalData(NetworkUpdate *p)
 
 			cur->delay_cycles = htons(cur->delay_cycles);
 		}
-	}
+	} break;
 	default:
 		/* Unknown data... */
 		fprintf(stderr, "Got unknown data %d while marshalling. Something is wrong\n",
