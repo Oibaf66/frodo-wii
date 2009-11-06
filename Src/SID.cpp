@@ -921,7 +921,7 @@ void DigitalRenderer::WriteRegister(uint16 adr, uint8 byte)
 
 	if (TheC64) {
 		if (TheC64->network_connection_type == MASTER)
-			TheC64->peer->PushSound(adr, byte);
+			TheC64->peer->PushSound(this->linecnt, adr, byte);
 		else if (TheC64->network_connection_type == CLIENT)
 			return;
 	}

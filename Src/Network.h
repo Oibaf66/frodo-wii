@@ -179,7 +179,7 @@ public:
 
 	void EncodeTextMessage(char *str);
 
-	void PushSound(uint8 addr, uint8 val);
+	void PushSound(uint32 linecnt, uint8 addr, uint8 val);
 
 	void FlushSound(void);
 

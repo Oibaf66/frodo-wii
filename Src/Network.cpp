@@ -402,16 +402,16 @@ void Network::EncodeTextMessage(char *str)
 
 
 static int bytes = 0;
-void Network::PushSound(uint8 adr, uint8 val)
+void Network::PushSound(uint32 linecnt, uint8 adr, uint8 val)
 {
 	NetworkUpdateSoundInfo *cur = &this->sound_active[this->sound_head];
 
 	cur->adr = adr;
 	cur->val = val;
-	cur->delay_cycles = TheC64->CycleCounter - sound_last_cycles;
+	cur->delay_cycles = linecnt - sound_last_cycles;
 
 	/* Update the cycle counter */
-	sound_last_cycles = TheC64->CycleCounter;
+	sound_last_cycles = linecnt;
 	this->sound_head++;
 
 	if (this->sound_head >= NETWORK_SOUND_BUF_SIZE)
@@ -650,7 +650,6 @@ bool Network::MarshalData(NetworkUpdate *p)
 	case DISPLAY_UPDATE_RAW:
 	case DISPLAY_UPDATE_RLE:
 	case DISPLAY_UPDATE_DIFF:
-	case SOUND_UPDATE:
 	case JOYSTICK_UPDATE:
 	case DISCONNECT:
 	case CONNECT_TO_PEER:
@@ -695,6 +694,20 @@ bool Network::MarshalData(NetworkUpdate *p)
 		pi->key = htons(pi->key);
 		pi->version = htonl(pi->version);
 	} break;
+	case SOUND_UPDATE:
+	{
+		NetworkUpdateSound *snd = (NetworkUpdateSound *)p->data;
+		NetworkUpdateSoundInfo *info = (NetworkUpdateSoundInfo *)snd->info;
+
+		snd->flags = htons(snd->flags);
+		snd->n_items = htons(snd->flags);
+		for (unsigned int i = 0; i < snd->n_items; i++)
+		{
+			NetworkUpdateSoundInfo *cur = &info[i];
+
+			cur->delay_cycles = htons(cur->delay_cycles);
+		}
+	}
 	default:
 		/* Unknown data... */
 		fprintf(stderr, "Got unknown data %d while marshalling. Something is wrong\n",
@@ -741,7 +754,6 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	case DISPLAY_UPDATE_RAW:
 	case DISPLAY_UPDATE_RLE:
 	case DISPLAY_UPDATE_DIFF:
-	case SOUND_UPDATE:
 	case JOYSTICK_UPDATE:
 	case DISCONNECT:
 	case CONNECT_TO_PEER:
@@ -779,6 +791,20 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 		}
 		lp->your_port = ntohs(lp->your_port);
 	} break;
+	case SOUND_UPDATE:
+	{
+		NetworkUpdateSound *snd = (NetworkUpdateSound *)p->data;
+		NetworkUpdateSoundInfo *info = (NetworkUpdateSoundInfo *)snd->info;
+
+		snd->flags = ntohs(snd->flags);
+		snd->n_items = ntohs(snd->flags);
+		for (unsigned int i = 0; i < snd->n_items; i++)
+		{
+			NetworkUpdateSoundInfo *cur = &info[i];
+
+			cur->delay_cycles = ntohs(cur->delay_cycles);
+		}
+	}
 	default:
 		/* Unknown data... */
 		printf("Got unknown data: %d\n", p->type);
