@@ -313,8 +313,13 @@ class Peer:
         return now - self.last_ping
 
     def send_packet(self, data):
-        self.srv.socket.sendto(data + StopPacket().marshal(),
-                               0, self.addr)
+        all_data = data + StopPacket().marshal()
+
+        for i in range(0, len(all_data), 4096):
+            cur = all_data[i : min(i + 4096, len(all_data))]
+            self.srv.socket.sendto(cur,
+                                   0, self.addr)
+
 
     def __str__(self):
         return '%s:%d "%s" %d %d' % (self.public_ip, self.public_port,
