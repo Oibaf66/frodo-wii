@@ -272,17 +272,6 @@ class Peer:
             # Send list of peers if this is not a master
             lp = ListPeersPacket(FRODO_NETWORK_PROTOCOL_VERSION)
 
-            # Remove inactive peers
-            rp = []
-            for peer in self.srv.peers.itervalues():
-                if peer != self and peer.seconds_since_last_ping() > 15:
-                    rp.append(peer)
-            for peer in rp:
-                log_info("Peer %s:%d has been inactive for %d seconds, removing" % (peer.addr[0],
-                                                                                    peer.addr[1],
-                                                                                    peer.seconds_since_last_ping()))
-                self.srv.remove_peer(peer)
-
             for peer in self.srv.peers.itervalues():
                 if peer != self: # and peer.is_master:
                     lp.add_peer(peer)
@@ -316,6 +305,7 @@ class Peer:
         all_data = data + StopPacket().marshal()
 
         for i in range(0, len(all_data), 4096):
+            print "Sending %d bytes" % (len(all_data))
             cur = all_data[i : min(i + 4096, len(all_data))]
             self.srv.socket.sendto(cur,
                                    0, self.addr)
@@ -452,6 +442,17 @@ def ping_thread_fn(broker, time_to_sleep):
         try:
             broker.ping_all_peers()
             time.sleep( time_to_sleep )
+
+            # Remove inactive peers
+            rp = []
+            for peer in broker.peers.itervalues():
+                if peer.seconds_since_last_ping() > 15:
+                    rp.append(peer)
+            for peer in rp:
+                log_info("Peer %s:%d has been inactive for %d seconds, removing" % (peer.addr[0],
+                                                                                    peer.addr[1],
+                                                                                    peer.seconds_since_last_ping()))
+                broker.remove_peer(peer)
         except Exception, e:
             print e
 
