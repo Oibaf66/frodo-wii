@@ -451,7 +451,7 @@ void Network::FlushSound(void)
 		memcpy(snd_info, &this->sound_active[this->sound_head],
 				(this->sound_head - this->sound_tail) * sizeof(struct NetworkUpdateSoundInfo));
 	}
-	this->sound_tail = (this->sound_tail + snd->n_items) % NETWORK_SOUND_BUF_SIZE;
+	this->sound_tail = this->sound_head;
 
 	this->sound_last_send = SDL_GetTicks();
 
