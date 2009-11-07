@@ -152,8 +152,6 @@ void DigitalRenderer::EmulateLine(void)
 
 		if (!cur) {
 			cur = TheC64->peer->DequeueSound();
-			if (cur)
-				printf("delaying: %d\n", cur->delay_cycles);
 		}
 
 		while (cur) {
@@ -165,8 +163,6 @@ void DigitalRenderer::EmulateLine(void)
 			printf("Writing %02x:%02x\n", cur->adr, cur->val);
 			this->WriteRegister(cur->adr, cur->val);
 			cur = TheC64->peer->DequeueSound();
-			if (cur)
-				printf("delay 2: %d\n", cur->delay_cycles);
 		}
 	}
 	this->PushVolume(volume);

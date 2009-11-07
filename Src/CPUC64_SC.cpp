@@ -330,6 +330,7 @@ inline uint16 MOS6510::read_word(uint16 adr)
 }
 
 
+extern C64 *TheC64;
 /*
  *  Write a byte to I/O space
  */
@@ -352,7 +353,8 @@ inline void MOS6510::write_byte_io(uint16 adr, uint8 byte)
 			case 0x5:
 			case 0x6:
 			case 0x7:
-				TheSID->WriteRegister(adr & 0x1f, byte);
+				if (TheC64->network_connection_type != CLIENT)
+					TheSID->WriteRegister(adr & 0x1f, byte);
 				return;
 			case 0x8:	// Color RAM
 			case 0x9:

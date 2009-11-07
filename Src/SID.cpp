@@ -922,8 +922,6 @@ void DigitalRenderer::WriteRegister(uint16 adr, uint8 byte)
 	if (TheC64) {
 		if (TheC64->network_connection_type == MASTER)
 			TheC64->peer->RegisterSidWrite(this->linecnt, adr, byte);
-		else if (TheC64->network_connection_type == CLIENT)
-			return;
 	}
 
 	int v = adr/7;	// Voice number

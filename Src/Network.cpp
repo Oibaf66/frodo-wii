@@ -405,8 +405,8 @@ void Network::EnqueueSound(uint32 linecnt_diff, uint8 adr, uint8 val)
 {
 	NetworkUpdateSoundInfo *cur = &this->sound_active[this->sound_head];
 
-	if (linecnt_diff > 255)
-		linecnt_diff = 255;
+	if (linecnt_diff > 400)
+		linecnt_diff = 400;
 	cur->adr = adr;
 	cur->val = val;
 	cur->delay_cycles = linecnt_diff;
@@ -426,7 +426,7 @@ void Network::RegisterSidWrite(uint32 linecnt, uint8 adr, uint8 val)
 {
 	this->EnqueueSound(linecnt - this->sound_last_cycles, adr, val);
 
-	printf("Enqueuing write: %d\n", linecnt - this->sound_last_cycles);
+	printf("Enqueuing write: %04d:%02x:%02x\n", linecnt - this->sound_last_cycles, adr, val);
 	/* Update the cycle counter */
 	sound_last_cycles = linecnt;
 	bytes += sizeof(NetworkUpdateSound);
