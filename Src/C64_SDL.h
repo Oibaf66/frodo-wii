@@ -745,16 +745,19 @@ void C64::thread_func(void)
 		// The order of calls is important here
 		if (TheVIC->EmulateCycle())
 			TheSID->EmulateLine();
-		TheCIA1->CheckIRQs();
-		TheCIA2->CheckIRQs();
-		TheCIA1->EmulateCycle();
-		TheCIA2->EmulateCycle();
-		TheCPU->EmulateCycle();
+		/* No need to emulate anything for the client */
+		if (this->network_connection_type != CLIENT) {
+			TheCIA1->CheckIRQs();
+			TheCIA2->CheckIRQs();
+			TheCIA1->EmulateCycle();
+			TheCIA2->EmulateCycle();
+			TheCPU->EmulateCycle();
 
-		if (ThePrefs.Emul1541Proc) {
-			TheCPU1541->CountVIATimers(1);
-			if (!TheCPU1541->Idle)
-				TheCPU1541->EmulateCycle();
+			if (ThePrefs.Emul1541Proc) {
+				TheCPU1541->CountVIATimers(1);
+				if (!TheCPU1541->Idle)
+					TheCPU1541->EmulateCycle();
+			}
 		}
 		CycleCounter++;
 #else
