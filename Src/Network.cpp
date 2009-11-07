@@ -705,7 +705,7 @@ bool Network::MarshalData(NetworkUpdate *p)
 		NetworkUpdateSoundInfo *info = (NetworkUpdateSoundInfo *)snd->info;
 
 		snd->flags = htons(snd->flags);
-		snd->n_items = htons(snd->flags);
+		snd->n_items = htons(snd->n_items);
 		for (unsigned int i = 0; i < snd->n_items; i++)
 		{
 			NetworkUpdateSoundInfo *cur = &info[i];
@@ -802,7 +802,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 		NetworkUpdateSoundInfo *info = (NetworkUpdateSoundInfo *)snd->info;
 
 		snd->flags = ntohs(snd->flags);
-		snd->n_items = ntohs(snd->flags);
+		snd->n_items = ntohs(snd->n_items);
 		for (unsigned int i = 0; i < snd->n_items; i++)
 		{
 			NetworkUpdateSoundInfo *cur = &info[i];
