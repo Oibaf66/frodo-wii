@@ -62,7 +62,7 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 #---------------------------------------------------------------------------------
 CFILES		:= gcaudio.c menutexts.c d64-read.c
 CPPFILES	:= Display.cpp main.cpp Prefs.cpp SID.cpp REU.cpp IEC.cpp 1541fs.cpp \
-               1541d64.cpp 1541t64.cpp 1541job.cpp SAM.cpp C64_SC.cpp CPUC64_SC.cpp VIC_SC.cpp \
+               1541d64.cpp 1541t64.cpp 1541job.cpp C64_SC.cpp CPUC64_SC.cpp VIC_SC.cpp \
                CIA_SC.cpp CPU1541_SC.cpp menu.cpp CPU_common.cpp VirtualKeyboard.cpp \
                Network.cpp
 sFILES		:=	
