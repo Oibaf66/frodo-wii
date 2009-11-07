@@ -860,7 +860,6 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 			NetworkUpdateSound *snd = (NetworkUpdateSound *)p->data;
 			NetworkUpdateSoundInfo *info = (NetworkUpdateSoundInfo *)snd->info;
 
-			printf("Enqueue sounds: %d\n", snd->n_items);
 			for (unsigned int i = 0; i < snd->n_items; i++)
 			{
 				NetworkUpdateSoundInfo *cur = &info[i];
