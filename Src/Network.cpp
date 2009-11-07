@@ -552,6 +552,7 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
 {
 	Uint8 *p = (Uint8*)dst;
 	size_t sz_left = total_sz;
+	size_t received = 0;
 	bool has_stop = false;
 
 	if (this->Select(this->sock, tv) == false)
@@ -562,19 +563,23 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
 
 	/* Receive the header */
 	do {
-		size_t actual_sz = this->ReceiveFrom(p, this->sock,
+		ssize_t actual_sz = this->ReceiveFrom(p, this->sock,
 				4096, NULL);
 		if (actual_sz <= 0)
 			return false;
 
-		if (this->DeMarshalAllData((NetworkUpdate*)p, actual_sz,
-				&has_stop) == false) {
-			printf("Demarshal error\n");
-			return false;
-		}
+		received += actual_sz;
+		if (this->ScanDataForStop(dst, received) == true)
+			break;
+
 		sz_left -= actual_sz;
 		p = p + actual_sz;
 	} while (!has_stop);
+
+	if (this->DeMarshalAllData(dst, received) == false) {
+		printf("Demarshal error\n");
+		return false;
+	}
 
 	return true;
 }
@@ -822,8 +827,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	return true;
 }
 
-bool Network::DeMarshalAllData(NetworkUpdate *ud, size_t max_size,
-		bool *has_stop)
+bool Network::DeMarshalAllData(NetworkUpdate *ud, size_t max_size)
 {
 	NetworkUpdate *p = ud;
 	int cnt = 0;
@@ -839,10 +843,27 @@ bool Network::DeMarshalAllData(NetworkUpdate *ud, size_t max_size,
 		p = this->GetNext(p);
 	}
 
-	/* The stop tag (maybe) */
-	*has_stop = (ntohs(p->type) == STOP);
 	return this->DeMarshalData(p);
 }
+
+bool Network::ScanDataForStop(NetworkUpdate *ud, size_t max_size)
+{
+	NetworkUpdate *p = ud;
+	size_t sz = 0;
+
+	while (ntohs(p->type) != STOP &&
+			sz + ntohl(p->size) < max_size)
+	{
+		size_t cur_sz = ntohl(p->size);
+
+		sz += cur_sz;
+		p = (NetworkUpdate*)((Uint8*)p + cur_sz);
+	}
+
+	/* The stop tag (maybe) */
+	return ntohs(p->type) == STOP;
+}
+
 
 bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 {

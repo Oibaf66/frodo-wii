@@ -311,10 +311,11 @@ protected:
 
 	bool MarshalAllData(NetworkUpdate *p);
 
-	bool DeMarshalAllData(NetworkUpdate *ud, size_t max_size,
-			bool *has_stop);
+	bool DeMarshalAllData(NetworkUpdate *ud, size_t max_size);
 
 	bool DeMarshalData(NetworkUpdate *ud);
+
+	bool ScanDataForStop(NetworkUpdate *ud, size_t max_size);
 
 	bool ConnectToBroker();
 
