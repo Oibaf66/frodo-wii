@@ -912,6 +912,35 @@ void DigitalRenderer::Reset(void)
 
 #include "C64.h"
 extern C64 *TheC64;
+/*
+ * Fill buffer (for Unix sound routines), sample volume (for sampled voice)
+ */
+
+void MOS6581::EmulateLine(void)
+{
+	if (the_renderer != NULL)
+		the_renderer->EmulateLine();
+	/* Flush network sound every ~100ms */
+	if (TheC64->network_connection_type == CLIENT)
+	{
+		static NetworkUpdateSoundInfo *cur = NULL;
+
+		if (!cur) {
+			cur = TheC64->peer->DequeueSound();
+		}
+
+		while (cur) {
+			if (cur->delay_cycles > 0)
+				cur->delay_cycles--;
+			if (cur->delay_cycles != 0)
+				break;
+			/* Delayed long enough - write to the SID! */
+			this->WriteRegister(cur->adr, cur->val);
+			cur = TheC64->peer->DequeueSound();
+		}
+	}
+	TheC64->linecnt++;
+}
 
 void DigitalRenderer::WriteRegister(uint16 adr, uint8 byte)
 {

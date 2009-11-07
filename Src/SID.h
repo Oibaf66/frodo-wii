@@ -113,17 +113,6 @@ struct MOS6581State {
 };
 
 
-/*
- * Fill buffer (for Unix sound routines), sample volume (for sampled voice)
- */
-
-inline void MOS6581::EmulateLine(void)
-{
-	if (the_renderer != NULL)
-		the_renderer->EmulateLine();
-}
-
-
 inline void MOS6581::PushVolume(uint8 vol)
 {
 	if (the_renderer != NULL)

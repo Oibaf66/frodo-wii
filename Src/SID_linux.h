@@ -142,30 +142,9 @@ void DigitalRenderer::PushVolume(uint8 vol)
 
 void DigitalRenderer::EmulateLine(void)
 {
-//	if (!ready)
-		//return;
-	/* Flush network sound every ~100ms */
-	if (TheC64->network_connection_type == CLIENT)
-	{
-		static NetworkUpdateSoundInfo *cur = NULL;
-
-		if (!cur) {
-			cur = TheC64->peer->DequeueSound();
-		}
-
-		while (cur) {
-			if (cur->delay_cycles > 0)
-				cur->delay_cycles--;
-			if (cur->delay_cycles != 0)
-				break;
-			/* Delayed long enough - write to the SID! */
-			printf("Writing %02x:%02x\n", cur->adr, cur->val);
-			this->WriteRegister(cur->adr, cur->val);
-			cur = TheC64->peer->DequeueSound();
-		}
-	}
+	if (!ready)
+		return;
 	this->PushVolume(volume);
-	TheC64->linecnt++;
 }
 
 
