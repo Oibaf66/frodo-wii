@@ -305,7 +305,6 @@ class Peer:
         all_data = data + StopPacket().marshal()
 
         for i in range(0, len(all_data), 4096):
-            print "Sending %d bytes" % (len(all_data))
             cur = all_data[i : min(i + 4096, len(all_data))]
             self.srv.socket.sendto(cur,
                                    0, self.addr)
