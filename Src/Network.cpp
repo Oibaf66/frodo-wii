@@ -439,16 +439,16 @@ void Network::FlushSound(void)
 	snd->n_items = this->sound_head - this->sound_tail;
 
 	if (this->sound_head < this->sound_tail) {
-		snd->n_items = NETWORK_SOUND_BUF_SIZE;
+		snd->n_items = NETWORK_SOUND_BUF_SIZE - this->sound_tail + this->sound_head;
 		memcpy(snd_info, &this->sound_active[this->sound_tail],
 				(NETWORK_SOUND_BUF_SIZE - this->sound_tail) * sizeof(struct NetworkUpdateSoundInfo));
 		memcpy(snd_info + NETWORK_SOUND_BUF_SIZE - this->sound_tail,
-				&this->sound_active[this->sound_head],
+				&this->sound_active[0],
 				this->sound_head * sizeof(struct NetworkUpdateSoundInfo));
 	}
 	else
 	{
-		memcpy(snd_info, &this->sound_active[this->sound_head],
+		memcpy(snd_info, &this->sound_active[this->sound_tail],
 				(this->sound_head - this->sound_tail) * sizeof(struct NetworkUpdateSoundInfo));
 	}
 	this->sound_tail = this->sound_head;
@@ -703,10 +703,12 @@ bool Network::MarshalData(NetworkUpdate *p)
 	{
 		NetworkUpdateSound *snd = (NetworkUpdateSound *)p->data;
 		NetworkUpdateSoundInfo *info = (NetworkUpdateSoundInfo *)snd->info;
+		int items = snd->n_items;
 
 		snd->flags = htons(snd->flags);
 		snd->n_items = htons(snd->n_items);
-		for (unsigned int i = 0; i < snd->n_items; i++)
+
+		for (unsigned int i = 0; i < items; i++)
 		{
 			NetworkUpdateSoundInfo *cur = &info[i];
 
