@@ -445,7 +445,6 @@ private:
 #if defined(__linux__) || defined(GEKKO)
 	int devfd, sndbufsize, buffer_rate;
 	int16 *sound_buffer;
-	uint32 linecnt;
 #endif
 
 #ifdef SUN
@@ -921,7 +920,7 @@ void DigitalRenderer::WriteRegister(uint16 adr, uint8 byte)
 
 	if (TheC64) {
 		if (TheC64->network_connection_type == MASTER)
-			TheC64->peer->RegisterSidWrite(this->linecnt, adr, byte);
+			TheC64->peer->RegisterSidWrite(TheC64->linecnt, adr, byte);
 	}
 
 	int v = adr/7;	// Voice number

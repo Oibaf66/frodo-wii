@@ -47,7 +47,6 @@ void DigitalRenderer::init_sound(void)
 	int arg;
 	unsigned long format;
 
-	linecnt = 0;
 	ready = false;
 	devfd = open("/dev/dsp", O_WRONLY);
 	if (devfd < 0)
@@ -166,7 +165,7 @@ void DigitalRenderer::EmulateLine(void)
 		}
 	}
 	this->PushVolume(volume);
-	this->linecnt++;
+	TheC64->linecnt++;
 }
 
 

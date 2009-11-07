@@ -199,6 +199,7 @@ public:
 	int network_connection_type;
 	Network *peer;
 	TTF_Font *menu_font;
+	int linecnt;
 
 	bool fake_key_sequence;
 	const char *fake_key_str;

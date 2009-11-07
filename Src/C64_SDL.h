@@ -43,6 +43,7 @@ void C64::c64_ctor1(void)
 	joy_minx = joy_miny = 32767;
 	joy_maxx = joy_maxy = -32768;
 #endif
+	this->linecnt = 0;
 
 	this->fake_key_sequence = false;
 	this->fake_key_index = 0;

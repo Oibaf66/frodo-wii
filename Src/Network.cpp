@@ -405,8 +405,6 @@ void Network::EnqueueSound(uint32 linecnt_diff, uint8 adr, uint8 val)
 {
 	NetworkUpdateSoundInfo *cur = &this->sound_active[this->sound_head];
 
-	if (linecnt_diff > 400)
-		linecnt_diff = 400;
 	cur->adr = adr;
 	cur->val = val;
 	cur->delay_cycles = linecnt_diff;
@@ -461,6 +459,7 @@ void Network::FlushSound(void)
 	InitNetworkUpdate(dst, SOUND_UPDATE, sizeof(NetworkUpdate) +
 			sizeof(NetworkUpdateSound) + sizeof(NetworkUpdateSoundInfo) * snd->n_items);
 	this->AddNetworkUpdate(dst);
+	this->sound_last_cycles = TheC64->linecnt;
 
 	bytes = 0;
 }
