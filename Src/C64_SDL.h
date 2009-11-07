@@ -526,6 +526,7 @@ void C64::network_vblank()
         			/* Disconnect or sending crap, remove this guy! */
         			delete remote;
         			this->peer = NULL;
+        			this->network_connection_type = NONE;
         			return;
         		}
                 	if (this->network_connection_type == CLIENT)
