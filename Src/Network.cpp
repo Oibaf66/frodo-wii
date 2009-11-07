@@ -424,7 +424,6 @@ void Network::RegisterSidWrite(uint32 linecnt, uint8 adr, uint8 val)
 {
 	this->EnqueueSound(linecnt - this->sound_last_cycles, adr, val);
 
-	printf("Enqueuing write: %04d:%02x:%02x\n", linecnt - this->sound_last_cycles, adr, val);
 	/* Update the cycle counter */
 	sound_last_cycles = linecnt;
 	bytes += sizeof(NetworkUpdateSound);
