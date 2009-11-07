@@ -415,7 +415,7 @@ void Network::EnqueueSound(uint32 linecnt_diff, uint8 adr, uint8 val)
 		this->sound_head = 0;
 
 	/* Head has reached tail */
-	if (this->sound_head >= this->sound_tail)
+	if (this->sound_head == this->sound_tail)
 		this->sound_tail = (this->sound_head + 1) % NETWORK_SOUND_BUF_SIZE;
 }
 
@@ -453,11 +453,9 @@ void Network::FlushSound(void)
 	}
 	this->sound_tail = (this->sound_tail + snd->n_items) % NETWORK_SOUND_BUF_SIZE;
 
-	/* Reset the buffer again */
-	printf("Flushing sound (%d bytes in %d ms)\n", bytes, SDL_GetTicks() - this->sound_last_send);
 	this->sound_last_send = SDL_GetTicks();
 
-	InitNetworkUpdate(dst, SOUND_UPDATE,
+	InitNetworkUpdate(dst, SOUND_UPDATE, sizeof(NetworkUpdate) +
 			sizeof(NetworkUpdateSound) + sizeof(NetworkUpdateSoundInfo) * snd->n_items);
 	this->AddNetworkUpdate(dst);
 
@@ -811,7 +809,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 
 			cur->delay_cycles = ntohs(cur->delay_cycles);
 		}
-	}
+	} break;
 	default:
 		/* Unknown data... */
 		printf("Got unknown data: %d\n", p->type);

@@ -536,6 +536,7 @@ void C64::network_vblank()
         	 * if this is the master or not) */
 		if (this->network_connection_type == MASTER)
 		{
+			remote->FlushSound();
 			/* Skip this frame if the data rate is too high */
 			if (remote->ThrottleTraffic())
 				has_throttled = true;

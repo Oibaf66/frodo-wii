@@ -146,10 +146,7 @@ void DigitalRenderer::EmulateLine(void)
 	if (!ready)
 		return;
 	/* Flush network sound every ~100ms */
-	if (TheC64->network_connection_type == MASTER &&
-			this->linecnt % 2048 == 0)
-		TheC64->peer->FlushSound();
-	else if (TheC64->network_connection_type == CLIENT)
+	if (TheC64->network_connection_type == CLIENT)
 	{
 		static NetworkUpdateSoundInfo *cur = NULL;
 
