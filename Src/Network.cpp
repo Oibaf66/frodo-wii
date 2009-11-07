@@ -419,14 +419,12 @@ void Network::EnqueueSound(uint32 linecnt_diff, uint8 adr, uint8 val)
 		this->sound_tail = (this->sound_head + 1) % NETWORK_SOUND_BUF_SIZE;
 }
 
-static int bytes = 0;
 void Network::RegisterSidWrite(uint32 linecnt, uint8 adr, uint8 val)
 {
 	this->EnqueueSound(linecnt - this->sound_last_cycles, adr, val);
 
 	/* Update the cycle counter */
 	sound_last_cycles = linecnt;
-	bytes += sizeof(NetworkUpdateSound);
 }
 
 void Network::FlushSound(void)
@@ -459,8 +457,6 @@ void Network::FlushSound(void)
 			sizeof(NetworkUpdateSound) + sizeof(NetworkUpdateSoundInfo) * snd->n_items);
 	this->AddNetworkUpdate(dst);
 	this->sound_last_cycles = TheC64->linecnt;
-
-	bytes = 0;
 }
 
 struct NetworkUpdateSoundInfo *Network::DequeueSound()
