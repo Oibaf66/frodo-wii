@@ -525,7 +525,7 @@ void C64::network_vblank()
         			delete remote;
         			this->peer = NULL;
         			this->network_connection_type = NONE;
-        			this->TheSID->Reset();
+        			this->Reset();
         			return;
         		}
                 	if (this->network_connection_type == CLIENT)
