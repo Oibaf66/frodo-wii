@@ -32,6 +32,8 @@ typedef enum
 	SELECT_PEER        = 93, /* (client) Select who to connect to */
 	PING               = 95, /* (broker) are you alive? */
 	ACK                = 94, /* Answer to broker */
+	BANDWIDTH_PING     = 92, /* Large packet to calculate bandwidth */
+	BANDWIDTH_ACK	   = 91, /* Answer to BANDWIDTH_PING */
 	/* Non-data messages */
 	STOP               = 55, /* End of this update sequence */
 	/* Data transfer of various kinds */
@@ -56,8 +58,9 @@ typedef enum
 	CONN_SELECT_PEER,
 	CONN_WAIT_FOR_PEER_REPLY,
 
-	/* Client-only */
 	CONN_WAIT_FOR_PEER_LIST,
+	CONN_BANDWIDTH_PING,
+	CONN_BANDWIDTH_REPLY,
 
 	FAILED,
 } network_connection_state_t;
@@ -100,6 +103,7 @@ struct NetworkUpdateSelectPeer
 struct NetworkUpdatePingAck
 {
 	uint32 seq;
+	uint8 data[]; /* Only used for bandwidth ping/acks */
 };
 
 struct NetworkUpdateSoundInfo
@@ -283,7 +287,7 @@ protected:
 	bool DecodeDisplayRaw(struct NetworkUpdate *src,
 			int x, int y);
 
-	void SendPingAck(int seq);
+	void SendPingAck(int seq, uint16 type, size_t data_size);
 
 	bool ReceiveUpdate(NetworkUpdate *dst, size_t sz, struct timeval *tv);
 
@@ -322,6 +326,10 @@ protected:
 	bool ConnectToPeer();
 
 	bool WaitForPeerReply();
+
+	bool SendBandWidthTest();
+
+	network_connection_error_t WaitForBandWidthReply();
 
 	network_connection_error_t WaitForPeerList();
 
@@ -364,6 +372,7 @@ protected:
 	const char *connection_error_message;
 
 	network_connection_state_t network_connection_state;
+	uint32 bandwidth_ping_ms;
 
 	NetworkUpdateSoundInfo sound_active[NETWORK_SOUND_BUF_SIZE];
 	int sound_head;

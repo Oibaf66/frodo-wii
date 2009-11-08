@@ -529,7 +529,6 @@ void C64::network_vblank()
                 	if (this->network_connection_type == CLIENT)
                 		this->TheDisplay->Update(remote->GetScreen());
         	}
-		remote->ResetNetworkUpdate();
 
         	/* Encode and send updates to the other side (what is determined by 
         	 * if this is the master or not) */
@@ -555,8 +554,7 @@ void C64::network_vblank()
         		/* Disconnect or broken data */
         		printf("Could not send update\n");
         	}
-		else
-			remote->ResetNetworkUpdate();
+		remote->ResetNetworkUpdate();
 
 		static uint32_t last_traffic_update;
 

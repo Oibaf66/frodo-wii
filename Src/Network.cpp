@@ -667,6 +667,8 @@ bool Network::MarshalData(NetworkUpdate *p)
 	case TEXT_MESSAGE:
 	case STOP:
 		break;
+	case BANDWIDTH_PING:
+	case BANDWIDTH_ACK:
 	case PING:
 	case ACK:
 	{
@@ -774,6 +776,8 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 	case STOP:
 		/* Nothing to do, just bytes */
 		break;
+	case BANDWIDTH_PING:
+	case BANDWIDTH_ACK:
 	case PING:
 	case ACK:
 	{
@@ -916,10 +920,20 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 		case LIST_PEERS:
 		{
 		} break;
+		case BANDWIDTH_PING:
 		case PING:
-			/* FIXME! Send an ack */
+		{
+			NetworkUpdatePingAck *ping = (NetworkUpdatePingAck *)p->data;
+			uint16 type = ACK;
+
+			if (ud->type == BANDWIDTH_PING)
+				type = BANDWIDTH_ACK;
+			this->SendPingAck(ping->seq, type, ud->size);
+		} break;
+		case BANDWIDTH_ACK:
+		case ACK:
+			/* We won't receive this, but it also doesn't really matter */
 			break;
-		case ACK: /* Should never receive this */
 		case DISCONNECT:
 			out = false;
 			break;
@@ -973,20 +987,13 @@ bool Network::IpToStr(char *dst, uint8 *ip_in)
 	return true;
 }
 
-/* OK, this is a pretty ugly special case, but it's only used when
- * communicating with the broker before a peer connection. */
-void Network::SendPingAck(int seq)
+void Network::SendPingAck(int seq, uint16 type, size_t size_to_send)
 {
-	this->ResetNetworkUpdate();
-
-	NetworkUpdate *ud = InitNetworkUpdate(this->ud, ACK,
-			sizeof(NetworkUpdate) + sizeof(NetworkUpdatePingAck));
+	NetworkUpdate *ud = InitNetworkUpdate(this->ud, type, size_to_send);
 	NetworkUpdatePingAck *p = (NetworkUpdatePingAck*)ud->data;
 
 	p->seq = seq;
 	this->AddNetworkUpdate(ud);
-	this->SendUpdate();
-	this->ResetNetworkUpdate();
 }
 
 network_connection_error_t Network::WaitForPeerAddress()
@@ -1000,7 +1007,9 @@ network_connection_error_t Network::WaitForPeerAddress()
 	{
 		NetworkUpdatePingAck *p = (NetworkUpdatePingAck*)ud->data;
 		/* Send ack and go back to this state again */
-		this->SendPingAck(p->seq);
+		this->SendPingAck(p->seq, ACK, ud->size);
+		this->SendUpdate();
+		this->ResetNetworkUpdate();
 		return AGAIN_ERROR;
 	}
 	if (this->ud->type != LIST_PEERS)
@@ -1063,7 +1072,9 @@ network_connection_error_t Network::WaitForPeerList()
 	{
 		NetworkUpdatePingAck *p = (NetworkUpdatePingAck*)ud->data;
 		/* Send ack and go back to this state again */
-		this->SendPingAck(p->seq);
+		this->SendPingAck(p->seq, ACK, ud->size);
+		this->SendUpdate();
+		this->ResetNetworkUpdate();
 		return AGAIN_ERROR;
 	}
 	if (ud->type != LIST_PEERS)
@@ -1134,6 +1145,57 @@ bool Network::ConnectToPeer()
 	return out;
 }
 
+network_connection_error_t Network::WaitForBandWidthReply()
+{
+	/* Wait until we've got an ack */
+	while (1) {
+		struct timeval tv;
+
+		tv.tv_sec = 3;
+		tv.tv_usec = 0;
+		this->ResetNetworkUpdate();
+
+		if (this->ReceiveUpdate(&tv) == false)
+			return AGAIN_ERROR;
+		if (this->ud->type == BANDWIDTH_PING) {
+			NetworkUpdatePingAck *ping = (NetworkUpdatePingAck *)this->ud->data;
+			uint32 seq = ping->seq;
+			size_t sz = this->ud->size;
+
+			this->ResetNetworkUpdate();
+			this->SendPingAck(seq, BANDWIDTH_ACK, sz);
+			this->SendUpdate();
+			continue;
+		}
+		/* CONNECT_TO_PEER is sent twice, so we might get it here */
+		if (this->ud->type == CONNECT_TO_PEER)
+			continue;
+		if (this->ud->type == BANDWIDTH_ACK)
+			break;
+		else /* Everything else is an error */
+			return SERVER_GARBAGE_ERROR;
+	}
+	/* We got a bandwidth ACK */
+
+	uint32 now = SDL_GetTicks();
+	int32 ms_diff = now - this->bandwidth_ping_ms;
+	size_t sz = this->ud->size;
+
+	if (ms_diff <= 0) {
+		/* Fast indeed, or maybe wrong */
+		this->target_kbps = 240000;
+	} else {
+		int bits_per_second = ((sz * 1000) / ms_diff) * 8;
+
+		this->target_kbps = bits_per_second;
+	}
+
+	if (this->target_kbps > 300000)
+		this->target_kbps = 300000;
+
+	return OK;
+}
+
 network_connection_error_t Network::ConnectFSM()
 {
 	network_connection_error_t err;
@@ -1194,10 +1256,26 @@ network_connection_error_t Network::ConnectFSM()
 		if (this->ConnectToPeer() == false)
 			return AGAIN_ERROR;
 		if (this->WaitForPeerReply() == true)
-			this->network_connection_state = CONN_CONNECTED;
+			this->network_connection_state = CONN_BANDWIDTH_PING;
 		else
 			return AGAIN_ERROR;
 		break;
+	case CONN_BANDWIDTH_PING:
+		TheC64->TheDisplay->display_status_string((char*)"TESTING BANDWIDTH", 1);
+		this->ResetNetworkUpdate();
+		this->SendPingAck(this->is_master, BANDWIDTH_PING, 2048);
+		this->bandwidth_ping_ms = SDL_GetTicks();
+		this->SendUpdate();
+		this->ResetNetworkUpdate();
+		this->network_connection_state = CONN_BANDWIDTH_REPLY;
+		break;
+	case CONN_BANDWIDTH_REPLY:
+	{
+		network_connection_error_t err = this->WaitForBandWidthReply();
+		if (err == OK)
+			this->network_connection_state = CONN_CONNECTED;
+		return err;
+	} break;
 	case CONN_CONNECTED:
 		TheC64->TheDisplay->display_status_string((char*)"CONNECTED!", 1);
 		/* The lowest number is the default master */
