@@ -492,14 +492,11 @@ void C64::network_vblank()
         	} else if (this->network_connection_type == CONNECT) {
         		network_connection_error_t err = this->peer->ConnectFSM();
 
-        		TheDisplay->display_status_string("WAITING FOR CONNECTION...", 1);
-
         		if (err == OK) {
         			if (this->peer->is_master)
         				this->network_connection_type = MASTER;
         			else
         				this->network_connection_type = CLIENT;
-        			TheDisplay->display_status_string("CONNECTED!", 1);
         		}
         		else if (err != AGAIN_ERROR)
         		{

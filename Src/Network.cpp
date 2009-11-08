@@ -1162,6 +1162,7 @@ network_connection_error_t Network::ConnectFSM()
 			this->network_connection_state = CONN_WAIT_FOR_PEER_LIST;
 	} break;
 	case CONN_WAIT_FOR_PEER_ADDRESS:
+		TheC64->TheDisplay->display_status_string((char*)"WAITING FOR CONNECTION...", 1);
 		err = this->WaitForPeerAddress();
 		if (err == OK)
 			this->network_connection_state = CONN_CONNECT_TO_PEER;
@@ -1192,6 +1193,7 @@ network_connection_error_t Network::ConnectFSM()
 	case CONN_WAIT_FOR_PEER_REPLY:
 		/* Connect again in case the first sent was dropped on
 		 * its way to the peer */
+		TheC64->TheDisplay->display_status_string((char*)"CONNECTING TO PEER", 1);
 		if (this->ConnectToPeer() == false)
 			return AGAIN_ERROR;
 		if (this->WaitForPeerReply() == true)
@@ -1200,6 +1202,7 @@ network_connection_error_t Network::ConnectFSM()
 			return AGAIN_ERROR;
 		break;
 	case CONN_CONNECTED:
+		TheC64->TheDisplay->display_status_string((char*)"CONNECTED!", 1);
 		/* The lowest number is the default master */
 	default:
 		return OK;
