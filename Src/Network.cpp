@@ -1136,20 +1136,13 @@ network_connection_error_t Network::ConnectFSM()
 
 	/* See http://www.brynosaurus.com/pub/net/p2pnat/ for how this works.
 	 *
-	 * For the server ("master"):
-	 *   1. Send connect to the broker
-	 *   2. Wait for broker to return the peer connection info (private
-	 *      and public address)
-	 *   3. Until connected:
-	 *      3.1 Send connection message to peer
-	 *      3.2 Wait for reply from peer
-	 *
 	 * For the client:
 	 *   1. Send connect to the broker
 	 *   2. Wait for the broker to return list of peers
 	 *   3. Tell the broker who to connect to
-	 *   4. Wait for broker to return the peer connection info (private
-	 *      and public address)
+	 *   4. Select peer
+	 *   	4.1 (master) Wait for broker to return peer address
+	 *   	4.2 (client) Connect to peer
 	 *   5. Until connected:
 	 *      5.1 Send connection message to peer
 	 *      5.2 Wait for reply from peer
