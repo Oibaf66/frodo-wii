@@ -1193,8 +1193,8 @@ network_connection_error_t Network::WaitForBandWidthReply()
 	/* But force it to be within these limits */
 	if (this->target_kbps > 300000)
 		this->target_kbps = 300000;
-	if (this->target_kbps < 80000)
-		this->target_kbps = 80000;
+	if (this->target_kbps < 90000)
+		this->target_kbps = 90000;
 
 	printf("%d bytes in %d ms. Setting cap at %d\n", sz, ms_diff, this->target_kbps);
 
