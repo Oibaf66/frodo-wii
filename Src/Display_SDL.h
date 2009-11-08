@@ -231,7 +231,8 @@ void C64Display::Update(uint8 *src_pixels)
 		SDL_SoftStretch(sdl_screen, &srcrect, real_screen, &dstrect);                                                                     
 	}
 
-	draw_string(real_screen, 0, 0, networktraffic_string, black, fill_gray);
+	if (this->TheC64->network_connection_type != NONE)
+		draw_string(real_screen, 0, 0, networktraffic_string, black, fill_gray);
 	if (this->on_screen_message) {
 		Uint32 time_now = SDL_GetTicks();
 

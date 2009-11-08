@@ -558,17 +558,14 @@ void C64::network_vblank()
 		else
 			remote->ResetNetworkUpdate();
 
-        	if (1)
-        	{
-        		static uint32_t last_traffic_update;
+		static uint32_t last_traffic_update;
 
-        		if (last_time_update - last_traffic_update > 300)
-        		{
-        			TheDisplay->NetworkTrafficMeter(remote->GetKbps() / (8 * 1024.0),
-        					has_throttled);
-        			last_traffic_update = now;
-        			has_throttled = false;
-        		}
+		if (last_time_update - last_traffic_update > 300)
+		{
+			TheDisplay->NetworkTrafficMeter(remote->GetKbps() / (8 * 1024.0),
+					has_throttled);
+			last_traffic_update = now;
+			has_throttled = false;
         	}
         }
 
