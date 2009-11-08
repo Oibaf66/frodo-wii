@@ -497,6 +497,7 @@ void C64::network_vblank()
         				this->network_connection_type = MASTER;
         			else
         				this->network_connection_type = CLIENT;
+        			this->linecnt = 0;
         		}
         		else if (err != AGAIN_ERROR)
         		{
@@ -524,6 +525,7 @@ void C64::network_vblank()
         			delete remote;
         			this->peer = NULL;
         			this->network_connection_type = NONE;
+        			this->TheSID->Reset();
         			return;
         		}
                 	if (this->network_connection_type == CLIENT)

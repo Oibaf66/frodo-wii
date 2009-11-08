@@ -939,7 +939,9 @@ void MOS6581::EmulateLine(void)
 			cur = TheC64->peer->DequeueSound();
 		}
 	}
-	TheC64->linecnt++;
+	if (TheC64->network_connection_type == MASTER ||
+			TheC64->network_connection_type == CLIENT)
+		TheC64->linecnt++;
 }
 
 void DigitalRenderer::WriteRegister(uint16 adr, uint8 byte)
