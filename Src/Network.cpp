@@ -1190,8 +1190,11 @@ network_connection_error_t Network::WaitForBandWidthReply()
 		this->target_kbps = bits_per_second;
 	}
 
+	/* But force it to be within these limits */
 	if (this->target_kbps > 300000)
 		this->target_kbps = 300000;
+	if (this->target_kbps < 80000)
+		this->target_kbps = 80000;
 
 	return OK;
 }
@@ -1264,8 +1267,8 @@ network_connection_error_t Network::ConnectFSM()
 		TheC64->TheDisplay->display_status_string((char*)"TESTING BANDWIDTH", 1);
 		this->ResetNetworkUpdate();
 		this->SendPingAck(this->is_master, BANDWIDTH_PING, 2048);
-		this->bandwidth_ping_ms = SDL_GetTicks();
 		this->SendUpdate();
+		this->bandwidth_ping_ms = SDL_GetTicks();
 		this->ResetNetworkUpdate();
 		this->network_connection_state = CONN_BANDWIDTH_REPLY;
 		break;
