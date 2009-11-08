@@ -1196,6 +1196,8 @@ network_connection_error_t Network::WaitForBandWidthReply()
 	if (this->target_kbps < 80000)
 		this->target_kbps = 80000;
 
+	printf("%d bytes in %d ms. Setting cap at %d\n", sz, ms_diff, this->target_kbps);
+
 	return OK;
 }
 
@@ -1266,7 +1268,7 @@ network_connection_error_t Network::ConnectFSM()
 	case CONN_BANDWIDTH_PING:
 		TheC64->TheDisplay->display_status_string((char*)"TESTING BANDWIDTH", 1);
 		this->ResetNetworkUpdate();
-		this->SendPingAck(this->is_master, BANDWIDTH_PING, 2048);
+		this->SendPingAck(this->is_master, BANDWIDTH_PING, 1024);
 		this->SendUpdate();
 		this->bandwidth_ping_ms = SDL_GetTicks();
 		this->ResetNetworkUpdate();
