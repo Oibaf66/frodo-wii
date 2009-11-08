@@ -1277,8 +1277,10 @@ network_connection_error_t Network::ConnectFSM()
 	case CONN_BANDWIDTH_REPLY:
 	{
 		network_connection_error_t err = this->WaitForBandWidthReply();
-		if (err == OK)
+		if (err == OK) {
 			this->network_connection_state = CONN_CONNECTED;
+			return AGAIN_ERROR;
+		}
 		return err;
 	} break;
 	case CONN_CONNECTED:
