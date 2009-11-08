@@ -1266,7 +1266,6 @@ network_connection_error_t Network::ConnectFSM()
 			return AGAIN_ERROR;
 		break;
 	case CONN_BANDWIDTH_PING:
-		TheC64->TheDisplay->display_status_string((char*)"TESTING BANDWIDTH", 1);
 		this->ResetNetworkUpdate();
 		this->SendPingAck(this->is_master, BANDWIDTH_PING, 1024);
 		this->SendUpdate();
@@ -1282,7 +1281,7 @@ network_connection_error_t Network::ConnectFSM()
 		return err;
 	} break;
 	case CONN_CONNECTED:
-		TheC64->TheDisplay->display_status_string((char*)"CONNECTED!", 1);
+		TheC64->TheDisplay->display_status_string((char*)"CONNECTED!", 2);
 		/* The lowest number is the default master */
 	default:
 		return OK;
