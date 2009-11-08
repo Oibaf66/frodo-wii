@@ -1217,6 +1217,7 @@ network_connection_error_t Network::ConnectFSM()
 	 *   5. Until connected:
 	 *      5.1 Send connection message to peer
 	 *      5.2 Wait for reply from peer
+	 *   6. Test bandwidth
 	 */
 	switch(this->network_connection_state)
 	{
@@ -1252,14 +1253,14 @@ network_connection_error_t Network::ConnectFSM()
 			return AGAIN_ERROR;
 		/* Allow some transit time */
 		sleep(1);
+		if (this->ConnectToPeer() == false)
+			return AGAIN_ERROR;
 		this->network_connection_state = CONN_WAIT_FOR_PEER_REPLY;
 		break;
 	case CONN_WAIT_FOR_PEER_REPLY:
 		/* Connect again in case the first sent was dropped on
 		 * its way to the peer */
 		TheC64->TheDisplay->display_status_string((char*)"CONNECTING TO PEER", 1);
-		if (this->ConnectToPeer() == false)
-			return AGAIN_ERROR;
 		if (this->WaitForPeerReply() == true)
 			this->network_connection_state = CONN_BANDWIDTH_PING;
 		else
