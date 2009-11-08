@@ -565,6 +565,10 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
 			return false;
 
 		received += actual_sz;
+		if (ntohs(dst->magic) != FRODO_NETWORK_MAGIC) {
+			printf("Packet with wrong magic received\n");
+			return false;
+		}
 		if (this->ScanDataForStop(dst, received) == true)
 			break;
 
