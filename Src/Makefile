@@ -17,16 +17,28 @@ DESTDIR =
 
 CXX = g++
 CC = gcc
-CFLAGS =-DFRODO_SC -O2 -g -I/usr/include/SDL -I$(DEVKITPRO)/libogc/include -D_GNU_SOURCE=1 -D_REENTRANT -DHAVE_SDL -DORBIT2=1 -pthread -I/usr/include/libglade-2.0 -I/usr/include/gtk-2.0 -I/usr/include/libxml2 -I/usr/lib/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/freetype2 -I/usr/include/libpng12 -I/usr/include/pixman-1 -I/usr/include/libgnomeui-2.0 -I/usr/include/libart-2.0 -I/usr/include/gconf/2 -I/usr/include/gnome-keyring-1 -I/usr/include/libgnome-2.0 -I/usr/include/libbonoboui-2.0 -I/usr/include/libgnomecanvas-2.0 -I/usr/include/gnome-vfs-2.0 -I/usr/lib/gnome-vfs-2.0/include -I/usr/include/orbit-2.0 -I/usr/include/libbonobo-2.0 -I/usr/include/bonobo-activation-2.0 -I/usr/include/gail-1.0    -I./ -DKBD_LANG=0
+CFLAGS =-DFRODO_SC -O2 -g -I/usr/include/SDL -I$(DEVKITPRO)/libogc/include -D_GNU_SOURCE=1 -D_REENTRANT -DHAVE_SDL -DORBIT2=1 -pthread -I/usr/include/libglade-2.0 -I/usr/include/gtk-2.0 -I/usr/include/libxml2 -I/usr/lib/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/freetype2 -I/usr/include/libpng12 -I/usr/include/pixman-1 -I/usr/include/libgnomeui-2.0 -I/usr/include/libart-2.0 -I/usr/include/gconf/2 -I/usr/include/gnome-keyring-1 -I/usr/include/libgnome-2.0 -I/usr/include/libbonoboui-2.0 -I/usr/include/libgnomecanvas-2.0 -I/usr/include/gnome-vfs-2.0 -I/usr/lib/gnome-vfs-2.0/include -I/usr/include/orbit-2.0 -I/usr/include/libbonobo-2.0 -I/usr/include/bonobo-activation-2.0 -I/usr/include/gail-1.0 -Igui/guichan/include  -I./ -DKBD_LANG=0
 DEFS = -DHAVE_CONFIG_H -DDATADIR=\"$(datadir)/frodo/\" -DBINDIR=\"$(bindir)/\" -DHAVE_SDL
 LDFLAGS =
-LIBS =  -L/usr/lib -lSDL -lSDL_ttf -pthread
+LIBS =  -L/usr/lib -lSDL -lSDL_ttf -pthread -lSDL_image
 INSTALL = /usr/bin/install -c
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
 
 ## Files
-GUIOBJS = 
+GUIOBJS = gui/guichan/actionevent.o gui/guichan/basiccontainer.o gui/guichan/cliprectangle.o gui/guichan/color.o \
+	gui/guichan/defaultfont.o gui/guichan/event.o gui/guichan/exception.o gui/guichan/focushandler.o gui/guichan/font.o \
+	gui/guichan/genericinput.o gui/guichan/graphics.o gui/guichan/guichan.o gui/guichan/gui.o gui/guichan/image.o \
+	gui/guichan/imagefont.o gui/guichan/inputevent.o gui/guichan/key.o gui/guichan/keyevent.o gui/guichan/keyinput.o \
+	gui/guichan/mouseevent.o gui/guichan/mouseinput.o gui/guichan/rectangle.o gui/guichan/sdl/sdl.o \
+	gui/guichan/sdl/sdlgraphics.o gui/guichan/sdl/sdlimage.o gui/guichan/sdl/sdlimageloader.o gui/guichan/sdl/sdlinput.o\
+	gui/guichan/selectionevent.o gui/guichan/widget.o gui/guichan/widgets/button.o gui/guichan/widgets/checkbox.o \
+	gui/guichan/widgets/container.o gui/guichan/widgets/dropdown.o gui/guichan/widgets/icon.o \
+	gui/guichan/widgets/imagebutton.o gui/guichan/widgets/label.o gui/guichan/widgets/listbox.o \
+	gui/guichan/widgets/radiobutton.o gui/guichan/widgets/scrollarea.o gui/guichan/widgets/slider.o \
+	gui/guichan/widgets/tabbedarea.o gui/guichan/widgets/tab.o gui/guichan/widgets/textbox.o \
+	gui/guichan/widgets/textfield.o gui/guichan/widgets/window.o
+
 OBJS    = $(GUIOBJS) main.o Prefs.o SID.o REU.o IEC.o 1541fs.o \
           1541d64.o 1541t64.o 1541job.o SAM.o CmdPipe.o menu.o Network.o \
           VirtualKeyboard.o menutexts.o d64-read.o
