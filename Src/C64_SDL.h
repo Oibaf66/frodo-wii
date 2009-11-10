@@ -522,10 +522,12 @@ void C64::network_vblank()
         				js, this->TheSID) == false)
         		{
         			/* Disconnect or sending crap, remove this guy! */
+				TheDisplay->display_status_string("PEER DISCONNECTED", 3);
         			delete remote;
         			this->peer = NULL;
+        			if (this->network_connection_type == CLIENT)
+        				this->Reset();
         			this->network_connection_type = NONE;
-        			this->Reset();
         			return;
         		}
                 	if (this->network_connection_type == CLIENT)
