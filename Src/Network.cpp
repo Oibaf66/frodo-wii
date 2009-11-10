@@ -1147,8 +1147,10 @@ bool Network::ConnectToPeer()
 
 network_connection_error_t Network::WaitForBandWidthReply()
 {
+	unsigned cnt;
+
 	/* Wait until we've got an ack */
-	while (1) {
+	for (cnt = 0; cnt < 5; cnt++) {
 		struct timeval tv;
 
 		tv.tv_sec = 3;
@@ -1174,7 +1176,14 @@ network_connection_error_t Network::WaitForBandWidthReply()
 			break;
 		else /* Everything else is an error */
 			return SERVER_GARBAGE_ERROR;
+		cnt++;
 	}
+	if (cnt == 5) {
+		printf("Timeout. Setting default kbps (160)\n");
+		this->target_kbps = 160000;
+		return OK;
+	}
+
 	/* We got a bandwidth ACK */
 
 	uint32 now = SDL_GetTicks();
