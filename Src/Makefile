@@ -37,7 +37,7 @@ GUIOBJS = gui/guichan/actionevent.o gui/guichan/basiccontainer.o gui/guichan/cli
 	gui/guichan/widgets/imagebutton.o gui/guichan/widgets/label.o gui/guichan/widgets/listbox.o \
 	gui/guichan/widgets/radiobutton.o gui/guichan/widgets/scrollarea.o gui/guichan/widgets/slider.o \
 	gui/guichan/widgets/tabbedarea.o gui/guichan/widgets/tab.o gui/guichan/widgets/textbox.o \
-	gui/guichan/widgets/textfield.o gui/guichan/widgets/window.o
+	gui/guichan/widgets/textfield.o gui/guichan/widgets/window.o gui/sdlwidgets.o
 
 OBJS    = $(GUIOBJS) main.o Prefs.o SID.o REU.o IEC.o 1541fs.o \
           1541d64.o 1541t64.o 1541job.o SAM.o CmdPipe.o menu.o Network.o \
@@ -176,3 +176,4 @@ CPU1541_SC.o: sysdeps.h sysconfig.h CPU1541.h CIA.h Prefs.h C64.h
 CPU1541_SC.o: CPU_common.h 1541job.h Display.h CPU_emulcycle.h
 CPU_common.o: sysdeps.h sysconfig.h CPU_common.h
 menu.o: menu.h
+gui/sdlwidgets.o: gui/sdl.hpp gui/sdlwidgets.cpp gui/widgets.hpp
