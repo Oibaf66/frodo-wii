@@ -53,7 +53,7 @@ private:
 };
 
 
-class List : public gcn::Widget
+class List : public gcn::ListBox
 {
 public:
 	class PrivListModel : public gcn::ListModel
@@ -77,8 +77,12 @@ public:
 		int n_msgs;
 	};
 
-	List(const char **msgs, int n_msgs) {
+	List(const char **msgs, int n_msgs)
+	{
+		this->model = new PrivListModel(msgs, n_msgs);
 	}
+private:
+	PrivListModel *model;
 };
 
 /*
