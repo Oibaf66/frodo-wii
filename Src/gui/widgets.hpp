@@ -7,8 +7,6 @@ namespace widgets
 {
     gcn::ImageFont* font;
     gcn::Container* top;
-    gcn::Label* label;
-    gcn::Icon* icon;
     gcn::Button* button;
     gcn::TextField* textField;
     gcn::TextBox* textBox;
@@ -17,11 +15,6 @@ namespace widgets
     gcn::DropDown* dropDown;
     gcn::CheckBox* checkBox1;
     gcn::CheckBox* checkBox2;
-    gcn::RadioButton* radioButton1;
-    gcn::RadioButton* radioButton2;
-    gcn::RadioButton* radioButton3;
-    gcn::Slider* slider;
-    gcn::Image *image;
     gcn::Window *window;
     gcn::Image *darkbitsImage;
     gcn::Icon* darkbitsIcon;
@@ -29,6 +22,20 @@ namespace widgets
     gcn::Button* tabOneButton;
     gcn::CheckBox* tabTwoCheckBox;
 
+
+    class BackgroundContainer : public gcn::Container, gcn::Icon
+    {
+    public:
+	    BackgroundContainer(const char *fn) : gcn::Icon(fn), gcn::Container()
+	    {
+	    }
+
+	    void draw(gcn::Graphics *graphics)
+	    {
+	            graphics->drawImage(mImage, 0, 0);
+		    this->drawChildren(graphics);
+	    }
+    };
     /*
      * List boxes and drop downs need an instance of a list model
      * in order to display a list.
@@ -73,7 +80,7 @@ namespace widgets
         // The top widget in Guichan can be any kind of widget, but
         // in order to make the Gui contain more than one widget we
         // make the top widget a container.
-        top = new gcn::Container();
+        top = new BackgroundContainer("data/menu_background.png");
         // We set the dimension of the top container to match the screen.
         top->setDimension(gcn::Rectangle(0, 0, 640, 480));
         // Finally we pass the top widget to the Gui object.
@@ -86,12 +93,6 @@ namespace widgets
         gcn::Widget::setGlobalFont(font);
 
         // Now we create the widgets
-
-        label = new gcn::Label("Label");
-
-        image = gcn::Image::load("data/menu_background.png");
-        icon = new gcn::Icon(image);
-
         button = new gcn::Button("Button");
 
         textField = new gcn::TextField("Text field");
@@ -108,13 +109,6 @@ namespace widgets
         
         checkBox1 = new gcn::CheckBox("Checkbox 1");
         checkBox2 = new gcn::CheckBox("Checkbox 2");
-
-        radioButton1 = new gcn::RadioButton("RadioButton 1", "radiogroup", true);
-        radioButton2 = new gcn::RadioButton("RadioButton 2", "radiogroup");
-        radioButton3 = new gcn::RadioButton("RadioButton 3", "radiogroup");
-
-        slider = new gcn::Slider(0, 10);
-        slider->setSize(100, 10);
 
         window = new gcn::Window("I am a window  Drag me");
         window->setBaseColor(gcn::Color(255, 150, 200, 190));
@@ -134,8 +128,6 @@ namespace widgets
         // Now it's time to add the widgets to the top container
         // so they will be conected to the GUI.
         
-        top->add(label, 10, 10);
-        top->add(icon, 10, 30);
         top->add(button, 200, 10);
         top->add(textField, 250, 10);
         top->add(textBoxScrollArea, 200, 50);
@@ -143,10 +135,6 @@ namespace widgets
         top->add(dropDown, 500, 10);
         top->add(checkBox1, 500, 130);
         top->add(checkBox2, 500, 150);
-        top->add(radioButton1, 500, 200);
-        top->add(radioButton2, 500, 220);
-        top->add(radioButton3, 500, 240);
-        top->add(slider, 500, 300);
         top->add(window, 50, 350);
         top->add(tabbedArea, 400, 350);
     }
@@ -158,8 +146,6 @@ namespace widgets
     {
         delete font;
         delete top;
-        delete label;
-        delete icon;
         delete button;
         delete textField;
         delete textBox;
@@ -168,10 +154,6 @@ namespace widgets
         delete dropDown;
         delete checkBox1;
         delete checkBox2;
-        delete radioButton1;
-        delete radioButton2;
-        delete radioButton3;
-        delete slider;
         delete window;
         delete darkbitsIcon;
         delete darkbitsImage;

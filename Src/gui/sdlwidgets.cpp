@@ -23,13 +23,13 @@ namespace globals
 gcn::Gui* gui;
 }
 
+// Include code to set up a Guichan GUI with all the widgets
+// of Guichan. The code populates the global Gui object.
+#include "widgets.hpp"
 // Include code to set up an SDL application with Guichan.
 // The sdl.hpp file is responsible for creating and deleting
 // the global Gui object.
 #include "sdl.hpp"
-// Include code to set up a Guichan GUI with all the widgets
-// of Guichan. The code populates the global Gui object.
-#include "widgets.hpp"
 
 void gui_menu_receive_input(SDL_Event ev)
 {
