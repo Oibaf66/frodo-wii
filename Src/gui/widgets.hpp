@@ -52,6 +52,35 @@ private:
 	gcn::Label *title;
 };
 
+
+class List : public gcn::Widget
+{
+public:
+	class PrivListModel : public gcn::ListModel
+	{
+	public:
+		PrivListModel(const char **msgs, int n_msgs) : msgs(msgs), n_msgs(n_msgs)
+		{
+		}
+
+		int getNumberOfElements()
+		{
+			return this->n_msgs;
+		}
+
+		std::string getElementAt(int i)
+		{
+			return this->msgs[this->n_msgs];
+		}
+
+		const char **msgs;
+		int n_msgs;
+	};
+
+	List(const char **msgs, int n_msgs) {
+	}
+};
+
 /*
  * List boxes and drop downs need an instance of a list model
  * in order to display a list.
