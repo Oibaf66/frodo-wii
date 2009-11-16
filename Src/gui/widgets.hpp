@@ -13,7 +13,6 @@ gcn::TextField* textField;
 gcn::TextBox* textBox;
 gcn::ScrollArea* textBoxScrollArea;
 gcn::ListBox* listBox;
-gcn::DropDown* dropDown;
 gcn::CheckBox* checkBox1;
 gcn::CheckBox* checkBox2;
 gcn::Window *window;
@@ -23,6 +22,35 @@ gcn::TabbedArea* tabbedArea;
 gcn::Button* tabOneButton;
 gcn::CheckBox* tabTwoCheckBox;
 
+
+const char *test_msgs[] = {
+		 "bruce_lee.d64",
+		 "the_last_ninja.d64",
+		 "the_first_ninja.d64",
+		 "uridium.d64",
+		 "international_karate.d64",
+		 "fist_II.d64",
+		 "fist_II.d64",
+		 "fist_II.d64",
+		 "fist_II.d64",
+		 "fist_II.d64",
+		 "bruce_lee.d64",
+		 "the_last_ninja.d64",
+		 "the_first_ninja.d64",
+		 "uridium.d64",
+		 "international_karate.d64",
+		 "bruce_lee.d64",
+		 "the_last_ninja.d64",
+		 "the_first_ninja.d64",
+		 "uridium.d64",
+		 "international_karate.d64",
+		 "bruce_lee.d64",
+		 "the_last_ninja.d64",
+		 "the_first_ninja.d64",
+		 "uridium.d64",
+		 "international_karate.d64",
+		 NULL
+};
 
 class BackgroundContainer : public gcn::Container
 {
@@ -53,7 +81,7 @@ private:
 };
 
 
-class List : public gcn::ListBox
+class FrodoGuiList : public gcn::ListBox
 {
 public:
 	class PrivListModel : public gcn::ListModel
@@ -70,60 +98,55 @@ public:
 
 		std::string getElementAt(int i)
 		{
-			return this->msgs[this->n_msgs];
+			return this->msgs[i];
 		}
 
 		const char **msgs;
 		int n_msgs;
 	};
 
-	List(const char **msgs, int n_msgs)
+	FrodoGuiList()
 	{
+		this->model = NULL;
+	}
+
+	FrodoGuiList(const char **msgs)
+	{
+		this->setList(msgs);
+	}
+
+	void setList(const char **msgs)
+	{
+		int n_msgs = 0;
+		const char *p;
+
+		/* Count messages */
+		while (msgs[n_msgs])
+			n_msgs++;
+
 		this->model = new PrivListModel(msgs, n_msgs);
+		this->setListModel(this->model);
+	}
+
+	~FrodoGuiList()
+	{
+		delete this->model;
 	}
 private:
 	PrivListModel *model;
 };
 
-/*
- * List boxes and drop downs need an instance of a list model
- * in order to display a list.
- */
- class DemoListModel : public gcn::ListModel
- {
- public:
-	 int getNumberOfElements()
-	 {
-		 return 5;
-	 }
-
-	 std::string getElementAt(int i)
-	 {
-		 switch(i)
-		 {
-		 case 0:
-			 return std::string("zero");
-		 case 1:
-			 return std::string("one");
-		 case 2:
-			 return std::string("two");
-		 case 3:
-			 return std::string("three");
-		 case 4:
-			 return std::string("four");
-		 case 5:
-			 return std::string("four");
-		 case 6:
-			 return std::string("four");
-		 case 7:
-			 return std::string("four");
-		 default: // Just to keep warnings away
-			 return std::string("");
-		 }
-	 }
- };
-
- DemoListModel demoListModel;
+class FrodoFileBrowser : gcn::Widget
+{
+public:
+	FrodoFileBrowser(const char *dir) : FrodoGuiList()
+	{
+		this->list = new FrodoGuiList(test_msgs);
+		this->setSize(300, 400);
+	}
+private:
+	FrodoGuiList *list;
+};
 
  /**
   * Initialises the widgets example by populating the global Gui
@@ -132,12 +155,12 @@ private:
  void init()
  {
 	 // Now we load the font used in this example.
-	 font = new gcn::ImageFont("data/fixedfont.bmp", " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+	 font = new gcn::ImageFont("data/fixedfont.bmp", " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`'*#=[]\"");
 	 // Widgets may have a global font so we don't need to pass the
 	 // font object to every created widget. The global font is static.
 	 gcn::Widget::setGlobalFont(font);
 
-	 title_font = new gcn::ImageFont("data/techyfontbig.png", " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+	 title_font = new gcn::ImageFont("data/techyfontbig.png", " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`'*#=[]\"");
 	 // We first create a container to be used as the top widget.
 	 // The top widget in Guichan can be any kind of widget, but
 	 // in order to make the Gui contain more than one widget we
@@ -157,9 +180,8 @@ private:
 	 textBoxScrollArea->setHeight(100);
 	 textBoxScrollArea->setFrameSize(1);
 
-	 listBox = new gcn::ListBox(&demoListModel);
+	 listBox = new FrodoFileBrowser("vobb");
 	 listBox->setFrameSize(1);
-	 dropDown = new gcn::DropDown(&demoListModel);
 
 	 checkBox1 = new gcn::CheckBox("Checkbox 1");
 	 checkBox2 = new gcn::CheckBox("Checkbox 2");
@@ -185,7 +207,6 @@ private:
 	 top->add(textField, 250, 80);
 	 top->add(textBoxScrollArea, 200, 50);
 	 top->add(listBox, 200, 200);
-	 top->add(dropDown, 500, 80);
 	 top->add(checkBox1, 500, 130);
 	 top->add(checkBox2, 500, 150);
 	 top->add(window, 50, 350);
@@ -205,7 +226,6 @@ private:
 	 delete textBox;
 	 delete textBoxScrollArea;
 	 delete listBox;
-	 delete dropDown;
 	 delete checkBox1;
 	 delete checkBox2;
 	 delete window;
