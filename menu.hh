@@ -60,6 +60,7 @@ protected:
 
 	virtual void escapeCallback(int which);
 
+	submenu_t *findSubmenu(int index);
 
 	int getNextEntry(int dy);
 

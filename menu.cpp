@@ -213,40 +213,6 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu, int sel)
 	}
 }
 
-static int get_next_seq_y(menu_t *p_menu, int v, int dy)
-{
-	if (v + dy < 0)
-		return p_menu->n_entries - 1;
-	if (v + dy > p_menu->n_entries - 1)
-		return 0;
-	return v + dy;
-}
-
-static void select_next(menu_t *p_menu, int dx, int dy)
-{
-	int next;
-	char buffer[256];
-
-	p_menu->cur_sel = get_next_seq_y(p_menu, p_menu->cur_sel, dy);
-	next = get_next_seq_y(p_menu, p_menu->cur_sel, dy + 1);
-
-	if (p_menu->pp_msgs[p_menu->cur_sel][0] == ' ' ||
-			p_menu->pp_msgs[p_menu->cur_sel][0] == '#' ||
-			IS_SUBMENU(p_menu->pp_msgs[p_menu->cur_sel]) )
-		select_next(p_menu, dx, dy);
-
-	/* If the next is a submenu */
-	if (dx != 0 && IS_SUBMENU(p_menu->pp_msgs[next]))
-	{
-		submenu_t *p_submenu = find_submenu(p_menu, next);
-
-		p_submenu->sel = (p_submenu->sel + dx) < 0 ? p_submenu->n_entries - 1 :
-		(p_submenu->sel + dx) % p_submenu->n_entries;
-	}
-	else if (dx == -1 && !strcmp(p_menu->pp_msgs[0], "[..]"))
-		p_menu->cur_sel = 0;
-}
-
 static void select_one(menu_t *p_menu, int sel)
 {
 	if (sel >= p_menu->n_entries)
@@ -266,66 +232,6 @@ static int is_submenu_title(menu_t *p_menu, int n)
 		return IS_SUBMENU(p_menu->pp_msgs[n+1]);
 }
 
-
-uint32_t menu_wait_key_press(void)
-{
-	SDL_Event ev;
-	uint32_t keys = 0;
-
-	while (1)
-	{
-		if (SDL_PollEvent(&ev))
-		{
-			switch(ev.type)
-			{
-			case SDL_KEYDOWN:
-				switch (ev.key.keysym.sym)
-				{
-				case SDLK_UP:
-					keys |= KEY_UP;
-					break;
-				case SDLK_DOWN:
-					keys |= KEY_DOWN;
-					break;
-				case SDLK_LEFT:
-					keys |= KEY_LEFT;
-					break;
-				case SDLK_RIGHT:
-					keys |= KEY_RIGHT;
-					break;
-				case SDLK_PAGEDOWN:
-					keys |= KEY_PAGEDOWN;
-					break;
-				case SDLK_PAGEUP:
-					keys |= KEY_PAGEUP;
-					break;
-				case SDLK_RETURN:
-				case SDLK_SPACE:
-					keys |= KEY_SELECT;
-					break;
-				case SDLK_HOME:
-				case SDLK_ESCAPE:
-					keys |= KEY_ESCAPE;
-					break;
-				default:
-					break;
-				}
-				break;
-				case SDL_QUIT:
-					exit(0);
-					break;
-				default:
-					break;
-
-			}
-			break;
-		}
-		if (keys != 0)
-			return keys;
-		SDL_Delay(100);
-	}
-	return keys;
-}
 
 
 static int menu_select_internal(SDL_Surface *screen,
@@ -400,6 +306,20 @@ int Menu::getNextEntry(int dy)
 	return v + dy;
 }
 
+submenu_t *Menu::findSubmenu(int index)
+{
+	int i;
+
+	for (i = 0; i < this->n_submenus; i++)
+	{
+		if (this->p_submenus[i].index == index)
+			return &this->p_submenus[i];
+	}
+
+	return NULL;
+}
+
+
 void Menu::selectNext(int dx, int dy)
 {
 	int next;
@@ -419,8 +339,9 @@ void Menu::selectNext(int dx, int dy)
 	/* If the next is a submenu */
 	if (dx != 0 && IS_SUBMENU(this->pp_msgs[next]))
 	{
-		submenu_t *p_submenu = find_submenu(p_menu, next);
+		submenu_t *p_submenu = findSubmenu(p_menu, next);
 
+		panic_if(!p_submenu, "submenu in the menu text but no actual submenu\n");
 		p_submenu->sel = (p_submenu->sel + dx) < 0 ? p_submenu->n_entries - 1 :
 		(p_submenu->sel + dx) % p_submenu->n_entries;
 	}
@@ -552,15 +473,10 @@ void Menu::setText(const char *messages)
 			continue; /* Length of submenus is unimportant */
 		}
 	}
-	this->pp_msgs = (const char **)malloc(this->n_entries * sizeof(const char *));
-	this->p_submenus = (submenu_t *)malloc(this->n_submenus * sizeof(submenu_t));
-	for (int i = 0; i < this->n_entries; i++) {
-		this->pp_msgs[i] = strdup(messages[i]);
-		BUG_ON(!this->pp_msgs[i]);
-	}
-
-	BUG_ON(!this->pp_msgs);
-	BUG_ON(!this->p_submenus);
+	this->pp_msgs = (const char **)xmalloc(this->n_entries * sizeof(const char *));
+	this->p_submenus = (submenu_t *)xmalloc(this->n_submenus * sizeof(submenu_t));
+	for (int i = 0; i < this->n_entries; i++)
+		this->pp_msgs[i] = xstrdup(messages[i]);
 
 	submenu = 0;
 
