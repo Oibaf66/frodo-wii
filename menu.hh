@@ -55,7 +55,18 @@ public:
 
 	~Menu();
 
-private:
+protected:
+	virtual void selectCallback(int which);
+
+	virtual void escapeCallback(int which);
+
+
+	int getNextEntry(int dy);
+
+	void selectNext(int dx, int dy);
+
+	void selectNext(event_t ev);
+
 	void pushEvent(event_t ev);
 
 	event_t popEvent();

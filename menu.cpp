@@ -385,99 +385,88 @@ static int menu_select_internal(SDL_Surface *screen,
 	return ret;
 }
 
-int menu_select_sized(const char *title, const char **msgs, int *submenus, int sel,
-		int x, int y, int x2, int y2,
-		void (*select_next_cb)(menu_t *p, void *data) = NULL,
-		void *select_next_cb_data = NULL)
-
-{
-	menu_t menu;
-	int out;
-	bool info;
-
-	if (!strcmp(title, "Folder") || !strcmp(title, "Single File") ||
-			!strcmp(title, "C-64 Disc") || !strcmp(title, "C-64 Tape") || sel < 0)
-		info = false;
-	else
-		info = true;
-
-	menu_init(&menu, title, menu_font, msgs,
-			x, y, x2, y2);
-
-	if (sel >= 0)
-		select_one(&menu, sel);
-	out = menu_select_internal(real_screen, &menu, submenus, sel,
-			select_next_cb, select_next_cb_data);
-
-	menu_fini(&menu);
-
-	return out;
-}
-
-int menu_select(const char *title, const char **msgs, int *submenus)
-{
-	return menu_select_sized(title, msgs, submenus, 0,
-			32, 32, FULL_DISPLAY_X-32, FULL_DISPLAY_Y-64);
-}
-
-static const char *menu_select_file_internal(const char *dir_path,
-		int x, int y, int x2, int y2)
-{
-	const char **file_list = get_file_list(dir_path);
-	char *sel;
-	char *out;
-	int opt;
-
-	if (file_list == NULL)
-		return NULL;
-
-	opt = menu_select_sized("Select file", file_list, NULL, 0,
-			x, y, x2, y2,
-			d64_list_cb, (void*)dir_path);
-
-	if (opt < 0)
-		return NULL;
-	sel = strdup(file_list[opt]);
-
-	/* Cleanup everything - file_list is NULL-terminated */
-        for ( int i = 0; file_list[i]; i++ )
-        	free((void*)file_list[i]);
-        free(file_list);
-
-	if (!sel)
-		return NULL;
-        /* If this is a folder, enter it recursively */
-        if (sel[0] == '[')
-        {
-        	char buf[255];
-        	int len = strlen(sel);
-        	int s;
-        	const char *p;
-
-        	/* Remove trailing ] */
-        	sel[len-1] = '\0';
-        	s = snprintf(buf, 128, "%s/%s", dir_path, sel + 1);
-
-        	/* We don't need this anymore */
-        	free((void*)sel);
-        	/* Too deep recursion! */
-        	if (s >= sizeof(buf))
-        		return NULL;
-        	return menu_select_file(buf);
-        }
-
-	out = (char*)malloc(strlen(dir_path) + strlen(sel) + 4);
-	snprintf(out, strlen(dir_path) + strlen(sel) + 4,
-			"%s/%s", dir_path, sel);
-
-	free(sel);
-        return out;
-}
-
 const char *menu_select_file(const char *dir_path)
 {
 	return menu_select_file_internal(dir_path,
 			32, 32, FULL_DISPLAY_X/2, FULL_DISPLAY_Y - 32);
+}
+
+int Menu::getNextEntry(int dy)
+{
+	if (v + dy < 0)
+		return this->n_entries - 1;
+	if (v + dy > this->n_entries - 1)
+		return 0;
+	return v + dy;
+}
+
+void Menu::selectNext(int dx, int dy)
+{
+	int next;
+	char buffer[256];
+
+	this->cur_sel = this->getNextEntry(dy);
+	next = this->getNextEntry(dy + 1);
+
+	/* We want to skip this for some reason */
+	if (this->pp_msgs[this->cur_sel][0] == ' ' ||
+			this->pp_msgs[this->cur_sel][0] == '#' ||
+			IS_SUBMENU(this->pp_msgs[this->cur_sel]) ) {
+		this->selectNext(dx, dy);
+		return;
+	}
+
+	/* If the next is a submenu */
+	if (dx != 0 && IS_SUBMENU(this->pp_msgs[next]))
+	{
+		submenu_t *p_submenu = find_submenu(p_menu, next);
+
+		p_submenu->sel = (p_submenu->sel + dx) < 0 ? p_submenu->n_entries - 1 :
+		(p_submenu->sel + dx) % p_submenu->n_entries;
+	}
+}
+
+void Menu::selectNext(event_t ev)
+{
+	switch (ev)
+	{
+	case KEY_UP:
+		this->selectNext(0, -1); break;
+	case KEY_DOWN:
+		this->selectNext(0, 1); break;
+	case KEY_LEFT:
+		this->selectNext(-1, 0); break;
+	case KEY_RIGHT:
+		this->selectNext(1, 0); break;
+	default:
+		panic("selectNext(ev) called with event %d\n", ev);
+	}
+}
+
+void Menu::runLogic()
+{
+	event_t ev;
+
+	while ( (ev = this->popEvent()) != EVENT_NONE )
+	{
+		switch (ev)
+		{
+		case KEY_UP:
+		case KEY_DOWN:
+		case KEY_LEFT:
+		case KEY_RIGHT:
+			this->selectNext(ev);
+			break;
+		case KEY_SELECT:
+			this->selectCallback(this->cur_sel); break;
+		case KEY_ESCAPE:
+			this->escapeCallback(this->cur_sel); break;
+			break;
+		case KEY_ENTER:
+		default:
+			break;
+		}
+	}
 }
 
 event_t Menu::popEvent()
@@ -505,51 +494,44 @@ void Menu::pushEvent(event_t ev)
 
 void Menu::pushEvent(SDL_Event *ev)
 {
-	int keys = 0;
-
 	switch(ev->type)
 	{
 	case SDL_KEYDOWN:
 		switch (ev->key.keysym.sym)
 		{
 		case SDLK_UP:
-			keys |= KEY_UP;
+			this->pushEvent(KEY_UP);
 			break;
 		case SDLK_DOWN:
-			keys |= KEY_DOWN;
+			this->pushEvent(KEY_DOWN);
 			break;
 		case SDLK_LEFT:
-			keys |= KEY_LEFT;
+			this->pushEvent(KEY_LEFT);
 			break;
 		case SDLK_RIGHT:
-			keys |= KEY_RIGHT;
+			this->pushEvent(KEY_RIGHT);
 			break;
 		case SDLK_PAGEDOWN:
-			keys |= KEY_PAGEDOWN;
+			this->pushEvent(KEY_PAGEDOWN);
 			break;
 		case SDLK_PAGEUP:
-			keys |= KEY_PAGEUP;
+			this->pushEvent(KEY_PAGEUP);
 			break;
 		case SDLK_RETURN:
 		case SDLK_SPACE:
-			keys |= KEY_SELECT;
+			this->pushEvent(KEY_SELECT);
 			break;
 		case SDLK_HOME:
 		case SDLK_ESCAPE:
-			keys |= KEY_ESCAPE;
+			this->pushEvent(KEY_ESCAPE);
 			break;
 		default:
 			break;
 		}
-		break;
-		case SDL_QUIT:
-			exit(0);
-			break;
 		default:
 			break;
 
 	}
-	break;
 }
 
 void Menu::setText(const char *messages)
