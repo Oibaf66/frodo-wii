@@ -12,14 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#if defined(GEKKO)
-#include <wiiuse/wpad.h>
-#endif
-
-#include "sysdeps.h"
-#include "Display.h"
-#include "Network.h"
-#include "menu.h"
+#include "menu.hh"
 #include "menutexts.h"
 
 typedef struct
@@ -55,157 +48,8 @@ typedef struct
 #define IS_TEXT(p_msg) ( (p_msg)[0] == '#' || (p_msg)[0] == ' ' )
 #define IS_MARKER(p_msg) ( (p_msg)[0] == '@' )
 
-static TTF_Font *menu_font;
-static TTF_Font *menu_font64;
-#if defined(GEKKO)
-#define FONT_PATH "/apps/frodo/FreeMono.ttf"
-#define FONT64_PATH "/apps/frodo/C64.ttf"
-#else
-#define FONT_PATH "FreeMono.ttf"
-#define FONT64_PATH "C64.ttf"
-#endif
 
 int fh, fw;
-
-int msgInfo(char *text, int duration, SDL_Rect *irc)
-{
-	int len = strlen(text);
-	int X, Y, wX, wY;
-	SDL_Rect src;
-	SDL_Rect rc;
-	SDL_Rect brc;
-
-	X = (FULL_DISPLAY_X /2) - (len / 2 + 1)*12;
-	Y = (FULL_DISPLAY_Y /2) - 24;
-
-	brc.x = FULL_DISPLAY_X/2-2*12; 
-	brc.y=Y+42;
-	brc.w=48;
-	brc.h=20;
-
-	rc.x = X; 
-	rc.y=Y;
-	rc.w=12*(len + 2);
-	rc.h=duration > 0 ? 48 : 80;
-
-	src.x=rc.x+4;
-	src.y=rc.y+4;
-	src.w=rc.w;
-	src.h=rc.h;
-
-
-	if (irc)
-	{
-		irc->x=rc.x;
-		irc->y=rc.y;
-		irc->w=src.w;
-		irc->h=src.h;
-	}
-	SDL_FillRect(real_screen, &src, SDL_MapRGB(real_screen->format, 0, 96, 0));	
-	SDL_FillRect(real_screen, &rc, SDL_MapRGB(real_screen->format, 128, 128, 128));
-	menu_print_font(real_screen, 0,0,0, X+12, Y+12, text);
-	SDL_UpdateRect(real_screen, src.x, src.y, src.w, src.h);
-	SDL_UpdateRect(real_screen, rc.x, rc.y, rc.w,rc.h);
-	if (duration > 0)
-		SDL_Delay(duration);
-	else if (duration < 0)
-	{
-		SDL_FillRect(real_screen, &brc, SDL_MapRGB(real_screen->format, 0x00, 0x80, 0x00));
-		menu_print_font(real_screen, 0,0,0, FULL_DISPLAY_X/2-12, Y+42, "OK");
-		SDL_UpdateRect(real_screen, brc.x, brc.y, brc.w, brc.h);
-		menu_wait_key_press();
-	}
-
-	return 1;
-}
-
-bool msgKill(SDL_Rect *rc)
-{
-	SDL_UpdateRect(real_screen, rc->x, rc->y, rc->w,rc->h);
-}
-
-bool msgYesNo(char *text, bool default_opt, int x, int y)
-{
-	int len = strlen(text);
-	int X, Y, wX, wY;
-	SDL_Rect src;
-	SDL_Rect rc;
-	SDL_Rect brc;
-	uint32_t key;
-	bool old;
-
-	old = default_opt;
-
-	if (x < 0)
-		X = (FULL_DISPLAY_X /2) - (len / 2 + 1)*12;
-	else
-		X = x;
-
-	if (y < 0)	
-		Y = (FULL_DISPLAY_Y /2) - 48;
-	else
-		Y = y;
-
-	rc.x=X; 
-	rc.y=Y;
-	rc.w=12*(len + 2);
-	rc.h=80;
-
-	src.x=rc.x+4;
-	src.y=rc.y+4;
-	src.w=rc.w;
-	src.h=rc.h;
-
-	while (1)
-	{
-		SDL_FillRect(real_screen, &src, SDL_MapRGB(real_screen->format, 0, 96, 0));	
-		SDL_FillRect(real_screen, &rc, SDL_MapRGB(real_screen->format, 128, 128, 128));
-		menu_print_font(real_screen, 0,0,0, X+12, Y+12, text);
-
-		if (default_opt)
-		{
-			brc.x=rc.x + rc.w/2-5*12; 
-			brc.y=rc.y+42;
-			brc.w=12*3;
-			brc.h=20;
-			SDL_FillRect(real_screen, &brc, SDL_MapRGB(real_screen->format, 0x00, 0x80, 0x00));
-		}
-		else
-		{
-			brc.x=rc.x + rc.w/2+5*12-2*12-6; 
-			brc.y=rc.y+42;
-			brc.w=12*3;
-			brc.h=20;
-			SDL_FillRect(real_screen, &brc, SDL_MapRGB(real_screen->format, 0x80, 0x00, 0x00));
-		}
-		menu_print_font(real_screen, 0,0,0, rc.x + rc.w/2-5*12, Y+42, "YES");
-		menu_print_font(real_screen, 0,0,0, rc.x + rc.w/2-5*12+8*12, Y+42, "NO");
-
-		SDL_UpdateRect(real_screen, src.x, src.y, src.w, src.h);
-		SDL_UpdateRect(real_screen, rc.x, rc.y, rc.w,rc.h);
-		SDL_UpdateRect(real_screen, brc.x, brc.y, brc.w,brc.h);
-
-		key = menu_wait_key_press();
-		if (key & KEY_SELECT)
-		{
-			return default_opt;
-		}
-		else if (key & KEY_ESCAPE)
-		{
-			return false;
-		}
-		else if (key & KEY_LEFT)
-		{
-			default_opt = !default_opt;
-		}
-		else if (key & KEY_RIGHT)
-		{
-			default_opt = !default_opt;
-		}
-	}
-}
-
-
 
 static int cmpstringp(const void *p1, const void *p2)
 {
@@ -243,7 +87,7 @@ static bool ext_matches_list(const char *name, const char **exts)
 	return false;
 }
 
-static const char **get_file_list(const char *base_dir)
+static const char **get_file_list(const char *base_dir, const char *exts[])
 {
 	DIR *d = opendir(base_dir);
 	const char **file_list;
@@ -263,9 +107,6 @@ static const char **get_file_list(const char *base_dir)
 	de = readdir(d))
 	{
 		char buf[255];
-		const char *exts[] = {".d64", ".D64", ".prg", ".PRG",
-				".p00", ".P00", ".s00", ".S00",
-				".t64", ".T64", ".sav", ".SAV", NULL};
 		struct stat st;
 
 		snprintf(buf, 255, "%s/%s", base_dir, de->d_name);
@@ -350,48 +191,6 @@ void menu_print_font(SDL_Surface *screen, int r, int g, int b,
 
 	font_surf = TTF_RenderText_Blended(menu_font, buf,
 			color);
-	if (!font_surf)
-	{
-		fprintf(stderr, "%s\n", TTF_GetError());
-		exit(1);
-	}
-
-	SDL_BlitSurface(font_surf, NULL, screen, &dst);
-	SDL_FreeSurface(font_surf);
-}
-
-void menu_print_font64(SDL_Surface *screen, int r, int g, int b, int x, int y, const char *msg)
-{
-#undef _MAX_STRING
-#define _MAX_STRING 64
-	SDL_Surface *font_surf;
-	SDL_Rect dst = {x, y,  0, 0};
-	SDL_Color color = {r, g, b};
-	char buf[255];
-	unsigned int i;
-
-	memset(buf, 0, sizeof(buf));
-	strncpy(buf, msg, 254);
-	if (buf[0] != '|' && buf[0] != '^' && buf[0] != '.'
-		&& buf[0] != '#' && buf[0] != ' ' )
-	{
-		if (strlen(buf)>_MAX_STRING)
-		{
-			buf[_MAX_STRING-3] = '.';
-			buf[_MAX_STRING-2] = '.';
-			buf[_MAX_STRING-1] = '.';
-			buf[_MAX_STRING] = '\0';
-		}
-	}
-
-	/* Fixup multi-menu option look */
-	for (i = 0; i < strlen(buf) ; i++)
-	{
-		if (buf[i] == '^' || buf[i] == '|')
-			buf[i] = ' ';
-	}
-
-	font_surf = TTF_RenderText_Blended(menu_font64, buf, color);
 	if (!font_surf)
 	{
 		fprintf(stderr, "%s\n", TTF_GetError());
@@ -555,6 +354,7 @@ static void select_next(menu_t *p_menu, int dx, int dy)
 
 	p_menu->cur_sel = get_next_seq_y(p_menu, p_menu->cur_sel, dy);
 	next = get_next_seq_y(p_menu, p_menu->cur_sel, dy + 1);
+
 	if (p_menu->pp_msgs[p_menu->cur_sel][0] == ' ' ||
 			p_menu->pp_msgs[p_menu->cur_sel][0] == '#' ||
 			IS_SUBMENU(p_menu->pp_msgs[p_menu->cur_sel]) )
@@ -676,57 +476,6 @@ uint32_t menu_wait_key_press(void)
 
 	while (1)
 	{
-#if defined(GEKKO)
-		Uint32 remote_keys, classic_keys;
-		WPADData *wpad, *wpad_other;
-
-		WPAD_ScanPads();
-		wpad = WPAD_Data(WPAD_CHAN_0);
-		wpad_other = WPAD_Data(WPAD_CHAN_1);
-
-		if (!wpad && !wpad_other)
-			return 0;
-
-		remote_keys = wpad->btns_d | wpad_other->btns_d;
-		classic_keys = 0;
-
-		/* Check classic controllers as well */
-		if (wpad->exp.type == WPAD_EXP_CLASSIC ||
-				wpad_other->exp.type == WPAD_EXP_CLASSIC)
-		{
-			static bool classic_keys_changed;
-			static Uint32 classic_last;
-
-			classic_keys = wpad->exp.classic.btns | wpad_other->exp.classic.btns;
-
-			classic_keys_changed = classic_keys != classic_last;
-			classic_last = classic_keys;
-
-			/* No repeat, thank you */
-			if (!classic_keys_changed)
-				classic_keys = 0;
-		}
-
-		if (remote_keys & WPAD_BUTTON_B)
-			keys |= KEY_HELP;
-		if ( (remote_keys & WPAD_BUTTON_DOWN) || (classic_keys & CLASSIC_CTRL_BUTTON_RIGHT) )
-			keys |= KEY_RIGHT;
-		if ( (remote_keys & WPAD_BUTTON_UP) || (classic_keys & CLASSIC_CTRL_BUTTON_LEFT) )
-			keys |= KEY_LEFT;
-		if ( (remote_keys & WPAD_BUTTON_LEFT) || (classic_keys & CLASSIC_CTRL_BUTTON_DOWN) )
-			keys |= KEY_DOWN;
-		if ( (remote_keys & WPAD_BUTTON_RIGHT) || (classic_keys & CLASSIC_CTRL_BUTTON_UP) )
-			keys |= KEY_UP;
-		if ( (remote_keys & WPAD_BUTTON_PLUS) || (classic_keys & CLASSIC_CTRL_BUTTON_PLUS) )
-			keys |= KEY_PAGEUP;
-		if ( (remote_keys & WPAD_BUTTON_MINUS) || (classic_keys & CLASSIC_CTRL_BUTTON_MINUS) )
-			keys |= KEY_PAGEDOWN;
-		if ( (remote_keys & (WPAD_BUTTON_A | WPAD_BUTTON_2) ) || (classic_keys & (CLASSIC_CTRL_BUTTON_A | CLASSIC_CTRL_BUTTON_X)) )
-			keys |= KEY_SELECT;
-		if ( (remote_keys & (WPAD_BUTTON_1 | WPAD_BUTTON_HOME) ) || (classic_keys & (CLASSIC_CTRL_BUTTON_B | CLASSIC_CTRL_BUTTON_Y)) )
-			keys |= KEY_ESCAPE;
-
-#endif
 		if (SDL_PollEvent(&ev))
 		{
 			switch(ev.type)
@@ -780,10 +529,6 @@ uint32_t menu_wait_key_press(void)
 	return keys;
 }
 
-
-extern void PicDisplay(char *name, int off_x, int off_y, int wait);
-extern const char **get_t64_list(char *t64);
-extern const char **get_prg_list(char *t64);
 
 extern char curdir[256];
 
@@ -946,49 +691,6 @@ static void d64_list_cb(menu_t *p, void *data)
 	}
 }
 
-static const char *get_d64_file(const char *name)
-{
-	const char **dir;
-	char *out = NULL;
-
-	dir = DirD64(name);
-	if (!dir)
-		return NULL;
-
-	int which = menu_select("Select D64 file", dir, NULL);
-
-	if (which >= 0)
-	{
-		char *p = (char*)dir[which];
-
-		for (int i = 0; i < strlen(p); i++)
-		{
-			if (*p == '\"')
-				break;
-			p++;
-		}
-		p++;
-		for (int i = 0; i < strlen(p); i++)
-		{
-			if (p[i] == '\"')
-			{
-				p[i] = '\0';
-				break;
-			}
-		}
-		/* Copy and uppercase */
-		out = strdup(p);
-		for (int i = 0; i < strlen(out); i++)
-			out[i] = toupper(out[i]);
-	}
-
-	/* Cleanup dir list */
-        for ( int i = 0; dir[i]; i++ )
-        	free((void*)dir[i]);
-        free(dir);
-
-        return out;
-}
 
 static const char *menu_select_file_internal(const char *dir_path,
 		int x, int y, int x2, int y2)
@@ -1044,20 +746,6 @@ static const char *menu_select_file_internal(const char *dir_path,
         return out;
 }
 
-const char *menu_select_file_start(const char *dir_path, const char **d64_name)
-{
-	const char *file = menu_select_file_internal(dir_path,
-			32, 32, FULL_DISPLAY_X/2, FULL_DISPLAY_Y - 32);
-	const char *exts[] = {".d64", ".D64", NULL};
-
-	if (!file)
-		return NULL;
-	if (ext_matches_list(file, exts))
-		*d64_name = get_d64_file(file);
-
-	return file;
-}
-
 const char *menu_select_file(const char *dir_path)
 {
 	return menu_select_file_internal(dir_path,
@@ -1096,6 +784,7 @@ static TTF_Font *read_font(const char *path)
 
 	return out;
 }
+
 
 void menu_init()
 {
