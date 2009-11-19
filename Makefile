@@ -1,4 +1,3 @@
-
 OBJS=menu.o
 
 menu: $(OBJS)
