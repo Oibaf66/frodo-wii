@@ -28,6 +28,14 @@ enum {
 	KEY_HELP,
 };
 
+
+typedef struct
+{
+	int n_entries;
+	int index;
+	int sel;
+} submenu_t;
+
 class Menu
 {
 public:
@@ -65,8 +73,6 @@ private:
 	int        cur_sel; /* Main selection */
 	int        start_entry_visible;
 	int        n_entries;
-
-
 };
 
 #endif /* !__MENU_H__ */

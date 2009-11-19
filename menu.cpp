@@ -13,137 +13,12 @@
 #include <stdlib.h>
 
 #include "menu.hh"
+#include "utils.hh"
 #include "menutexts.h"
-
-typedef struct
-{
-	int n_entries;
-	int index;
-	int sel;
-} submenu_t;
-
-
-typedef struct
-{
-	char title[256];
-	const char **pp_msgs;
-	TTF_Font  *p_font;
-	int        x1,y1;
-	int        x2,y2;
-	int        text_w;
-	int        text_h;
-
-	int        n_submenus;
-	submenu_t *p_submenus;
-
-	int        cur_sel; /* Main selection */
-	int        start_entry_visible;
-	int        n_entries;
-
-	NetworkUpdatePeerInfo *peers;
-	int n_peers;
-} menu_t;
 
 #define IS_SUBMENU(p_msg) ( (p_msg)[0] == '^' )
 #define IS_TEXT(p_msg) ( (p_msg)[0] == '#' || (p_msg)[0] == ' ' )
 #define IS_MARKER(p_msg) ( (p_msg)[0] == '@' )
-
-
-int fh, fw;
-
-static int cmpstringp(const void *p1, const void *p2)
-{
-	const char *p1_s = *(const char**)p1;
-	const char *p2_s = *(const char**)p2;
-
-	/* Put directories first */
-	if (*p1_s == '[' && *p2_s != '[')
-		return -1;
-	if (*p1_s != '[' && *p2_s == '[')
-		return 1;
-	return strcmp(* (char * const *) p1, * (char * const *) p2);
-}
-
-/* Return true if name ends with ext (for filenames) */
-static bool ext_matches(const char *name, const char *ext)
-{
-	int len = strlen(name);
-	int ext_len = strlen(ext);
-
-	if (len <= ext_len)
-		return false;
-	return (strcmp(name + len - ext_len, ext) == 0);
-	
-}
-
-static bool ext_matches_list(const char *name, const char **exts)
-{
-	for (const char **p = exts; *p; p++)
-	{
-		if (ext_matches(name, *p))
-			return true;
-	}
-
-	return false;
-}
-
-static const char **get_file_list(const char *base_dir, const char *exts[])
-{
-	DIR *d = opendir(base_dir);
-	const char **file_list;
-	int cur = 0;
-	struct dirent *de;
-	int cnt = 16;
-
-	if (!d)
-		return NULL;
-
-	file_list = (const char**)malloc(cnt * sizeof(char*));
-	file_list[cur++] = strdup("None"); 
-	file_list[cur] = NULL;
-
-	for (de = readdir(d);
-	de;
-	de = readdir(d))
-	{
-		char buf[255];
-		struct stat st;
-
-		snprintf(buf, 255, "%s/%s", base_dir, de->d_name);
-		if (stat(buf, &st) < 0)
-			continue;
-		if (S_ISDIR(st.st_mode))
-		{
-			char *p;
-			size_t len = strlen(de->d_name) + 4;
-
-			p = (char*)malloc( len );
-			snprintf(p, len, "[%s]", de->d_name);
-			file_list[cur++] = p;
-			file_list[cur] = NULL;
-		}
-		else if (ext_matches_list(de->d_name, exts))
-		{
-			char *p;
-
-			p = strdup(de->d_name);
-			file_list[cur++] = p;
-			file_list[cur] = NULL;
-		}
-
-		if (cur > cnt - 2)
-		{
-			cnt = cnt + 32;
-			file_list = (const char**)realloc(file_list, cnt * sizeof(char*));
-			if (!file_list)
-				return NULL;
-		}
-	}
-	closedir(d);
-        qsort(&file_list[1], cur-1, sizeof(const char *), cmpstringp);
-
-        return file_list;
-}
 
 
 static submenu_t *find_submenu(menu_t *p_menu, int index)
@@ -392,83 +267,6 @@ static int is_submenu_title(menu_t *p_menu, int n)
 }
 
 
-static void menu_init(menu_t *p_menu, const char *title, TTF_Font *p_font, const char **pp_msgs,
-		int16_t x1, int16_t y1, int16_t x2, int16_t y2)
-{
-	int submenu;
-	int i;
-	int j;
-
-	memset(p_menu, 0, sizeof(menu_t));
-
-	p_menu->pp_msgs = pp_msgs;
-	p_menu->p_font = p_font;
-	p_menu->x1 = x1;
-	p_menu->y1 = y1;
-	p_menu->x2 = x2;
-	p_menu->y2 = y2;
-
-	p_menu->text_w = 0;
-	p_menu->n_submenus = 0;
-	p_menu->peers = NULL;
-	p_menu->n_peers = 0;
-	strcpy(p_menu->title, title);
-
-	for (p_menu->n_entries = 0; p_menu->pp_msgs[p_menu->n_entries]; p_menu->n_entries++)
-	{
-		int text_w_font;
-
-		/* Is this a submenu? */
-		if (IS_SUBMENU(p_menu->pp_msgs[p_menu->n_entries]))
-		{
-			p_menu->n_submenus++;
-			continue; /* Length of submenus is unimportant */
-		}
-
-		if (TTF_SizeText(p_font, p_menu->pp_msgs[p_menu->n_entries], &text_w_font, NULL) != 0)
-		{
-			fprintf(stderr, "%s\n", TTF_GetError());
-			exit(1);
-		}
-		if (text_w_font > p_menu->text_w)
-			p_menu->text_w = text_w_font;
-	}
-	if (p_menu->text_w > p_menu->x2 - p_menu->x1)
-		p_menu->text_w = p_menu->x2 - p_menu->x1;
-
-	if ( !(p_menu->p_submenus = (submenu_t *)malloc(sizeof(submenu_t) * p_menu->n_submenus)) )
-	{
-		perror("malloc failed!\n");
-		exit(1);
-	}
-
-	j=0;
-	submenu = 0;
-	for (; j < p_menu->n_entries; j++)
-	{
-		if (IS_SUBMENU(p_menu->pp_msgs[j]))
-		{
-			int n;
-
-			p_menu->p_submenus[submenu].index = j;
-			p_menu->p_submenus[submenu].sel = 0;
-			p_menu->p_submenus[submenu].n_entries = 0;
-			for (n=0; p_menu->pp_msgs[j][n] != '\0'; n++)
-			{
-				if (p_menu->pp_msgs[j][n] == '|')
-					p_menu->p_submenus[submenu].n_entries++;
-			}
-			submenu++;
-		}
-	}
-	p_menu->text_h = p_menu->n_entries * (TTF_FontHeight(p_font) + TTF_FontHeight(p_font) / 4);
-}
-
-static void menu_fini(menu_t *p_menu)
-{
-	free(p_menu->p_submenus);
-}
-
 uint32_t menu_wait_key_press(void)
 {
 	SDL_Event ev;
@@ -529,8 +327,6 @@ uint32_t menu_wait_key_press(void)
 	return keys;
 }
 
-
-extern char curdir[256];
 
 static int menu_select_internal(SDL_Surface *screen,
 		menu_t *p_menu, int *p_submenus, int sel,
@@ -624,74 +420,6 @@ int menu_select(const char *title, const char **msgs, int *submenus)
 			32, 32, FULL_DISPLAY_X-32, FULL_DISPLAY_Y-64);
 }
 
-int menu_select(const char **msgs, int *submenus)
-{
-	return menu_select("", msgs, submenus);
-}
-
-int menu_select_peer(NetworkUpdatePeerInfo *peers, int n_peers)
-{
-	menu_t menu;
-	int out;
-	const char **msgs;
-
-	msgs = (const char**)calloc(n_peers + 2, sizeof(const char*));
-
-	msgs[0] = "None (wait for peer to connect)";
-	printf("Got %d peers\n", n_peers);
-	for (int i = 0; i < n_peers; i++)
-		msgs[i + 1] = (const char*)peers[i].name;
-
-	menu_init(&menu, "", menu_font, msgs,
-			32, 32, FULL_DISPLAY_X-32, FULL_DISPLAY_Y-64);
-	menu.peers = peers;
-	menu.n_peers = n_peers;
-
-	out = menu_select_internal(real_screen, &menu, NULL, 0,
-			NULL, NULL);
-
-	menu_fini(&menu);
-	free(msgs);
-
-	return out;
-}
-
-extern "C" const char **DirD64(const char *FileName);
-
-static void d64_list_cb(menu_t *p, void *data)
-{
-	const char *dp = (const char*)data;
-	const char *exts[] = {".d64", ".D64", NULL};
-	const char *name = p->pp_msgs[p->cur_sel];
-	SDL_Rect r = {FULL_DISPLAY_X / 2, 32,
-			FULL_DISPLAY_X / 2 - 32, FULL_DISPLAY_Y - 64};
-
-	SDL_FillRect(real_screen, &r, SDL_MapRGB(real_screen->format, 0x00, 0x90, 0x90));
-	if (ext_matches_list(name, exts))
-	{
-		char buf[255];
-		const char **dir;
-		menu_t menu;
-
-		snprintf(buf, 255, "%s/%s", dp, name);
-		dir = DirD64(buf);
-		if (!dir)
-			return;
-
-		menu_init(&menu, "D64 contents", menu_font, dir,
-				FULL_DISPLAY_X / 2, 32,
-				FULL_DISPLAY_X / 2 - 32, FULL_DISPLAY_Y - 64);
-		menu_draw(real_screen, &menu, 0);
-		menu_fini(&menu);
-
-		/* Cleanup dir list */
-	        for ( int i = 0; dir[i]; i++ )
-	        	free((void*)dir[i]);
-	        free(dir);
-	}
-}
-
-
 static const char *menu_select_file_internal(const char *dir_path,
 		int x, int y, int x2, int y2)
 {
@@ -752,6 +480,55 @@ const char *menu_select_file(const char *dir_path)
 			32, 32, FULL_DISPLAY_X/2, FULL_DISPLAY_Y - 32);
 }
 
+void Menu::setText(const char *messages)
+{
+	int submenu;
+
+	/* Free the old stuff */
+	this->n_submenus = 0;
+	free(this->p_submenus);
+	free(this->pp_msgs);
+
+	for (this->n_entries = 0; messages[p_menu->n_entries]; this->n_entries++)
+	{
+		/* Is this a submenu? */
+		if (IS_SUBMENU(messages[this->n_entries]))
+		{
+			this->n_submenus++;
+			continue; /* Length of submenus is unimportant */
+		}
+	}
+	this->pp_msgs = (const char **)malloc(this->n_entries * sizeof(const char *));
+	this->p_submenus = (submenu_t *)malloc(this->n_submenus * sizeof(submenu_t));
+	for (int i = 0; i < this->n_entries; i++) {
+		this->pp_msgs[i] = strdup(messages[i]);
+		BUG_ON(!this->pp_msgs[i]);
+	}
+
+	BUG_ON(!this->pp_msgs);
+	BUG_ON(!this->p_submenus);
+
+	submenu = 0;
+
+	for (int i = 0; i < this->n_entries; i++)
+	{
+		if (IS_SUBMENU(this->pp_msgs[i]))
+		{
+			int n;
+
+			this->p_submenus[submenu].index = i;
+			this->p_submenus[submenu].sel = 0;
+			this->p_submenus[submenu].n_entries = 0;
+			for (n = 0; this->pp_msgs[i][n] != '\0'; n++)
+			{
+				if (this->pp_msgs[i][n] == '|')
+					this->p_submenus[submenu].n_entries++;
+			}
+			submenu++;
+		}
+	}
+}
+
 Menu::Menu(TTF_Font *font, SDL_Color clr, int w, int h)
 {
 	this->text_color = clr;
@@ -761,6 +538,7 @@ Menu::Menu(TTF_Font *font, SDL_Color clr, int w, int h)
 
 	this->pp_msgs = NULL;
 	this->n_entries = 0;
+	this->p_submenus = NULL;
 	this->n_submenus = 0;
 
 	this->cur_sel = 0;
@@ -768,4 +546,10 @@ Menu::Menu(TTF_Font *font, SDL_Color clr, int w, int h)
 	this->selection_callback = NULL;
 	this->mouse_x = -1;
 	this->mouse_y = -1;
+}
+
+Menu::~Menu()
+{
+	free(this->pp_msgs);
+	free(this->p_submenus);
 }
