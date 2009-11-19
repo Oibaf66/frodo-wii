@@ -752,44 +752,20 @@ const char *menu_select_file(const char *dir_path)
 			32, 32, FULL_DISPLAY_X/2, FULL_DISPLAY_Y - 32);
 }
 
-static TTF_Font *read_font(const char *path)
+Menu::Menu(TTF_Font *font, SDL_Color clr, int w, int h)
 {
-	TTF_Font *out;
-	SDL_RWops *rw;
-	Uint8 *data = (Uint8*)malloc(1 * 1024*1024);
-	FILE *fp = fopen(path, "r");
+	this->text_color = clr;
+	this->font = font;
+	this->w = w;
+	this->h = h;
 
-	if (!data) {
-		fprintf(stderr, "Malloc failed\n");
-		exit(1);
-	}
-	if (!fp) {
-		fprintf(stderr, "Could not open font\n");
-		exit(1);
-	}
-	fread(data, 1, 1 * 1024 * 1024, fp);
-	rw = SDL_RWFromMem(data, 1 * 1024 * 1024);
-	if (!rw) 
-	{
-		fprintf(stderr, "Could not create RW: %s\n", SDL_GetError());
-		exit(1);
-	}
-	out = TTF_OpenFontRW(rw, 1, 20);
-	if (!out)
-	{
-		fprintf(stderr, "Unable to open font %s\n", path);
-		exit(1);		
-	}
-	fclose(fp);
+	this->pp_msgs = NULL;
+	this->n_entries = 0;
+	this->n_submenus = 0;
 
-	return out;
-}
-
-
-void menu_init()
-{
-	Uint8 *data64 = (Uint8*)malloc(1 * 1024*1024);
-
-	menu_font = read_font(FONT_PATH);
-	menu_font64 = read_font(FONT64_PATH);
+	this->cur_sel = 0;
+	this->hover_callback = NULL;
+	this->selection_callback = NULL;
+	this->mouse_x = -1;
+	this->mouse_y = -1;
 }
