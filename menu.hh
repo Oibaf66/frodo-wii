@@ -17,15 +17,16 @@
 #include <stdint.h>
 
 enum {
-	KEY_UP,
-	KEY_DOWN,
-	KEY_LEFT,
-	KEY_RIGHT,
-	KEY_SELECT,
-	KEY_ESCAPE,
-	KEY_PAGEDOWN,
-	KEY_PAGEUP,
-	KEY_HELP,
+	EVENT_NONE   = 0,
+	KEY_UP       = 1,
+	KEY_DOWN     = 2,
+	KEY_LEFT     = 4,
+	KEY_RIGHT    = 8,
+	KEY_SELECT   = 16,
+	KEY_ESCAPE   = 32,
+	KEY_PAGEDOWN = 64,
+	KEY_PAGEUP   = 128,
+	KEY_HELP     = 256,
 };
 
 
@@ -35,6 +36,8 @@ typedef struct
 	int index;
 	int sel;
 } submenu_t;
+
+typedef int event_t;
 
 class Menu
 {
@@ -53,13 +56,14 @@ public:
 	~Menu();
 
 private:
+	void pushEvent(event_t ev);
+
+	event_t popEvent();
+
 	const char *title;
 	const char **pp_msgs;
 	TTF_Font *font;
 	SDL_Color text_color;
-
-	int (*hover_callback)(Menu *me, int index);
-	int (*selection_callback)(Menu *me, int index);
 
 	/* Width and height */
 	int w, h;
@@ -73,6 +77,9 @@ private:
 	int        cur_sel; /* Main selection */
 	int        start_entry_visible;
 	int        n_entries;
+
+	int 	   ev_head, ev_tail;
+	event_t	   event_stack[8];
 };
 
 #endif /* !__MENU_H__ */

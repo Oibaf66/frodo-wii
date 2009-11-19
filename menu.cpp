@@ -480,6 +480,78 @@ const char *menu_select_file(const char *dir_path)
 			32, 32, FULL_DISPLAY_X/2, FULL_DISPLAY_Y - 32);
 }
 
+event_t Menu::popEvent()
+{
+	event_t out;
+
+	if (this->ev_head == this->ev_tail)
+		return EVENT_NONE;
+	out = this->event_stack[this->ev_tail];
+	this->ev_tail = (this->ev_tail + 1) % 8;
+
+	return out;
+}
+
+void Menu::pushEvent(event_t ev)
+{
+	/* Push... */
+	this->event_stack[this->ev_head] = ev;
+
+	/* ... and update */
+	this->ev_head = (this->ev_head + 1) % 8;
+	if (this->ev_head == this->ev_tail)
+		this->ev_tail = (this->ev_tail + 1) % 8;
+}
+
+void Menu::pushEvent(SDL_Event *ev)
+{
+	int keys = 0;
+
+	switch(ev->type)
+	{
+	case SDL_KEYDOWN:
+		switch (ev->key.keysym.sym)
+		{
+		case SDLK_UP:
+			keys |= KEY_UP;
+			break;
+		case SDLK_DOWN:
+			keys |= KEY_DOWN;
+			break;
+		case SDLK_LEFT:
+			keys |= KEY_LEFT;
+			break;
+		case SDLK_RIGHT:
+			keys |= KEY_RIGHT;
+			break;
+		case SDLK_PAGEDOWN:
+			keys |= KEY_PAGEDOWN;
+			break;
+		case SDLK_PAGEUP:
+			keys |= KEY_PAGEUP;
+			break;
+		case SDLK_RETURN:
+		case SDLK_SPACE:
+			keys |= KEY_SELECT;
+			break;
+		case SDLK_HOME:
+		case SDLK_ESCAPE:
+			keys |= KEY_ESCAPE;
+			break;
+		default:
+			break;
+		}
+		break;
+		case SDL_QUIT:
+			exit(0);
+			break;
+		default:
+			break;
+
+	}
+	break;
+}
+
 void Menu::setText(const char *messages)
 {
 	int submenu;
@@ -542,10 +614,11 @@ Menu::Menu(TTF_Font *font, SDL_Color clr, int w, int h)
 	this->n_submenus = 0;
 
 	this->cur_sel = 0;
-	this->hover_callback = NULL;
-	this->selection_callback = NULL;
 	this->mouse_x = -1;
 	this->mouse_y = -1;
+
+	memset(this->event_stack, 0, sizeof(this->event_stack));
+	this->ev_head = this->ev_tail = 0;
 }
 
 Menu::~Menu()
