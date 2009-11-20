@@ -21,18 +21,6 @@
 #define IS_MARKER(p_msg) ( (p_msg)[0] == '@' )
 
 
-static submenu_t *find_submenu(menu_t *p_menu, int index)
-{
-	int i;
-
-	for (i=0; i<p_menu->n_submenus; i++)
-	{
-		if (p_menu->p_submenus[i].index == index)
-			return &p_menu->p_submenus[i];
-	}
-
-	return NULL;
-}
 
 void menu_print_font(SDL_Surface *screen, int r, int g, int b,
 		int x, int y, const char *msg)
@@ -213,89 +201,12 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu, int sel)
 	}
 }
 
-static void select_one(menu_t *p_menu, int sel)
+
+void Menu::draw(SDL_Surface *where, int x, int y)
 {
-	if (sel >= p_menu->n_entries)
-		sel = 0;
-	p_menu->cur_sel = sel;
-	if (p_menu->pp_msgs[p_menu->cur_sel][0] == ' ' ||
-			p_menu->pp_msgs[p_menu->cur_sel][0] == '#' ||
-			IS_SUBMENU(p_menu->pp_msgs[p_menu->cur_sel]))
-		select_next(p_menu, 0, 1);
+
 }
 
-static int is_submenu_title(menu_t *p_menu, int n)
-{
-	if (n+1 >= p_menu->n_entries)
-		return 0;
-	else
-		return IS_SUBMENU(p_menu->pp_msgs[n+1]);
-}
-
-
-
-static int menu_select_internal(SDL_Surface *screen,
-		menu_t *p_menu, int *p_submenus, int sel,
-		void (*select_next_cb)(menu_t *p, void *data) = NULL,
-		void *select_next_cb_data = NULL)
-{
-	int ret = -1;
-
-	for (int i = 0; i < p_menu->n_submenus; i++)
-		p_menu->p_submenus[i].sel = p_submenus[i];
-
-	while(1)
-	{
-		SDL_Rect r = {p_menu->x1, p_menu->y1,
-				p_menu->x2 - p_menu->x1, p_menu->y2 - p_menu->y1};
-		uint32_t keys;
-		int sel_last = p_menu->cur_sel;
-
-		SDL_FillRect(screen, &r, SDL_MapRGB(screen->format, 0x00, 0x80, 0x80));
-
-		menu_draw(screen, p_menu, 0);
-		SDL_Flip(screen);
-
-		keys = menu_wait_key_press();
-
-		if (keys & KEY_UP)
-			select_next(p_menu, 0, -1);
-		else if (keys & KEY_DOWN)
-			select_next(p_menu, 0, 1);
-		else if (keys & KEY_PAGEUP)
-			select_next(p_menu, 0, -6);
-		else if (keys & KEY_PAGEDOWN)
-			select_next(p_menu, 0, 6);
-		else if (keys & KEY_LEFT)
-			select_next(p_menu, -1, 0);
-		else if (keys & KEY_RIGHT)
-			select_next(p_menu, 1, 0);
-		else if (keys & KEY_ESCAPE)
-			break;
-		else if (keys & KEY_SELECT)
-		{
-			ret = p_menu->cur_sel;
-			int i;
-
-			for (i=0; i<p_menu->n_submenus; i++)
-				p_submenus[i] = p_menu->p_submenus[i].sel;
-			break;
-		}
-		/* Invoke the callback when an entry is selected */
-		if (sel_last != p_menu->cur_sel &&
-				select_next_cb != NULL)
-			select_next_cb(p_menu, select_next_cb_data);
-	}
-
-	SDL_FillRect(screen, 0, SDL_MapRGB(screen->format, 0, 0, 0));
-	return ret;
-}
-
-const char *menu_select_file(const char *dir_path)
-{
-	return menu_select_file_internal(dir_path,
-			32, 32, FULL_DISPLAY_X/2, FULL_DISPLAY_Y - 32);
-}
 
 int Menu::getNextEntry(int dy)
 {
@@ -319,6 +230,18 @@ submenu_t *Menu::findSubmenu(int index)
 	return NULL;
 }
 
+
+void Menu::selectOne(int which)
+{
+	if (which >= this->n_entries)
+		which = 0;
+	this->cur_sel = which;
+
+	if (this->pp_msgs[this->cur_sel][0] == ' ' ||
+			this->pp_msgs[this->cur_sel][0] == '#' ||
+			IS_SUBMENU(this->pp_msgs[this->cur_sel]))
+		this->selectNext(0, 1);
+}
 
 void Menu::selectNext(int dx, int dy)
 {
@@ -497,6 +420,9 @@ void Menu::setText(const char *messages)
 			submenu++;
 		}
 	}
+
+	/* Move selection to the first entry */
+	this->selectOne(0);
 }
 
 Menu::Menu(TTF_Font *font, SDL_Color clr, int w, int h)

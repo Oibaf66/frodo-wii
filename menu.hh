@@ -64,6 +64,8 @@ protected:
 
 	int getNextEntry(int dy);
 
+	void selectOne(int which);
+
 	void selectNext(int dx, int dy);
 
 	void selectNext(event_t ev);
