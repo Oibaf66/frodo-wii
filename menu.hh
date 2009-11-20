@@ -42,7 +42,11 @@ typedef int event_t;
 class Menu
 {
 public:
-	Menu(TTF_Font *font, SDL_Color clr,	int w, int h);
+	Menu(TTF_Font *font);
+
+	void setTextColor(SDL_Color clr);
+
+	void setSelectedColor(SDL_Color clr);
 
 	void setText(const char **messages);
 
@@ -51,11 +55,13 @@ public:
 	void runLogic();
 
 	void draw(SDL_Surface *where,
-			int x, int y);
+			int x, int y, int w, int h);
 
 	~Menu();
 
 protected:
+	void printText(const char *msg, SDL_Color clr, int x, int y);
+
 	virtual void selectCallback(int which);
 
 	virtual void escapeCallback(int which);
@@ -78,12 +84,10 @@ protected:
 	const char **pp_msgs;
 	TTF_Font *font;
 	SDL_Color text_color;
-
-	/* Width and height */
-	int w, h;
+	SDL_Color text_selected_color;
 
 	/* Relative to this menu */
-	int		   mouse_x, mouse_y;
+	int	mouse_x, mouse_y;
 
 	int        n_submenus;
 	submenu_t *p_submenus;

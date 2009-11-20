@@ -150,7 +150,7 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu, int sel)
 				default:
 					menu_print_font(screen, 0x40,0x40,0x40,
 							x_start, y_start + y, msg);
-					break;							
+					break;
 				}
 			}
 			else /* Otherwise white */
@@ -202,9 +202,69 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu, int sel)
 }
 
 
-void Menu::draw(SDL_Surface *where, int x, int y)
+void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 {
+	int font_height = TTF_FontHeight(this->p_font);
+	int line_height = (font_height + font_height / 4);
+	int x_start = x;
+	int y_start = y + line_height;
+	SDL_Rect r;
+	int entries_visible = h / line_height - 2;
 
+	if (this->cur_sel - this->start_entry_visible > entries_visible)
+	{
+		while (this->cur_sel - this->start_entry_visible > entries_visible)
+		{
+			this->start_entry_visible++;
+			if (this->start_entry_visible > this->n_entries)
+			{
+				this->start_entry_visible = 0;
+				break;
+			}
+		}
+	}
+	else if ( this->cur_sel < this->start_entry_visible )
+		this->start_entry_visible = this->cur_sel;
+
+	for (i = this->start_entry_visible;
+			i <= this->start_entry_visible + entries_visible; i++)
+	{
+		const char *msg = this->pp_msgs[i];
+
+		if (i >= this->n_entries)
+			break;
+
+		y = (i - this->start_entry_visible) * line_height;
+
+		if (sel < 0)
+			this->printText(msg, this->text_color,
+					x_start, y_start + y, w);
+		else if (p_menu->cur_sel == i) /* Selected - color */
+			menu_print_font(screen, 0,255,0,
+					x_start, y_start + y, msg);
+		else if (IS_SUBMENU(msg))
+		{
+			if (p_menu->cur_sel == i-1)
+				menu_print_font(screen, 0x80,0xff,0x80,
+						x_start, y_start + y, msg);
+			else
+				menu_print_font(screen, 0x40,0x40,0x40,
+						x_start, y_start + y, msg);
+		}
+		else /* Otherwise white */
+			menu_print_font(screen, 0x40,0x40,0x40,
+					x_start, y_start + y, msg);
+		if (IS_SUBMENU(msg))
+		{
+			submenu_t *p_submenu = this->findSubmenu(i);
+			int n_pipe = 0;
+			int n;
+
+			for (n = 0; msg[n] != '\0'; n++)
+			{
+			}
+		}
+	}
 }
 
 
@@ -425,12 +485,11 @@ void Menu::setText(const char *messages)
 	this->selectOne(0);
 }
 
-Menu::Menu(TTF_Font *font, SDL_Color clr, int w, int h)
+Menu::Menu(TTF_Font *font)
 {
-	this->text_color = clr;
+	this->setSelectedColor((SDL_Color){0x0,0xff,0xff,0});
+	this->setTextColor((SDL_Color){0xff,0xff,0xff,0});
 	this->font = font;
-	this->w = w;
-	this->h = h;
 
 	this->pp_msgs = NULL;
 	this->n_entries = 0;
@@ -443,6 +502,16 @@ Menu::Menu(TTF_Font *font, SDL_Color clr, int w, int h)
 
 	memset(this->event_stack, 0, sizeof(this->event_stack));
 	this->ev_head = this->ev_tail = 0;
+}
+
+void Menu::setSelectedColor(SDL_Color clr)
+{
+	this->text_selected_color = clr;
+}
+
+void Menu::setTextColor(SDL_Color clr)
+{
+	this->text_selected_color = clr;
 }
 
 Menu::~Menu()
