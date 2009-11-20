@@ -201,6 +201,30 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu, int sel)
 	}
 }
 
+void Menu::highlightBackground(const char *msg, int x, int y)
+{
+	int tw, th;
+	TTF_SizeText(this->font, msg, &tw, &th);
+
+	int bg_y_start = y + font_height / 2 -
+			this->text_bg_left->h / 2;
+	int bg_x_start = x - this->text_bg_right / 2;
+	int bg_x_end = x + tw -
+			this->text_bg_right / 2;
+	int n_mid = this->text_bg_left->w + this->text_bg_right->w -
+			this->text_bg_middle->w;
+
+	SDL_BlitSurface(this->text_bg_left, NULL,
+			where, (SDL_Rect){bg_x_start, bg_y_start, 0,0});
+	for (int i = 1; i < n_mid; i++)
+		SDL_BlitSurface(this->text_bg_middle, NULL,
+				where,
+				(SDL_Rect){bg_x_start + i * this->text_bg_middle->w,
+				bg_y_start, 0,0});
+	SDL_BlitSurface(this->text_bg_right, NULL,
+			where, (SDL_Rect){bg_x_end, bg_y_start, 0,0});
+
+}
 
 void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 {
@@ -230,30 +254,21 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 			i <= this->start_entry_visible + entries_visible; i++)
 	{
 		const char *msg = this->pp_msgs[i];
+		int cur_y;
 
 		if (i >= this->n_entries)
 			break;
 
-		y = (i - this->start_entry_visible) * line_height;
+		cur_y = (i - this->start_entry_visible) * line_height;
 
-		if (sel < 0)
-			this->printText(msg, this->text_color,
-					x_start, y_start + y, w);
-		else if (p_menu->cur_sel == i) /* Selected - color */
-			menu_print_font(screen, 0,255,0,
-					x_start, y_start + y, msg);
-		else if (IS_SUBMENU(msg))
-		{
-			if (p_menu->cur_sel == i-1)
-				menu_print_font(screen, 0x80,0xff,0x80,
-						x_start, y_start + y, msg);
-			else
-				menu_print_font(screen, 0x40,0x40,0x40,
-						x_start, y_start + y, msg);
-		}
-		else /* Otherwise white */
-			menu_print_font(screen, 0x40,0x40,0x40,
-					x_start, y_start + y, msg);
+		/* Draw the background for the selected entry */
+		if (this->cur_sel == i)
+			this->highlightBackground(msg, x_start, cur_y);
+
+		/* And print the text on top */
+		this->printText(msg, this->text_color,
+				x_start, y_start + y, w);
+
 		if (IS_SUBMENU(msg))
 		{
 			submenu_t *p_submenu = this->findSubmenu(i);
@@ -262,6 +277,24 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 
 			for (n = 0; msg[n] != '\0'; n++)
 			{
+				if (msg[n] == '|')
+				{
+					int n_chars;
+					char *p;
+
+					for (n_chars = 1; msg[n+n_chars] && msg[n+n_chars] != '|'; n_chars++);
+
+					n_pipe++;
+					if (p_submenu->sel != n_pipe-1)
+						continue;
+					p = xmalloc(n_chars + 1);
+					strncpy(p, msg + n, n_chars);
+
+					/* Found it! */
+					this->highlightBackground(p, x, y);
+					free(p);
+					break;
+				}
 			}
 		}
 	}

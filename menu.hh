@@ -46,7 +46,12 @@ public:
 
 	void setTextColor(SDL_Color clr);
 
-	void setSelectedColor(SDL_Color clr);
+	void setSelectedBackground(SDL_Surface *left, SDL_Surface *middle, SDL_Surface *right)
+	{
+		this->text_bg_left = left;
+		this->text_bg_middle = middle;
+		this->text_bg_right = right;
+	}
 
 	void setText(const char **messages);
 
@@ -60,6 +65,8 @@ public:
 	~Menu();
 
 protected:
+	void highlightBackground(const char *msg, int x, int y);
+
 	void printText(const char *msg, SDL_Color clr, int x, int y);
 
 	virtual void selectCallback(int which);
@@ -84,7 +91,9 @@ protected:
 	const char **pp_msgs;
 	TTF_Font *font;
 	SDL_Color text_color;
-	SDL_Color text_selected_color;
+	SDL_Surface *text_bg_left;
+	SDL_Surface *text_bg_right;
+	SDL_Surface *text_bg_middle;
 
 	/* Relative to this menu */
 	int	mouse_x, mouse_y;
