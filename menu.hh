@@ -65,7 +65,7 @@ public:
 	~Menu();
 
 protected:
-	void highlightBackground(const char *msg, int x, int y);
+	void highlightBackground(int x, int y, int w, int h);
 
 	void printText(const char *msg, SDL_Color clr, int x, int y);
 

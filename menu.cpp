@@ -201,15 +201,12 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu, int sel)
 	}
 }
 
-void Menu::highlightBackground(const char *msg, int x, int y)
+void Menu::highlightBackground(int x, int y, int w, int h)
 {
-	int tw, th;
-	TTF_SizeText(this->font, msg, &tw, &th);
-
 	int bg_y_start = y + font_height / 2 -
 			this->text_bg_left->h / 2;
 	int bg_x_start = x - this->text_bg_right / 2;
-	int bg_x_end = x + tw -
+	int bg_x_end = x + w -
 			this->text_bg_right / 2;
 	int n_mid = this->text_bg_left->w + this->text_bg_right->w -
 			this->text_bg_middle->w;
@@ -262,8 +259,12 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 		cur_y = (i - this->start_entry_visible) * line_height;
 
 		/* Draw the background for the selected entry */
-		if (this->cur_sel == i)
-			this->highlightBackground(msg, x_start, cur_y);
+		if (this->cur_sel == i) {
+			int tw, th;
+			TTF_SizeText(this->font, msg, &tw, &th);
+
+			this->highlightBackground(x_start, cur_y, tw, th);
+		}
 
 		/* And print the text on top */
 		this->printText(msg, this->text_color,
@@ -273,29 +274,38 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 		{
 			submenu_t *p_submenu = this->findSubmenu(i);
 			int n_pipe = 0;
+			int total_chars = 0;
+			int tw, th, tw_first, th_first;
+			int n_chars;
+			char *p;
 			int n;
 
 			for (n = 0; msg[n] != '\0'; n++)
 			{
-				if (msg[n] == '|')
-				{
-					int n_chars;
-					char *p;
+				if (msg[n] != '|')
+					continue;
+				/* msg[n] == '|' */
 
-					for (n_chars = 1; msg[n+n_chars] && msg[n+n_chars] != '|'; n_chars++);
+				/* Count the number of chars until next pipe */
+				for (n_chars = 1; msg[n+n_chars] && msg[n+n_chars] != '|'; n_chars++);
 
-					n_pipe++;
-					if (p_submenu->sel != n_pipe-1)
-						continue;
-					p = xmalloc(n_chars + 1);
-					strncpy(p, msg + n, n_chars);
+				total_chars += n_chars;
 
-					/* Found it! */
-					this->highlightBackground(p, x, y);
-					free(p);
+				n_pipe++;
+				/* Found the selection yet? */
+				if (p_submenu->sel == n_pipe-1)
 					break;
-				}
 			}
+
+			p = xmalloc(total_chars + 1);
+			strncpy(p, msg, total_chars);
+			TTF_SizeText(this->font, p, &tw_first, &th_first);
+
+			strncpy(p, msg + n, n_chars);
+			TTF_SizeText(this->font, p, &tw, &th);
+
+			this->highlightBackground(x_start + tw_first, cur_y, tw, th);
+			free(p);
 		}
 	}
 }
