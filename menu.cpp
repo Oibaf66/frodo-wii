@@ -201,8 +201,68 @@ static void menu_draw(SDL_Surface *screen, menu_t *p_menu, int sel)
 	}
 }
 
+void Menu::printText(const char *msg, SDL_Color clr,
+		int x, int y, int w, int h)
+{
+	SDL_Surface *font_surf;
+	SDL_Rect dst = {x, y,  0, 0};
+	SDL_Color color = {r, g, b};
+	char buf[255];
+	unsigned int i;
+	int tw, th;
+
+	TTF_SizeText(this->font, msg, &tw, &th);
+
+	memset(buf, 0, sizeof(buf));
+	strncpy(buf, msg, 254);
+
+	/* Crop text */
+	if (x + tw > w)
+	{
+		int pixels_per_char = tw / strlen(msg);
+		int last_char = w / pixels_per_char;
+
+		/* FIXME! Handle some corner cases here (short strings etc) */
+	}
+
+	if (buf[0] != '|' && buf[0] != '^' && buf[0] != '.'
+			&& buf[0] != '-' && buf[0] != ' ' && !strstr(buf, "  \""))
+	{
+		if (strlen(buf)>_MAX_STRING)
+		{
+			buf[_MAX_STRING-3] = '.';
+			buf[_MAX_STRING-2] = '.';
+			buf[_MAX_STRING-1] = '.';
+			buf[_MAX_STRING] = '\0';
+		}
+	}
+	/* Fixup multi-menu option look */
+	for (i = 0; i < strlen(buf) ; i++)
+	{
+		if (buf[i] == '^' || buf[i] == '|')
+			buf[i] = ' ';
+	}
+
+	font_surf = TTF_RenderText_Blended(menu_font, buf,
+			color);
+	if (!font_surf)
+	{
+		fprintf(stderr, "%s\n", TTF_GetError());
+		exit(1);
+	}
+
+	SDL_BlitSurface(font_surf, NULL, screen, &dst);
+	SDL_FreeSurface(font_surf);
+}
+
 void Menu::highlightBackground(int x, int y, int w, int h)
 {
+	/* Can't highlight without images */
+	if (!this->text_bg_left ||
+			!this->text_bg_middle ||
+			!this->text_bg_right)
+		return;
+
 	int bg_y_start = y + font_height / 2 -
 			this->text_bg_left->h / 2;
 	int bg_x_start = x - this->text_bg_right / 2;
@@ -534,6 +594,10 @@ Menu::Menu(TTF_Font *font)
 	this->setTextColor((SDL_Color){0xff,0xff,0xff,0});
 	this->font = font;
 
+	this->text_bg_left = NULL;
+	this->text_bg_middle = NULL;
+	this->text_bg_right = NULL;
+
 	this->pp_msgs = NULL;
 	this->n_entries = 0;
 	this->p_submenus = NULL;
@@ -545,11 +609,6 @@ Menu::Menu(TTF_Font *font)
 
 	memset(this->event_stack, 0, sizeof(this->event_stack));
 	this->ev_head = this->ev_tail = 0;
-}
-
-void Menu::setSelectedColor(SDL_Color clr)
-{
-	this->text_selected_color = clr;
 }
 
 void Menu::setTextColor(SDL_Color clr)
