@@ -17,191 +17,8 @@
 #include "menutexts.h"
 
 #define IS_SUBMENU(p_msg) ( (p_msg)[0] == '^' )
-#define IS_TEXT(p_msg) ( (p_msg)[0] == '#' || (p_msg)[0] == ' ' )
-#define IS_MARKER(p_msg) ( (p_msg)[0] == '@' )
 
-
-
-void menu_print_font(SDL_Surface *screen, int r, int g, int b,
-		int x, int y, const char *msg)
-{
-#define _MAX_STRING 64
-	SDL_Surface *font_surf;
-	SDL_Rect dst = {x, y,  0, 0};
-	SDL_Color color = {r, g, b};
-	char buf[255];
-	unsigned int i;
-
-	memset(buf, 0, sizeof(buf));
-	strncpy(buf, msg, 254);
-	if (buf[0] != '|' && buf[0] != '^' && buf[0] != '.'
-		&& buf[0] != '-' && buf[0] != ' ' && !strstr(buf, "  \""))
-	{
-		if (strlen(buf)>_MAX_STRING)
-		{
-			buf[_MAX_STRING-3] = '.';
-			buf[_MAX_STRING-2] = '.';
-			buf[_MAX_STRING-1] = '.';
-			buf[_MAX_STRING] = '\0';
-		}
-	}
-	/* Fixup multi-menu option look */
-	for (i = 0; i < strlen(buf) ; i++)
-	{
-		if (buf[i] == '^' || buf[i] == '|')
-			buf[i] = ' ';
-	}
-
-	font_surf = TTF_RenderText_Blended(menu_font, buf,
-			color);
-	if (!font_surf)
-	{
-		fprintf(stderr, "%s\n", TTF_GetError());
-		exit(1);
-	}
-
-	SDL_BlitSurface(font_surf, NULL, screen, &dst);
-	SDL_FreeSurface(font_surf);
-}
-
-
-static void menu_draw(SDL_Surface *screen, menu_t *p_menu, int sel)
-{
-	int font_height = TTF_FontHeight(p_menu->p_font);
-	int line_height = (font_height + font_height / 4);
-	int x_start = p_menu->x1;
-	int y_start = p_menu->y1 + line_height;
-	SDL_Rect r;
-	int entries_visible = (p_menu->y2 - p_menu->y1) / line_height - 2;
-
-	int i, y;
-	char pTemp[256];
-
-	if ( p_menu->n_entries * line_height > p_menu->y2 )
-		y_start = p_menu->y1 + line_height;
-
-	if (p_menu->cur_sel - p_menu->start_entry_visible > entries_visible)
-	{
-		while (p_menu->cur_sel - p_menu->start_entry_visible > entries_visible)
-		{
-			p_menu->start_entry_visible ++;
-			if (p_menu->start_entry_visible > p_menu->n_entries)
-			{
-				p_menu->start_entry_visible = 0;
-				break;
-			}
-		}
-	}
-	else if ( p_menu->cur_sel < p_menu->start_entry_visible )
-		p_menu->start_entry_visible = p_menu->cur_sel;
-
-	if (strlen(p_menu->title))
-	{
-		r.x = p_menu->x1;
-		r.y = p_menu->y1;
-		r.w = p_menu->x2 - p_menu->x1;
-		r.h = line_height-1;
-		if (sel < 0)
-			SDL_FillRect(screen, &r, SDL_MapRGB(screen->format, 0x40, 0x00, 0x00));
-		else
-			SDL_FillRect(screen, &r, SDL_MapRGB(screen->format, 0x00, 0x00, 0xff));
-		menu_print_font(screen, 0,0,0, p_menu->x1, p_menu->y1, p_menu->title);
-	}
-
-	for (i = p_menu->start_entry_visible; i <= p_menu->start_entry_visible + entries_visible; i++)
-	{
-		const char *msg = p_menu->pp_msgs[i];
-
-		if (i >= p_menu->n_entries)
-			break;
-		if (IS_MARKER(msg))
-			p_menu->cur_sel = atoi(&msg[1]);
-		else
-		{
-			y = (i - p_menu->start_entry_visible) * line_height;
-
-			if (sel < 0)
-				menu_print_font(screen, 0x40,0x40,0x40,
-						x_start, y_start + y, msg);
-			else if (p_menu->cur_sel == i) /* Selected - color */
-				menu_print_font(screen, 0,255,0,
-						x_start, y_start + y, msg);
-			else if (IS_SUBMENU(msg))
-			{
-				if (p_menu->cur_sel == i-1)
-					menu_print_font(screen, 0x80,0xff,0x80,
-							x_start, y_start + y, msg);
-				else
-					menu_print_font(screen, 0x40,0x40,0x40,
-							x_start, y_start + y, msg);
-			}
-			else if (msg[0] == '#')
-			{
-				switch (msg[1])
-				{
-				case '1':
-					menu_print_font(screen, 0,0,255,
-							x_start, y_start + y, msg+2);
-					break;
-				case '2':
-					menu_print_font(screen, 0x80,0x80,0x80,
-							x_start, y_start + y, msg+2);
-					break;
-				default:
-					menu_print_font(screen, 0x40,0x40,0x40,
-							x_start, y_start + y, msg);
-					break;
-				}
-			}
-			else /* Otherwise white */
-				menu_print_font(screen, 0x40,0x40,0x40,
-						x_start, y_start + y, msg);
-			if (IS_SUBMENU(msg))
-			{
-				submenu_t *p_submenu = find_submenu(p_menu, i);
-				int n_pipe = 0;
-				int n;
-
-				for (n=0; msg[n] != '\0'; n++)
-				{
-					/* Underline the selected entry */
-					if (msg[n] == '|')
-					{
-						int16_t n_chars;
-
-						for (n_chars = 1; msg[n+n_chars] && msg[n+n_chars] != '|'; n_chars++);
-
-						n_pipe++;
-						if (p_submenu->sel == n_pipe-1)
-						{
-							int w;
-							int h;
-
-							if (TTF_SizeText(p_menu->p_font, "X", &w, &h) < 0)
-							{
-								fw = w;
-								fh = h;
-								fprintf(stderr, "%s\n", TTF_GetError());
-								exit(1);
-							}
-
-							r = (SDL_Rect){ x_start + (n+1) * w-1, y_start + (i+ 1 - p_menu->start_entry_visible) * ((h + h/4)) -3, (n_chars - 1) * w, 2};
-							if (p_menu->cur_sel == i-1)
-								SDL_FillRect(screen, &r,
-										SDL_MapRGB(screen->format, 0x0,0xff,0x80));
-							else
-								SDL_FillRect(screen, &r,
-										SDL_MapRGB(screen->format, 0x40,0x40,0x40));
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
-void Menu::printText(const char *msg, SDL_Color clr,
+void Menu::printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 		int x, int y, int w, int h)
 {
 	SDL_Surface *font_surf;
@@ -223,19 +40,17 @@ void Menu::printText(const char *msg, SDL_Color clr,
 		int last_char = w / pixels_per_char;
 
 		/* FIXME! Handle some corner cases here (short strings etc) */
-	}
-
-	if (buf[0] != '|' && buf[0] != '^' && buf[0] != '.'
-			&& buf[0] != '-' && buf[0] != ' ' && !strstr(buf, "  \""))
-	{
-		if (strlen(buf)>_MAX_STRING)
+		panic_if(last_char > strlen(msg),
+				"last character (%d) is after the string length (%d)\n",
+				last_char, strlen(msg));
+		if (last_char > 3)
 		{
-			buf[_MAX_STRING-3] = '.';
-			buf[_MAX_STRING-2] = '.';
-			buf[_MAX_STRING-1] = '.';
-			buf[_MAX_STRING] = '\0';
+			buf[last_char - 2] = '.';
+			buf[last_char - 1] = '.';
+			buf[last_char] = '\0';
 		}
 	}
+
 	/* Fixup multi-menu option look */
 	for (i = 0; i < strlen(buf) ; i++)
 	{
@@ -243,15 +58,11 @@ void Menu::printText(const char *msg, SDL_Color clr,
 			buf[i] = ' ';
 	}
 
-	font_surf = TTF_RenderText_Blended(menu_font, buf,
-			color);
-	if (!font_surf)
-	{
-		fprintf(stderr, "%s\n", TTF_GetError());
-		exit(1);
-	}
+	font_surf = TTF_RenderText_Blended(this->font, buf, clr);
+	panic_if (!font_surf,
+			"%s\n", TTF_GetError());
 
-	SDL_BlitSurface(font_surf, NULL, screen, &dst);
+	SDL_BlitSurface(font_surf, NULL, where, &dst);
 	SDL_FreeSurface(font_surf);
 }
 
@@ -401,7 +212,6 @@ void Menu::selectOne(int which)
 	this->cur_sel = which;
 
 	if (this->pp_msgs[this->cur_sel][0] == ' ' ||
-			this->pp_msgs[this->cur_sel][0] == '#' ||
 			IS_SUBMENU(this->pp_msgs[this->cur_sel]))
 		this->selectNext(0, 1);
 }
@@ -416,7 +226,6 @@ void Menu::selectNext(int dx, int dy)
 
 	/* We want to skip this for some reason */
 	if (this->pp_msgs[this->cur_sel][0] == ' ' ||
-			this->pp_msgs[this->cur_sel][0] == '#' ||
 			IS_SUBMENU(this->pp_msgs[this->cur_sel]) ) {
 		this->selectNext(dx, dy);
 		return;
