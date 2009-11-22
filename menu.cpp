@@ -23,7 +23,6 @@ void Menu::printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 {
 	SDL_Surface *font_surf;
 	SDL_Rect dst = {x, y,  0, 0};
-	SDL_Color color = {r, g, b};
 	char buf[255];
 	unsigned int i;
 	int tw, th;
