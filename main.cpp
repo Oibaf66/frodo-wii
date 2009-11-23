@@ -1,3 +1,6 @@
+#include <SDL_image.h>
+#include <SDL_ttf.h>
+
 #include "menu.hh"
 #include "utils.hh"
 
@@ -29,9 +32,9 @@ static void run(void)
 		SDL_Event ev;
 	        while (SDL_PollEvent(&ev)) {
 	        	if (ev.type == SDL_QUIT)
-	                	exit(1); break;
+	                	exit(1);
 
-	        	g_menu->pushEvent(&ev); break;
+	        	g_menu->pushEvent(&ev);
 	        }
 	        g_menu->draw(screen, 0, 80, 400, 400);
 
@@ -66,17 +69,21 @@ static void init(void)
 	screen = SDL_SetVideoMode(640, 480, 16,
 			SDL_DOUBLEBUF);
 	panic_if(!screen, "Cannot initialize video: %s\n", SDL_GetError());
-	bg_left = IMG_Load("bg_left.png");
-	bg_right = IMG_Load("bg_right.png");
-	bg_middle = IMG_Load("bg_middle.png");
 
 	TTF_Init();
 
 
 	fnt = read_and_alloc_font("font.ttf");
 
+	bg_left = IMG_Load("bg_left.png");
+	bg_right = IMG_Load("bg_right.png");
+	bg_middle = IMG_Load("bg_middle.png");
+	panic_if( !bg_left || !bg_right || !bg_middle,
+			"bg loading failed\n");
+
 	g_menu = new PrintMenu(fnt);
 	g_menu->setText(main_menu_messages);
+	g_menu->setSelectedBackground(bg_left, bg_middle, bg_right);
 }
 
 int main(int argc, char *argv[])

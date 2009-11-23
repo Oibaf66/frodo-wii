@@ -14,7 +14,6 @@
 
 #include "menu.hh"
 #include "utils.hh"
-#include "menutexts.h"
 
 #define IS_SUBMENU(p_msg) ( (p_msg)[0] == '^' )
 
