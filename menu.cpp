@@ -80,8 +80,7 @@ void Menu::highlightBackground(SDL_Surface *where, int x, int y, int w, int h)
 	int bg_x_start = x - this->text_bg_right->w / 2;
 	int bg_x_end = x + w -
 			this->text_bg_right->w / 2;
-	int n_mid = this->text_bg_left->w + this->text_bg_right->w -
-			this->text_bg_middle->w;
+	int n_mid = (bg_x_end - x + this->text_bg_right->w + 4) / this->text_bg_middle->w;
 
 	dst = (SDL_Rect){bg_x_start, bg_y_start, 0,0};
 	SDL_BlitSurface(this->text_bg_left, NULL,
@@ -104,7 +103,6 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 	int font_height = TTF_FontHeight(this->font);
 	int line_height = (font_height + font_height / 4);
 	int x_start = x;
-	int y_start = y + line_height;
 	int entries_visible = h / line_height - 2;
 	int start_entry_visible = 0;
 
@@ -146,7 +144,7 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 
 		/* And print the text on top */
 		this->printText(where, msg, this->text_color,
-				x_start, y_start + y, w, h);
+				x_start, cur_y, w, h);
 
 		if (IS_SUBMENU(msg))
 		{
