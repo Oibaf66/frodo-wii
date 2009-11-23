@@ -65,37 +65,44 @@ void Menu::printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 	SDL_FreeSurface(font_surf);
 }
 
-void Menu::highlightBackground(int x, int y, int w, int h)
+void Menu::highlightBackground(SDL_Surface *where, int x, int y, int w, int h)
 {
+	SDL_Rect dst;
+
 	/* Can't highlight without images */
 	if (!this->text_bg_left ||
 			!this->text_bg_middle ||
 			!this->text_bg_right)
 		return;
 
+	int font_height = TTF_FontHeight(this->font);
 	int bg_y_start = y + font_height / 2 -
 			this->text_bg_left->h / 2;
-	int bg_x_start = x - this->text_bg_right / 2;
+	int bg_x_start = x - this->text_bg_right->w / 2;
 	int bg_x_end = x + w -
-			this->text_bg_right / 2;
+			this->text_bg_right->w / 2;
 	int n_mid = this->text_bg_left->w + this->text_bg_right->w -
 			this->text_bg_middle->w;
 
+	dst = (SDL_Rect){bg_x_start, bg_y_start, 0,0};
 	SDL_BlitSurface(this->text_bg_left, NULL,
-			where, (SDL_Rect){bg_x_start, bg_y_start, 0,0});
+			where, &dst);
 	for (int i = 1; i < n_mid; i++)
+	{
+		dst = (SDL_Rect){bg_x_start + i * this->text_bg_middle->w,
+			bg_y_start, 0,0};
 		SDL_BlitSurface(this->text_bg_middle, NULL,
-				where,
-				(SDL_Rect){bg_x_start + i * this->text_bg_middle->w,
-				bg_y_start, 0,0});
+				where, &dst);
+	}
+	dst = (SDL_Rect){bg_x_end, bg_y_start, 0,0};
 	SDL_BlitSurface(this->text_bg_right, NULL,
-			where, (SDL_Rect){bg_x_end, bg_y_start, 0,0});
+			where, &dst);
 
 }
 
 void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 {
-	int font_height = TTF_FontHeight(this->p_font);
+	int font_height = TTF_FontHeight(this->font);
 	int line_height = (font_height + font_height / 4);
 	int x_start = x;
 	int y_start = y + line_height;
@@ -117,7 +124,7 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 	else if ( this->cur_sel < this->start_entry_visible )
 		this->start_entry_visible = this->cur_sel;
 
-	for (i = this->start_entry_visible;
+	for (int i = this->start_entry_visible;
 			i <= this->start_entry_visible + entries_visible; i++)
 	{
 		const char *msg = this->pp_msgs[i];
@@ -133,12 +140,12 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 			int tw, th;
 			TTF_SizeText(this->font, msg, &tw, &th);
 
-			this->highlightBackground(x_start, cur_y, tw, th);
+			this->highlightBackground(where, x_start, cur_y, tw, th);
 		}
 
 		/* And print the text on top */
-		this->printText(msg, this->text_color,
-				x_start, y_start + y, w);
+		this->printText(where, msg, this->text_color,
+				x_start, y_start + y, w, h);
 
 		if (IS_SUBMENU(msg))
 		{
@@ -167,7 +174,7 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 					break;
 			}
 
-			p = xmalloc(total_chars + 1);
+			p = (char*)xmalloc(total_chars + 1);
 			strncpy(p, msg, total_chars);
 			TTF_SizeText(this->font, p, &tw_first, &th_first);
 

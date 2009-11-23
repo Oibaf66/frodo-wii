@@ -65,7 +65,7 @@ public:
 	~Menu();
 
 protected:
-	void highlightBackground(int x, int y, int w, int h);
+	void highlightBackground(SDL_Surface *where, int x, int y, int w, int h);
 
 	void printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 			int x, int y, int w, int h);
