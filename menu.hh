@@ -103,7 +103,6 @@ protected:
 	submenu_t *p_submenus;
 
 	int        cur_sel; /* Main selection */
-	int        start_entry_visible;
 	int        n_entries;
 
 	int 	   ev_head, ev_tail;

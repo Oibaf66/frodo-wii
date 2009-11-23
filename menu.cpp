@@ -106,26 +106,27 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 	int x_start = x;
 	int y_start = y + line_height;
 	int entries_visible = h / line_height - 2;
+	int start_entry_visible = 0;
 
 	panic_if(!this->pp_msgs, "Set the messages before drawing, thank you\n");
 
-	if (this->cur_sel - this->start_entry_visible > entries_visible)
+	if (this->cur_sel - start_entry_visible > entries_visible)
 	{
-		while (this->cur_sel - this->start_entry_visible > entries_visible)
+		while (this->cur_sel - start_entry_visible > entries_visible)
 		{
-			this->start_entry_visible++;
-			if (this->start_entry_visible > this->n_entries)
+			start_entry_visible++;
+			if (start_entry_visible > this->n_entries)
 			{
-				this->start_entry_visible = 0;
+				start_entry_visible = 0;
 				break;
 			}
 		}
 	}
-	else if ( this->cur_sel < this->start_entry_visible )
-		this->start_entry_visible = this->cur_sel;
+	else if ( this->cur_sel < start_entry_visible )
+		start_entry_visible = this->cur_sel;
 
-	for (int i = this->start_entry_visible;
-			i <= this->start_entry_visible + entries_visible; i++)
+	for (int i = start_entry_visible;
+			i <= start_entry_visible + entries_visible; i++)
 	{
 		const char *msg = this->pp_msgs[i];
 		int cur_y;
@@ -133,7 +134,7 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 		if (i >= this->n_entries)
 			break;
 
-		cur_y = (i - this->start_entry_visible) * line_height;
+		cur_y = (i - start_entry_visible) * line_height;
 
 		/* Draw the background for the selected entry */
 		if (this->cur_sel == i) {
