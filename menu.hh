@@ -70,9 +70,9 @@ protected:
 	void printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 			int x, int y, int w, int h);
 
-	virtual void selectCallback(int which);
+	virtual void selectCallback(int which) = 0;
 
-	virtual void escapeCallback(int which);
+	virtual void escapeCallback(int which) = 0;
 
 	submenu_t *findSubmenu(int index);
 

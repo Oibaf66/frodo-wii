@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <dirent.h>
+#include <sys/stat.h>
 #include <SDL_ttf.h>
 
 #include "utils.hh"
@@ -16,7 +18,7 @@ TTF_Font *read_and_alloc_font(const char *path)
 		exit(1);
 	}
 	if (!fp) {
-		fprintf(stderr, "Could not open font\n");
+		fprintf(stderr, "Could not open font %s\n", path);
 		exit(1);
 	}
 	fread(data, 1, 1 * 1024 * 1024, fp);
@@ -29,7 +31,8 @@ TTF_Font *read_and_alloc_font(const char *path)
 	out = TTF_OpenFontRW(rw, 1, 20);
 	if (!out)
 	{
-		fprintf(stderr, "Unable to open font %s\n", path);
+		fprintf(stderr, "TTF: Unable to create font %s (%s)\n",
+				path, TTF_GetError());
 		exit(1);
 	}
 	fclose(fp);

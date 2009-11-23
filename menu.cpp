@@ -39,7 +39,7 @@ void Menu::printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 		int last_char = w / pixels_per_char;
 
 		/* FIXME! Handle some corner cases here (short strings etc) */
-		panic_if(last_char > strlen(msg),
+		panic_if((unsigned)last_char > strlen(msg),
 				"last character (%d) is after the string length (%d)\n",
 				last_char, strlen(msg));
 		if (last_char > 3)
@@ -106,8 +106,9 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 	int line_height = (font_height + font_height / 4);
 	int x_start = x;
 	int y_start = y + line_height;
-	SDL_Rect r;
 	int entries_visible = h / line_height - 2;
+
+	panic_if(!this->pp_msgs, "Set the messages before drawing, thank you\n");
 
 	if (this->cur_sel - this->start_entry_visible > entries_visible)
 	{
@@ -226,7 +227,6 @@ void Menu::selectOne(int which)
 void Menu::selectNext(int dx, int dy)
 {
 	int next;
-	char buffer[256];
 
 	this->cur_sel = this->getNextEntry(dy);
 	next = this->getNextEntry(dy + 1);

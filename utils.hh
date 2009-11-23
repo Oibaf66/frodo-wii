@@ -5,9 +5,9 @@
 
 #define panic(x...) do \
   { \
-    fprintf(stderr, "============Translator panic===========\n"); \
+    fprintf(stderr, "=============PANIC PANIC PANIC===========\n"); \
     fprintf(stderr, x); \
-    fprintf(stderr, "=======================================\n"); \
+    fprintf(stderr, "=========================================\n"); \
     exit(1); \
   } while(0)
 
@@ -38,5 +38,7 @@ static inline void *xmalloc(size_t sz)
     int r = snprintf(buf, size, fmt, x); \
     panic_if(r < 0 || r >= (int)(size), "snprintf failed for %s with %d\n", fmt, r); \
 } while(0)
+
+TTF_Font *read_and_alloc_font(const char *path);
 
 #endif /* __UTILS_H__ */
