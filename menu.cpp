@@ -181,7 +181,8 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 			strncpy(p, msg + n, n_chars);
 			TTF_SizeText(this->font, p, &tw, &th);
 
-			this->highlightBackground(x_start + tw_first, cur_y, tw, th);
+			this->highlightBackground(where, x_start + tw_first,
+					cur_y, tw, th);
 			free(p);
 		}
 	}
@@ -190,11 +191,11 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 
 int Menu::getNextEntry(int dy)
 {
-	if (v + dy < 0)
+	if (this->cur_sel + dy < 0)
 		return this->n_entries - 1;
-	if (v + dy > this->n_entries - 1)
+	if (this->cur_sel + dy > this->n_entries - 1)
 		return 0;
-	return v + dy;
+	return this->cur_sel + dy;
 }
 
 submenu_t *Menu::findSubmenu(int index)
@@ -240,7 +241,7 @@ void Menu::selectNext(int dx, int dy)
 	/* If the next is a submenu */
 	if (dx != 0 && IS_SUBMENU(this->pp_msgs[next]))
 	{
-		submenu_t *p_submenu = findSubmenu(p_menu, next);
+		submenu_t *p_submenu = findSubmenu(next);
 
 		panic_if(!p_submenu, "submenu in the menu text but no actual submenu\n");
 		p_submenu->sel = (p_submenu->sel + dx) < 0 ? p_submenu->n_entries - 1 :
@@ -284,7 +285,6 @@ void Menu::runLogic()
 		case KEY_ESCAPE:
 			this->escapeCallback(this->cur_sel); break;
 			break;
-		case KEY_ENTER:
 		default:
 			break;
 		}
@@ -356,7 +356,7 @@ void Menu::pushEvent(SDL_Event *ev)
 	}
 }
 
-void Menu::setText(const char *messages)
+void Menu::setText(const char **messages)
 {
 	int submenu;
 
@@ -365,7 +365,7 @@ void Menu::setText(const char *messages)
 	free(this->p_submenus);
 	free(this->pp_msgs);
 
-	for (this->n_entries = 0; messages[p_menu->n_entries]; this->n_entries++)
+	for (this->n_entries = 0; messages[this->n_entries]; this->n_entries++)
 	{
 		/* Is this a submenu? */
 		if (IS_SUBMENU(messages[this->n_entries]))
@@ -405,7 +405,6 @@ void Menu::setText(const char *messages)
 
 Menu::Menu(TTF_Font *font)
 {
-	this->setSelectedColor((SDL_Color){0x0,0xff,0xff,0});
 	this->setTextColor((SDL_Color){0xff,0xff,0xff,0});
 	this->font = font;
 
@@ -428,7 +427,7 @@ Menu::Menu(TTF_Font *font)
 
 void Menu::setTextColor(SDL_Color clr)
 {
-	this->text_selected_color = clr;
+	this->text_color = clr;
 }
 
 Menu::~Menu()

@@ -1,8 +1,13 @@
-OBJS=menu.oo
+OBJS=menu.oo main.oo
+
+all: menu
 
 %.oo: %.cpp
-	g++ `sdl-config --cflags` -o $@ $<
+	g++ -c `sdl-config --cflags` -o $@ $<
 
 
 menu: $(OBJS)
-	g++ `sdl-config --libs` -lsdl -lsdl_image -lsdl_ttf -o $@ $+
+	g++ `sdl-config --libs` -lSDL -lSDL_image -lSDL_ttf -o $@ $+
+
+clean:
+	rm -f *.oo
