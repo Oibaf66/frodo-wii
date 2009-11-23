@@ -15,4 +15,4 @@ menu: $(OBJS)
 	g++ `sdl-config --libs` -lSDL -lSDL_image -lSDL_ttf -o $@ $+
 
 clean:
-	rm -f *.oo
+	rm -f *.oo menu

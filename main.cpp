@@ -35,23 +35,48 @@ static void run(void)
 	        }
 	        g_menu->draw(screen, 0, 80, 400, 400);
 
+	        SDL_Flip(screen);
 		SDL_Delay(50);
 	}
 }
 
+const char *main_menu_messages[] = {
+                /*02*/          "File",
+                /*03*/          "^|Insert|Start",
+                /*04*/          "States",
+                /*05*/          "^|Load|Save|Delete",
+                /*06*/          "Keyboard",
+                /*07*/          "^|Type|Macro|Bind",
+                /*08*/          "#1-------------------------------------",
+                /*09*/          "Reset the C=64",
+                /*10*/          "Networking",
+                /*11*/          "Options",
+                /*12*/          "Advanced Options",
+                /*13*/          "Help",
+                /*15*/          "Quit",
+                NULL
+};
+
+
 static void init(void)
 {
 	TTF_Font *fnt;
+	SDL_Surface *bg_left, *bg_right, *bg_middle;
 
 	screen = SDL_SetVideoMode(640, 480, 16,
 			SDL_DOUBLEBUF);
 	panic_if(!screen, "Cannot initialize video: %s\n", SDL_GetError());
+	bg_left = IMG_Load("bg_left.png");
+	bg_right = IMG_Load("bg_right.png");
+	bg_middle = IMG_Load("bg_middle.png");
+
 	TTF_Init();
 
 
 	fnt = read_and_alloc_font("font.ttf");
 
 	g_menu = new PrintMenu(fnt);
+	g_menu->setText(main_menu_messages);
 }
 
 int main(int argc, char *argv[])
