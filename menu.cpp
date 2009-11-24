@@ -77,10 +77,10 @@ void Menu::highlightBackground(SDL_Surface *where, int x, int y, int w, int h)
 	int font_height = TTF_FontHeight(this->font);
 	int bg_y_start = y + font_height / 2 -
 			this->text_bg_left->h / 2;
-	int bg_x_start = x - this->text_bg_right->w / 2;
+	int bg_x_start = x - this->text_bg_left->w / 3;
 	int bg_x_end = x + w -
-			this->text_bg_right->w / 2;
-	int n_mid = (bg_x_end - x + this->text_bg_right->w + 4) / this->text_bg_middle->w;
+			(2 * this->text_bg_right->w) / 3;
+	int n_mid = (bg_x_end - bg_x_start + this->text_bg_left->w / 3) / this->text_bg_middle->w;
 
 	dst = (SDL_Rect){bg_x_start, bg_y_start, 0,0};
 	SDL_BlitSurface(this->text_bg_left, NULL,
@@ -132,7 +132,7 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 		if (i >= this->n_entries)
 			break;
 
-		cur_y = (i - start_entry_visible) * line_height;
+		cur_y = y + (i - start_entry_visible) * line_height;
 
 		/* Draw the background for the selected entry */
 		if (this->cur_sel == i) {

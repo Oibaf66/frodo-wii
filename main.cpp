@@ -36,7 +36,7 @@ static void run(void)
 
 	        	g_menu->pushEvent(&ev);
 	        }
-	        g_menu->draw(screen, 0, 80, 400, 400);
+	        g_menu->draw(screen, 80, 80, 400, 400);
 
 	        SDL_Flip(screen);
 		SDL_Delay(50);
@@ -50,7 +50,7 @@ const char *main_menu_messages[] = {
                 /*05*/          "^|Load|Save|Delete",
                 /*06*/          "Keyboard",
                 /*07*/          "^|Type|Macro|Bind",
-                /*08*/          "#1-------------------------------------",
+                /*08*/          " ",
                 /*09*/          "Reset the C=64",
                 /*10*/          "Networking",
                 /*11*/          "Options",
