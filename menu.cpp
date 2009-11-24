@@ -142,10 +142,6 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 			this->highlightBackground(where, x_start, cur_y, tw, th);
 		}
 
-		/* And print the text on top */
-		this->printText(where, msg, this->text_color,
-				x_start, cur_y, w, h);
-
 		if (IS_SUBMENU(msg))
 		{
 			submenu_t *p_submenu = this->findSubmenu(i);
@@ -184,6 +180,10 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 					cur_y, tw, th);
 			free(p);
 		}
+
+		/* And print the text on top */
+		this->printText(where, msg, this->text_color,
+				x_start, cur_y, w, h);
 	}
 }
 
