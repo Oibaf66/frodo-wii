@@ -53,7 +53,7 @@ public:
 		this->text_bg_right = right;
 	}
 
-	void setText(const char **messages);
+	void setText(const char **messages, int *submenu_defaults = NULL);
 
 	void pushEvent(SDL_Event *ev);
 

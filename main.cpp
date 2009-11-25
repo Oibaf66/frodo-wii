@@ -30,15 +30,18 @@ static void run(void)
 	while(1)
 	{
 		SDL_Event ev;
-	        while (SDL_PollEvent(&ev)) {
+
+		while (SDL_PollEvent(&ev)) {
 	        	if (ev.type == SDL_QUIT)
 	                	exit(1);
 
 	        	g_menu->pushEvent(&ev);
 	        }
+	        g_menu->runLogic();
 	        g_menu->draw(screen, 80, 80, 400, 400);
 
 	        SDL_Flip(screen);
+	        SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0,0,0));
 		SDL_Delay(50);
 	}
 }

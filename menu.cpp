@@ -170,10 +170,11 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 			}
 
 			p = (char*)xmalloc(total_chars + 1);
-			strncpy(p, msg, total_chars);
+			strncpy(p, msg, n + 1);
 			TTF_SizeText(this->font, p, &tw_first, &th_first);
 
-			strncpy(p, msg + n, n_chars);
+			memset(p, 0, total_chars + 1);
+			strncpy(p, msg + n, n_chars - 1);
 			TTF_SizeText(this->font, p, &tw, &th);
 
 			this->highlightBackground(where, x_start + tw_first,
@@ -354,7 +355,7 @@ void Menu::pushEvent(SDL_Event *ev)
 	}
 }
 
-void Menu::setText(const char **messages)
+void Menu::setText(const char **messages, int *submenu_defaults)
 {
 	int submenu;
 
@@ -386,7 +387,7 @@ void Menu::setText(const char **messages)
 			int n;
 
 			this->p_submenus[submenu].index = i;
-			this->p_submenus[submenu].sel = 0;
+			this->p_submenus[submenu].sel = submenu_defaults ? submenu_defaults[submenu] : 0;
 			this->p_submenus[submenu].n_entries = 0;
 			for (n = 0; this->pp_msgs[i][n] != '\0'; n++)
 			{
