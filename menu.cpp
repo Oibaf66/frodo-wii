@@ -64,39 +64,39 @@ void Menu::printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 	SDL_FreeSurface(font_surf);
 }
 
-void Menu::highlightBackground(SDL_Surface *where, int x, int y, int w, int h)
+void Menu::highlightBackground(SDL_Surface *where,
+		SDL_Surface *bg_left, SDL_Surface *bg_middle, SDL_Surface *bg_right,
+		int x, int y, int w, int h)
 {
 	SDL_Rect dst;
 
 	/* Can't highlight without images */
-	if (!this->text_bg_left ||
-			!this->text_bg_middle ||
-			!this->text_bg_right)
+	if (!bg_left ||	!bg_middle || !bg_right)
 		return;
 
 	int font_height = TTF_FontHeight(this->font);
 	int bg_y_start = y + font_height / 2 -
-			this->text_bg_left->h / 2;
-	int bg_x_start = x - this->text_bg_left->w / 3;
+			bg_left->h / 2;
+	int bg_x_start = x - bg_left->w / 3;
 	int bg_x_end = x + w -
-			(2 * this->text_bg_right->w) / 3;
-	int n_mid = (bg_x_end - bg_x_start + this->text_bg_left->w / 3) / this->text_bg_middle->w;
+			(2 * bg_right->w) / 3;
+	int n_mid = ((bg_x_end - bg_x_start) / bg_middle->w) + 1;
 
 	dst = (SDL_Rect){bg_x_start, bg_y_start, 0,0};
-	SDL_BlitSurface(this->text_bg_left, NULL,
+	SDL_BlitSurface(bg_left, NULL,
 			where, &dst);
 	for (int i = 1; i < n_mid; i++)
 	{
-		dst = (SDL_Rect){bg_x_start + i * this->text_bg_middle->w,
+		dst = (SDL_Rect){bg_x_start + i * bg_middle->w,
 			bg_y_start, 0,0};
-		SDL_BlitSurface(this->text_bg_middle, NULL,
+		SDL_BlitSurface(bg_middle, NULL,
 				where, &dst);
 	}
 	dst = (SDL_Rect){bg_x_end, bg_y_start, 0,0};
-	SDL_BlitSurface(this->text_bg_right, NULL,
+	SDL_BlitSurface(bg_right, NULL,
 			where, &dst);
-
 }
+
 
 void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 {
@@ -139,7 +139,9 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 			int tw, th;
 			TTF_SizeText(this->font, msg, &tw, &th);
 
-			this->highlightBackground(where, x_start, cur_y, tw, th);
+			this->highlightBackground(where,
+					this->text_bg_left, this->text_bg_middle, this->text_bg_right,
+					x_start, cur_y, tw, th);
 		}
 
 		if (IS_SUBMENU(msg))
@@ -177,8 +179,9 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 			strncpy(p, msg + n, n_chars - 1);
 			TTF_SizeText(this->font, p, &tw, &th);
 
-			this->highlightBackground(where, x_start + tw_first,
-					cur_y, tw, th);
+			this->highlightBackground(where,
+					this->text_bg_left, this->text_bg_middle, this->text_bg_right,
+					 x_start + tw_first, cur_y, tw, th);
 			free(p);
 		}
 
