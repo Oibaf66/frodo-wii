@@ -6,7 +6,7 @@
 
 #include "utils.hh"
 
-TTF_Font *read_and_alloc_font(const char *path)
+TTF_Font *read_and_alloc_font(const char *path, int pt_size)
 {
 	TTF_Font *out;
 	SDL_RWops *rw;
@@ -28,7 +28,7 @@ TTF_Font *read_and_alloc_font(const char *path)
 		fprintf(stderr, "Could not create RW: %s\n", SDL_GetError());
 		exit(1);
 	}
-	out = TTF_OpenFontRW(rw, 1, 20);
+	out = TTF_OpenFontRW(rw, 1, pt_size);
 	if (!out)
 	{
 		fprintf(stderr, "TTF: Unable to create font %s (%s)\n",

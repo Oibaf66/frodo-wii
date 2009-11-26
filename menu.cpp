@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include "menu.hh"
+#include "font.hh"
 #include "utils.hh"
 
 #define IS_SUBMENU(p_msg) ( (p_msg)[0] == '^' )
@@ -20,16 +21,12 @@
 void Menu::printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 		int x, int y, int w, int h)
 {
-	SDL_Surface *font_surf;
-	SDL_Rect dst = {x, y,  0, 0};
-	char buf[255];
+	char *buf;
 	unsigned int i;
-	int tw, th;
+	int tw;
 
-	TTF_SizeText(this->font, msg, &tw, &th);
-
-	memset(buf, 0, sizeof(buf));
-	strncpy(buf, msg, 254);
+	buf = strdup(msg);
+	tw = this->font->getWidth(buf);
 
 	/* Crop text */
 	if (x + tw > w)
@@ -56,12 +53,8 @@ void Menu::printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 			buf[i] = ' ';
 	}
 
-	font_surf = TTF_RenderText_Blended(this->font, buf, clr);
-	panic_if (!font_surf,
-			"%s\n", TTF_GetError());
-
-	SDL_BlitSurface(font_surf, NULL, where, &dst);
-	SDL_FreeSurface(font_surf);
+	this->font->draw(where, buf, x, y, w, h);
+	free(buf);
 }
 
 void Menu::highlightBackground(SDL_Surface *where,
@@ -74,7 +67,7 @@ void Menu::highlightBackground(SDL_Surface *where,
 	if (!bg_left ||	!bg_middle || !bg_right)
 		return;
 
-	int font_height = TTF_FontHeight(this->font);
+	int font_height = this->font->getHeight("X");
 	int bg_y_start = y + font_height / 2 -
 			bg_left->h / 2;
 	int bg_x_start = x - bg_left->w / 3;
@@ -102,7 +95,7 @@ void Menu::highlightBackground(SDL_Surface *where,
 
 void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 {
-	int font_height = TTF_FontHeight(this->font);
+	int font_height = this->font->getHeight("X");
 	int line_height = (font_height + font_height / 4);
 	int x_start = x;
 	int entries_visible = h / line_height - 2;
@@ -139,7 +132,9 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 		/* Draw the background for the selected entry */
 		if (this->cur_sel == i) {
 			int tw, th;
-			TTF_SizeText(this->font, msg, &tw, &th);
+
+			tw = this->font->getWidth(msg);
+			th = this->font->getHeight(msg);
 
 			this->highlightBackground(where,
 					this->text_bg_left, this->text_bg_middle, this->text_bg_right,
@@ -151,7 +146,7 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 			submenu_t *p_submenu = this->findSubmenu(i);
 			int n_pipe = 0;
 			int total_chars = 0;
-			int tw, th, tw_first, th_first;
+			int tw, th, tw_first;
 			int n_chars;
 			char *p;
 			int n;
@@ -175,11 +170,12 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 
 			p = (char*)xmalloc(total_chars + 1);
 			strncpy(p, msg, n + 1);
-			TTF_SizeText(this->font, p, &tw_first, &th_first);
+			tw_first = this->font->getWidth(p);
 
 			memset(p, 0, total_chars + 1);
 			strncpy(p, msg + n, n_chars - 1);
-			TTF_SizeText(this->font, p, &tw, &th);
+			tw = this->font->getWidth(p);
+			th = this->font->getHeight(p);
 
 			this->highlightBackground(where,
 					this->submenu_bg_left, this->submenu_bg_middle, this->submenu_bg_right,
@@ -407,7 +403,7 @@ void Menu::setText(const char **messages, int *submenu_defaults)
 	this->selectOne(0);
 }
 
-Menu::Menu(TTF_Font *font)
+Menu::Menu(Font *font)
 {
 	this->setTextColor((SDL_Color){0xff,0xff,0xff,0});
 	this->font = font;

@@ -1,6 +1,8 @@
 #ifndef __FONT_HH__
 #define __FONT_HH__
 
+#include <SDL.h>
+
 class Font
 {
 public:
@@ -22,9 +24,8 @@ public:
 		return this->getWidth(buf);
 	}
 
-	virtual void draw(int x, int y, int w, int h) = 0;
-
-	virtual void draw(int x, int y, int w, int h, int r, int g, int b) = 0;
+	virtual void draw(SDL_Surface *where, const char *msg,
+			int x, int y, int w, int h) = 0;
 };
 
 #endif /* __FONT_HH__ */

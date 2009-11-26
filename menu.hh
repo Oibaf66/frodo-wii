@@ -16,6 +16,8 @@
 #include <SDL_ttf.h>
 #include <stdint.h>
 
+#include "font.hh"
+
 enum {
 	EVENT_NONE   = 0,
 	KEY_UP       = 1,
@@ -42,7 +44,7 @@ typedef int event_t;
 class Menu
 {
 public:
-	Menu(TTF_Font *font);
+	Menu(Font *font);
 
 	void setTextColor(SDL_Color clr);
 
@@ -97,7 +99,7 @@ protected:
 
 	const char *title;
 	const char **pp_msgs;
-	TTF_Font *font;
+	Font *font;
 	SDL_Color text_color;
 
 	SDL_Surface *text_bg_left;

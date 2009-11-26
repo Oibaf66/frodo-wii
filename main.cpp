@@ -2,12 +2,13 @@
 #include <SDL_ttf.h>
 
 #include "menu.hh"
+#include "sdl_ttf_font.hh"
 #include "utils.hh"
 
 class PrintMenu : public Menu
 {
 public:
-	PrintMenu(TTF_Font *font) : Menu(font)
+	PrintMenu(Font *font) : Menu(font)
 	{
 	}
 
@@ -76,7 +77,7 @@ static void init(void)
 	TTF_Init();
 
 
-	fnt = read_and_alloc_font("font.ttf");
+	fnt = read_and_alloc_font("font.ttf", 18);
 
 	bg_left = IMG_Load("bg_left.png");
 	bg_right = IMG_Load("bg_right.png");
@@ -84,7 +85,7 @@ static void init(void)
 	panic_if( !bg_left || !bg_right || !bg_middle,
 			"bg loading failed\n");
 
-	g_menu = new PrintMenu(fnt);
+	g_menu = new PrintMenu(new Font_TTF(fnt, 255, 255, 255));
 	g_menu->setText(main_menu_messages);
 	g_menu->setSelectedBackground(bg_left, bg_middle, bg_right,
 			NULL, NULL, NULL);

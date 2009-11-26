@@ -39,6 +39,6 @@ static inline void *xmalloc(size_t sz)
     panic_if(r < 0 || r >= (int)(size), "snprintf failed for %s with %d\n", fmt, r); \
 } while(0)
 
-TTF_Font *read_and_alloc_font(const char *path);
+TTF_Font *read_and_alloc_font(const char *path, int pt_size);
 
 #endif /* __UTILS_H__ */
