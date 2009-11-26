@@ -68,7 +68,8 @@ const char *main_menu_messages[] = {
 static void init(void)
 {
 	TTF_Font *fnt;
-	SDL_Surface *bg_left, *bg_right, *bg_middle;
+	SDL_Surface *bg_left, *bg_right, *bg_middle,
+		*bg_submenu_left, *bg_submenu_right, *bg_submenu_middle;
 
 	screen = SDL_SetVideoMode(640, 480, 16,
 			SDL_DOUBLEBUF);
@@ -79,16 +80,20 @@ static void init(void)
 
 	fnt = read_and_alloc_font("font.ttf", 18);
 
-	bg_left = IMG_Load("bg_left.png");
-	bg_right = IMG_Load("bg_right.png");
-	bg_middle = IMG_Load("bg_middle.png");
-	panic_if( !bg_left || !bg_right || !bg_middle,
+	bg_left = IMG_Load("themes/default/bg_left.png");
+	bg_right = IMG_Load("themes/default/bg_right.png");
+	bg_middle = IMG_Load("themes/default/bg_middle.png");
+	bg_submenu_left = IMG_Load("themes/default/bg_submenu_left.png");
+	bg_submenu_right = IMG_Load("themes/default/bg_submenu_right.png");
+	bg_submenu_middle = IMG_Load("themes/default/bg_submenu_middle.png");
+	panic_if( !bg_left || !bg_right || !bg_middle ||
+			!bg_submenu_left || !bg_submenu_right || !bg_submenu_middle,
 			"bg loading failed\n");
 
 	g_menu = new PrintMenu(new Font_TTF(fnt, 255, 255, 255));
 	g_menu->setText(main_menu_messages);
 	g_menu->setSelectedBackground(bg_left, bg_middle, bg_right,
-			NULL, NULL, NULL);
+			bg_submenu_left, bg_submenu_middle, bg_submenu_right);
 }
 
 int main(int argc, char *argv[])
