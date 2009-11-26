@@ -24,6 +24,7 @@ public:
 };
 
 SDL_Surface *screen;
+SDL_Surface *g_background;
 PrintMenu *g_menu;
 
 static void run(void)
@@ -43,6 +44,7 @@ static void run(void)
 
 	        SDL_Flip(screen);
 	        SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0,0,0));
+	        SDL_BlitSurface(g_background, NULL, screen, NULL);
 		SDL_Delay(50);
 	}
 }
@@ -79,6 +81,8 @@ static void init(void)
 
 
 	fnt = read_and_alloc_font("font.ttf", 18);
+
+	g_background = IMG_Load("themes/default/background.png");
 
 	bg_left = IMG_Load("themes/default/bg_left.png");
 	bg_right = IMG_Load("themes/default/bg_right.png");
