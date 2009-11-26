@@ -80,7 +80,7 @@ static void init(void)
 	TTF_Init();
 
 
-	fnt = read_and_alloc_font("font.ttf", 18);
+	fnt = read_and_alloc_font("themes/default/font.ttf", 18);
 
 	g_background = IMG_Load("themes/default/background.png");
 
