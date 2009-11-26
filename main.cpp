@@ -86,7 +86,8 @@ static void init(void)
 
 	g_menu = new PrintMenu(fnt);
 	g_menu->setText(main_menu_messages);
-	g_menu->setSelectedBackground(bg_left, bg_middle, bg_right);
+	g_menu->setSelectedBackground(bg_left, bg_middle, bg_right,
+			NULL, NULL, NULL);
 }
 
 int main(int argc, char *argv[])

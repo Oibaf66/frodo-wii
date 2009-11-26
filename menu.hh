@@ -46,11 +46,16 @@ public:
 
 	void setTextColor(SDL_Color clr);
 
-	void setSelectedBackground(SDL_Surface *left, SDL_Surface *middle, SDL_Surface *right)
+	void setSelectedBackground(SDL_Surface *left, SDL_Surface *middle, SDL_Surface *right,
+			SDL_Surface *submenu_left, SDL_Surface *submenu_middle, SDL_Surface *submenu_right)
 	{
 		this->text_bg_left = left;
 		this->text_bg_middle = middle;
 		this->text_bg_right = right;
+
+		this->submenu_bg_left = submenu_left;
+		this->submenu_bg_middle = submenu_middle;
+		this->submenu_bg_right = submenu_right;
 	}
 
 	void setText(const char **messages, int *submenu_defaults = NULL);
@@ -94,9 +99,14 @@ protected:
 	const char **pp_msgs;
 	TTF_Font *font;
 	SDL_Color text_color;
+
 	SDL_Surface *text_bg_left;
 	SDL_Surface *text_bg_right;
 	SDL_Surface *text_bg_middle;
+
+	SDL_Surface *submenu_bg_left;
+	SDL_Surface *submenu_bg_right;
+	SDL_Surface *submenu_bg_middle;
 
 	/* Relative to this menu */
 	int	mouse_x, mouse_y;

@@ -78,8 +78,7 @@ void Menu::highlightBackground(SDL_Surface *where,
 	int bg_y_start = y + font_height / 2 -
 			bg_left->h / 2;
 	int bg_x_start = x - bg_left->w / 3;
-	int bg_x_end = x + w -
-			(2 * bg_right->w) / 3;
+	int bg_x_end = x + w - (2 * bg_right->w) / 3;
 	int n_mid = (bg_x_end - bg_x_start) / bg_middle->w;
 
 	/* Left */
@@ -183,7 +182,7 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 			TTF_SizeText(this->font, p, &tw, &th);
 
 			this->highlightBackground(where,
-					this->text_bg_left, this->text_bg_middle, this->text_bg_right,
+					this->submenu_bg_left, this->submenu_bg_middle, this->submenu_bg_right,
 					 x_start + tw_first, cur_y, tw, th);
 			free(p);
 		}
@@ -416,6 +415,9 @@ Menu::Menu(TTF_Font *font)
 	this->text_bg_left = NULL;
 	this->text_bg_middle = NULL;
 	this->text_bg_right = NULL;
+	this->submenu_bg_left =  NULL;
+	this->submenu_bg_middle = NULL;
+	this->submenu_bg_right = NULL;
 
 	this->pp_msgs = NULL;
 	this->n_entries = 0;
