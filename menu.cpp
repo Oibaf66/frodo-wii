@@ -97,8 +97,7 @@ void Menu::highlightBackground(SDL_Surface *where,
 
 	/* Right */
 	dst = (SDL_Rect){bg_x_end, bg_y_start, 0,0};
-	SDL_BlitSurface(bg_right, NULL,
-			where, &dst);
+	SDL_BlitSurface(bg_right, NULL,	where, &dst);
 }
 
 
