@@ -80,18 +80,22 @@ void Menu::highlightBackground(SDL_Surface *where,
 	int bg_x_start = x - bg_left->w / 3;
 	int bg_x_end = x + w -
 			(2 * bg_right->w) / 3;
-	int n_mid = ((bg_x_end - bg_x_start) / bg_middle->w) + 1;
+	int n_mid = (bg_x_end - bg_x_start) / bg_middle->w;
 
+	/* Left */
 	dst = (SDL_Rect){bg_x_start, bg_y_start, 0,0};
-	SDL_BlitSurface(bg_left, NULL,
-			where, &dst);
+	SDL_BlitSurface(bg_left, NULL, where, &dst);
+
+	/* Middle */
 	for (int i = 1; i < n_mid; i++)
 	{
-		dst = (SDL_Rect){bg_x_start + i * bg_middle->w,
-			bg_y_start, 0,0};
-		SDL_BlitSurface(bg_middle, NULL,
-				where, &dst);
+		dst = (SDL_Rect){bg_x_start + i * bg_middle->w, bg_y_start, 0,0};
+		SDL_BlitSurface(bg_middle, NULL, where, &dst);
 	}
+	dst = (SDL_Rect){bg_x_end - bg_middle->w, bg_y_start, 0,0};
+	SDL_BlitSurface(bg_middle, NULL, where, &dst);
+
+	/* Right */
 	dst = (SDL_Rect){bg_x_end, bg_y_start, 0,0};
 	SDL_BlitSurface(bg_right, NULL,
 			where, &dst);
