@@ -47,10 +47,10 @@ private:
 
 	bool is_active;
 	Menu *focus; /* Where the focus goes */
-
-	SDL_Surface *background;
 	Menu *main_menu;
 
+	SDL_Surface *background;
+	SDL_Surface *main_menu_bg;
 	SDL_Surface *bg_left, *bg_right, *bg_middle,
 		*bg_submenu_left, *bg_submenu_right, *bg_submenu_middle;
 
