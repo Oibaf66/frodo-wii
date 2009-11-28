@@ -1,4 +1,4 @@
-OBJS=menu.oo main.oo utils.oo
+OBJS=menu.oo main.oo utils.oo frodo_menu.oo
 
 all: menu
 
@@ -6,6 +6,8 @@ all: menu
 	g++ -Wall -g -c `sdl-config --cflags` -o $@ $<
 
 menu.oo: menu.cpp menu.hh utils.hh font.hh Makefile
+
+frodo_menu.oo: frodo_menu.cpp frodo_menu.hh font.hh menu.hh Makefile
 
 utils.oo: utils.cpp utils.hh Makefile
 
