@@ -8,7 +8,7 @@
 
 enum GuiView
 {
-	main,
+	main_menu,
 	insert_disc,
 	select_state,
 	virtual_keyboard,
@@ -26,15 +26,9 @@ public:
 
 	bool setTheme(const char *path);
 
-	void activate()
-	{
-		this->is_active = true;
-	}
+	void activate();
 
-	void deActivate()
-	{
-		this->is_active = false;
-	}
+	void deActivate();
 
 	void runLogic(void);
 

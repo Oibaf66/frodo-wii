@@ -55,8 +55,10 @@ Gui::Gui()
 	this->bg_submenu_left = NULL;
 	this->bg_submenu_middle = NULL;
 	this->bg_submenu_right = NULL;
+	this->background = NULL;
 
 	this->main_font = NULL;
+	this->main_menu = new MainMenu(NULL);
 }
 
 
@@ -68,6 +70,8 @@ bool Gui::setTheme(const char *path)
 	this->bg_submenu_left = this->loadThemeImage(path, "bg_submenu_left.png");
 	this->bg_submenu_middle = this->loadThemeImage(path, "bg_submenu_middle.png");
 	this->bg_submenu_right = this->loadThemeImage(path, "bg_submenu_right.png");
+
+	this->background = this->loadThemeImage(path, "background.png");
 
 	this->main_font = this->loadThemeFont(path, "font.ttf");
 
@@ -82,6 +86,7 @@ bool Gui::setTheme(const char *path)
 		SDL_FreeSurface(this->bg_submenu_left);
 		SDL_FreeSurface(this->bg_submenu_middle);
 		SDL_FreeSurface(this->bg_submenu_right);
+		SDL_FreeSurface(this->background);
 
 		if (this->main_font)
 			delete this->main_font;
@@ -90,6 +95,8 @@ bool Gui::setTheme(const char *path)
 	}
 	this->main_menu->setSelectedBackground(bg_left, bg_middle, bg_right,
 			bg_submenu_left, bg_submenu_middle, bg_submenu_right);
+	this->main_menu->setFont(this->main_font);
+	this->focus = this->main_menu;
 
 	return true;
 }
@@ -98,6 +105,7 @@ void Gui::runLogic(void)
 {
 	if (!this->is_active)
 		return;
+	this->main_menu->runLogic();
 }
 
 void Gui::setView(GuiView view)
@@ -115,6 +123,19 @@ void Gui::draw(SDL_Surface *where)
 {
 	if (!this->is_active)
 		return;
+
+	 SDL_BlitSurface(this->background, NULL, screen, NULL);
+	 this->main_menu->draw(where, 50, 100, 300, 400);
+}
+
+void Gui::activate()
+{
+	this->is_active = true;
+}
+
+void Gui::deActivate()
+{
+	this->is_active = false;
 }
 
 const char *Gui::getThemePath(const char *dir, const char *what)

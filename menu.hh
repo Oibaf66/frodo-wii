@@ -46,6 +46,13 @@ class Menu
 public:
 	Menu(Font *font);
 
+	~Menu();
+
+	void setFont(Font *font)
+	{
+		this->font = font;
+	}
+
 	void setTextColor(SDL_Color clr);
 
 	void setSelectedBackground(SDL_Surface *left, SDL_Surface *middle, SDL_Surface *right,
@@ -68,8 +75,6 @@ public:
 
 	void draw(SDL_Surface *where,
 			int x, int y, int w, int h);
-
-	~Menu();
 
 protected:
 	void highlightBackground(SDL_Surface *where,
