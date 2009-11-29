@@ -14,19 +14,19 @@ public:
 	MainMenu(Font *font) : Menu(font)
 	{
 		static const char *messages[] = {
-				/*02*/          "File",
-		                /*03*/          "^|Insert|Start",
-		                /*04*/          "States",
-		                /*05*/          "^|Load|Save|Delete",
-		                /*06*/          "Keyboard",
-		                /*07*/          "^|Type|Macro|Bind",
-		                /*08*/          " ",
-		                /*09*/          "Reset the C=64",
-		                /*10*/          "Networking",
-		                /*11*/          "Options",
-		                /*12*/          "Advanced Options",
-		                /*13*/          "Help",
-		                /*15*/          "Quit",
+				/*00*/          "File",
+		                /*01*/          "^|Insert|Start",
+		                /*02*/          "States",
+		                /*03*/          "^|Load|Save|Delete",
+		                /*04*/          "Keyboard",
+		                /*05*/          "^|Type|Macro|Bind",
+		                /*06*/          " ",
+		                /*07*/          "Reset the C=64",
+		                /*08*/          "Networking",
+		                /*09*/          "Options",
+		                /*10*/          "Advanced Options",
+		                /*11*/          "Help",
+		                /*12*/          "Quit",
 		                NULL
 		};
 
@@ -36,6 +36,8 @@ public:
 	virtual void selectCallback(int which)
 	{
 		printf("entry %d selected: %s\n", which, this->pp_msgs[which]);
+		if (which == 12)
+			exit(0);
 	}
 
 	virtual void escapeCallback(int which)
