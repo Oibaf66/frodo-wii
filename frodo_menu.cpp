@@ -8,10 +8,12 @@
 
 extern SDL_Surface *screen;
 
+class Gui;
+
 class MainMenu : public Menu
 {
 public:
-	MainMenu(Font *font) : Menu(font)
+	MainMenu(Font *font, Gui *parent) : Menu(font)
 	{
 		static const char *messages[] = {
 				/*00*/          "File",
@@ -31,6 +33,7 @@ public:
 		};
 
 		this->setText(messages);
+		this->parent = parent;
 	}
 
 	virtual void selectCallback(int which)
@@ -44,6 +47,9 @@ public:
 	{
 		printf("entry %d escaped: %s\n", which, this->pp_msgs[which]);
 	}
+
+private:
+	Gui *parent;
 };
 
 
@@ -61,7 +67,7 @@ Gui::Gui()
 	this->main_menu_bg = NULL;
 
 	this->main_font = NULL;
-	this->main_menu = new MainMenu(NULL);
+	this->main_menu = new MainMenu(NULL, this);
 }
 
 
