@@ -33,6 +33,14 @@ static inline void *xmalloc(size_t sz)
   return out;
 }
 
+static inline void *xrealloc(void *ptr, size_t sz)
+{
+  void *out = realloc(ptr, sz);
+
+  panic_if(!out, "malloc failed");
+
+  return out;
+}
 
 #define xsnprintf(buf, size, fmt, x...) do { \
     int r = snprintf(buf, size, fmt, x); \

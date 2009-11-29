@@ -6,15 +6,26 @@
 #include "menu.hh"
 #include "font.hh"
 
-enum GuiView
+class Gui;
+
+class GuiView
 {
-	main_menu,
-	insert_disc,
-	select_state,
-	virtual_keyboard,
-	networking,
-	options,
-	help,
+public:
+	GuiView(Gui *parent)
+	{
+		this->parent = parent;
+	}
+
+	virtual void pushEvent(SDL_Event *ev) = 0;
+
+	virtual void runLogic() = 0;
+
+	virtual void updateTheme() = 0;
+
+	virtual void draw(SDL_Surface *where) = 0;
+
+protected:
+	Gui *parent;
 };
 
 class Gui
@@ -32,13 +43,13 @@ public:
 
 	void runLogic(void);
 
-	void setView(GuiView view);
-
 	void pushEvent(SDL_Event *ev);
 
 	void draw(SDL_Surface *where);
 
-private:
+	void registerView(GuiView *view);
+
+	/* These are private, keep off! */
 	const char *getThemePath(const char *dir, const char *what);
 
 	SDL_Surface *loadThemeImage(const char *dir, const char *what);
@@ -54,7 +65,11 @@ private:
 	SDL_Surface *bg_left, *bg_right, *bg_middle,
 		*bg_submenu_left, *bg_submenu_right, *bg_submenu_middle;
 
-	Font *main_font;
+	Font *default_font;
+
+	GuiView **views;
+	GuiView *cur_view;
+	int n_views;
 };
 
 #endif /* GUI_HH */

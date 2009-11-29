@@ -10,10 +10,21 @@ extern SDL_Surface *screen;
 
 class Gui;
 
+const char *get_theme_path(const char *dir, const char *what)
+{
+	static char buf[255];
+
+	memset(buf, 0, sizeof(buf));
+	snprintf(buf, 254, "%s/%s",
+			dir, what);
+
+	return buf;
+}
+
 class MainMenu : public Menu
 {
 public:
-	MainMenu(Font *font, Gui *parent) : Menu(font)
+	MainMenu(Font *font, GuiView *parent) : Menu(font)
 	{
 		static const char *messages[] = {
 				/*00*/          "File",
@@ -49,9 +60,51 @@ public:
 	}
 
 private:
-	Gui *parent;
+	GuiView *parent;
 };
 
+
+class MainView : public GuiView
+{
+public:
+	MainView(Gui *parent) : GuiView(parent)
+	{
+		this->menu = new MainMenu(NULL, this);
+	}
+
+	void updateTheme()
+	{
+		this->bg = parent->main_menu_bg;
+
+		this->menu->setFont(this->parent->default_font);
+		this->menu->setSelectedBackground(this->parent->bg_left, this->parent->bg_middle,
+				this->parent->bg_right, this->parent->bg_submenu_left,
+				this->parent->bg_submenu_middle, this->parent->bg_submenu_right);
+	}
+
+	void runLogic()
+	{
+		this->menu->runLogic();
+	}
+
+	void pushEvent(SDL_Event *ev)
+	{
+		this->menu->pushEvent(ev);
+	}
+
+	void draw(SDL_Surface *where)
+	{
+		 SDL_Rect dst;
+		 dst = (SDL_Rect){20,45,300,400};
+
+		 SDL_BlitSurface(this->bg, NULL, where, &dst);
+		 this->menu->draw(where, 50, 70, 300, 400);
+	}
+
+protected:
+	MainMenu *menu;
+	SDL_Surface *bg;
+};
 
 Gui::Gui()
 {
@@ -65,9 +118,15 @@ Gui::Gui()
 	this->bg_submenu_right = NULL;
 	this->background = NULL;
 	this->main_menu_bg = NULL;
+	this->default_font = NULL;
 
-	this->main_font = NULL;
-	this->main_menu = new MainMenu(NULL, this);
+	this->n_views = 0;
+	this->views = NULL;
+
+	/* Create the views */
+	MainView *mv = new MainView(this);
+	this->registerView(mv);
+	this->cur_view = mv;
 }
 
 
@@ -83,12 +142,12 @@ bool Gui::setTheme(const char *path)
 	this->background = this->loadThemeImage(path, "background.png");
 	this->main_menu_bg = this->loadThemeImage(path, "main_menu_bg.png");
 
-	this->main_font = this->loadThemeFont(path, "font.ttf");
+	this->default_font = this->loadThemeFont(path, "font.ttf");
 
 	if (!this->bg_left || !this->bg_right || !this->bg_middle ||
 			!this->bg_submenu_left || !this->bg_submenu_right ||
 			!this->bg_submenu_middle ||
-			!this->main_font)
+			!this->default_font)
 	{
 		SDL_FreeSurface(this->bg_left);
 		SDL_FreeSurface(this->bg_middle);
@@ -99,15 +158,14 @@ bool Gui::setTheme(const char *path)
 		SDL_FreeSurface(this->background);
 		SDL_FreeSurface(this->main_menu_bg);
 
-		if (this->main_font)
-			delete this->main_font;
+		if (this->default_font)
+			delete this->default_font;
 
 		return false;
 	}
-	this->main_menu->setSelectedBackground(bg_left, bg_middle, bg_right,
-			bg_submenu_left, bg_submenu_middle, bg_submenu_right);
-	this->main_menu->setFont(this->main_font);
-	this->focus = this->main_menu;
+
+	for (int i = 0; i < this->n_views; i++)
+		this->views[i]->updateTheme();
 
 	return true;
 }
@@ -116,31 +174,33 @@ void Gui::runLogic(void)
 {
 	if (!this->is_active)
 		return;
-	this->main_menu->runLogic();
+
+	this->cur_view->runLogic();
 }
 
-void Gui::setView(GuiView view)
+void Gui::registerView(GuiView *view)
 {
+	int cur = this->n_views;
 
+	this->n_views++;
+	this->views = (GuiView**)xrealloc(this->views,
+			sizeof(GuiView*) * this->n_views);
+	this->views[cur] = view;
 }
 
 void Gui::pushEvent(SDL_Event *ev)
 {
-	if (this->is_active && this->focus)
-		this->focus->pushEvent(ev);
+	if (this->is_active)
+		this->cur_view->pushEvent(ev);
 }
 
 void Gui::draw(SDL_Surface *where)
 {
-	SDL_Rect dst;
-
 	if (!this->is_active)
 		return;
 
 	 SDL_BlitSurface(this->background, NULL, screen, NULL);
-	 dst = (SDL_Rect){20,45,300,400};
-	 SDL_BlitSurface(this->main_menu_bg, NULL, screen, &dst);
-	 this->main_menu->draw(where, 50, 70, 300, 400);
+	 this->cur_view->draw(where);
 }
 
 void Gui::activate()
@@ -153,27 +213,16 @@ void Gui::deActivate()
 	this->is_active = false;
 }
 
-const char *Gui::getThemePath(const char *dir, const char *what)
-{
-	static char buf[255];
-
-	memset(buf, 0, sizeof(buf));
-	snprintf(buf, 254, "%s/%s",
-			dir, what);
-
-	return buf;
-}
-
 SDL_Surface *Gui::loadThemeImage(const char *dir, const char *what)
 {
-	return IMG_Load(this->getThemePath(dir, what));
+	return IMG_Load(get_theme_path(dir, what));
 }
 
 Font *Gui::loadThemeFont(const char *dir, const char *what)
 {
 	TTF_Font *fnt;
 
-	fnt = read_and_alloc_font(this->getThemePath(dir, what), 18);
+	fnt = read_and_alloc_font(get_theme_path(dir, what), 18);
 	if (!fnt)
 		return NULL;
 
