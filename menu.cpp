@@ -34,7 +34,7 @@ void Menu::printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 		int pixels_per_char = tw / strlen(buf);
 		int last_char = (w / pixels_per_char) - 1;
 
-		if (last_char > strlen(buf))
+		if ((unsigned)last_char > strlen(buf))
 			last_char = strlen(buf) - 3;
 
 		/* FIXME! Handle some corner cases here (short strings etc) */
