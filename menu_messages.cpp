@@ -51,4 +51,5 @@ const char **main_menu_help[] = {
 				NULL,
 		},
 		NULL,
+		NULL,
 };

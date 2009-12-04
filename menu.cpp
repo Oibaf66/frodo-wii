@@ -25,14 +25,17 @@ void Menu::printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 	unsigned int i;
 	int tw;
 
-	buf = strdup(msg);
+	buf = xstrdup(msg);
 	tw = this->font->getWidth(buf);
 
 	/* Crop text */
 	if (x + tw > w)
 	{
-		int pixels_per_char = tw / strlen(msg);
-		int last_char = w / pixels_per_char;
+		int pixels_per_char = tw / strlen(buf);
+		int last_char = (w / pixels_per_char) - 1;
+
+		if (last_char > strlen(buf))
+			last_char = strlen(buf) - 3;
 
 		/* FIXME! Handle some corner cases here (short strings etc) */
 		if (last_char > 3)
@@ -117,8 +120,11 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 	else if ( this->cur_sel < start_entry_visible )
 		start_entry_visible = this->cur_sel;
 
+	if (start_entry_visible + entries_visible > this->n_entries)
+		entries_visible = this->n_entries - start_entry_visible;
+
 	for (int i = start_entry_visible;
-			i <= start_entry_visible + entries_visible; i++)
+			i < start_entry_visible + entries_visible; i++)
 	{
 		const char *msg = this->pp_msgs[i];
 		int cur_y;
@@ -398,7 +404,8 @@ void Menu::setText(const char **messages, int *submenu_defaults)
 		}
 	}
 	this->pp_msgs = (const char **)xmalloc(this->n_entries * sizeof(const char *));
-	this->p_submenus = (submenu_t *)xmalloc(this->n_submenus * sizeof(submenu_t));
+	if (this->n_submenus)
+		this->p_submenus = (submenu_t *)xmalloc(this->n_submenus * sizeof(submenu_t));
 	for (int i = 0; i < this->n_entries; i++)
 		this->pp_msgs[i] = xstrdup(messages[i]);
 
