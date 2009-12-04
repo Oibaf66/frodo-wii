@@ -84,6 +84,8 @@ protected:
 	void printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 			int x, int y, int w, int h);
 
+	virtual void hoverCallback(int which) = 0;
+
 	virtual void selectCallback(int which) = 0;
 
 	virtual void escapeCallback(int which) = 0;
@@ -92,11 +94,11 @@ protected:
 
 	int getNextEntry(int dy);
 
-	void selectOne(int which);
+	int selectOne(int which);
 
-	void selectNext(int dx, int dy);
+	int selectNext(int dx, int dy);
 
-	void selectNext(event_t ev);
+	int selectNext(event_t ev);
 
 	void pushEvent(event_t ev);
 

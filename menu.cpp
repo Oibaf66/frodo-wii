@@ -213,7 +213,7 @@ submenu_t *Menu::findSubmenu(int index)
 }
 
 
-void Menu::selectOne(int which)
+int Menu::selectOne(int which)
 {
 	if (which >= this->n_entries)
 		which = 0;
@@ -222,9 +222,11 @@ void Menu::selectOne(int which)
 	if (this->pp_msgs[this->cur_sel][0] == ' ' ||
 			IS_SUBMENU(this->pp_msgs[this->cur_sel]))
 		this->selectNext(0, 1);
+
+	return this->cur_sel;
 }
 
-void Menu::selectNext(int dx, int dy)
+int Menu::selectNext(int dx, int dy)
 {
 	int next;
 
@@ -234,8 +236,7 @@ void Menu::selectNext(int dx, int dy)
 	/* We want to skip this for some reason */
 	if (this->pp_msgs[this->cur_sel][0] == ' ' ||
 			IS_SUBMENU(this->pp_msgs[this->cur_sel]) ) {
-		this->selectNext(dx, dy);
-		return;
+		return this->selectNext(dx, dy);
 	}
 
 	/* If the next is a submenu */
@@ -247,9 +248,11 @@ void Menu::selectNext(int dx, int dy)
 		p_submenu->sel = (p_submenu->sel + dx) < 0 ? p_submenu->n_entries - 1 :
 		(p_submenu->sel + dx) % p_submenu->n_entries;
 	}
+
+	return this->cur_sel;
 }
 
-void Menu::selectNext(event_t ev)
+int Menu::selectNext(event_t ev)
 {
 	switch (ev)
 	{
@@ -264,6 +267,8 @@ void Menu::selectNext(event_t ev)
 	default:
 		panic("selectNext(ev) called with event %d\n", ev);
 	}
+
+	return this->cur_sel;
 }
 
 void Menu::runLogic()
@@ -278,8 +283,14 @@ void Menu::runLogic()
 		case KEY_DOWN:
 		case KEY_LEFT:
 		case KEY_RIGHT:
-			this->selectNext(ev);
-			break;
+		{
+			int now = this->cur_sel;
+			int next;
+
+			next = this->selectNext(ev);
+			if (now != next)
+				this->hoverCallback(this->cur_sel);
+		} break;
 		case KEY_SELECT:
 			this->selectCallback(this->cur_sel); break;
 		case KEY_ESCAPE:
