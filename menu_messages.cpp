@@ -42,8 +42,9 @@ const char **main_menu_help[] = {
 		NULL,
 		NULL,
 		(const char*[]){
-				"Networking menu for playing",
-				"C64 games online.",
+				"Network setup for playing",
+				"C64 games against other",
+				"players online.",
 				NULL,
 		},
 		(const char*[]){

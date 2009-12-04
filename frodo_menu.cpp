@@ -61,7 +61,7 @@ public:
 	virtual void selectCallback(int which)
 	{
 		printf("entry %d selected: %s\n", which, this->pp_msgs[which]);
-		if (which == 12)
+		if (which == 11)
 			exit(0);
 	}
 
