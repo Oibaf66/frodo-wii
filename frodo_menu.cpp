@@ -3,6 +3,7 @@
 
 #include "menu.hh"
 #include "frodo_menu.hh"
+#include "menu_messages.hh"
 #include "sdl_ttf_font.hh"
 #include "utils.hh"
 
@@ -21,30 +22,40 @@ const char *get_theme_path(const char *dir, const char *what)
 	return buf;
 }
 
+class HelpMenu : public Menu
+{
+public:
+	HelpMenu(Font *font, const char ***all_messages) : Menu(font)
+	{
+		this->all_messages = all_messages;
+	}
+
+	void updateHelpMessage(int which)
+	{
+		this->setText(this->all_messages[which]);
+	}
+
+	virtual void selectCallback(int which)
+	{
+	}
+	virtual void hoverCallback(int which)
+	{
+	}
+	virtual void escapeCallback(int which)
+	{
+	}
+
+protected:
+	const char ***all_messages;
+};
+
 class MainMenu : public Menu
 {
 public:
-	MainMenu(Font *font, GuiView *parent) : Menu(font)
+	MainMenu(Font *font, HelpMenu *help, GuiView *parent) : Menu(font)
 	{
-		static const char *messages[] = {
-				/*00*/          "File",
-		                /*01*/          "^|Insert|Start",
-		                /*02*/          "States",
-		                /*03*/          "^|Load|Save|Delete",
-		                /*04*/          "Keyboard",
-		                /*05*/          "^|Type|Macro|Bind",
-		                /*06*/          " ",
-		                /*07*/          "Reset the C=64",
-		                /*08*/          "Networking",
-		                /*09*/          "Options",
-		                /*10*/          "Advanced Options",
-		                /*11*/          "Help",
-		                /*12*/          "Quit",
-		                NULL
-		};
-
-		this->setText(messages);
 		this->parent = parent;
+		this->help = help;
 	}
 
 	virtual void selectCallback(int which)
@@ -57,6 +68,7 @@ public:
 	virtual void hoverCallback(int which)
 	{
 		printf("entry %d hover over: %s\n", which, this->pp_msgs[which]);
+		this->help->updateHelpMessage(which);
 	}
 
 	virtual void escapeCallback(int which)
@@ -66,6 +78,7 @@ public:
 
 private:
 	GuiView *parent;
+	HelpMenu *help;
 };
 
 
@@ -74,7 +87,9 @@ class MainView : public GuiView
 public:
 	MainView(Gui *parent) : GuiView(parent)
 	{
-		this->menu = new MainMenu(NULL, this);
+		this->help = new HelpMenu(NULL, main_menu_help);
+		this->menu = new MainMenu(NULL, this->help, this);
+		this->menu->setText(main_menu_messages);
 		this->bg = NULL;
 		this->infobox = NULL;
 		this->textbox = NULL;
@@ -87,6 +102,7 @@ public:
 		this->textbox = parent->textbox;
 
 		this->menu->setFont(this->parent->default_font);
+		this->help->setFont(this->parent->default_font);
 		this->menu->setSelectedBackground(this->parent->bg_left, this->parent->bg_middle,
 				this->parent->bg_right, this->parent->bg_submenu_left,
 				this->parent->bg_submenu_middle, this->parent->bg_submenu_right);
@@ -117,10 +133,12 @@ public:
 		 SDL_BlitSurface(this->textbox, NULL, where, &dst);
 
 		 this->menu->draw(where, 50, 70, 300, 400);
+		 this->help->draw(where, 354, 24, 264, 210);
 	}
 
 protected:
 	MainMenu *menu;
+	HelpMenu *help;
 	SDL_Surface *bg;
 	SDL_Surface *infobox;
 	SDL_Surface *textbox;

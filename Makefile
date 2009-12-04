@@ -1,4 +1,4 @@
-OBJS=menu.oo main.oo utils.oo frodo_menu.oo dialogue_box.oo
+OBJS=menu.oo main.oo utils.oo frodo_menu.oo dialogue_box.oo menu_messages.oo
 
 all: menu
 

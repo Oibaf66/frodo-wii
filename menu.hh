@@ -104,7 +104,6 @@ protected:
 
 	event_t popEvent();
 
-	const char *title;
 	const char **pp_msgs;
 	Font *font;
 	SDL_Color text_color;

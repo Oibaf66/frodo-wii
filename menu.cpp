@@ -35,9 +35,6 @@ void Menu::printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 		int last_char = w / pixels_per_char;
 
 		/* FIXME! Handle some corner cases here (short strings etc) */
-		panic_if((unsigned)last_char > strlen(msg),
-				"last character (%d) is after the string length (%d)\n",
-				last_char, strlen(msg));
 		if (last_char > 3)
 		{
 			buf[last_char - 2] = '.';
@@ -101,7 +98,9 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 	int entries_visible = h / line_height - 2;
 	int start_entry_visible = 0;
 
-	panic_if(!this->pp_msgs, "Set the messages before drawing, thank you\n");
+	/* No messages - nothing to draw */
+	if (!this->pp_msgs)
+		return;
 
 	if (this->cur_sel - start_entry_visible > entries_visible)
 	{
@@ -215,6 +214,9 @@ submenu_t *Menu::findSubmenu(int index)
 
 int Menu::selectOne(int which)
 {
+	panic_if(!this->pp_msgs,
+			"Can't select a message without any messages!");
+
 	if (which >= this->n_entries)
 		which = 0;
 	this->cur_sel = which;
@@ -222,6 +224,7 @@ int Menu::selectOne(int which)
 	if (this->pp_msgs[this->cur_sel][0] == ' ' ||
 			IS_SUBMENU(this->pp_msgs[this->cur_sel]))
 		this->selectNext(0, 1);
+	this->hoverCallback(this->cur_sel);
 
 	return this->cur_sel;
 }
@@ -229,6 +232,9 @@ int Menu::selectOne(int which)
 int Menu::selectNext(int dx, int dy)
 {
 	int next;
+
+	panic_if(!this->pp_msgs,
+			"Can't select the next message without any messages!");
 
 	this->cur_sel = this->getNextEntry(dy);
 	next = this->getNextEntry(dy + 1);
@@ -254,19 +260,25 @@ int Menu::selectNext(int dx, int dy)
 
 int Menu::selectNext(event_t ev)
 {
+	int now = this->cur_sel;
+	int next;
+
 	switch (ev)
 	{
 	case KEY_UP:
-		this->selectNext(0, -1); break;
+		next = this->selectNext(0, -1); break;
 	case KEY_DOWN:
-		this->selectNext(0, 1); break;
+		next = this->selectNext(0, 1); break;
 	case KEY_LEFT:
-		this->selectNext(-1, 0); break;
+		next = this->selectNext(-1, 0); break;
 	case KEY_RIGHT:
-		this->selectNext(1, 0); break;
+		next = this->selectNext(1, 0); break;
 	default:
 		panic("selectNext(ev) called with event %d\n", ev);
 	}
+
+	if (now != next)
+		this->hoverCallback(this->cur_sel);
 
 	return this->cur_sel;
 }
@@ -283,14 +295,8 @@ void Menu::runLogic()
 		case KEY_DOWN:
 		case KEY_LEFT:
 		case KEY_RIGHT:
-		{
-			int now = this->cur_sel;
-			int next;
-
-			next = this->selectNext(ev);
-			if (now != next)
-				this->hoverCallback(this->cur_sel);
-		} break;
+			this->selectNext(ev);
+			break;
 		case KEY_SELECT:
 			this->selectCallback(this->cur_sel); break;
 		case KEY_ESCAPE:
@@ -375,6 +381,12 @@ void Menu::setText(const char **messages, int *submenu_defaults)
 	this->n_submenus = 0;
 	free(this->p_submenus);
 	free(this->pp_msgs);
+
+	/* Empty messages are allowed */
+	this->p_submenus = NULL;
+	this->pp_msgs = NULL;
+	if (!messages)
+		return;
 
 	for (this->n_entries = 0; messages[this->n_entries]; this->n_entries++)
 	{
