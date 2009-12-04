@@ -74,6 +74,7 @@ public:
 	virtual void escapeCallback(int which)
 	{
 		printf("entry %d escaped: %s\n", which, this->pp_msgs[which]);
+		this->parent->parent->resetViewStack();
 	}
 
 private:
@@ -166,7 +167,7 @@ Gui::Gui()
 
 	/* Create the views */
 	MainView *mv = new MainView(this);
-	this->registerView(mv);
+	this->pushView(mv);
 	this->cur_view = mv;
 }
 
@@ -227,7 +228,8 @@ void Gui::runLogic(void)
 	this->cur_view->runLogic();
 }
 
-void Gui::registerView(GuiView *view)
+
+void Gui::pushView(GuiView *view)
 {
 	int cur = this->n_views;
 
@@ -235,6 +237,27 @@ void Gui::registerView(GuiView *view)
 	this->views = (GuiView**)xrealloc(this->views,
 			sizeof(GuiView*) * this->n_views);
 	this->views[cur] = view;
+}
+
+GuiView *Gui::popView()
+{
+	this->n_views--;
+	if (this->n_views <= 0)
+	{
+		this->n_views = 0;
+		free(this->views);
+		return NULL;
+	}
+
+	this->views = (GuiView**)xrealloc(this->views,
+			sizeof(GuiView*) * this->n_views);
+	return this->views[this->n_views - 1];
+}
+
+void Gui::resetViewStack()
+{
+	free(this->views);
+	this->views = NULL;
 }
 
 void Gui::pushEvent(SDL_Event *ev)

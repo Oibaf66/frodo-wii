@@ -24,7 +24,6 @@ public:
 
 	virtual void draw(SDL_Surface *where) = 0;
 
-protected:
 	Gui *parent;
 };
 
@@ -47,7 +46,11 @@ public:
 
 	void draw(SDL_Surface *where);
 
-	void registerView(GuiView *view);
+	void pushView(GuiView *view);
+
+	GuiView *popView();
+
+	void resetViewStack();
 
 	/* These are private, keep off! */
 	const char *getThemePath(const char *dir, const char *what);
