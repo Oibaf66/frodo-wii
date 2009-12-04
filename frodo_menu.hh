@@ -54,7 +54,7 @@ public:
 
 	SDL_Surface *loadThemeImage(const char *dir, const char *what);
 
-	Font *loadThemeFont(const char *dir, const char *what);
+	Font *loadThemeFont(const char *dir, const char *what, int size);
 
 	bool is_active;
 	Menu *focus; /* Where the focus goes */
@@ -68,6 +68,7 @@ public:
 		*bg_submenu_left, *bg_submenu_right, *bg_submenu_middle;
 
 	Font *default_font;
+	Font *small_font;
 
 	GuiView **views;
 	GuiView *cur_view;

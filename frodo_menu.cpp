@@ -102,7 +102,7 @@ public:
 		this->textbox = parent->textbox;
 
 		this->menu->setFont(this->parent->default_font);
-		this->help->setFont(this->parent->default_font);
+		this->help->setFont(this->parent->small_font);
 		this->menu->setSelectedBackground(this->parent->bg_left, this->parent->bg_middle,
 				this->parent->bg_right, this->parent->bg_submenu_left,
 				this->parent->bg_submenu_middle, this->parent->bg_submenu_right);
@@ -159,6 +159,7 @@ Gui::Gui()
 	this->infobox = NULL;
 	this->textbox = NULL;
 	this->default_font = NULL;
+	this->small_font = NULL;
 
 	this->n_views = 0;
 	this->views = NULL;
@@ -184,12 +185,14 @@ bool Gui::setTheme(const char *path)
 	this->infobox = this->loadThemeImage(path, "infobox.png");
 	this->textbox = this->loadThemeImage(path, "textbox.png");
 
-	this->default_font = this->loadThemeFont(path, "font.ttf");
+	this->default_font = this->loadThemeFont(path, "font.ttf", 18);
+	this->small_font = this->loadThemeFont(path, "font.ttf", 16);
 
 	if (!this->bg_left || !this->bg_right || !this->bg_middle ||
 			!this->bg_submenu_left || !this->bg_submenu_right ||
 			!this->bg_submenu_middle ||
-			!this->default_font)
+			!this->default_font ||
+			!this->small_font)
 	{
 		SDL_FreeSurface(this->bg_left);
 		SDL_FreeSurface(this->bg_middle);
@@ -204,6 +207,8 @@ bool Gui::setTheme(const char *path)
 
 		if (this->default_font)
 			delete this->default_font;
+		if (this->small_font)
+			delete this->small_font;
 
 		return false;
 	}
@@ -262,11 +267,11 @@ SDL_Surface *Gui::loadThemeImage(const char *dir, const char *what)
 	return IMG_Load(get_theme_path(dir, what));
 }
 
-Font *Gui::loadThemeFont(const char *dir, const char *what)
+Font *Gui::loadThemeFont(const char *dir, const char *what, int size)
 {
 	TTF_Font *fnt;
 
-	fnt = read_and_alloc_font(get_theme_path(dir, what), 18);
+	fnt = read_and_alloc_font(get_theme_path(dir, what), size);
 	if (!fnt)
 		return NULL;
 
