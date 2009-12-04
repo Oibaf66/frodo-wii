@@ -1,6 +1,6 @@
 /*********************************************************************
 *
-* Copyright (C) 2004,2008,  Simon Kagstrom
+* Copyright (C) 2004-2009,  Simon Kagstrom
 *
 * Filename:      menu.c
 * Author:        Simon Kagstrom <simon.kagstrom@gmail.com>
@@ -29,7 +29,7 @@ void Menu::printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 	tw = this->font->getWidth(buf);
 
 	/* Crop text */
-	if (x + tw > w)
+	if (tw > w)
 	{
 		int pixels_per_char = tw / strlen(buf);
 		int last_char = (w / pixels_per_char) - 1;
