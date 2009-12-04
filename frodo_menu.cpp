@@ -70,11 +70,16 @@ public:
 	MainView(Gui *parent) : GuiView(parent)
 	{
 		this->menu = new MainMenu(NULL, this);
+		this->bg = NULL;
+		this->infobox = NULL;
+		this->textbox = NULL;
 	}
 
 	void updateTheme()
 	{
 		this->bg = parent->main_menu_bg;
+		this->infobox = parent->infobox;
+		this->textbox = parent->textbox;
 
 		this->menu->setFont(this->parent->default_font);
 		this->menu->setSelectedBackground(this->parent->bg_left, this->parent->bg_middle,
@@ -95,15 +100,25 @@ public:
 	void draw(SDL_Surface *where)
 	{
 		 SDL_Rect dst;
-		 dst = (SDL_Rect){20,45,300,400};
 
+		 /* Blit the backgrounds */
+		 dst = (SDL_Rect){20,45,300,400};
 		 SDL_BlitSurface(this->bg, NULL, where, &dst);
+
+		 dst = (SDL_Rect){350,13,0,0};
+		 SDL_BlitSurface(this->infobox, NULL, where, &dst);
+
+		 dst = (SDL_Rect){350,242,0,0};
+		 SDL_BlitSurface(this->textbox, NULL, where, &dst);
+
 		 this->menu->draw(where, 50, 70, 300, 400);
 	}
 
 protected:
 	MainMenu *menu;
 	SDL_Surface *bg;
+	SDL_Surface *infobox;
+	SDL_Surface *textbox;
 };
 
 Gui::Gui()
@@ -118,6 +133,8 @@ Gui::Gui()
 	this->bg_submenu_right = NULL;
 	this->background = NULL;
 	this->main_menu_bg = NULL;
+	this->infobox = NULL;
+	this->textbox = NULL;
 	this->default_font = NULL;
 
 	this->n_views = 0;
@@ -141,6 +158,8 @@ bool Gui::setTheme(const char *path)
 
 	this->background = this->loadThemeImage(path, "background.png");
 	this->main_menu_bg = this->loadThemeImage(path, "main_menu_bg.png");
+	this->infobox = this->loadThemeImage(path, "infobox.png");
+	this->textbox = this->loadThemeImage(path, "textbox.png");
 
 	this->default_font = this->loadThemeFont(path, "font.ttf");
 
@@ -157,6 +176,8 @@ bool Gui::setTheme(const char *path)
 		SDL_FreeSurface(this->bg_submenu_right);
 		SDL_FreeSurface(this->background);
 		SDL_FreeSurface(this->main_menu_bg);
+		SDL_FreeSurface(this->infobox);
+		SDL_FreeSurface(this->textbox);
 
 		if (this->default_font)
 			delete this->default_font;

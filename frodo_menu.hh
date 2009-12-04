@@ -62,6 +62,8 @@ public:
 
 	SDL_Surface *background;
 	SDL_Surface *main_menu_bg;
+	SDL_Surface *infobox;
+	SDL_Surface *textbox;
 	SDL_Surface *bg_left, *bg_right, *bg_middle,
 		*bg_submenu_left, *bg_submenu_right, *bg_submenu_middle;
 
