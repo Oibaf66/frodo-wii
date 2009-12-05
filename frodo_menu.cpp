@@ -74,7 +74,7 @@ public:
 	virtual void escapeCallback(int which)
 	{
 		printf("entry %d escaped: %s\n", which, this->pp_msgs[which]);
-		this->parent->parent->resetViewStack();
+		this->parent->parent->exitMenu();
 	}
 
 private:
@@ -168,7 +168,6 @@ Gui::Gui()
 	/* Create the views */
 	MainView *mv = new MainView(this);
 	this->pushView(mv);
-	this->cur_view = mv;
 }
 
 
@@ -222,10 +221,10 @@ bool Gui::setTheme(const char *path)
 
 void Gui::runLogic(void)
 {
-	if (!this->is_active)
-		return;
+	GuiView *cur_view = this->peekView();
 
-	this->cur_view->runLogic();
+	if (!this->is_active || !cur_view)
+		return;
 }
 
 
@@ -254,7 +253,7 @@ GuiView *Gui::popView()
 	return this->views[this->n_views - 1];
 }
 
-void Gui::resetViewStack()
+void Gui::exitMenu()
 {
 	free(this->views);
 	this->views = NULL;
@@ -262,17 +261,22 @@ void Gui::resetViewStack()
 
 void Gui::pushEvent(SDL_Event *ev)
 {
-	if (this->is_active)
-		this->cur_view->pushEvent(ev);
+	GuiView *cur_view = this->peekView();
+
+	if (this->is_active || !cur_view)
+		cur_view->pushEvent(ev);
+	cur_view->runLogic();
 }
 
 void Gui::draw(SDL_Surface *where)
 {
-	if (!this->is_active)
+	GuiView *cur_view = this->peekView();
+
+	if (!this->is_active || !cur_view)
 		return;
 
 	 SDL_BlitSurface(this->background, NULL, screen, NULL);
-	 this->cur_view->draw(where);
+	 cur_view->draw(where);
 }
 
 void Gui::activate()

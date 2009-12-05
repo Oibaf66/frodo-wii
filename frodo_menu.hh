@@ -50,7 +50,14 @@ public:
 
 	GuiView *popView();
 
-	void resetViewStack();
+	GuiView *peekView()
+	{
+		if (!this->views)
+			return NULL;
+		return this->views[this->n_views-1];
+	}
+
+	void exitMenu();
 
 	/* These are private, keep off! */
 	const char *getThemePath(const char *dir, const char *what);
@@ -74,7 +81,6 @@ public:
 	Font *small_font;
 
 	GuiView **views;
-	GuiView *cur_view;
 	int n_views;
 };
 
