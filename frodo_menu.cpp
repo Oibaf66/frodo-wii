@@ -265,8 +265,9 @@ void Gui::pushEvent(SDL_Event *ev)
 {
 	GuiView *cur_view = this->peekView();
 
-	if (this->is_active || !cur_view)
-		cur_view->pushEvent(ev);
+	if (!this->is_active || !cur_view)
+		return;
+	cur_view->pushEvent(ev);
 }
 
 void Gui::draw(SDL_Surface *where)
