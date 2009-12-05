@@ -101,7 +101,7 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 	int font_height = this->font->getHeight("X");
 	int line_height = (font_height + font_height / 4);
 	int x_start = x;
-	int entries_visible = h / line_height - 2;
+	int entries_visible = h / line_height - 1;
 	int start_entry_visible = 0;
 
 	/* No messages - nothing to draw */

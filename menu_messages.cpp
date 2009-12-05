@@ -8,6 +8,7 @@ const char **exit_dialogue_messages = (const char*[]){
 	/*02*/		"#", /* Empty line */
 	/*03*/		"#",
 	/*04*/		"#",
+	/*05*/		"#",
 	/*06*/          "^|Yes|Cancel",
 	NULL
 };
