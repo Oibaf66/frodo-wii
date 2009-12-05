@@ -47,7 +47,7 @@ public:
 		SDL_Rect dst;
 
 		p = TTF_RenderText_Blended(this->font, msg, this->clr);
-		panic_if(!p, "%s\n", TTF_GetError());
+		panic_if(!p, "TTF error for %s: %s\n", msg, TTF_GetError());
 
 		dst = (SDL_Rect){x, y, w, h};
 
