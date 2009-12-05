@@ -5,18 +5,23 @@
 
 class DialogueBox : public Menu
 {
+public:
 	DialogueBox(Font *font, const char *msgs[], int cancel = 1);
 
 	virtual void selectCallback(int which);
 
 	virtual void escapeCallback(int which);
 
+	virtual void hoverCallback(int which);
+
+	virtual int selectNext(event_t ev);
+
 	int selected()
 	{
 		return this->m_selected;
 	}
 
-private:
+protected:
 	int m_selected;
 	int m_cancel;
 };

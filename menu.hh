@@ -92,17 +92,20 @@ protected:
 
 	submenu_t *findSubmenu(int index);
 
-	int getNextEntry(int dy);
+public:
+	virtual int getNextEntry(int dy);
 
-	int selectOne(int which);
+	virtual int selectOne(int which);
 
-	int selectNext(int dx, int dy);
+	virtual int selectNext(int dx, int dy);
 
-	int selectNext(event_t ev);
+	virtual int selectNext(event_t ev);
 
-	void pushEvent(event_t ev);
+	virtual void pushEvent(event_t ev);
 
 	event_t popEvent();
+
+protected:
 
 	const char **pp_msgs;
 	Font *font;

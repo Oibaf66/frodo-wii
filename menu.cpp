@@ -17,6 +17,7 @@
 #include "utils.hh"
 
 #define IS_SUBMENU(p_msg) ( (p_msg)[0] == '^' )
+#define IS_EMPTY(p_msg) ( (p_msg)[0] == '#' )
 
 void Menu::printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 		int x, int y, int w, int h)
@@ -52,6 +53,8 @@ void Menu::printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 		if (buf[i] == '^' || buf[i] == '|')
 			buf[i] = ' ';
 	}
+	if (IS_EMPTY(buf))
+		buf[0] = ' ';
 
 	this->font->draw(where, buf, x, y, w, h);
 	free(buf);

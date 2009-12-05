@@ -4,6 +4,7 @@
 #include "menu.hh"
 #include "frodo_menu.hh"
 #include "menu_messages.hh"
+#include "dialogue_box.hh"
 #include "sdl_ttf_font.hh"
 #include "utils.hh"
 
@@ -49,20 +50,78 @@ protected:
 	const char ***all_messages;
 };
 
+class MainView;
 class MainMenu : public Menu
 {
+	friend class MainView;
+
+	class ExitDialogue : public DialogueBox
+	{
+	public:
+		ExitDialogue(Font *font) : DialogueBox(font, exit_dialogue_messages, 1)
+		{
+		}
+
+		void selectCallback(int which)
+		{
+			this->m_selected = this->p_submenus[0].sel;
+			/* Do the exit */
+			if (this->m_selected != this->m_cancel)
+				exit(1);
+		}
+	};
+
 public:
 	MainMenu(Font *font, HelpMenu *help, GuiView *parent) : Menu(font)
 	{
 		this->parent = parent;
 		this->help = help;
+		/* The dialogue box is only present when needed */
+		this->dialogue = NULL;
+	}
+
+	~MainMenu()
+	{
+		if (this->dialogue)
+			delete this->dialogue;
+	}
+
+	void runLogic()
+	{
+		if (this->dialogue)
+		{
+			this->dialogue->runLogic();
+			if (this->dialogue->selected() >= 0)
+			{
+				delete this->dialogue;
+				this->dialogue = NULL;
+			}
+			return;
+		}
+
+		((Menu*)this)->runLogic();
+	}
+
+	void pushEvent(SDL_Event *ev)
+	{
+		if (this->dialogue)
+			this->dialogue->pushEvent(ev);
+		else
+			((Menu*)this)->pushEvent(ev);
 	}
 
 	virtual void selectCallback(int which)
 	{
 		printf("entry %d selected: %s\n", which, this->pp_msgs[which]);
-		if (which == 11)
-			exit(0);
+		switch (which)
+		{
+		case 11:
+			this->dialogue = new ExitDialogue(this->font);
+			this->dialogue->setSelectedBackground(NULL, NULL, NULL,
+					this->submenu_bg_left, this->submenu_bg_middle,
+					this->submenu_bg_right);
+			break;
+		}
 	}
 
 	virtual void hoverCallback(int which)
@@ -76,6 +135,7 @@ public:
 	}
 
 private:
+	DialogueBox *dialogue;
 	GuiView *parent;
 	HelpMenu *help;
 };
@@ -92,6 +152,7 @@ public:
 		this->bg = NULL;
 		this->infobox = NULL;
 		this->textbox = NULL;
+		this->dialogue_bg = NULL;
 	}
 
 	void updateTheme()
@@ -99,6 +160,7 @@ public:
 		this->bg = parent->main_menu_bg;
 		this->infobox = parent->infobox;
 		this->textbox = parent->textbox;
+		this->dialogue_bg = parent->dialogue_bg;
 
 		this->menu->setFont(this->parent->default_font);
 		this->help->setFont(this->parent->small_font);
@@ -133,6 +195,16 @@ public:
 
 		 this->menu->draw(where, 50, 70, 300, 400);
 		 this->help->draw(where, 354, 24, 264, 210);
+		 if (this->menu->dialogue) {
+			 int d_x = where->w / 2 - this->dialogue_bg->w / 2;
+			 int d_y = where->h / 2 - this->dialogue_bg->h / 2;
+
+			 dst = (SDL_Rect){d_x, d_y, this->dialogue_bg->w, this->dialogue_bg->h};
+			 SDL_BlitSurface(this->dialogue_bg, NULL, where, &dst);
+
+			 this->menu->dialogue->draw(where, d_x + 10, d_y + 10,
+					 this->dialogue_bg->w - 10, this->dialogue_bg->h - 10);
+		 }
 	}
 
 protected:
@@ -141,6 +213,7 @@ protected:
 	SDL_Surface *bg;
 	SDL_Surface *infobox;
 	SDL_Surface *textbox;
+	SDL_Surface *dialogue_bg;
 };
 
 Gui::Gui()
@@ -158,6 +231,7 @@ Gui::Gui()
 	this->infobox = NULL;
 	this->textbox = NULL;
 	this->default_font = NULL;
+	this->dialogue_bg = NULL;
 	this->small_font = NULL;
 
 	this->n_views = 0;
@@ -182,6 +256,7 @@ bool Gui::setTheme(const char *path)
 	this->main_menu_bg = this->loadThemeImage(path, "main_menu_bg.png");
 	this->infobox = this->loadThemeImage(path, "infobox.png");
 	this->textbox = this->loadThemeImage(path, "textbox.png");
+	this->dialogue_bg = this->loadThemeImage(path, "dialogue_box.png");
 
 	this->default_font = this->loadThemeFont(path, "font.ttf", 18);
 	this->small_font = this->loadThemeFont(path, "font.ttf", 16);
@@ -189,6 +264,7 @@ bool Gui::setTheme(const char *path)
 	if (!this->bg_left || !this->bg_right || !this->bg_middle ||
 			!this->bg_submenu_left || !this->bg_submenu_right ||
 			!this->bg_submenu_middle ||
+			!this->dialogue_bg ||
 			!this->default_font ||
 			!this->small_font)
 	{
@@ -201,6 +277,7 @@ bool Gui::setTheme(const char *path)
 		SDL_FreeSurface(this->background);
 		SDL_FreeSurface(this->main_menu_bg);
 		SDL_FreeSurface(this->infobox);
+		SDL_FreeSurface(this->dialogue_bg);
 		SDL_FreeSurface(this->textbox);
 
 		if (this->default_font)

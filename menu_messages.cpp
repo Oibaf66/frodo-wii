@@ -2,20 +2,30 @@
 
 #include "menu_messages.hh"
 
+const char **exit_dialogue_messages = (const char*[]){
+	/*00*/          "Do you really want to exit",
+	/*01*/		"Frodo?",
+	/*02*/		"#", /* Empty line */
+	/*03*/		"#",
+	/*04*/		"#",
+	/*06*/          "^|Yes|Cancel",
+	NULL
+};
+
 const char **main_menu_messages = (const char*[]){
-		/*00*/          "File",
-		/*01*/          "^|Insert|Start",
-		/*02*/          "States",
-		/*03*/          "^|Load|Save|Delete",
-		/*04*/          "Keyboard",
-		/*05*/          "^|Type|Macro|Bind",
-		/*06*/          " ",
-		/*07*/          "Reset the C=64",
-		/*08*/          "Networking",
-		/*09*/          "Options",
-		/*10*/          "Help",
-		/*11*/          "Quit",
-		NULL
+	/*00*/          "File",
+	/*01*/          "^|Insert|Start",
+	/*02*/          "States",
+	/*03*/          "^|Load|Save|Delete",
+	/*04*/          "Keyboard",
+	/*05*/          "^|Type|Macro|Bind",
+	/*06*/          " ",
+	/*07*/          "Reset the C=64",
+	/*08*/          "Networking",
+	/*09*/          "Options",
+	/*10*/          "Help",
+	/*11*/          "Quit",
+	NULL
 };
 
 const char **main_menu_help[] = {
