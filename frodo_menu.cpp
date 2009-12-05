@@ -67,13 +67,11 @@ public:
 
 	virtual void hoverCallback(int which)
 	{
-		printf("entry %d hover over: %s\n", which, this->pp_msgs[which]);
 		this->help->updateHelpMessage(which);
 	}
 
 	virtual void escapeCallback(int which)
 	{
-		printf("entry %d escaped: %s\n", which, this->pp_msgs[which]);
 		this->parent->parent->exitMenu();
 	}
 
