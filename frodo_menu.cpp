@@ -225,6 +225,7 @@ void Gui::runLogic(void)
 
 	if (!this->is_active || !cur_view)
 		return;
+	cur_view->runLogic();
 }
 
 
@@ -255,6 +256,7 @@ GuiView *Gui::popView()
 
 void Gui::exitMenu()
 {
+	printf("Exiting the menu system\n");
 	free(this->views);
 	this->views = NULL;
 }
@@ -265,7 +267,6 @@ void Gui::pushEvent(SDL_Event *ev)
 
 	if (this->is_active || !cur_view)
 		cur_view->pushEvent(ev);
-	cur_view->runLogic();
 }
 
 void Gui::draw(SDL_Surface *where)
