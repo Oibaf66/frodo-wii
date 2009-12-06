@@ -99,7 +99,7 @@ public:
 			return;
 		}
 
-		((Menu*)this)->runLogic();
+		Menu::runLogic();
 	}
 
 	void pushEvent(SDL_Event *ev)
@@ -107,7 +107,7 @@ public:
 		if (this->dialogue)
 			this->dialogue->pushEvent(ev);
 		else
-			((Menu*)this)->pushEvent(ev);
+			Menu::pushEvent(ev);
 	}
 
 	virtual void selectCallback(int which)
