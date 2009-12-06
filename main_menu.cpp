@@ -1,3 +1,5 @@
+#include "menu.hh"
+
 class MainView;
 class MainMenu : public Menu
 {
@@ -63,6 +65,11 @@ public:
 		printf("entry %d selected: %s\n", which, this->pp_msgs[which]);
 		switch (which)
 		{
+		case 1:
+			if (this->p_submenus[0].sel == 0)
+				;
+			break;
+
 		case 11:
 			this->dialogue = new ExitDialogue(this->font);
 			this->dialogue->setSelectedBackground(NULL, NULL, NULL,
@@ -101,6 +108,12 @@ public:
 		this->infobox = NULL;
 		this->textbox = NULL;
 		this->dialogue_bg = NULL;
+	}
+
+	~MainView()
+	{
+		delete this->help;
+		delete this->menu;
 	}
 
 	void updateTheme()

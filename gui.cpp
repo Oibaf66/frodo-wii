@@ -128,11 +128,18 @@ void Gui::pushView(GuiView *view)
 
 GuiView *Gui::popView()
 {
+	GuiView *cur = this->peekView();
+
+	if (cur)
+		delete cur;
+
 	this->n_views--;
 	if (this->n_views <= 0)
 	{
-		this->n_views = 0;
 		free(this->views);
+		this->views = NULL;
+		this->n_views = 0;
+
 		return NULL;
 	}
 
@@ -144,8 +151,10 @@ GuiView *Gui::popView()
 void Gui::exitMenu()
 {
 	printf("Exiting the menu system\n");
-	free(this->views);
-	this->views = NULL;
+
+	/* Pop all views */
+	while (this->popView())
+		;
 }
 
 void Gui::pushEvent(SDL_Event *ev)
