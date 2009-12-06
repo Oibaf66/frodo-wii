@@ -4,6 +4,7 @@
 #include "menu.hh"
 #include "frodo_menu.hh"
 #include "menu_messages.hh"
+#include "help_box.hh"
 #include "dialogue_box.hh"
 #include "sdl_ttf_font.hh"
 #include "utils.hh"
@@ -23,32 +24,6 @@ const char *get_theme_path(const char *dir, const char *what)
 	return buf;
 }
 
-class HelpMenu : public Menu
-{
-public:
-	HelpMenu(Font *font, const char ***all_messages) : Menu(font)
-	{
-		this->all_messages = all_messages;
-	}
-
-	void updateHelpMessage(int which)
-	{
-		this->setText(this->all_messages[which]);
-	}
-
-	virtual void selectCallback(int which)
-	{
-	}
-	virtual void hoverCallback(int which)
-	{
-	}
-	virtual void escapeCallback(int which)
-	{
-	}
-
-protected:
-	const char ***all_messages;
-};
 
 class MainView;
 class MainMenu : public Menu
@@ -72,7 +47,7 @@ class MainMenu : public Menu
 	};
 
 public:
-	MainMenu(Font *font, HelpMenu *help, GuiView *parent) : Menu(font)
+	MainMenu(Font *font, HelpBox *help, GuiView *parent) : Menu(font)
 	{
 		this->parent = parent;
 		this->help = help;
@@ -137,7 +112,7 @@ public:
 private:
 	DialogueBox *dialogue;
 	GuiView *parent;
-	HelpMenu *help;
+	HelpBox *help;
 };
 
 
@@ -146,7 +121,7 @@ class MainView : public GuiView
 public:
 	MainView(Gui *parent) : GuiView(parent)
 	{
-		this->help = new HelpMenu(NULL, main_menu_help);
+		this->help = new HelpBox(NULL, main_menu_help);
 		this->menu = new MainMenu(NULL, this->help, this);
 		this->menu->setText(main_menu_messages);
 		this->bg = NULL;
@@ -209,7 +184,7 @@ public:
 
 protected:
 	MainMenu *menu;
-	HelpMenu *help;
+	HelpBox *help;
 	SDL_Surface *bg;
 	SDL_Surface *infobox;
 	SDL_Surface *textbox;
