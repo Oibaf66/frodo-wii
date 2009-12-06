@@ -7,12 +7,13 @@
 #include "help_box.hh"
 #include "dialogue_box.hh"
 #include "sdl_ttf_font.hh"
-#include "main_menu.hh"
 #include "utils.hh"
 
 extern SDL_Surface *screen;
 
 class Gui;
+class MainMenu;
+class MainView;
 
 static const char *get_theme_path(const char *dir, const char *what)
 {
@@ -24,6 +25,9 @@ static const char *get_theme_path(const char *dir, const char *what)
 
 	return buf;
 }
+
+/* These are a bit of special cases... */
+#include "main_menu.cpp"
 
 Gui::Gui()
 {
@@ -111,7 +115,6 @@ void Gui::runLogic(void)
 		return;
 	cur_view->runLogic();
 }
-
 
 void Gui::pushView(GuiView *view)
 {
