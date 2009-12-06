@@ -2,7 +2,7 @@
 #include <SDL_ttf.h>
 
 #include "menu.hh"
-#include "frodo_menu.hh"
+#include "gui.hh"
 #include "menu_messages.hh"
 #include "help_box.hh"
 #include "dialogue_box.hh"

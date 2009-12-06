@@ -1,7 +1,7 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
-#include "frodo_menu.hh"
+#include "gui.hh"
 #include "utils.hh"
 
 SDL_Surface *screen;

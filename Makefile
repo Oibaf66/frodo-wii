@@ -1,4 +1,4 @@
-OBJS=menu.oo main.oo utils.oo frodo_menu.oo dialogue_box.oo menu_messages.oo
+OBJS=menu.oo main.oo utils.oo gui.oo dialogue_box.oo menu_messages.oo
 
 all: menu
 
@@ -7,8 +7,9 @@ all: menu
 
 menu.oo: menu.cpp menu.hh utils.hh font.hh Makefile
 
-frodo_menu.oo: frodo_menu.cpp frodo_menu.hh font.hh menu.hh \
-	sdl_ttf_font.hh dialogue_box.hh help_box.hh main_menu.hh Makefile
+gui.oo: gui.cpp gui.hh font.hh menu.hh \
+	sdl_ttf_font.hh dialogue_box.hh help_box.hh main_menu.hh \
+	Makefile
 
 utils.oo: utils.cpp utils.hh Makefile
 
