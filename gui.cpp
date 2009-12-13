@@ -145,6 +145,8 @@ GuiView *Gui::popView()
 		free(this->views);
 		this->views = NULL;
 		this->n_views = 0;
+		/* Deactivate when no views are left */
+		this->is_active = false;
 
 		return NULL;
 	}
