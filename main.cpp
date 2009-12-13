@@ -5,7 +5,6 @@
 #include "utils.hh"
 
 SDL_Surface *screen;
-static Gui *g_gui;
 
 static void run(void)
 {
@@ -17,10 +16,10 @@ static void run(void)
 	        	if (ev.type == SDL_QUIT)
 	                	exit(1);
 
-	        	g_gui->pushEvent(&ev);
+	        	Gui::gui->pushEvent(&ev);
 	        }
-	        g_gui->runLogic();
-	        g_gui->draw(screen);
+	        Gui::gui->runLogic();
+	        Gui::gui->draw(screen);
 
 	        SDL_Flip(screen);
 		SDL_Delay(50);
@@ -34,10 +33,8 @@ static void init(void)
 	panic_if(!screen, "Cannot initialize video: %s\n", SDL_GetError());
 	TTF_Init();
 
-	g_gui = new Gui();
-	panic_if(!g_gui->setTheme("themes/default"),
-			"Setting theme failed\n");
-	g_gui->activate();
+	Gui::init();
+	Gui::gui->activate();
 }
 
 int main(int argc, char *argv[])

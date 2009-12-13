@@ -15,13 +15,15 @@ class Gui;
 class MainMenu;
 class MainView;
 
+#define THEME_ROOT_PATH "themes"
+
 static const char *get_theme_path(const char *dir, const char *what)
 {
 	static char buf[255];
 
 	memset(buf, 0, sizeof(buf));
-	snprintf(buf, 254, "%s/%s",
-			dir, what);
+	snprintf(buf, 254, "%s/%s/%s",
+			THEME_ROOT_PATH, dir, what);
 
 	return buf;
 }
@@ -201,4 +203,17 @@ Font *Gui::loadThemeFont(const char *dir, const char *what, int size)
 		return NULL;
 
 	return new Font_TTF(fnt, 255,255,255);
+}
+
+
+/* The singleton/factory stuff */
+Gui *Gui::gui;
+void Gui::init()
+{
+	Gui *p = new Gui();
+
+	/* Set the default theme */
+	panic_if(!p->setTheme("default"),
+			"Setting default theme failed\n");
+	Gui::gui = p;
 }

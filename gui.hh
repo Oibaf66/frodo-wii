@@ -83,6 +83,11 @@ public:
 
 	GuiView **views;
 	int n_views;
+
+
+	/* Singleton */
+	static void init();
+	static Gui *gui;
 };
 
 #endif /* GUI_HH */
