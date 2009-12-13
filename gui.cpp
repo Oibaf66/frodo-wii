@@ -74,6 +74,7 @@ bool Gui::setTheme(const char *path)
 	this->infobox = this->loadThemeImage(path, "infobox.png");
 	this->textbox = this->loadThemeImage(path, "textbox.png");
 	this->dialogue_bg = this->loadThemeImage(path, "dialogue_box.png");
+	this->disc_info = this->loadThemeImage(path, "disc_info.png");
 
 	this->default_font = this->loadThemeFont(path, "font.ttf", 18);
 	this->small_font = this->loadThemeFont(path, "font.ttf", 16);
@@ -82,6 +83,7 @@ bool Gui::setTheme(const char *path)
 			!this->bg_submenu_left || !this->bg_submenu_right ||
 			!this->bg_submenu_middle ||
 			!this->dialogue_bg ||
+			!this->disc_info ||
 			!this->default_font ||
 			!this->small_font)
 	{
@@ -95,6 +97,7 @@ bool Gui::setTheme(const char *path)
 		SDL_FreeSurface(this->main_menu_bg);
 		SDL_FreeSurface(this->infobox);
 		SDL_FreeSurface(this->dialogue_bg);
+		SDL_FreeSurface(this->disc_info);
 		SDL_FreeSurface(this->textbox);
 
 		if (this->default_font)

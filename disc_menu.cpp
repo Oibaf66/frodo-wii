@@ -77,7 +77,7 @@ public:
 
 		this->bg = NULL;
 		this->infobox = NULL;
-		this->textbox = NULL;
+		this->disc_info = NULL;
 	}
 
 	~DiscView()
@@ -94,7 +94,7 @@ public:
 	{
 		this->bg = Gui::gui->main_menu_bg;
 		this->infobox = Gui::gui->infobox;
-		this->textbox = Gui::gui->textbox;
+		this->disc_info = Gui::gui->disc_info;
 
 		this->menu->setFont(Gui::gui->default_font);
 		this->menu->setSelectedBackground(Gui::gui->bg_left, Gui::gui->bg_middle,
@@ -121,10 +121,7 @@ public:
 		 SDL_BlitSurface(this->bg, NULL, where, &dst);
 
 		 dst = (SDL_Rect){350,13,0,0};
-		 SDL_BlitSurface(this->infobox, NULL, where, &dst);
-
-		 dst = (SDL_Rect){350,242,0,0};
-		 SDL_BlitSurface(this->textbox, NULL, where, &dst);
+		 SDL_BlitSurface(this->disc_info, NULL, where, &dst);
 
 		 this->menu->draw(where, 50, 70, 300, 400);
 	}
@@ -133,5 +130,5 @@ protected:
 	DiscMenu *menu;
 	SDL_Surface *bg;
 	SDL_Surface *infobox;
-	SDL_Surface *textbox;
+	SDL_Surface *disc_info;
 };
