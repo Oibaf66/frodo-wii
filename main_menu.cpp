@@ -86,7 +86,7 @@ public:
 
 	virtual void escapeCallback(int which)
 	{
-		this->parent->parent->exitMenu();
+		Gui::gui->exitMenu();
 	}
 
 private:
@@ -99,7 +99,7 @@ private:
 class MainView : public GuiView
 {
 public:
-	MainView(Gui *parent) : GuiView(parent)
+	MainView() : GuiView()
 	{
 		this->help = new HelpBox(NULL, main_menu_help);
 		this->menu = new MainMenu(NULL, this->help, this);
@@ -118,16 +118,16 @@ public:
 
 	void updateTheme()
 	{
-		this->bg = parent->main_menu_bg;
-		this->infobox = parent->infobox;
-		this->textbox = parent->textbox;
-		this->dialogue_bg = parent->dialogue_bg;
+		this->bg = Gui::gui->main_menu_bg;
+		this->infobox = Gui::gui->infobox;
+		this->textbox = Gui::gui->textbox;
+		this->dialogue_bg = Gui::gui->dialogue_bg;
 
-		this->menu->setFont(this->parent->default_font);
-		this->help->setFont(this->parent->small_font);
-		this->menu->setSelectedBackground(this->parent->bg_left, this->parent->bg_middle,
-				this->parent->bg_right, this->parent->bg_submenu_left,
-				this->parent->bg_submenu_middle, this->parent->bg_submenu_right);
+		this->menu->setFont(Gui::gui->default_font);
+		this->help->setFont(Gui::gui->small_font);
+		this->menu->setSelectedBackground(Gui::gui->bg_left, Gui::gui->bg_middle,
+				Gui::gui->bg_right, Gui::gui->bg_submenu_left,
+				Gui::gui->bg_submenu_middle, Gui::gui->bg_submenu_right);
 	}
 
 	void runLogic()

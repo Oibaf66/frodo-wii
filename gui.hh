@@ -11,10 +11,7 @@ class Gui;
 class GuiView
 {
 public:
-	GuiView(Gui *parent)
-	{
-		this->parent = parent;
-	}
+	GuiView();
 
 	virtual void pushEvent(SDL_Event *ev) = 0;
 
@@ -23,8 +20,6 @@ public:
 	virtual void updateTheme() = 0;
 
 	virtual void draw(SDL_Surface *where) = 0;
-
-	Gui *parent;
 };
 
 class Gui

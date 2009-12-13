@@ -31,6 +31,10 @@ static const char *get_theme_path(const char *dir, const char *what)
 /* These are a bit of special cases... */
 #include "main_menu.cpp"
 
+GuiView::GuiView()
+{
+}
+
 Gui::Gui()
 {
 	this->focus = NULL;
@@ -53,7 +57,7 @@ Gui::Gui()
 	this->views = NULL;
 
 	/* Create the views */
-	MainView *mv = new MainView(this);
+	MainView *mv = new MainView();
 	this->pushView(mv);
 }
 
