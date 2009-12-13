@@ -49,4 +49,6 @@ static inline void *xrealloc(void *ptr, size_t sz)
 
 TTF_Font *read_and_alloc_font(const char *path, int pt_size);
 
+const char **get_file_list(const char *base_dir, const char *exts[]);
+
 #endif /* __UTILS_H__ */

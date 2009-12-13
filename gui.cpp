@@ -11,10 +11,6 @@
 
 extern SDL_Surface *screen;
 
-class Gui;
-class MainMenu;
-class MainView;
-
 #define THEME_ROOT_PATH "themes"
 
 static const char *get_theme_path(const char *dir, const char *what)
@@ -29,6 +25,7 @@ static const char *get_theme_path(const char *dir, const char *what)
 }
 
 /* These are a bit of special cases... */
+#include "disc_menu.cpp"
 #include "main_menu.cpp"
 
 GuiView::GuiView()
@@ -57,7 +54,8 @@ Gui::Gui()
 	this->views = NULL;
 
 	/* Create the views */
-	MainView *mv = new MainView();
+	this->mv = new MainView();
+	this->dv = new DiscView();
 	this->pushView(mv);
 }
 
@@ -107,8 +105,8 @@ bool Gui::setTheme(const char *path)
 		return false;
 	}
 
-	for (int i = 0; i < this->n_views; i++)
-		this->views[i]->updateTheme();
+	this->mv->updateTheme();
+	this->dv->updateTheme();
 
 	return true;
 }
@@ -216,10 +214,9 @@ Font *Gui::loadThemeFont(const char *dir, const char *what, int size)
 Gui *Gui::gui;
 void Gui::init()
 {
-	Gui *p = new Gui();
+	Gui::gui = new Gui();
 
 	/* Set the default theme */
-	panic_if(!p->setTheme("default"),
+	panic_if(!Gui::gui->setTheme("default"),
 			"Setting default theme failed\n");
-	Gui::gui = p;
 }

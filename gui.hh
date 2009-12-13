@@ -7,6 +7,8 @@
 #include "font.hh"
 
 class Gui;
+class MainView;
+class DiscView;
 
 class GuiView
 {
@@ -76,6 +78,8 @@ public:
 	Font *default_font;
 	Font *small_font;
 
+	MainView *mv;
+	DiscView *dv;
 	GuiView **views;
 	int n_views;
 

@@ -65,9 +65,11 @@ public:
 		printf("entry %d selected: %s\n", which, this->pp_msgs[which]);
 		switch (which)
 		{
-		case 1:
-			if (this->p_submenus[0].sel == 0)
-				;
+		case 0:
+			if (this->p_submenus[0].sel == 0) {
+				Gui::gui->dv->setDirectory("discs");
+				Gui::gui->pushView(Gui::gui->dv);
+			}
 			break;
 
 		case 11:
