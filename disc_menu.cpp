@@ -1,40 +1,27 @@
 #include "menu.hh"
+#include "file_browser.hh"
+
+static const char *game_exts[] = {".d64", ".D64", ".t64", ".T64",
+	".prg",".PRG", ".p00", ".P00", NULL};
 
 class DiscView;
-class DiscMenu : public Menu
+class DiscMenu : public FileBrowser
 {
 	friend class DiscView;
 
 public:
-	DiscMenu(Font *font, GuiView *parent) : Menu(font)
+	DiscMenu(Font *font, GuiView *parent) :
+		FileBrowser(game_exts, font, parent)
 	{
-		this->parent = parent;
-		this->path = NULL;
-
-		/* If nothing else: Set the default list */
-		this->setDefaultFileList();
 	}
 
 	~DiscMenu()
 	{
-		this->freeFileList();
 	}
 
 	virtual void selectCallback(int which)
 	{
 		printf("entry %d selected: %s\n", which, this->pp_msgs[which]);
-	}
-
-	void setDirectory(const char *path)
-	{
-		const char *exts[] = {".d64", ".D64", ".t64", ".T64", ".prg",
-				".PRG", ".p00", ".P00"};
-
-		this->freeFileList();
-		this->file_list = get_file_list(path, exts);
-		if (!this->file_list)
-			this->setDefaultFileList();
-		this->setText(this->file_list);
 	}
 
 	virtual void hoverCallback(int which)
@@ -45,26 +32,6 @@ public:
 	{
 		Gui::gui->exitMenu();
 	}
-
-private:
-	void setDefaultFileList()
-	{
-		this->file_list = (const char **)xmalloc(2 * sizeof(char*));
-		this->file_list[0] = xstrdup("None");
-	}
-
-	void freeFileList()
-	{
-		if (!this->file_list)
-			return;
-		for (int i = 0; this->file_list[i]; i++)
-			free((void*)this->file_list[i]);
-		free(this->file_list);
-	}
-
-	const char *path;
-	const char **file_list;
-	GuiView *parent;
 };
 
 

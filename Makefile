@@ -8,7 +8,8 @@ all: menu
 menu.oo: menu.cpp menu.hh utils.hh font.hh Makefile
 
 gui.oo: Makefile gui.cpp gui.hh font.hh menu.hh sdl_ttf_font.hh \
-	dialogue_box.hh help_box.hh main_menu.cpp disc_menu.cpp
+	dialogue_box.hh help_box.hh main_menu.cpp disc_menu.cpp \
+	file_browser.hh
 
 utils.oo: utils.cpp utils.hh Makefile
 
