@@ -5,6 +5,7 @@
 
 #include "menu.hh"
 #include "font.hh"
+#include "timer.hh"
 
 class Gui;
 class MainView;
@@ -78,6 +79,7 @@ public:
 
 	Font *default_font;
 	Font *small_font;
+	TimerController *timerController;
 
 	MainView *mv;
 	DiscView *dv;

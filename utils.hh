@@ -1,6 +1,12 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <SDL_ttf.h>
+
 #define BUG_ON(cond)
 
 #define panic(x...) do \

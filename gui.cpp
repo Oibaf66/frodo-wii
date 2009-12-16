@@ -52,6 +52,7 @@ Gui::Gui()
 
 	this->n_views = 0;
 	this->views = NULL;
+	this->timerController = new TimerController();
 
 	/* Create the views */
 	this->mv = new MainView();
@@ -121,6 +122,7 @@ void Gui::runLogic(void)
 	if (!this->is_active || !cur_view)
 		return;
 	cur_view->runLogic();
+	this->timerController->tick();
 }
 
 void Gui::pushView(GuiView *view)

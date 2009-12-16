@@ -5,13 +5,13 @@ static const char *game_exts[] = {".d64", ".D64", ".t64", ".T64",
 	".prg",".PRG", ".p00", ".P00", NULL};
 
 class DiscView;
-class DiscMenu : public FileBrowser
+class DiscMenu : public FileBrowser, TimeoutHandler
 {
 	friend class DiscView;
 
 public:
 	DiscMenu(Font *font, GuiView *parent) :
-		FileBrowser(game_exts, font, parent)
+		FileBrowser(game_exts, font, parent), TimeoutHandler()
 	{
 	}
 
@@ -22,14 +22,23 @@ public:
 	virtual void selectCallback(int which)
 	{
 		printf("entry %d selected: %s\n", which, this->pp_msgs[which]);
+		Gui::gui->timerController->disarm(this);
 	}
 
 	virtual void hoverCallback(int which)
 	{
+		Gui::gui->timerController->arm(this, 10);
+	}
+
+	virtual void timeoutCallback()
+	{
+		printf("Hovering timed out over %s\n",
+				this->pp_msgs[this->cur_sel]);
 	}
 
 	virtual void escapeCallback(int which)
 	{
+		Gui::gui->timerController->disarm(this);
 		Gui::gui->exitMenu();
 	}
 };
