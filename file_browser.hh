@@ -1,3 +1,6 @@
+#ifndef __FILE_BROWSER_HH__
+#define __FILE_BROWSER_HH__
+
 #include "menu.hh"
 #include "gui.hh"
 
@@ -49,3 +52,5 @@ protected:
 	const char **exts;
 	GuiView *parent;
 };
+
+#endif /* __FILE_BROWSER_HH__ */
