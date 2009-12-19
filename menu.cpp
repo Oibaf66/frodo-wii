@@ -371,7 +371,7 @@ void Menu::setText(const char **messages, int *submenu_defaults)
 	this->selectOne(0);
 }
 
-Menu::Menu(Font *font)
+Menu::Menu(Font *font) : Widget()
 {
 	this->setTextColor((SDL_Color){0xff,0xff,0xff,0});
 	this->font = font;
@@ -391,9 +391,6 @@ Menu::Menu(Font *font)
 	this->cur_sel = 0;
 	this->mouse_x = -1;
 	this->mouse_y = -1;
-
-	memset(this->event_stack, 0, sizeof(this->event_stack));
-	this->ev_head = this->ev_tail = 0;
 }
 
 void Menu::setTextColor(SDL_Color clr)

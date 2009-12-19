@@ -21,6 +21,8 @@ typedef enum key_event event_t;
 class Widget
 {
 public:
+	Widget();
+
 	virtual void pushEvent(event_t ev);
 
 	virtual void pushEvent(SDL_Event *ev);

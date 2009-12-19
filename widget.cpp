@@ -1,5 +1,11 @@
 #include "widget.hh"
 
+Widget::Widget()
+{
+	memset(this->event_stack, 0, sizeof(this->event_stack));
+	this->ev_head = this->ev_tail = 0;
+}
+
 event_t Widget::popEvent()
 {
 	event_t out;

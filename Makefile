@@ -1,5 +1,5 @@
 OBJS=menu.oo main.oo utils.oo gui.oo dialogue_box.oo menu_messages.oo \
-	timer.oo game_info.oo
+	timer.oo game_info.oo widget.oo
 
 all: menu
 
@@ -7,6 +7,8 @@ all: menu
 	g++ -Wall -g -c `sdl-config --cflags` -o $@ $<
 
 menu.oo: menu.cpp menu.hh utils.hh font.hh widget.hh Makefile
+
+widget.oo: widget.cpp widget.hh
 
 gui.oo: gui.cpp gui.hh Makefile font.hh menu.hh sdl_ttf_font.hh \
 	dialogue_box.hh help_box.hh main_menu.cpp disc_menu.cpp \
