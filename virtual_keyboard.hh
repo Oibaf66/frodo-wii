@@ -60,6 +60,11 @@ public:
 		this->is_active = false;
 	}
 
+	bool isActive()
+	{
+		return this->is_active;
+	}
+
 	void runLogic();
 
 	void draw(SDL_Surface *where, int x, int y, int w, int h);
@@ -82,5 +87,6 @@ private:
 	char buf[255];
 	unsigned buf_head;
 };
+
 
 #endif /* __VIRTUAL_KEYBORD_HH__ */

@@ -71,6 +71,8 @@ public:
 				Gui::gui->pushView(Gui::gui->dv);
 			}
 			break;
+		case 2:
+			break;
 
 		case 11:
 			this->dialogue = new ExitDialogue(this->font);
