@@ -8,7 +8,7 @@
 #define VERSION_BASE   (0x1978)
 #define VERSION_MAGIC  (VERSION_BASE + 0)
 
-GameInfo::GameInfo(char *name, char *author, SDL_Surface *image)
+GameInfo::GameInfo(const char *name, const char *author, SDL_Surface *image)
 {
 	this->name = name;
 	this->author = author;
@@ -22,8 +22,8 @@ GameInfo::~GameInfo()
 
 void GameInfo::resetDefaults()
 {
-	free(this->name);
-	free(this->author);
+	free((void*)this->name);
+	free((void*)this->author);
 	SDL_FreeSurface(this->screenshot);
 
 	this->name = NULL;
@@ -31,14 +31,14 @@ void GameInfo::resetDefaults()
 	this->screenshot = NULL;
 }
 
-struct game_info *GameInfo::dump(size_t *out_sz)
+struct game_info *GameInfo::dump()
 {
 	size_t total_sz = sizeof(struct game_info);
 	size_t png_sz;
 	struct game_info *out;
 	void *png_data;
 
-	if (this->screenshot)
+	if (!this->screenshot)
 		return NULL;
 
 	/* Convert surface to PNG */
@@ -73,7 +73,7 @@ struct game_info *GameInfo::dump(size_t *out_sz)
 	return out;
 }
 
-void GameInfo::fromDump(struct game_info *gi, size_t sz)
+void GameInfo::fromDump(struct game_info *gi)
 {
 	SDL_RWops *rw;
 

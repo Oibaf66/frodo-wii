@@ -16,21 +16,21 @@ struct game_info
 class GameInfo
 {
 public:
-	GameInfo(char *name = NULL, char *author = NULL, SDL_Surface *image = NULL);
+	GameInfo(const char *name = NULL, const char *author = NULL, SDL_Surface *image = NULL);
 
 	~GameInfo();
 
 	void resetDefaults();
 
 	/** Returns an allocated dump structure */
-	struct game_info *dump(size_t *out_sz);
+	struct game_info *dump();
 
 	/** Fill in this game info object from a structure */
-	void fromDump(struct game_info *data, size_t sz);
+	void fromDump(struct game_info *data);
 
 protected:
-	char *name;
-	char *author;
+	const char *name;
+	const char *author;
 	SDL_Surface *screenshot;
 };
 
