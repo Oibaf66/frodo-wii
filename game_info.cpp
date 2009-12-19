@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <sys/stat.h>
 #include <SDL.h>
 #include <SDL_image.h>
 
@@ -73,7 +74,7 @@ struct game_info *GameInfo::dump()
 	return out;
 }
 
-void GameInfo::fromDump(struct game_info *gi)
+bool GameInfo::fromDump(struct game_info *gi)
 {
 	SDL_RWops *rw;
 
@@ -96,8 +97,56 @@ void GameInfo::fromDump(struct game_info *gi)
 	if (!this->screenshot)
 		goto bail_out;
 
-	return;
+	return true;
 
 bail_out:
 	this->resetDefaults();
+
+	return false;
+}
+
+GameInfo *GameInfo::loadFromFile(const char *fileName)
+{
+	struct stat st;
+	struct game_info *p;
+	GameInfo *out = NULL;
+	FILE *fp;
+
+	printf("Woho! I'll load %s\n", fileName);
+	if (stat(fileName, &st) < 0)
+		return NULL;
+	if (st.st_size <= (signed)sizeof(struct game_info))
+	{
+		warning("Size of %s is too small: %d vs minimum %d bytes\n",
+				fileName, (int)st.st_size, (signed)sizeof(struct game_info) + 4);
+		return NULL;
+	}
+	if (st.st_size % 4 != 0)
+	{
+		warning("Size of %s is unreasonable: %d\n", fileName, (int)st.st_size);
+		return NULL;
+	}
+
+	fp = fopen(fileName, "r");
+	if (!fp)
+		return NULL;
+	p = (struct game_info*)xmalloc(st.st_size);
+	if (fread(p, 1, st.st_size, fp) == (unsigned)st.st_size)
+	{
+		out = new GameInfo();
+		if (out->fromDump(p) == false)
+		{
+			warning("Converting %s to GameInfo failed\n",
+					fileName);
+			delete out;
+			out = NULL;
+		}
+	}
+	else
+		warning("Could not read %s\n", fileName);
+
+	free(p);
+	fclose(fp);
+
+	return out;
 }

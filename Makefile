@@ -10,7 +10,7 @@ menu.oo: menu.cpp menu.hh utils.hh font.hh Makefile
 
 gui.oo: gui.cpp gui.hh Makefile font.hh menu.hh sdl_ttf_font.hh \
 	dialogue_box.hh help_box.hh main_menu.cpp disc_menu.cpp \
-	file_browser.hh timer.hh
+	file_browser.hh timer.hh game_info.hh
 
 game_info.oo: game_info.hh game_info.cpp
 

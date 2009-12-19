@@ -86,6 +86,9 @@ public:
 	GuiView **views;
 	int n_views;
 
+	const char *metadata_base_path;
+	const char *theme_base_path;
+	const char *game_base_path;
 
 	/* Singleton */
 	static void init();

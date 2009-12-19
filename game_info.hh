@@ -26,9 +26,11 @@ public:
 	struct game_info *dump();
 
 	/** Fill in this game info object from a structure */
-	void fromDump(struct game_info *data);
+	bool fromDump(struct game_info *data);
 
-protected:
+	static GameInfo *loadFromFile(const char *fileName);
+
+	/* Should perhaps be protected but I trust you - just be careful! */
 	const char *name;
 	const char *author;
 	SDL_Surface *screenshot;

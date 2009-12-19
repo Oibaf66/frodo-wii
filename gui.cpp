@@ -1,5 +1,6 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <arpa/inet.h>
 
 #include "menu.hh"
 #include "gui.hh"
@@ -12,6 +13,8 @@
 extern SDL_Surface *screen;
 
 #define THEME_ROOT_PATH "themes"
+#define METADATA_ROOT_PATH "metadata"
+#define GAME_ROOT_PATH "discs"
 
 static const char *get_theme_path(const char *dir, const char *what)
 {
@@ -53,6 +56,10 @@ Gui::Gui()
 	this->n_views = 0;
 	this->views = NULL;
 	this->timerController = new TimerController();
+
+	this->theme_base_path = THEME_ROOT_PATH;
+	this->metadata_base_path = METADATA_ROOT_PATH;
+	this->game_base_path = GAME_ROOT_PATH;
 
 	/* Create the views */
 	this->mv = new MainView();
