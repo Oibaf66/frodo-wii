@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <SDL.h>
 #include <SDL_ttf.h>
 
 #define BUG_ON(cond)
@@ -56,5 +57,7 @@ static inline void *xrealloc(void *ptr, size_t sz)
 TTF_Font *read_and_alloc_font(const char *path, int pt_size);
 
 const char **get_file_list(const char *base_dir, const char *exts[]);
+
+void *sdl_surface_to_png(SDL_Surface *src, size_t *out_sz);
 
 #endif /* __UTILS_H__ */
