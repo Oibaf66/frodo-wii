@@ -3,7 +3,7 @@
 
 #include <SDL.h>
 
-enum {
+enum key_event {
 	EVENT_NONE   = 0,
 	KEY_UP       = 1,
 	KEY_DOWN     = 2,
@@ -16,16 +16,25 @@ enum {
 	KEY_HELP     = 256,
 };
 
+typedef enum key_event event_t;
 
 class Widget
 {
 public:
-	virtual void pushEvent(SDL_Event *ev) = 0;
+	virtual void pushEvent(event_t ev);
+
+	virtual void pushEvent(SDL_Event *ev);
 
 	virtual void runLogic() = 0;
 
 	virtual void draw(SDL_Surface *where,
 			int x, int y, int w, int h) = 0;
+
+	virtual event_t popEvent();
+
+protected:
+	int 	   ev_head, ev_tail;
+	event_t	   event_stack[8];
 };
 
 #endif

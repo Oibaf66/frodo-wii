@@ -26,7 +26,6 @@ typedef struct
 	int sel;
 } submenu_t;
 
-typedef int event_t;
 
 class Menu : public Widget
 {
@@ -55,8 +54,6 @@ public:
 	}
 
 	void setText(const char **messages, int *submenu_defaults = NULL);
-
-	void pushEvent(SDL_Event *ev);
 
 	void runLogic();
 
@@ -88,10 +85,6 @@ public:
 
 	virtual int selectNext(event_t ev);
 
-	virtual void pushEvent(event_t ev);
-
-	event_t popEvent();
-
 protected:
 
 	const char **pp_msgs;
@@ -114,9 +107,6 @@ protected:
 
 	int        cur_sel; /* Main selection */
 	int        n_entries;
-
-	int 	   ev_head, ev_tail;
-	event_t	   event_stack[8];
 };
 
 #endif /* !__MENU_H__ */
