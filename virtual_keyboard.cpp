@@ -10,7 +10,6 @@
  *
  ********************************************************************/
 #include <SDL.h>
-#include <SDL_ttf.h>
 
 #include "virtual_keyboard.hh"
 #include "utils.hh"
@@ -71,7 +70,7 @@ static const char *shifted_names[KEY_COLS * KEY_ROWS] = {
 	NULL,              NULL,        NULL,        NULL,        NULL,        NULL,        "f2",        "f4",        "f6",        "f8",        "Ins",       NULL,        NULL,        NULL,        NULL,
 };
 
-VirtualKeyboard::VirtualKeyboard(TTF_Font *font) : Widget()
+VirtualKeyboard::VirtualKeyboard(Font *font) : Widget()
 {
 	this->font = font;
 	this->sel_x = 0;
@@ -90,8 +89,8 @@ void VirtualKeyboard::draw(SDL_Surface *where, int x, int y, int w, int h)
 {
 	int screen_w = where->w;
 	int screen_h = where->h;
-	int key_w = 36;
-	int key_h = 36;
+	int key_w = w / KEY_COLS;
+	int key_h = h / KEY_ROWS;
 	int border_x = (screen_w - (key_w * KEY_COLS)) / 2;
 	int border_y = (screen_h - (key_h * KEY_ROWS)) / 2;
 	SDL_Rect bg_rect = {border_x, border_y,
@@ -106,7 +105,6 @@ void VirtualKeyboard::draw(SDL_Surface *where, int x, int y, int w, int h)
 		{
 			int which = y * KEY_COLS + x;
 			virtkey_t key = keys[which];
-			int r = 255, g = 255, b = 255;
 			const char *what = key.name;
 
 			/* Skip empty positions */
@@ -115,16 +113,8 @@ void VirtualKeyboard::draw(SDL_Surface *where, int x, int y, int w, int h)
 			if (this->shift_on && shifted_names[which])
 				what = shifted_names[which];
 
-			if ( key.is_done )
-				r = 0;
-			if ( (x == this->sel_x && y == this->sel_y) ||
-					(this->shift_on && key.is_shift))
-				b = 0;
-#if 0
-			menu_print_font(where, r, g, b,
-					x * key_w + border_x, y * key_h + border_y,
-					what);
-#endif
+			this->font->draw(where, what,
+					x * key_w + border_x, y * key_h + border_y, w, h);
 		}
 	}
 }

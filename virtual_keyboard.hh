@@ -13,9 +13,9 @@
 #define __VIRTUAL_KEYBORD_HH__
 
 #include <SDL.h>
-#include <SDL_ttf.h>
 
 #include "widget.hh"
+#include "font.hh"
 
 struct virtkey; 
 
@@ -35,7 +35,7 @@ public:
 class VirtualKeyboard : public Widget
 {
 public:
-	VirtualKeyboard(TTF_Font *font);
+	VirtualKeyboard(Font *font);
 
 	void registerListener(KeyListener *kl);
 	void registerListener(StringListener *sl);
@@ -49,6 +49,11 @@ public:
 	int stringToKeycode(const char *str);
 
 	void activate();
+
+	void setFont(Font *font)
+	{
+		this->font = font;
+	}
 
 	void deactivate()
 	{
@@ -68,7 +73,7 @@ private:
 	void selectNext(int dx, int dy);
 	void toggleShift();
 
-	TTF_Font *font;
+	Font *font;
 	int sel_x;
 	int sel_y;
 	bool shift_on;

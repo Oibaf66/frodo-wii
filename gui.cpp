@@ -9,6 +9,7 @@
 #include "dialogue_box.hh"
 #include "sdl_ttf_font.hh"
 #include "utils.hh"
+#include "virtual_keyboard.hh"
 
 extern SDL_Surface *screen;
 
@@ -56,6 +57,8 @@ Gui::Gui()
 	this->n_views = 0;
 	this->views = NULL;
 	this->timerController = new TimerController();
+
+	VirtualKeyboard::kbd = new VirtualKeyboard(NULL);
 
 	this->theme_base_path = THEME_ROOT_PATH;
 	this->metadata_base_path = METADATA_ROOT_PATH;
@@ -116,6 +119,7 @@ bool Gui::setTheme(const char *path)
 		return false;
 	}
 
+	VirtualKeyboard::kbd->setFont(this->default_font);
 	this->mv->updateTheme();
 	this->dv->updateTheme();
 
