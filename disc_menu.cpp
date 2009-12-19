@@ -59,7 +59,7 @@ public:
 
 	virtual void hoverCallback(int which)
 	{
-		Gui::gui->timerController->arm(this, 10);
+		Gui::gui->timerController->arm(this, 5);
 	}
 
 	virtual void timeoutCallback()
@@ -87,9 +87,10 @@ public:
 
 	void loadGameInfo(const char *what)
 	{
+		this->setText(NULL);
 		memset(this->gi_messages, 0, sizeof(this->gi_messages));
-		this->setText(this->gi_messages);
 
+		/* Reset the current game info */
 		if (this->gi)
 		{
 			delete this->gi;
@@ -99,13 +100,7 @@ public:
 		/* No need to do this for directories or the special "None" field */
 		if (strcmp(what, "None") == 0 ||
 				what[0] == '[')
-		{
-			/* Reset the game info */
-			if (this->gi)
-				delete this->gi;
-			this->gi = NULL;
 			return;
-		}
 
 		size_t len = strlen(Gui::gui->metadata_base_path) + strlen(what) + 6;
 		char *tmp = (char*)xmalloc(len);
@@ -119,8 +114,8 @@ public:
 			this->gi_messages[1] = this->gi->name;
 			this->gi_messages[2] = "Author:";
 			this->gi_messages[3] = this->gi->author;
+			this->setText(this->gi_messages);
 		}
-		this->setText(this->gi_messages);
 
 		free(tmp);
 	}
