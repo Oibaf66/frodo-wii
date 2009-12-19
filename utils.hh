@@ -18,6 +18,13 @@
     exit(1); \
   } while(0)
 
+#define warning(x...) do \
+  { \
+    fprintf(stderr, "==============WARNING WARNING============\n"); \
+    fprintf(stderr, x); \
+    fprintf(stderr, "=========================================\n"); \
+  } while(0)
+
 #define panic_if(cond, x...) \
   do { if ((cond)) panic(x); } while(0)
 
