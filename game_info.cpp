@@ -5,11 +5,14 @@
 #include "game_info.hh"
 #include "utils.hh"
 
-GameInfo::GameInfo()
+#define VERSION_BASE   (0x1978)
+#define VERSION_MAGIC  (VERSION_BASE + 0)
+
+GameInfo::GameInfo(char *name, char *author, SDL_Surface *image)
 {
-	this->name = NULL;
-	this->author = NULL;
-	this->screenshot = NULL;
+	this->name = name;
+	this->author = author;
+	this->screenshot = image;
 }
 
 GameInfo::~GameInfo()
@@ -52,7 +55,7 @@ struct game_info *GameInfo::dump(size_t *out_sz)
 	/* Allocate everything */
 	out = (struct game_info*)xmalloc(total_sz);
 	out->sz = total_sz;
-	out->dummy = 0;
+	out->version_magic = VERSION_MAGIC;
 	out->author_off = 0; /* Starts AFTER the header */
 	out->name_off = out->author_off + strlen(this->author) + 1;
 	out->screenshot_off = out->name_off + strlen(this->name) + 1;
@@ -63,6 +66,7 @@ struct game_info *GameInfo::dump(size_t *out_sz)
 
 	out->sz = htonl(out->sz);
 	out->author_off = htons(out->author_off);
+	out->version_magic = htons(out->version_magic);
 	out->name_off = htons(out->name_off);
 	out->screenshot_off = htons(out->screenshot_off);
 
@@ -74,6 +78,7 @@ void GameInfo::fromDump(struct game_info *gi, size_t sz)
 	SDL_RWops *rw;
 
 	gi->sz = ntohl(gi->sz);
+	gi->version_magic = ntohs(gi->version_magic);
 	gi->author_off = ntohs(gi->author_off);
 	gi->name_off = ntohs(gi->name_off);
 	gi->screenshot_off = ntohs(gi->screenshot_off);

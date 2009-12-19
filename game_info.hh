@@ -6,17 +6,17 @@
 struct game_info
 {
 	uint32_t sz;
+	uint16_t version_magic;
 	uint16_t author_off;
 	uint16_t name_off;
 	uint16_t screenshot_off; /* In PNG format */
-	uint16_t dummy;
 	uint8_t data[]; /* 4-byte aligned */
 };
 
 class GameInfo
 {
 public:
-	GameInfo();
+	GameInfo(char *name = NULL, char *author = NULL, SDL_Surface *image = NULL);
 
 	~GameInfo();
 
