@@ -1,4 +1,5 @@
-OBJS=menu.oo main.oo utils.oo gui.oo dialogue_box.oo menu_messages.oo timer.oo
+OBJS=menu.oo main.oo utils.oo gui.oo dialogue_box.oo menu_messages.oo \
+	timer.oo game_info.oo
 
 all: menu
 
@@ -7,9 +8,11 @@ all: menu
 
 menu.oo: menu.cpp menu.hh utils.hh font.hh Makefile
 
-gui.oo: Makefile gui.cpp gui.hh font.hh menu.hh sdl_ttf_font.hh \
+gui.oo: gui.cpp gui.hh Makefile font.hh menu.hh sdl_ttf_font.hh \
 	dialogue_box.hh help_box.hh main_menu.cpp disc_menu.cpp \
 	file_browser.hh timer.hh
+
+game_info.oo: game_info.hh game_info.cpp
 
 utils.oo: utils.cpp utils.hh Makefile
 
