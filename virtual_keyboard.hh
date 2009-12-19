@@ -24,7 +24,7 @@ class StringListener
 	void stringCallback(const char *str);
 };
 
-class VirtualKeyboard
+class VirtualKeyboard : public Widget
 {
 public:
 	VirtualKeyboard(TTF_Font *font);

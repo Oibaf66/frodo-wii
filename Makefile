@@ -6,7 +6,7 @@ all: menu
 %.oo: %.cpp
 	g++ -Wall -g -c `sdl-config --cflags` -o $@ $<
 
-menu.oo: menu.cpp menu.hh utils.hh font.hh Makefile
+menu.oo: menu.cpp menu.hh utils.hh font.hh widget.hh Makefile
 
 gui.oo: gui.cpp gui.hh Makefile font.hh menu.hh sdl_ttf_font.hh \
 	dialogue_box.hh help_box.hh main_menu.cpp disc_menu.cpp \
