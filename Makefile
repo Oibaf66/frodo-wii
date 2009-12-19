@@ -1,5 +1,5 @@
 OBJS=menu.oo main.oo utils.oo gui.oo dialogue_box.oo menu_messages.oo \
-	timer.oo game_info.oo widget.oo
+	timer.oo game_info.oo widget.oo virtual_keyboard.oo
 
 all: menu
 
@@ -13,6 +13,8 @@ widget.oo: widget.cpp widget.hh
 gui.oo: gui.cpp gui.hh Makefile font.hh menu.hh sdl_ttf_font.hh \
 	dialogue_box.hh help_box.hh main_menu.cpp disc_menu.cpp \
 	file_browser.hh timer.hh game_info.hh
+
+virtual_keyboard.oo: virtual_keyboard.hh virtual_keyboard.cpp widget.hh
 
 game_info.oo: game_info.hh game_info.cpp
 

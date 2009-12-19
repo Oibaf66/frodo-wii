@@ -12,8 +12,8 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
-#include "menu.h"
 #include "virtual_keyboard.hh"
+#include "utils.hh"
 
 typedef struct virtkey
 {
@@ -71,12 +71,15 @@ static const char *shifted_names[KEY_COLS * KEY_ROWS] = {
 	NULL,              NULL,        NULL,        NULL,        NULL,        NULL,        "f2",        "f4",        "f6",        "f8",        "Ins",       NULL,        NULL,        NULL,        NULL,
 };
 
-VirtualKeyboard::VirtualKeyboard(TTF_Font *font)
+VirtualKeyboard::VirtualKeyboard(TTF_Font *font) : Widget()
 {
 	this->font = font;
 	this->sel_x = 0;
 	this->sel_y = 0;
 	this->shift_on = false;
+
+	this->is_active = false;
+	this->buf_head = 0;
 
 	memset(this->buf, 0, sizeof(this->buf));
 	memset(this->stringListeners, 0, sizeof(this->stringListeners));
@@ -117,10 +120,11 @@ void VirtualKeyboard::draw(SDL_Surface *where, int x, int y, int w, int h)
 			if ( (x == this->sel_x && y == this->sel_y) ||
 					(this->shift_on && key.is_shift))
 				b = 0;
-
+#if 0
 			menu_print_font(where, r, g, b,
 					x * key_w + border_x, y * key_h + border_y,
 					what);
+#endif
 		}
 	}
 }
@@ -225,109 +229,6 @@ const char VirtualKeyboard::keycodeToChar(int kc)
 	return s[0];
 }
 
-struct virtkey *VirtualKeyboard::getKeyInternal()
-{
-	while(1)
-	{
-		uint32_t k;
-
-		this->draw();
-		SDL_Flip(this->screen);
-
-		k = menu_wait_key_press();
-
-		if (k & KEY_UP)
-			this->selectNext(0, -1);
-		else if (k & KEY_DOWN)
-			this->selectNext(0, 1);
-		else if (k & KEY_LEFT)
-			this->selectNext(-1, 0);
-		else if (k & KEY_RIGHT)
-			this->selectNext(1, 0);
-		else if (k & KEY_ESCAPE)
-			return NULL;
-		else if (k & KEY_SELECT)
-		{
-			virtkey_t *key = &keys[ this->sel_y * KEY_COLS + this->sel_x ];
-
-			if (key->is_shift == true)
-				this->toggleShift();
-			else
-				return key;
-		}
-	}
-
-	return NULL;
-}
-
-int VirtualKeyboard::getKey()
-{
-	virtkey_t *key;
-
-	SDL_FillRect(this->screen, 0, SDL_MapRGB(screen->format, 0x00, 0x80, 0x80));
-
-	key = this->getKeyInternal();
-	if (key == NULL)
-		return -2;
-
-	if (this->shift_on)
-		return key->kc | 0x80;
-	return key->kc;
-}
-
-const char *VirtualKeyboard::getString()
-{
-	int cnt = 0;
-
-	SDL_FillRect(this->screen, 0, SDL_MapRGB(screen->format, 0x00, 0x80, 0x80));
-	memset(this->buf, 0, sizeof(this->buf));
-
-	while (true)
-	{
-		virtkey_t *key = this->getKeyInternal();
-		char c;
-
-		/* Abort */
-		if (key == NULL)
-			return NULL;
-
-		/* Done */
-		if (key->is_done)
-			return this->buf;
-		/* Skip None */
-		if (key->kc == -1)
-			continue;
-
-		/* Special-case for delete */
-		if (strcmp(key->name, "Del") == 0)
-		{
-			if (cnt < 1)
-				continue;
-			this->buf[cnt - 1] = ' ';
-			cnt -= 2;
-		}
-		else
-		{
-			c = this->keycodeToChar( this->shift_on ? key->kc | 0x80 : key->kc );
-
-			this->buf[cnt] = c;
-		}
-
-		cnt++;
-		if (cnt >= sizeof(this->buf) - 1)
-			return this->buf;
-
-		/* SDL_Flip is done in get_key_internal() */
-		SDL_FillRect(this->screen, 0, SDL_MapRGB(screen->format, 0x00, 0x80, 0x80));
-		menu_print_font(this->screen, 255, 255, 0,
-				40, screen->h - 50,
-				this->buf);
-	}
-
-	/* Not reachable */
-	return NULL;
-}
-
 void VirtualKeyboard::registerListener(KeyListener *kl)
 {
 	int n_listeners = sizeof(this->keyListeners) / sizeof(*this->keyListeners);
@@ -376,3 +277,87 @@ void VirtualKeyboard::unregisterListener(StringListener *sl)
 			this->stringListeners[i] = NULL;
 	}
 }
+
+void VirtualKeyboard::activate()
+{
+	this->is_active = true;
+	memset(this->buf, 0, sizeof(this->buf));
+	this->buf_head = 0;
+}
+
+
+void VirtualKeyboard::runLogic()
+{
+	event_t ev;
+
+	if (!this->is_active)
+		return;
+
+	ev = this->popEvent();
+	if (ev == EVENT_NONE)
+		return;
+
+	if (ev & KEY_UP)
+		this->selectNext(0, -1);
+	else if (ev & KEY_DOWN)
+		this->selectNext(0, 1);
+	else if (ev & KEY_LEFT)
+		this->selectNext(-1, 0);
+	else if (ev & KEY_RIGHT)
+		this->selectNext(1, 0);
+	else if (ev & KEY_ESCAPE)
+		this->deactivate();
+	else if (ev & KEY_SELECT)
+	{
+		virtkey_t *key = &keys[ this->sel_y * KEY_COLS + this->sel_x ];
+
+		if (!key)
+			return;
+
+		if (key->is_shift == true)
+			this->toggleShift();
+		else if (key->is_done)
+		{
+			int n_listeners = sizeof(this->stringListeners) / sizeof(*this->stringListeners);
+
+			for (int i = 0; i < n_listeners; i++)
+			{
+				if (this->stringListeners[i])
+					this->stringListeners[i]->stringCallback(this->buf);
+			}
+			/* We're done! */
+			this->deactivate();
+		}
+		else if (strcmp(key->name, "Del") == 0)
+		{
+			if (this->buf_head > 1)
+			{
+				this->buf[this->buf_head - 1] = ' ';
+				this->buf_head -= 2;
+			}
+		}
+		else
+		{
+			int n_listeners = sizeof(this->keyListeners) / sizeof(*this->keyListeners);
+			char c;
+
+			/* Add to buf */
+			c = this->keycodeToChar( this->shift_on ? key->kc | 0x80 : key->kc );
+
+			this->buf[this->buf_head] = c;
+
+			this->buf_head++;
+			if (this->buf_head >= sizeof(this->buf) - 1)
+				this->buf_head = 0; /* OK, not good, but well... */
+			for (int i = 0; i < n_listeners; i++)
+			{
+				if (this->keyListeners[i])
+					this->keyListeners[i]->keyCallback(this->shift_on,
+							key->name);
+			}
+		}
+	}
+}
+
+/* The singleton */
+VirtualKeyboard *VirtualKeyboard::kbd;

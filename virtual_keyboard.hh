@@ -9,19 +9,27 @@
  * $Id$
  *
  ********************************************************************/
+#ifndef __VIRTUAL_KEYBORD_HH__
+#define __VIRTUAL_KEYBORD_HH__
+
 #include <SDL.h>
 #include <SDL_ttf.h>
+
+#include "widget.hh"
 
 struct virtkey; 
 
 class KeyListener
 {
-	void keyCallback(char c);
+public:
+	/* Each key is a string */
+	virtual void keyCallback(bool shift, const char *str) = 0;
 };
 
 class StringListener
 {
-	void stringCallback(const char *str);
+public:
+	virtual void stringCallback(const char *str) = 0;
 };
 
 class VirtualKeyboard : public Widget
@@ -35,13 +43,19 @@ public:
 	void unregisterListener(StringListener *sl);
 
 	/* Conversions */
-	int getKey();
-	const char *getString();
 	const char *keycodeToString(int kc);
 	const char keycodeToChar(int kc);
 	int charToKeycode(char c);
+	int stringToKeycode(const char *str);
 
-	void pushEvent(SDL_Event *ev);
+	void activate();
+
+	void deactivate()
+	{
+		this->is_active = false;
+	}
+
+	void runLogic();
 
 	void draw(SDL_Surface *where, int x, int y, int w, int h);
 
@@ -51,7 +65,6 @@ private:
 	KeyListener *keyListeners[8];
 	StringListener *stringListeners[8];
 
-	struct virtkey *getKeyInternal();
 	void selectNext(int dx, int dy);
 	void toggleShift();
 
@@ -60,5 +73,9 @@ private:
 	int sel_y;
 	bool shift_on;
 
+	bool is_active;
 	char buf[255];
+	unsigned buf_head;
 };
+
+#endif /* __VIRTUAL_KEYBORD_HH__ */
