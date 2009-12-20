@@ -225,7 +225,7 @@ const char VirtualKeyboard::keycodeToChar(int kc)
 	return s[0];
 }
 
-void VirtualKeyboard::registerListener(KeyListener *kl)
+void VirtualKeyboard::registerKeyListener(KeyListener *kl)
 {
 	int n_listeners = sizeof(this->keyListeners) / sizeof(*this->keyListeners);
 	int i;
@@ -239,7 +239,7 @@ void VirtualKeyboard::registerListener(KeyListener *kl)
 }
 
 /* Templates FTW! */
-void VirtualKeyboard::registerListener(StringListener *sl)
+void VirtualKeyboard::registerStringListener(StringListener *sl)
 {
 	int n_listeners = sizeof(this->stringListeners) / sizeof(*this->stringListeners);
 	int i;
@@ -252,7 +252,7 @@ void VirtualKeyboard::registerListener(StringListener *sl)
 	this->stringListeners[i] = sl;
 }
 
-void VirtualKeyboard::unregisterListener(KeyListener *kl)
+void VirtualKeyboard::unregisterKeyListener(KeyListener *kl)
 {
 	int n_listeners = sizeof(this->keyListeners) / sizeof(*this->keyListeners);
 
@@ -263,7 +263,7 @@ void VirtualKeyboard::unregisterListener(KeyListener *kl)
 	}
 }
 
-void VirtualKeyboard::unregisterListener(StringListener *sl)
+void VirtualKeyboard::unregisterStringListener(StringListener *sl)
 {
 	int n_listeners = sizeof(this->stringListeners) / sizeof(*this->stringListeners);
 
@@ -353,6 +353,12 @@ void VirtualKeyboard::runLogic()
 			}
 		}
 	}
+}
+
+void VirtualKeyboard::flushKeyListeners()
+{
+	memset(this->keyListeners, 0, sizeof(this->keyListeners));
+	memset(this->stringListeners, 0, sizeof(this->stringListeners));
 }
 
 void VirtualKeyboard::draw(SDL_Surface *where)

@@ -38,10 +38,10 @@ class VirtualKeyboard : public GuiView
 public:
 	VirtualKeyboard(Font *font);
 
-	void registerListener(KeyListener *kl);
-	void registerListener(StringListener *sl);
-	void unregisterListener(KeyListener *kl);
-	void unregisterListener(StringListener *sl);
+	void registerKeyListener(KeyListener *kl);
+	void registerStringListener(StringListener *sl);
+	void unregisterKeyListener(KeyListener *kl);
+	void unregisterStringListener(StringListener *sl);
 
 	/* Conversions */
 	const char *keycodeToString(int kc);
@@ -59,6 +59,7 @@ public:
 	void deactivate()
 	{
 		this->is_active = false;
+		this->flushKeyListeners();
 	}
 
 	bool isActive()
@@ -82,6 +83,8 @@ private:
 
 	void selectNext(int dx, int dy);
 	void toggleShift();
+
+	void flushKeyListeners();
 
 	Font *font;
 	int sel_x;

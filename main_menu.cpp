@@ -1,7 +1,7 @@
 #include "menu.hh"
 
 class MainView;
-class MainMenu : public Menu
+class MainMenu : public Menu, KeyListener
 {
 	friend class MainView;
 
@@ -71,9 +71,10 @@ public:
 				Gui::gui->pushView(Gui::gui->dv);
 			}
 			break;
-		case 2:
+		case 4:
 			Gui::gui->pushView(Gui::gui->kv);
 			Gui::gui->kv->activate();
+			Gui::gui->kv->registerKeyListener(this);
 			break;
 
 		case 11:
@@ -83,6 +84,11 @@ public:
 					this->submenu_bg_right);
 			break;
 		}
+	}
+
+	virtual void keyCallback(bool shift, const char *str)
+	{
+		printf("Vobb: %d: %s\n", shift, str);
 	}
 
 	virtual void hoverCallback(int which)
