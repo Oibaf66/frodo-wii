@@ -13,6 +13,7 @@
 
 #include "virtual_keyboard.hh"
 #include "utils.hh"
+#include "gui.hh"
 
 typedef struct virtkey
 {
@@ -113,6 +114,13 @@ void VirtualKeyboard::draw(SDL_Surface *where, int x, int y, int w, int h)
 			if (this->shift_on && shifted_names[which])
 				what = shifted_names[which];
 
+			if (this->sel_x == x && this->sel_y == y)
+			{
+				SDL_Rect dst = (SDL_Rect){x * key_w + border_x - 8,
+					y * key_h + border_y - 4, 0,0};
+
+				SDL_BlitSurface(Gui::gui->selected_key, NULL, where, &dst);
+			}
 			this->font->draw(where, what,
 					x * key_w + border_x, y * key_h + border_y, w, h);
 		}
@@ -351,10 +359,12 @@ void VirtualKeyboard::runLogic()
 
 void VirtualKeyboard::draw(SDL_Surface *where)
 {
+	this->draw(where, 20, 240, 600, 240);
 }
 
 void VirtualKeyboard::updateTheme()
 {
+	this->setFont(Gui::gui->small_font);
 }
 
 /* The singleton */

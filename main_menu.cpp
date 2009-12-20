@@ -72,6 +72,8 @@ public:
 			}
 			break;
 		case 2:
+			Gui::gui->pushView(Gui::gui->kv);
+			Gui::gui->kv->activate();
 			break;
 
 		case 11:

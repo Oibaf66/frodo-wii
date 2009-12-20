@@ -67,6 +67,7 @@ Gui::Gui()
 	/* Create the views */
 	this->mv = new MainView();
 	this->dv = new DiscView();
+	this->kv = VirtualKeyboard::kbd;
 	this->pushView(mv);
 }
 
@@ -87,6 +88,9 @@ bool Gui::setTheme(const char *path)
 	this->dialogue_bg = this->loadThemeImage(path, "dialogue_box.png");
 	this->disc_info = this->loadThemeImage(path, "disc_info.png");
 
+	this->highlighted_key = this->loadThemeImage(path, "highlighted_key.png");
+	this->selected_key = this->loadThemeImage(path, "selected_key.png");
+
 	this->default_font = this->loadThemeFont(path, "font.ttf", 18);
 	this->small_font = this->loadThemeFont(path, "font.ttf", 16);
 
@@ -95,6 +99,8 @@ bool Gui::setTheme(const char *path)
 			!this->bg_submenu_middle ||
 			!this->dialogue_bg ||
 			!this->disc_info ||
+			!this->selected_key ||
+			!this->highlighted_key ||
 			!this->default_font ||
 			!this->small_font)
 	{
@@ -110,6 +116,8 @@ bool Gui::setTheme(const char *path)
 		SDL_FreeSurface(this->dialogue_bg);
 		SDL_FreeSurface(this->disc_info);
 		SDL_FreeSurface(this->textbox);
+		SDL_FreeSurface(this->selected_key);
+		SDL_FreeSurface(this->highlighted_key);
 
 		if (this->default_font)
 			delete this->default_font;
@@ -119,9 +127,9 @@ bool Gui::setTheme(const char *path)
 		return false;
 	}
 
-	VirtualKeyboard::kbd->setFont(this->default_font);
 	this->mv->updateTheme();
 	this->dv->updateTheme();
+	this->kv->updateTheme();
 
 	return true;
 }

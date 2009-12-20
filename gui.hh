@@ -10,7 +10,7 @@
 
 class MainView;
 class DiscView;
-class KeyboardView;
+class VirtualKeyboard;
 
 class Gui
 {
@@ -63,6 +63,8 @@ public:
 	SDL_Surface *disc_info;
 	SDL_Surface *bg_left, *bg_right, *bg_middle,
 		*bg_submenu_left, *bg_submenu_right, *bg_submenu_middle;
+	SDL_Surface *highlighted_key;
+	SDL_Surface *selected_key;
 
 	Font *default_font;
 	Font *small_font;
@@ -70,7 +72,7 @@ public:
 
 	MainView *mv;
 	DiscView *dv;
-	KeyboardView *kv;
+	VirtualKeyboard *kv;
 	GuiView **views;
 	int n_views;
 
