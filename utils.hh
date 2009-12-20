@@ -8,6 +8,8 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
+class Font;
+
 #define BUG_ON(cond)
 
 #define panic(x...) do \
@@ -66,5 +68,9 @@ TTF_Font *read_and_alloc_font(const char *path, int pt_size);
 const char **get_file_list(const char *base_dir, const char *exts[]);
 
 void *sdl_surface_to_png(SDL_Surface *src, size_t *out_sz);
+
+void highlight_background(SDL_Surface *where, Font *font,
+		SDL_Surface *bg_left, SDL_Surface *bg_middle, SDL_Surface *bg_right,
+		int x, int y, int w, int h);
 
 #endif /* __UTILS_H__ */

@@ -6,6 +6,7 @@
 #include <SDL_ttf.h>
 
 #include "utils.hh"
+#include "font.hh"
 
 TTF_Font *read_and_alloc_font(const char *path, int pt_size)
 {
@@ -237,4 +238,39 @@ void *sdl_surface_to_png(SDL_Surface *surf, size_t *out_sz)
 	*out_sz = out.sz;
 
 	return out.data;
+}
+
+void highlight_background(SDL_Surface *where, Font *font,
+		SDL_Surface *bg_left, SDL_Surface *bg_middle, SDL_Surface *bg_right,
+		int x, int y, int w, int h)
+{
+	SDL_Rect dst;
+
+	/* Can't highlight without images */
+	if (!bg_left ||	!bg_middle || !bg_right)
+		return;
+
+	int font_height = font->getHeight("X");
+	int bg_y_start = y + font_height / 2 -
+			bg_left->h / 2;
+	int bg_x_start = x - bg_left->w / 3;
+	int bg_x_end = x + w - (2 * bg_right->w) / 3;
+	int n_mid = (bg_x_end - bg_x_start) / bg_middle->w;
+
+	/* Left */
+	dst = (SDL_Rect){bg_x_start, bg_y_start, 0,0};
+	SDL_BlitSurface(bg_left, NULL, where, &dst);
+
+	/* Middle */
+	for (int i = 1; i < n_mid; i++)
+	{
+		dst = (SDL_Rect){bg_x_start + i * bg_middle->w, bg_y_start, 0,0};
+		SDL_BlitSurface(bg_middle, NULL, where, &dst);
+	}
+	dst = (SDL_Rect){bg_x_end - bg_middle->w, bg_y_start, 0,0};
+	SDL_BlitSurface(bg_middle, NULL, where, &dst);
+
+	/* Right */
+	dst = (SDL_Rect){bg_x_end, bg_y_start, 0,0};
+	SDL_BlitSurface(bg_right, NULL,	where, &dst);
 }

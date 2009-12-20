@@ -60,41 +60,6 @@ void Menu::printText(SDL_Surface *where, const char *msg, SDL_Color clr,
 	free(buf);
 }
 
-void Menu::highlightBackground(SDL_Surface *where,
-		SDL_Surface *bg_left, SDL_Surface *bg_middle, SDL_Surface *bg_right,
-		int x, int y, int w, int h)
-{
-	SDL_Rect dst;
-
-	/* Can't highlight without images */
-	if (!bg_left ||	!bg_middle || !bg_right)
-		return;
-
-	int font_height = this->font->getHeight("X");
-	int bg_y_start = y + font_height / 2 -
-			bg_left->h / 2;
-	int bg_x_start = x - bg_left->w / 3;
-	int bg_x_end = x + w - (2 * bg_right->w) / 3;
-	int n_mid = (bg_x_end - bg_x_start) / bg_middle->w;
-
-	/* Left */
-	dst = (SDL_Rect){bg_x_start, bg_y_start, 0,0};
-	SDL_BlitSurface(bg_left, NULL, where, &dst);
-
-	/* Middle */
-	for (int i = 1; i < n_mid; i++)
-	{
-		dst = (SDL_Rect){bg_x_start + i * bg_middle->w, bg_y_start, 0,0};
-		SDL_BlitSurface(bg_middle, NULL, where, &dst);
-	}
-	dst = (SDL_Rect){bg_x_end - bg_middle->w, bg_y_start, 0,0};
-	SDL_BlitSurface(bg_middle, NULL, where, &dst);
-
-	/* Right */
-	dst = (SDL_Rect){bg_x_end, bg_y_start, 0,0};
-	SDL_BlitSurface(bg_right, NULL,	where, &dst);
-}
-
 
 void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 {
@@ -144,7 +109,7 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 			tw = this->font->getWidth(msg);
 			th = this->font->getHeight(msg);
 
-			this->highlightBackground(where,
+			highlight_background(where, this->font,
 					this->text_bg_left, this->text_bg_middle, this->text_bg_right,
 					x_start, cur_y, tw, th);
 		}
@@ -185,7 +150,7 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 			tw = this->font->getWidth(p);
 			th = this->font->getHeight(p);
 
-			this->highlightBackground(where,
+			highlight_background(where, this->font,
 					this->submenu_bg_left, this->submenu_bg_middle, this->submenu_bg_right,
 					 x_start + tw_first, cur_y, tw, th);
 			free(p);

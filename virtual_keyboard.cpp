@@ -115,12 +115,10 @@ void VirtualKeyboard::draw(SDL_Surface *where, int x, int y, int w, int h)
 				what = shifted_names[which];
 
 			if (this->sel_x == x && this->sel_y == y)
-			{
-				SDL_Rect dst = (SDL_Rect){x * key_w + border_x - 8,
-					y * key_h + border_y - 4, 0,0};
-
-				SDL_BlitSurface(Gui::gui->selected_key, NULL, where, &dst);
-			}
+				highlight_background(where, Gui::gui->small_font,
+						Gui::gui->bg_left, Gui::gui->bg_middle, Gui::gui->bg_right,
+						x * key_w + border_x, y * key_h + border_y,
+						this->font->getWidth(what), h);
 			this->font->draw(where, what,
 					x * key_w + border_x, y * key_h + border_y, w, h);
 		}
