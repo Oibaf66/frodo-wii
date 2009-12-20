@@ -6,24 +6,11 @@
 #include "menu.hh"
 #include "font.hh"
 #include "timer.hh"
+#include "gui_view.hh"
 
-class Gui;
 class MainView;
 class DiscView;
-
-class GuiView
-{
-public:
-	GuiView();
-
-	virtual void pushEvent(SDL_Event *ev) = 0;
-
-	virtual void runLogic() = 0;
-
-	virtual void updateTheme() = 0;
-
-	virtual void draw(SDL_Surface *where) = 0;
-};
+class KeyboardView;
 
 class Gui
 {
@@ -83,6 +70,7 @@ public:
 
 	MainView *mv;
 	DiscView *dv;
+	KeyboardView *kv;
 	GuiView **views;
 	int n_views;
 

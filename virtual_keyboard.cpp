@@ -70,7 +70,7 @@ static const char *shifted_names[KEY_COLS * KEY_ROWS] = {
 	NULL,              NULL,        NULL,        NULL,        NULL,        NULL,        "f2",        "f4",        "f6",        "f8",        "Ins",       NULL,        NULL,        NULL,        NULL,
 };
 
-VirtualKeyboard::VirtualKeyboard(Font *font) : Widget()
+VirtualKeyboard::VirtualKeyboard(Font *font) : GuiView()
 {
 	this->font = font;
 	this->sel_x = 0;
@@ -347,6 +347,14 @@ void VirtualKeyboard::runLogic()
 			}
 		}
 	}
+}
+
+void VirtualKeyboard::draw(SDL_Surface *where)
+{
+}
+
+void VirtualKeyboard::updateTheme()
+{
 }
 
 /* The singleton */

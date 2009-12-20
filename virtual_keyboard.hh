@@ -15,6 +15,7 @@
 #include <SDL.h>
 
 #include "widget.hh"
+#include "gui_view.hh"
 #include "font.hh"
 
 struct virtkey; 
@@ -32,7 +33,7 @@ public:
 	virtual void stringCallback(const char *str) = 0;
 };
 
-class VirtualKeyboard : public Widget
+class VirtualKeyboard : public GuiView
 {
 public:
 	VirtualKeyboard(Font *font);
@@ -65,6 +66,10 @@ public:
 		return this->is_active;
 	}
 
+	virtual void updateTheme();
+
+	void draw(SDL_Surface *where);
+
 	void runLogic();
 
 	void draw(SDL_Surface *where, int x, int y, int w, int h);
@@ -87,6 +92,5 @@ private:
 	char buf[255];
 	unsigned buf_head;
 };
-
 
 #endif /* __VIRTUAL_KEYBORD_HH__ */

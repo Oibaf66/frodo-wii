@@ -30,7 +30,7 @@ public:
 	virtual void runLogic() = 0;
 
 	virtual void draw(SDL_Surface *where,
-			int x, int y, int w, int h) = 0;
+			int x, int y, int w, int h);
 
 	virtual event_t popEvent();
 

@@ -70,3 +70,7 @@ void Widget::pushEvent(SDL_Event *ev)
 
 	}
 }
+
+void Widget::draw(SDL_Surface *where, int x, int y, int w, int h)
+{
+}
