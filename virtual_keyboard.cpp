@@ -86,15 +86,13 @@ VirtualKeyboard::VirtualKeyboard(Font *font) : GuiView()
 	memset(this->keyListeners, 0, sizeof(this->keyListeners));
 }
 
-void VirtualKeyboard::draw(SDL_Surface *where, int x, int y, int w, int h)
+void VirtualKeyboard::draw(SDL_Surface *where, int x_base, int y_base, int w, int h)
 {
 	int screen_w = where->w;
 	int screen_h = where->h;
 	int key_w = w / KEY_COLS;
 	int key_h = h / KEY_ROWS;
-	int border_x = (screen_w - (key_w * KEY_COLS)) / 2;
-	int border_y = (screen_h - (key_h * KEY_ROWS)) / 2;
-	SDL_Rect bg_rect = {border_x, border_y,
+	SDL_Rect bg_rect = {x_base, y_base,
 			key_w * KEY_COLS, key_h * KEY_ROWS};
 
 	SDL_FillRect(where, &bg_rect,
@@ -117,10 +115,10 @@ void VirtualKeyboard::draw(SDL_Surface *where, int x, int y, int w, int h)
 			if (this->sel_x == x && this->sel_y == y)
 				highlight_background(where, Gui::gui->small_font,
 						Gui::gui->bg_left, Gui::gui->bg_middle, Gui::gui->bg_right,
-						x * key_w + border_x, y * key_h + border_y,
+						x * key_w + x_base, y * key_h + y_base,
 						this->font->getWidth(what), h);
 			this->font->draw(where, what,
-					x * key_w + border_x, y * key_h + border_y, w, h);
+					x * key_w + x_base, y * key_h + y_base, w, h);
 		}
 	}
 }
