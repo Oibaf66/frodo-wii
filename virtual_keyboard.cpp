@@ -225,11 +225,15 @@ void VirtualKeyboard::registerListener(KeyboardListener *kl)
 	int n_listeners = sizeof(this->listeners) / sizeof(*this->listeners);
 	int i;
 
+	/* Don't register already registered listeners */
 	for (i = 0; i < n_listeners; i++)
-	{
+		if (this->listeners[i] == kl)
+			return;
+	/* Find a free spot */
+	for (i = 0; i < n_listeners; i++)
 		if (!this->listeners[i])
 			break;
-	}
+
 	panic_if(i == n_listeners,
 			"No free listeners!\n");
 	this->listeners[i] = kl;
@@ -334,9 +338,9 @@ void VirtualKeyboard::flushListeners()
 
 void VirtualKeyboard::deactivate()
 {
-		this->is_active = false;
-		this->flushListeners();
-		Gui::gui->popView();
+	this->is_active = false;
+	this->flushListeners();
+	Gui::gui->popView();
 }
 
 void VirtualKeyboard::draw(SDL_Surface *where)
