@@ -12,7 +12,7 @@ widget.oo: widget.cpp widget.hh
 
 gui.oo: gui.cpp gui.hh Makefile font.hh menu.hh sdl_ttf_font.hh \
 	dialogue_box.hh help_box.hh main_menu.cpp disc_menu.cpp \
-	file_browser.hh timer.hh game_info.hh
+	file_browser.hh timer.hh game_info.hh widget.hh
 
 virtual_keyboard.oo: virtual_keyboard.hh virtual_keyboard.cpp widget.hh
 

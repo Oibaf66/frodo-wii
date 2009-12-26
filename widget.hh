@@ -4,16 +4,16 @@
 #include <SDL.h>
 
 enum key_event {
-	EVENT_NONE   = 0,
-	KEY_UP       = 1,
-	KEY_DOWN     = 2,
-	KEY_LEFT     = 4,
-	KEY_RIGHT    = 8,
-	KEY_SELECT   = 16,
-	KEY_ESCAPE   = 32,
-	KEY_PAGEDOWN = 64,
-	KEY_PAGEUP   = 128,
-	KEY_HELP     = 256,
+	EVENT_NONE   = (1 << 8),
+	KEY_UP       = (1 << 9),
+	KEY_DOWN     = (1 << 10),
+	KEY_LEFT     = (1 << 11),
+	KEY_RIGHT    = (1 << 12),
+	KEY_SELECT   = (1 << 13),
+	KEY_ESCAPE   = (1 << 14),
+	KEY_PAGEDOWN = (1 << 15),
+	KEY_PAGEUP   = (1 << 16),
+	KEY_HELP     = (1 << 17),
 };
 
 typedef enum key_event event_t;
