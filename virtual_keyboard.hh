@@ -20,21 +20,19 @@
 
 struct virtkey; 
 
-class KeyListener
+class KeyboardListener
 {
 public:
-	~KeyListener();
+	~KeyboardListener();
 
 	/* Each key is a string */
-	virtual void keyCallback(bool shift, const char *str) = 0;
-};
+	virtual void keyCallback(bool shift, const char *str)
+	{
+	}
 
-class StringListener
-{
-public:
-	~StringListener();
-
-	virtual void stringCallback(const char *str) = 0;
+	virtual void stringCallback(const char *str)
+	{
+	}
 };
 
 class VirtualKeyboard : public GuiView
@@ -42,10 +40,8 @@ class VirtualKeyboard : public GuiView
 public:
 	VirtualKeyboard(Font *font);
 
-	void registerKeyListener(KeyListener *kl);
-	void registerStringListener(StringListener *sl);
-	void unregisterKeyListener(KeyListener *kl);
-	void unregisterStringListener(StringListener *sl);
+	void registerListener(KeyboardListener *kl);
+	void unregisterListener(KeyboardListener *kl);
 
 	/* Conversions */
 	const char *keycodeToString(int kc);
@@ -78,13 +74,12 @@ public:
 	/* Singleton object */
 	static VirtualKeyboard *kbd;
 private:
-	KeyListener *keyListeners[8];
-	StringListener *stringListeners[8];
+	KeyboardListener *listeners[8];
 
 	void selectNext(int dx, int dy);
 	void toggleShift();
 
-	void flushKeyListeners();
+	void flushListeners();
 
 	Font *font;
 	int sel_x;

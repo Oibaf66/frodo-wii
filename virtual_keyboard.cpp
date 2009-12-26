@@ -82,8 +82,7 @@ VirtualKeyboard::VirtualKeyboard(Font *font) : GuiView()
 	this->buf_head = 0;
 
 	memset(this->buf, 0, sizeof(this->buf));
-	memset(this->stringListeners, 0, sizeof(this->stringListeners));
-	memset(this->keyListeners, 0, sizeof(this->keyListeners));
+	this->flushListeners();
 }
 
 void VirtualKeyboard::draw(SDL_Surface *where, int x_base, int y_base, int w, int h)
@@ -221,52 +220,29 @@ const char VirtualKeyboard::keycodeToChar(int kc)
 	return s[0];
 }
 
-void VirtualKeyboard::registerKeyListener(KeyListener *kl)
+void VirtualKeyboard::registerListener(KeyboardListener *kl)
 {
-	int n_listeners = sizeof(this->keyListeners) / sizeof(*this->keyListeners);
+	int n_listeners = sizeof(this->listeners) / sizeof(*this->listeners);
 	int i;
 
 	for (i = 0; i < n_listeners; i++)
-		if (!this->keyListeners[i])
-			break;
-	panic_if(i == n_listeners,
-			"No free listeners!\n");
-	this->keyListeners[i] = kl;
-}
-
-/* Templates FTW! */
-void VirtualKeyboard::registerStringListener(StringListener *sl)
-{
-	int n_listeners = sizeof(this->stringListeners) / sizeof(*this->stringListeners);
-	int i;
-
-	for (i = 0; i < n_listeners; i++)
-		if (!this->stringListeners[i])
-			break;
-	panic_if(i == n_listeners,
-			"No free listeners!\n");
-	this->stringListeners[i] = sl;
-}
-
-void VirtualKeyboard::unregisterKeyListener(KeyListener *kl)
-{
-	int n_listeners = sizeof(this->keyListeners) / sizeof(*this->keyListeners);
-
-	for (int i = 0; i < n_listeners; i++)
 	{
-		if (this->keyListeners[i] == kl)
-			this->keyListeners[i] = NULL;
+		if (!this->listeners[i])
+			break;
 	}
+	panic_if(i == n_listeners,
+			"No free listeners!\n");
+	this->listeners[i] = kl;
 }
 
-void VirtualKeyboard::unregisterStringListener(StringListener *sl)
+void VirtualKeyboard::unregisterListener(KeyboardListener *kl)
 {
-	int n_listeners = sizeof(this->stringListeners) / sizeof(*this->stringListeners);
+	int n_listeners = sizeof(this->listeners) / sizeof(*this->listeners);
 
 	for (int i = 0; i < n_listeners; i++)
 	{
-		if (this->stringListeners[i] == sl)
-			this->stringListeners[i] = NULL;
+		if (this->listeners[i] == kl)
+			this->listeners[i] = NULL;
 	}
 }
 
@@ -310,12 +286,12 @@ void VirtualKeyboard::runLogic()
 			this->toggleShift();
 		else if (key->is_done)
 		{
-			int n_listeners = sizeof(this->stringListeners) / sizeof(*this->stringListeners);
+			int n_listeners = sizeof(this->listeners) / sizeof(*this->listeners);
 
 			for (int i = 0; i < n_listeners; i++)
 			{
-				if (this->stringListeners[i])
-					this->stringListeners[i]->stringCallback(this->buf);
+				if (this->listeners[i])
+					this->listeners[i]->stringCallback(this->buf);
 			}
 			/* We're done! */
 			this->deactivate();
@@ -330,7 +306,7 @@ void VirtualKeyboard::runLogic()
 		}
 		else
 		{
-			int n_listeners = sizeof(this->keyListeners) / sizeof(*this->keyListeners);
+			int n_listeners = sizeof(this->listeners) / sizeof(*this->listeners);
 			char c;
 
 			/* Add to buf */
@@ -343,24 +319,23 @@ void VirtualKeyboard::runLogic()
 				this->buf_head = 0; /* OK, not good, but well... */
 			for (int i = 0; i < n_listeners; i++)
 			{
-				if (this->keyListeners[i])
-					this->keyListeners[i]->keyCallback(this->shift_on,
+				if (this->listeners[i])
+					this->listeners[i]->keyCallback(this->shift_on,
 							key->name);
 			}
 		}
 	}
 }
 
-void VirtualKeyboard::flushKeyListeners()
+void VirtualKeyboard::flushListeners()
 {
-	memset(this->keyListeners, 0, sizeof(this->keyListeners));
-	memset(this->stringListeners, 0, sizeof(this->stringListeners));
+	memset(this->listeners, 0, sizeof(this->listeners));
 }
 
 void VirtualKeyboard::deactivate()
 {
 		this->is_active = false;
-		this->flushKeyListeners();
+		this->flushListeners();
 		Gui::gui->popView();
 }
 
@@ -378,12 +353,7 @@ void VirtualKeyboard::updateTheme()
 VirtualKeyboard *VirtualKeyboard::kbd;
 
 
-KeyListener::~KeyListener()
+KeyboardListener::~KeyboardListener()
 {
-	VirtualKeyboard::kbd->unregisterKeyListener(this);
-}
-
-StringListener::~StringListener()
-{
-	VirtualKeyboard::kbd->unregisterStringListener(this);
+	VirtualKeyboard::kbd->unregisterListener(this);
 }

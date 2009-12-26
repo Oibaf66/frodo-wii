@@ -1,6 +1,6 @@
 #include "menu.hh"
 
-class KeyboardTypingListener : public StringListener
+class KeyboardTypingListener : public KeyboardListener
 {
 	virtual void stringCallback(const char *str)
 	{
@@ -8,10 +8,15 @@ class KeyboardTypingListener : public StringListener
 		/* Remove thyself! */
 		delete this;
 	}
+
+	virtual void keyCallback(bool shift, const char *str)
+	{
+		printf("Vobb: %d: %s\n", shift, str);
+	}
 };
 
 class MainView;
-class MainMenu : public Menu, KeyListener
+class MainMenu : public Menu
 {
 	friend class MainView;
 
@@ -84,9 +89,7 @@ public:
 		case 4:
 			Gui::gui->pushView(Gui::gui->kv);
 			Gui::gui->kv->activate();
-			Gui::gui->kv->registerKeyListener(this);
-			if (this->p_submenus[2].sel == 0)
-				Gui::gui->kv->registerStringListener(new KeyboardTypingListener());
+			Gui::gui->kv->registerListener(new KeyboardTypingListener());
 			break;
 
 		case 11:
@@ -96,11 +99,6 @@ public:
 					this->submenu_bg_right);
 			break;
 		}
-	}
-
-	virtual void keyCallback(bool shift, const char *str)
-	{
-		printf("Vobb: %d: %s\n", shift, str);
 	}
 
 	virtual void hoverCallback(int which)
