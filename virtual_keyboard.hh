@@ -48,6 +48,7 @@ public:
 	const char keycodeToChar(int kc);
 	int charToKeycode(char c);
 	int stringToKeycode(const char *str);
+	struct virtkey eventToVirtkey(event_t ev);
 
 	void activate();
 
@@ -71,13 +72,20 @@ public:
 
 	void draw(SDL_Surface *where, int x, int y, int w, int h);
 
+	void pushEvent(SDL_Event *ev);
+
 	/* Singleton object */
 	static VirtualKeyboard *kbd;
 private:
 	KeyboardListener *listeners[8];
 
 	void selectNext(int dx, int dy);
+
 	void toggleShift();
+
+	void pushKey(struct virtkey *vk);
+
+	void done();
 
 	void flushListeners();
 
@@ -87,8 +95,9 @@ private:
 	bool shift_on;
 
 	bool is_active;
-	char buf[255];
+	struct virtkey *buf;
 	unsigned buf_head;
+	size_t buf_len;
 };
 
 #endif /* __VIRTUAL_KEYBORD_HH__ */

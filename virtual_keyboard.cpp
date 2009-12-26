@@ -23,6 +23,13 @@ typedef struct virtkey
 	bool is_done;
 } virtkey_t;
 
+#define INVALID_VIRTKEY ((struct virtkey){NULL, -1, false, false})
+
+static inline bool IS_INVALID_VIRTKEY(virtkey_t *k)
+{
+	return k->name == NULL && k->kc == -1 &&
+			k->is_done == false && k->is_shift == false;
+}
 /*
   C64 keyboard matrix:
 
@@ -65,9 +72,9 @@ static virtkey_t keys[KEY_COLS * KEY_ROWS] = {
 
 static const char *shifted_names[KEY_COLS * KEY_ROWS] = {
 	NULL,              "!",         "\"",        "#",         "$",         "%",         "&",         "'",         "(",         ")",         NULL,        NULL,        NULL,        NULL,        "Clr",
-	NULL,              NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,
-	NULL,              NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        "[",         "]",         NULL,        NULL,
-	NULL,              NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,        NULL,         "<",         ">",        "?",         "Up",        "Lft",
+	NULL,              "q",         "w",         "e",         "r",         "t",         "y",         "u",         "i",         "o",         "p",        NULL,        NULL,        NULL,        NULL,
+	NULL,              NULL,        "a",         "s",         "d",         "f",         "g",         "h",         "j",         "k",         "l",        "[",         "]",         NULL,        NULL,
+	NULL,              NULL,        NULL,        "z",         "x",         "c",         "v",         "b",         "n",         "m",         "<",         ">",        "?",         "Up",        "Lft",
 	NULL,              NULL,        NULL,        NULL,        NULL,        NULL,        "f2",        "f4",        "f6",        "f8",        "Ins",       NULL,        NULL,        NULL,        NULL,
 };
 
@@ -80,8 +87,10 @@ VirtualKeyboard::VirtualKeyboard(Font *font) : GuiView()
 
 	this->is_active = false;
 	this->buf_head = 0;
+	this->buf_len = 255;
+	this->buf = (struct virtkey*)xmalloc(sizeof(struct virtkey) * this->buf_len);
+	memset(this->buf, 0, sizeof(struct virtkey) * this->buf_len);
 
-	memset(this->buf, 0, sizeof(this->buf));
 	this->flushListeners();
 }
 
@@ -205,6 +214,36 @@ int VirtualKeyboard::charToKeycode(char c)
 	return -1;
 }
 
+virtkey_t VirtualKeyboard::eventToVirtkey(event_t ev)
+{
+	char c = (char)ev;
+
+	for (int i = 0; i < KEY_COLS * KEY_ROWS; i++)
+	{
+		virtkey_t key = keys[i];
+
+		if (key.name != NULL)
+		{
+			if (strlen(key.name) == 1)
+			{
+				if (key.name[0] == c)
+					return key;
+				if (shifted_names[i] && strlen(shifted_names[i]) == 1 &&
+						shifted_names[i][0] == c)
+					return key;
+			}
+
+			/* OK, ugly special cases, but these are pretty important */
+			if ( (c == ' ' && strcmp(key.name, "space") == 0) ||
+					(c == '\n' && strcmp(key.name, "Ret") == 0) )
+				return key;
+		}
+	}
+
+	return INVALID_VIRTKEY;
+}
+
+
 const char VirtualKeyboard::keycodeToChar(int kc)
 {
 	const char *s = this->keycodeToString(kc);
@@ -253,7 +292,7 @@ void VirtualKeyboard::unregisterListener(KeyboardListener *kl)
 void VirtualKeyboard::activate()
 {
 	this->is_active = true;
-	memset(this->buf, 0, sizeof(this->buf));
+	memset(this->buf, 0, sizeof(struct virtkey) * this->buf_len);
 	this->buf_head = 0;
 }
 
@@ -261,6 +300,7 @@ void VirtualKeyboard::activate()
 void VirtualKeyboard::runLogic()
 {
 	event_t ev;
+	virtkey_t ev_key;
 
 	if (!this->is_active)
 		return;
@@ -268,6 +308,12 @@ void VirtualKeyboard::runLogic()
 	ev = this->popEvent();
 	if (ev == EVENT_NONE)
 		return;
+
+	/* Something was typed on the keyboard */
+	ev_key = this->eventToVirtkey(ev);
+	if ( !IS_INVALID_VIRTKEY(&ev_key) ) {
+		this->pushKey(&ev_key);
+	}
 
 	if (ev & KEY_UP)
 		this->selectNext(0, -1);
@@ -288,46 +334,36 @@ void VirtualKeyboard::runLogic()
 
 		if (key->is_shift == true)
 			this->toggleShift();
-		else if (key->is_done)
-		{
-			int n_listeners = sizeof(this->listeners) / sizeof(*this->listeners);
-
-			for (int i = 0; i < n_listeners; i++)
-			{
-				if (this->listeners[i])
-					this->listeners[i]->stringCallback(this->buf);
-			}
-			/* We're done! */
-			this->deactivate();
-		}
+		else if (key->is_done) /* We're done! */
+			this->done();
 		else if (strcmp(key->name, "Del") == 0)
 		{
 			if (this->buf_head > 1)
 			{
-				this->buf[this->buf_head - 1] = ' ';
+				this->buf[this->buf_head - 1] = (struct virtkey){NULL, -1, false, false};
 				this->buf_head -= 2;
 			}
 		}
 		else
-		{
-			int n_listeners = sizeof(this->listeners) / sizeof(*this->listeners);
-			char c;
+			this->pushKey(key);
+	}
+}
 
-			/* Add to buf */
-			c = this->keycodeToChar( this->shift_on ? key->kc | 0x80 : key->kc );
+void VirtualKeyboard::pushKey(struct virtkey *vk)
+{
+	int n_listeners = sizeof(this->listeners) / sizeof(*this->listeners);
 
-			this->buf[this->buf_head] = c;
+	/* Add to buf */
+	this->buf[this->buf_head] = *vk;
 
-			this->buf_head++;
-			if (this->buf_head >= sizeof(this->buf) - 1)
-				this->buf_head = 0; /* OK, not good, but well... */
-			for (int i = 0; i < n_listeners; i++)
-			{
-				if (this->listeners[i])
-					this->listeners[i]->keyCallback(this->shift_on,
-							key->name);
-			}
-		}
+	this->buf_head++;
+	if (this->buf_head >= this->buf_len - 1)
+		this->buf_head = 0; /* OK, not good, but well... */
+	for (int i = 0; i < n_listeners; i++)
+	{
+		if (this->listeners[i])
+			this->listeners[i]->keyCallback(this->shift_on,
+					vk->name);
 	}
 }
 
@@ -343,6 +379,23 @@ void VirtualKeyboard::deactivate()
 	Gui::gui->popView();
 }
 
+void VirtualKeyboard::done()
+{
+	int n_listeners = sizeof(this->listeners) / sizeof(*this->listeners);
+	char *buf = (char *)xmalloc(this->buf_head + 1);
+
+	for (unsigned i = 0; i < this->buf_head; i++)
+		buf[i] = this->keycodeToChar(this->buf[i].kc);
+
+	for (int i = 0; i < n_listeners; i++)
+	{
+		if (this->listeners[i])
+			this->listeners[i]->stringCallback(buf);
+	}
+	free(buf);
+	this->deactivate();
+}
+
 void VirtualKeyboard::draw(SDL_Surface *where)
 {
 	this->draw(where, 20, 240, 600, 240);
@@ -351,6 +404,36 @@ void VirtualKeyboard::draw(SDL_Surface *where)
 void VirtualKeyboard::updateTheme()
 {
 	this->setFont(Gui::gui->small_font);
+}
+
+void VirtualKeyboard::pushEvent(SDL_Event *ev)
+{
+	switch(ev->type)
+	{
+	case SDL_KEYDOWN:
+		switch (ev->key.keysym.sym)
+		{
+		case SDLK_UP:
+		case SDLK_DOWN:
+		case SDLK_LEFT:
+		case SDLK_RIGHT:
+		case SDLK_PAGEDOWN:
+		case SDLK_PAGEUP:
+		case SDLK_RETURN:
+		case SDLK_HOME:
+		case SDLK_ESCAPE:
+			/* Handle via the standard widget implementation (except for space) */
+			Widget::pushEvent(ev);
+			return;
+		case SDLK_SPACE ... SDLK_z:
+			Widget::pushEvent((event_t)(ev->key.keysym.sym));
+		default:
+			break;
+		}
+		default:
+			break;
+
+	}
 }
 
 /* The singleton */
