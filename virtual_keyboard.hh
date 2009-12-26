@@ -23,6 +23,8 @@ struct virtkey;
 class KeyListener
 {
 public:
+	~KeyListener();
+
 	/* Each key is a string */
 	virtual void keyCallback(bool shift, const char *str) = 0;
 };
@@ -30,6 +32,8 @@ public:
 class StringListener
 {
 public:
+	~StringListener();
+
 	virtual void stringCallback(const char *str) = 0;
 };
 

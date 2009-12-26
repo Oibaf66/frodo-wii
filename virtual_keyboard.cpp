@@ -376,3 +376,14 @@ void VirtualKeyboard::updateTheme()
 
 /* The singleton */
 VirtualKeyboard *VirtualKeyboard::kbd;
+
+
+KeyListener::~KeyListener()
+{
+	VirtualKeyboard::kbd->unregisterKeyListener(this);
+}
+
+StringListener::~StringListener()
+{
+	VirtualKeyboard::kbd->unregisterStringListener(this);
+}

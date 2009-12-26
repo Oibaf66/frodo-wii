@@ -1,5 +1,15 @@
 #include "menu.hh"
 
+class KeyboardTypingListener : public StringListener
+{
+	virtual void stringCallback(const char *str)
+	{
+		printf("string: %s\n", str);
+		/* Remove thyself! */
+		delete this;
+	}
+};
+
 class MainView;
 class MainMenu : public Menu, KeyListener
 {
@@ -75,6 +85,8 @@ public:
 			Gui::gui->pushView(Gui::gui->kv);
 			Gui::gui->kv->activate();
 			Gui::gui->kv->registerKeyListener(this);
+			if (this->p_submenus[2].sel == 0)
+				Gui::gui->kv->registerStringListener(new KeyboardTypingListener());
 			break;
 
 		case 11:
