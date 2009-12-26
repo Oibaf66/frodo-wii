@@ -88,8 +88,6 @@ VirtualKeyboard::VirtualKeyboard(Font *font) : GuiView()
 
 void VirtualKeyboard::draw(SDL_Surface *where, int x_base, int y_base, int w, int h)
 {
-	int screen_w = where->w;
-	int screen_h = where->h;
 	int key_w = w / KEY_COLS;
 	int key_h = h / KEY_ROWS;
 	SDL_Rect bg_rect = {x_base, y_base,
@@ -357,6 +355,13 @@ void VirtualKeyboard::flushKeyListeners()
 {
 	memset(this->keyListeners, 0, sizeof(this->keyListeners));
 	memset(this->stringListeners, 0, sizeof(this->stringListeners));
+}
+
+void VirtualKeyboard::deactivate()
+{
+		this->is_active = false;
+		this->flushKeyListeners();
+		Gui::gui->popView();
 }
 
 void VirtualKeyboard::draw(SDL_Surface *where)

@@ -56,11 +56,7 @@ public:
 		this->font = font;
 	}
 
-	void deactivate()
-	{
-		this->is_active = false;
-		this->flushKeyListeners();
-	}
+	void deactivate();
 
 	bool isActive()
 	{
