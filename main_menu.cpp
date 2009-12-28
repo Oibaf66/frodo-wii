@@ -79,19 +79,31 @@ public:
 		printf("entry %d selected: %s\n", which, this->pp_msgs[which]);
 		switch (which)
 		{
-		case 0:
+		case 0: /* Insert disc */
 			if (this->p_submenus[0].sel == 0) {
 				Gui::gui->dv->setDirectory("discs");
 				Gui::gui->pushView(Gui::gui->dv);
 			}
 			break;
-		case 4:
+		case 2: /* Load/save states */
+			break;
+		case 4: /* Keyboard */
 			Gui::gui->pushView(Gui::gui->kv);
 			Gui::gui->kv->activate();
 			Gui::gui->kv->registerListener(new KeyboardTypingListener());
 			break;
+		case 7: /* Reset the C64 */
+			printf("Resetting the C64\n");
+			break;
+		case 8: /* Networking */
+			break;
+		case 9: /* Options */
+			Gui::gui->pushView(Gui::gui->ov);
+			break;
+		case 10: /* Help */
+			break;
 
-		case 11:
+		case 11: /* Exit */
 			this->dialogue = new ExitDialogue(this->font);
 			this->dialogue->setSelectedBackground(NULL, NULL, NULL,
 					this->submenu_bg_left, this->submenu_bg_middle,

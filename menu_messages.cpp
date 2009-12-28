@@ -65,3 +65,56 @@ const char **main_menu_help[] = {
 		NULL,
 		NULL,
 };
+
+
+const char **options_menu_messages = (const char*[]){
+                /*00*/          "Map Wiimote 1 to:",
+                /*01*/          "^|Port 1|Port 2",
+                /*03*/          "True 1541 emulation",
+                /*04*/          "^|ON|OFF",
+                /*06*/          "1541 Floppy Drive LED",
+                /*07*/          "^|ON|OFF",
+                /*09*/          "Display resolution",
+                /*10*/          "^|double-center|stretched",
+                /*12*/          "Speed (approx. %)",
+                /*13*/          "^|95|100|110",
+                NULL
+};
+
+const char **options_menu_help[] = {
+		(const char*[]){
+				"Switch controller to",
+				"C64 joystick port mapping",
+				NULL,
+		},
+		NULL,
+		(const char*[]){
+				"Turn on or off true 1541",
+				"floppy emulation. Might",
+				"be needed in some games",
+				"but slows down emulation",
+				NULL,
+		},
+		NULL,
+		(const char*[]){
+				"Display 1541 drive LED to",
+				"show if the emulation got",
+				"stuck or is running",
+				NULL,
+		},
+		NULL,
+		(const char*[]){
+				"Select display resolution",
+				"mapping. Double-center",
+				"removes some pixels on the",
+				"borders, stretched fills",
+				"the display but is slower",
+				NULL,
+		},
+		NULL,
+		(const char*[]){
+				"Setup speed factor",
+				NULL,
+		},
+		NULL,
+};

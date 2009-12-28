@@ -10,6 +10,7 @@
 
 class MainView;
 class DiscView;
+class OptionsView;
 class VirtualKeyboard;
 
 class Gui
@@ -72,6 +73,7 @@ public:
 
 	MainView *mv;
 	DiscView *dv;
+	OptionsView *ov;
 	VirtualKeyboard *kv;
 	GuiView **views;
 	int n_views;
