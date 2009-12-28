@@ -1,3 +1,6 @@
+#ifndef __HELP_BOX_HH__
+#define __HELP_BOX_HH__
+
 #include "menu.hh"
 
 class HelpBox : public Menu
@@ -26,3 +29,5 @@ public:
 protected:
 	const char ***all_messages;
 };
+
+#endif /* __HELP_BOX_HH__ */
