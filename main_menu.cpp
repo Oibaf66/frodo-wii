@@ -37,9 +37,8 @@ class MainMenu : public Menu
 	};
 
 public:
-	MainMenu(Font *font, HelpBox *help, GuiView *parent) : Menu(font)
+	MainMenu(Font *font, HelpBox *help) : Menu(font)
 	{
-		this->parent = parent;
 		this->help = help;
 		/* The dialogue box is only present when needed */
 		this->dialogue = NULL;
@@ -113,7 +112,6 @@ public:
 
 private:
 	DialogueBox *dialogue;
-	GuiView *parent;
 	HelpBox *help;
 };
 
@@ -124,12 +122,8 @@ public:
 	MainView() : GuiView()
 	{
 		this->help = new HelpBox(NULL, main_menu_help);
-		this->menu = new MainMenu(NULL, this->help, this);
+		this->menu = new MainMenu(NULL, this->help);
 		this->menu->setText(main_menu_messages);
-		this->bg = NULL;
-		this->infobox = NULL;
-		this->textbox = NULL;
-		this->dialogue_bg = NULL;
 	}
 
 	~MainView()
@@ -140,11 +134,6 @@ public:
 
 	void updateTheme()
 	{
-		this->bg = Gui::gui->main_menu_bg;
-		this->infobox = Gui::gui->infobox;
-		this->textbox = Gui::gui->textbox;
-		this->dialogue_bg = Gui::gui->dialogue_bg;
-
 		this->menu->setFont(Gui::gui->default_font);
 		this->help->setFont(Gui::gui->small_font);
 		this->menu->setSelectedBackground(Gui::gui->bg_left, Gui::gui->bg_middle,
@@ -168,33 +157,30 @@ public:
 
 		 /* Blit the backgrounds */
 		 dst = (SDL_Rect){20,45,300,400};
-		 SDL_BlitSurface(this->bg, NULL, where, &dst);
+		 SDL_BlitSurface(Gui::gui->main_menu_bg, NULL, where, &dst);
 
 		 dst = (SDL_Rect){350,13,0,0};
-		 SDL_BlitSurface(this->infobox, NULL, where, &dst);
+		 SDL_BlitSurface(Gui::gui->infobox, NULL, where, &dst);
 
 		 dst = (SDL_Rect){350,242,0,0};
-		 SDL_BlitSurface(this->textbox, NULL, where, &dst);
+		 SDL_BlitSurface(Gui::gui->textbox, NULL, where, &dst);
 
 		 this->menu->draw(where, 50, 70, 300, 400);
 		 this->help->draw(where, 354, 24, 264, 210);
 		 if (this->menu->dialogue) {
-			 int d_x = where->w / 2 - this->dialogue_bg->w / 2;
-			 int d_y = where->h / 2 - this->dialogue_bg->h / 2;
+			 int d_x = where->w / 2 - Gui::gui->dialogue_bg->w / 2;
+			 int d_y = where->h / 2 - Gui::gui->dialogue_bg->h / 2;
 
-			 dst = (SDL_Rect){d_x, d_y, this->dialogue_bg->w, this->dialogue_bg->h};
-			 SDL_BlitSurface(this->dialogue_bg, NULL, where, &dst);
+			 dst = (SDL_Rect){d_x, d_y,
+				 Gui::gui->dialogue_bg->w, Gui::gui->dialogue_bg->h};
+			 SDL_BlitSurface(Gui::gui->dialogue_bg, NULL, where, &dst);
 
 			 this->menu->dialogue->draw(where, d_x + 10, d_y + 10,
-					 this->dialogue_bg->w - 10, this->dialogue_bg->h - 10);
+					 Gui::gui->dialogue_bg->w - 10, Gui::gui->dialogue_bg->h - 10);
 		 }
 	}
 
 protected:
 	MainMenu *menu;
 	HelpBox *help;
-	SDL_Surface *bg;
-	SDL_Surface *infobox;
-	SDL_Surface *textbox;
-	SDL_Surface *dialogue_bg;
 };

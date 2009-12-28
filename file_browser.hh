@@ -7,9 +7,8 @@
 class FileBrowser : public Menu
 {
 public:
-	FileBrowser(const char **exts, Font *font, GuiView *parent) : Menu(font)
+	FileBrowser(const char **exts, Font *font) : Menu(font)
 	{
-		this->parent = parent;
 		this->path = NULL;
 		this->exts = exts;
 
@@ -50,7 +49,6 @@ protected:
 	const char *path;
 	const char **file_list;
 	const char **exts;
-	GuiView *parent;
 };
 
 #endif /* __FILE_BROWSER_HH__ */

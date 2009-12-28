@@ -42,8 +42,8 @@ class DiscMenu : public FileBrowser, TimeoutHandler
 	friend class DiscView;
 
 public:
-	DiscMenu(Font *font, GuiView *parent) :
-		FileBrowser(game_exts, font, parent), TimeoutHandler()
+	DiscMenu(Font *font) :
+		FileBrowser(game_exts, font), TimeoutHandler()
 	{
 	}
 
@@ -66,7 +66,7 @@ public:
 	{
 		printf("Hovering timed out over %s\n",
 				this->pp_msgs[this->cur_sel]);
-		((DiscView*)this->parent)->loadGameInfo(this->pp_msgs[this->cur_sel]);
+		Gui::gui->dv->loadGameInfo(this->pp_msgs[this->cur_sel]);
 	}
 
 	virtual void escapeCallback(int which)
@@ -154,7 +154,7 @@ private:
 
 DiscView::DiscView() : GuiView()
 {
-	this->menu = new DiscMenu(NULL, this);
+	this->menu = new DiscMenu(NULL);
 	this->gameInfo = new GameInfoBox(NULL);
 
 	this->bg = NULL;
