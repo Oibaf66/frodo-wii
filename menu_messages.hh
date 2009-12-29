@@ -8,4 +8,7 @@ extern const char **main_menu_help[];
 extern const char **options_menu_messages;
 extern const char **options_menu_help[];
 
+/* The menu messages are dynamically generated */
+extern const char **network_menu_help[];
+
 #endif

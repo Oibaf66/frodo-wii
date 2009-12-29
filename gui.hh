@@ -11,6 +11,7 @@
 class MainView;
 class DiscView;
 class OptionsView;
+class NetworkView;
 class VirtualKeyboard;
 
 class Gui
@@ -74,6 +75,7 @@ public:
 	MainView *mv;
 	DiscView *dv;
 	OptionsView *ov;
+	NetworkView *nv;
 	VirtualKeyboard *kv;
 	GuiView **views;
 	int n_views;

@@ -122,3 +122,40 @@ const char **options_menu_help[] = {
 		},
 		NULL,
 };
+
+const char **network_menu_help[] = {
+		(const char*[]){
+				"Setup username to use on",
+				"the C64 network. Must be",
+				"set before connceting.",
+				NULL,
+		},
+		(const char*[]){
+				"Setup server hostname.",
+				"Only for debugging, so",
+				"leave as it is.",
+				NULL,
+		},
+		(const char*[]){
+				"UDP port to use. Only for",
+				"debugging, so leave as",
+				"it is",
+				NULL,
+		},
+		NULL,
+		(const char*[]){
+				"Connect to the C64",
+				"network, or disconnect if",
+				"you are already connected.",
+				NULL,
+		},
+		NULL,
+		(const char*[]){
+				"Post message to the C64",
+				"network server. You must",
+				"be connected to use this.",
+				NULL,
+		},
+		NULL,
+};
+

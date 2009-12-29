@@ -96,6 +96,7 @@ public:
 			printf("Resetting the C64\n");
 			break;
 		case 8: /* Networking */
+			Gui::gui->pushView(Gui::gui->nv);
 			break;
 		case 9: /* Options */
 			Gui::gui->pushView(Gui::gui->ov);

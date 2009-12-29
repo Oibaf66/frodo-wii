@@ -31,6 +31,7 @@ static const char *get_theme_path(const char *dir, const char *what)
 /* These are a bit of special cases... */
 #include "disc_menu.cpp"
 #include "options_menu.cpp"
+#include "network_menu.cpp"
 #include "main_menu.cpp"
 
 GuiView::GuiView()
@@ -69,6 +70,7 @@ Gui::Gui()
 	this->mv = new MainView();
 	this->dv = new DiscView();
 	this->ov = new OptionsView();
+	this->nv = new NetworkView();
 	this->kv = VirtualKeyboard::kbd;
 	this->pushView(mv);
 }
@@ -133,6 +135,7 @@ bool Gui::setTheme(const char *path)
 	this->dv->updateTheme();
 	this->kv->updateTheme();
 	this->ov->updateTheme();
+	this->nv->updateTheme();
 
 	return true;
 }
