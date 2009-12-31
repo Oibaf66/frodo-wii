@@ -38,6 +38,18 @@ GuiView::GuiView()
 {
 }
 
+void GuiView::updateTheme()
+{
+}
+
+void GuiView::viewPushCallback()
+{
+}
+
+void GuiView::viewPopCallback()
+{
+}
+
 Gui::Gui()
 {
 	this->focus = NULL;
@@ -65,6 +77,8 @@ Gui::Gui()
 	this->theme_base_path = THEME_ROOT_PATH;
 	this->metadata_base_path = METADATA_ROOT_PATH;
 	this->game_base_path = GAME_ROOT_PATH;
+
+	this->dlg = NULL;
 
 	/* Create the views */
 	this->mv = new MainView();
@@ -146,7 +160,10 @@ void Gui::runLogic(void)
 
 	if (!this->is_active || !cur_view)
 		return;
-	cur_view->runLogic();
+	if (this->dlg)
+		this->dlg->runLogic();
+	else
+		cur_view->runLogic();
 	this->timerController->tick();
 }
 
@@ -158,14 +175,29 @@ void Gui::pushView(GuiView *view)
 	this->views = (GuiView**)xrealloc(this->views,
 			sizeof(GuiView*) * this->n_views);
 	this->views[cur] = view;
+	view->viewPushCallback();
+}
+
+void Gui::pushDialogueBox(DialogueBox *dlg)
+{
+	this->dlg = dlg;
+}
+
+DialogueBox *Gui::popDialogueBox()
+{
+	DialogueBox *out = this->dlg;
+	this->dlg = NULL;
+
+	return out;
 }
 
 GuiView *Gui::popView()
 {
 	GuiView *cur = this->peekView();
 
-	if (cur)
-		delete cur;
+	if (!cur)
+		return NULL;
+	cur->viewPopCallback();
 
 	this->n_views--;
 	if (this->n_views <= 0)
@@ -181,7 +213,7 @@ GuiView *Gui::popView()
 
 	this->views = (GuiView**)xrealloc(this->views,
 			sizeof(GuiView*) * this->n_views);
-	return this->views[this->n_views - 1];
+	return cur;
 }
 
 void Gui::exitMenu()
@@ -199,6 +231,11 @@ void Gui::pushEvent(SDL_Event *ev)
 
 	if (!this->is_active || !cur_view)
 		return;
+	if (this->dlg)
+	{
+		this->dlg->pushEvent(ev);
+		return;
+	}
 	cur_view->pushEvent(ev);
 }
 
@@ -211,6 +248,8 @@ void Gui::draw(SDL_Surface *where)
 
 	 SDL_BlitSurface(this->background, NULL, screen, NULL);
 	 cur_view->draw(where);
+	 if (this->dlg)
+		 this->dlg->draw(where);
 }
 
 void Gui::activate()

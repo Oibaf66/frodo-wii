@@ -17,10 +17,11 @@
 #include "widget.hh"
 #include "gui_view.hh"
 #include "font.hh"
+#include "listener.hh"
 
 struct virtkey; 
 
-class KeyboardListener
+class KeyboardListener : public Listener
 {
 public:
 	~KeyboardListener();
@@ -35,13 +36,10 @@ public:
 	}
 };
 
-class VirtualKeyboard : public GuiView
+class VirtualKeyboard : public GuiView, public ListenerManager
 {
 public:
 	VirtualKeyboard(Font *font);
-
-	void registerListener(KeyboardListener *kl);
-	void unregisterListener(KeyboardListener *kl);
 
 	/* Conversions */
 	const char *keycodeToString(int kc);
@@ -77,8 +75,6 @@ public:
 	/* Singleton object */
 	static VirtualKeyboard *kbd;
 private:
-	KeyboardListener *listeners[8];
-
 	void selectNext(int dx, int dy);
 
 	void toggleShift();
@@ -86,8 +82,6 @@ private:
 	void pushKey(struct virtkey *vk);
 
 	void done();
-
-	void flushListeners();
 
 	Font *font;
 	int sel_x;

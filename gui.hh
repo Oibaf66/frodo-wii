@@ -9,6 +9,7 @@
 #include "gui_view.hh"
 
 class MainView;
+class DialogueBox;
 class DiscView;
 class OptionsView;
 class NetworkView;
@@ -34,6 +35,10 @@ public:
 	void draw(SDL_Surface *where);
 
 	void pushView(GuiView *view);
+
+	void pushDialogueBox(DialogueBox *dlg);
+
+	DialogueBox *popDialogueBox();
 
 	GuiView *popView();
 
@@ -71,6 +76,8 @@ public:
 	Font *default_font;
 	Font *small_font;
 	TimerController *timerController;
+
+	DialogueBox *dlg;
 
 	MainView *mv;
 	DiscView *dv;

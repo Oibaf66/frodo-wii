@@ -55,7 +55,7 @@ public:
 
 	void setText(const char **messages, int *submenu_defaults = NULL);
 
-	void runLogic();
+	virtual void runLogic();
 
 	void draw(SDL_Surface *where,
 			int x, int y, int w, int h);

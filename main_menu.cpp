@@ -1,4 +1,5 @@
 #include "menu.hh"
+#include "dialogue_box.hh"
 
 class KeyboardTypingListener : public KeyboardListener
 {
@@ -15,63 +16,31 @@ class KeyboardTypingListener : public KeyboardListener
 	}
 };
 
+class ExitListener : public DialogueListener
+{
+	void escapeCallback(DialogueBox *which, int selected)
+	{
+		delete this;
+	}
+
+	void selectCallback(DialogueBox *which, int selected)
+	{
+		if (selected != which->cancelIndex())
+			exit(0);
+		Gui::gui->popView();
+		delete this;
+	}
+};
+
 class MainView;
 class MainMenu : public Menu
 {
 	friend class MainView;
 
-	class ExitDialogue : public DialogueBox
-	{
-	public:
-		ExitDialogue(Font *font) : DialogueBox(font, exit_dialogue_messages, 1)
-		{
-		}
-
-		void selectCallback(int which)
-		{
-			this->m_selected = this->p_submenus[0].sel;
-			/* Do the exit */
-			if (this->m_selected != this->m_cancel)
-				exit(1);
-		}
-	};
-
 public:
 	MainMenu(Font *font, HelpBox *help) : Menu(font)
 	{
 		this->help = help;
-		/* The dialogue box is only present when needed */
-		this->dialogue = NULL;
-	}
-
-	~MainMenu()
-	{
-		if (this->dialogue)
-			delete this->dialogue;
-	}
-
-	void runLogic()
-	{
-		if (this->dialogue)
-		{
-			this->dialogue->runLogic();
-			if (this->dialogue->selected() >= 0)
-			{
-				delete this->dialogue;
-				this->dialogue = NULL;
-			}
-			return;
-		}
-
-		Menu::runLogic();
-	}
-
-	void pushEvent(SDL_Event *ev)
-	{
-		if (this->dialogue)
-			this->dialogue->pushEvent(ev);
-		else
-			Menu::pushEvent(ev);
 	}
 
 	virtual void selectCallback(int which)
@@ -105,10 +74,9 @@ public:
 			break;
 
 		case 11: /* Exit */
-			this->dialogue = new ExitDialogue(this->font);
-			this->dialogue->setSelectedBackground(NULL, NULL, NULL,
-					this->submenu_bg_left, this->submenu_bg_middle,
-					this->submenu_bg_right);
+			DialogueBox *exit_dialogue = new DialogueBox(exit_dialogue_messages, 1);
+			exit_dialogue->registerListener(new ExitListener());
+			Gui::gui->pushDialogueBox(exit_dialogue);
 			break;
 		}
 	}
@@ -124,7 +92,6 @@ public:
 	}
 
 private:
-	DialogueBox *dialogue;
 	HelpBox *help;
 };
 
@@ -180,17 +147,6 @@ public:
 
 		 this->menu->draw(where, 50, 70, 300, 400);
 		 this->help->draw(where, 354, 24, 264, 210);
-		 if (this->menu->dialogue) {
-			 int d_x = where->w / 2 - Gui::gui->dialogue_bg->w / 2;
-			 int d_y = where->h / 2 - Gui::gui->dialogue_bg->h / 2;
-
-			 dst = (SDL_Rect){d_x, d_y,
-				 Gui::gui->dialogue_bg->w, Gui::gui->dialogue_bg->h};
-			 SDL_BlitSurface(Gui::gui->dialogue_bg, NULL, where, &dst);
-
-			 this->menu->dialogue->draw(where, d_x + 10, d_y + 10,
-					 Gui::gui->dialogue_bg->w - 10, Gui::gui->dialogue_bg->h - 10);
-		 }
 	}
 
 protected:

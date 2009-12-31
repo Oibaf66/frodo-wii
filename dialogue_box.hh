@@ -2,11 +2,24 @@
 #define __DIALOGUE_BOX_HH__
 
 #include "menu.hh"
+#include "listener.hh"
+#include "gui_view.hh"
+#include "gui.hh"
 
-class DialogueBox : public Menu
+class DialogueBox;
+
+class DialogueListener : public Listener
 {
 public:
-	DialogueBox(Font *font, const char *msgs[], int cancel = 1);
+	virtual void selectCallback(DialogueBox *which, int selected);
+
+	virtual void escapeCallback(DialogueBox *which, int selected);
+};
+
+class DialogueBox : public Menu, public ListenerManager
+{
+public:
+	DialogueBox(const char *msgs[], int cancel = 1);
 
 	virtual void selectCallback(int which);
 
@@ -16,13 +29,14 @@ public:
 
 	virtual int selectNext(event_t ev);
 
-	int selected()
+	virtual void draw(SDL_Surface *where);
+
+	int cancelIndex()
 	{
-		return this->m_selected;
+		return this->m_cancel;
 	}
 
 protected:
-	int m_selected;
 	int m_cancel;
 };
 

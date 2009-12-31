@@ -78,7 +78,7 @@ static const char *shifted_names[KEY_COLS * KEY_ROWS] = {
 	NULL,              NULL,        NULL,        NULL,        NULL,        NULL,        "f2",        "f4",        "f6",        "f8",        "Ins",       NULL,        NULL,        NULL,        NULL,
 };
 
-VirtualKeyboard::VirtualKeyboard(Font *font) : GuiView()
+VirtualKeyboard::VirtualKeyboard(Font *font) : GuiView(), ListenerManager()
 {
 	this->font = font;
 	this->sel_x = 0;
@@ -90,8 +90,6 @@ VirtualKeyboard::VirtualKeyboard(Font *font) : GuiView()
 	this->buf_len = 255;
 	this->buf = (struct virtkey*)xmalloc(sizeof(struct virtkey) * this->buf_len);
 	memset(this->buf, 0, sizeof(struct virtkey) * this->buf_len);
-
-	this->flushListeners();
 }
 
 void VirtualKeyboard::draw(SDL_Surface *where, int x_base, int y_base, int w, int h)
@@ -259,36 +257,6 @@ const char VirtualKeyboard::keycodeToChar(int kc)
 	return s[0];
 }
 
-void VirtualKeyboard::registerListener(KeyboardListener *kl)
-{
-	int n_listeners = sizeof(this->listeners) / sizeof(*this->listeners);
-	int i;
-
-	/* Don't register already registered listeners */
-	for (i = 0; i < n_listeners; i++)
-		if (this->listeners[i] == kl)
-			return;
-	/* Find a free spot */
-	for (i = 0; i < n_listeners; i++)
-		if (!this->listeners[i])
-			break;
-
-	panic_if(i == n_listeners,
-			"No free listeners!\n");
-	this->listeners[i] = kl;
-}
-
-void VirtualKeyboard::unregisterListener(KeyboardListener *kl)
-{
-	int n_listeners = sizeof(this->listeners) / sizeof(*this->listeners);
-
-	for (int i = 0; i < n_listeners; i++)
-	{
-		if (this->listeners[i] == kl)
-			this->listeners[i] = NULL;
-	}
-}
-
 void VirtualKeyboard::activate()
 {
 	this->is_active = true;
@@ -362,14 +330,9 @@ void VirtualKeyboard::pushKey(struct virtkey *vk)
 	for (int i = 0; i < n_listeners; i++)
 	{
 		if (this->listeners[i])
-			this->listeners[i]->keyCallback(this->shift_on,
+			((KeyboardListener*)this->listeners[i])->keyCallback(this->shift_on,
 					vk->name);
 	}
-}
-
-void VirtualKeyboard::flushListeners()
-{
-	memset(this->listeners, 0, sizeof(this->listeners));
 }
 
 void VirtualKeyboard::deactivate()
@@ -390,7 +353,7 @@ void VirtualKeyboard::done()
 	for (int i = 0; i < n_listeners; i++)
 	{
 		if (this->listeners[i])
-			this->listeners[i]->stringCallback(buf);
+			((KeyboardListener*)this->listeners[i])->stringCallback(buf);
 	}
 	free(buf);
 	this->deactivate();
