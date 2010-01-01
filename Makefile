@@ -4,7 +4,7 @@ OBJS=menu.oo main.oo utils.oo gui.oo dialogue_box.oo menu_messages.oo \
 all: menu
 
 %.oo: %.cpp
-	g++ -Wall -g -c `sdl-config --cflags` -o $@ $<
+	g++ -Imocks -Wall -g -c `sdl-config --cflags` -o $@ $<
 
 menu.oo: menu.cpp menu.hh utils.hh font.hh widget.hh Makefile
 
@@ -13,7 +13,7 @@ widget.oo: widget.cpp widget.hh
 gui.oo: gui.cpp gui.hh Makefile font.hh menu.hh sdl_ttf_font.hh \
 	dialogue_box.hh help_box.hh main_menu.cpp disc_menu.cpp \
 	file_browser.hh timer.hh game_info.hh widget.hh options_menu.cpp \
-	network_menu.cpp
+	network_menu.cpp mocks/Prefs.h
 
 virtual_keyboard.oo: virtual_keyboard.hh virtual_keyboard.cpp widget.hh listener.hh
 

@@ -52,6 +52,8 @@ void GuiView::viewPopCallback()
 
 Gui::Gui()
 {
+	this->np = NULL;
+
 	this->focus = NULL;
 
 	this->bg_left = NULL;
@@ -255,10 +257,14 @@ void Gui::draw(SDL_Surface *where)
 void Gui::activate()
 {
 	this->is_active = true;
+	/* FIXME! TMP! TMP! */
+	this->np = new Prefs();
 }
 
 void Gui::deActivate()
 {
+	/* FIXME! TMP! TMP! */
+	delete this->np;
 	this->is_active = false;
 }
 

@@ -11,7 +11,8 @@ public:
 	NetworkMenu(Font *font, HelpBox *help) : Menu(font)
 	{
 		this->help = help;
-		this->updateMessages();
+		memset(this->messages, 0, sizeof(this->messages));
+		memset(this->strs, 0, sizeof(this->strs));
 	}
 
 	~NetworkMenu()
@@ -23,19 +24,7 @@ public:
 		printf("option entry %d selected: %s\n", which, this->pp_msgs[which]);
 		switch (which)
 		{
-		case 0: /* Insert disc */
-			break;
-		case 2: /* Load/save states */
-			break;
-		case 4: /* Keyboard */
-			break;
-		case 7: /* Reset the C64 */
-			break;
-		case 8: /* Networking */
-			break;
-		case 9: /* Options */
-			break;
-		case 10: /* Help */
+		default:
 			break;
 		}
 	}
@@ -55,11 +44,11 @@ private:
 	{
 		memset(this->strs, 0, sizeof(this->strs));
 		snprintf(this->strs[0], sizeof(this->strs[0]) - 1, "Set username (%s)",
-				"Vobb"); // FIXME!
+				Gui::gui->np->NetworkName);
 		snprintf(this->strs[1], sizeof(this->strs[1]) - 1, "Server (%s)",
-				"play.c64-network.org"); // FIXME!
+				Gui::gui->np->NetworkServer);
 		snprintf(this->strs[2], sizeof(this->strs[2]) - 1, "Server port (%d)",
-				46214); // FIXME!
+				Gui::gui->np->NetworkPort);
 
 		this->messages[0] = this->strs[0];
 		this->messages[1] = this->strs[1];
@@ -112,6 +101,11 @@ public:
 	void pushEvent(SDL_Event *ev)
 	{
 		this->menu->pushEvent(ev);
+	}
+
+	void viewPushCallback()
+	{
+		this->menu->updateMessages();
 	}
 
 	void draw(SDL_Surface *where)

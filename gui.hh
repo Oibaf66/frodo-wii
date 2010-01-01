@@ -8,6 +8,9 @@
 #include "timer.hh"
 #include "gui_view.hh"
 
+/* Frodo stuff */
+#include <Prefs.h>
+
 class MainView;
 class DialogueBox;
 class DiscView;
@@ -90,6 +93,9 @@ public:
 	const char *metadata_base_path;
 	const char *theme_base_path;
 	const char *game_base_path;
+
+	/* New preferences */
+	Prefs *np;
 
 	/* Singleton */
 	static void init();
