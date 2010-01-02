@@ -20,15 +20,13 @@ class ExitListener : public DialogueListener
 {
 	void escapeCallback(DialogueBox *which, int selected)
 	{
-		delete this;
 	}
 
 	void selectCallback(DialogueBox *which, int selected)
 	{
-		if (selected != which->cancelIndex())
+		/* Cancel? */
+		if (selected != 1)
 			exit(0);
-		Gui::gui->popDialogueBox();
-		delete this;
 	}
 };
 
@@ -73,7 +71,7 @@ public:
 			break;
 
 		case 11: /* Exit */
-			DialogueBox *exit_dialogue = new DialogueBox(exit_dialogue_messages, 1);
+			DialogueBox *exit_dialogue = new DialogueBox(exit_dialogue_messages);
 			exit_dialogue->registerListener(new ExitListener());
 			Gui::gui->pushDialogueBox(exit_dialogue);
 			break;

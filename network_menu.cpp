@@ -1,9 +1,11 @@
 #include "gui.hh"
 #include "menu.hh"
 #include "help_box.hh"
+#include "virtual_keyboard.hh"
 
 class NetworkView;
-class NetworkMenu : public Menu
+
+class NetworkMenu : public Menu, public KeyboardListener
 {
 	friend class NetworkView;
 
@@ -19,11 +21,48 @@ public:
 	{
 	}
 
+	virtual void stringCallback(const char *str)
+	{
+		switch (this->cur_sel)
+		{
+		case 0:
+			strncpy(Gui::gui->np->NetworkName, str, sizeof(Gui::gui->np->NetworkName));
+			break;
+		case 1:
+			strncpy(Gui::gui->np->NetworkServer, str, sizeof(Gui::gui->np->NetworkName));
+			break;
+		case 2:
+		{
+			char *endp;
+			unsigned long v;
+
+			v = strtoul(str, &endp, 0);
+			if (endp == str)
+			{
+				DialogueBox *error_dialogue = new DialogueBox(network_port_dialogue_messages);
+				Gui::gui->pushDialogueBox(error_dialogue);
+			}
+			else
+				Gui::gui->np->NetworkPort = v;
+		} break;
+		default:
+			panic("Cur sel is %d, not possible!\n", this->cur_sel);
+			break;
+		}
+		this->updateMessages();
+	}
+
 	virtual void selectCallback(int which)
 	{
 		printf("option entry %d selected: %s\n", which, this->pp_msgs[which]);
 		switch (which)
 		{
+		case 0:
+		case 1:
+		case 2:
+			Gui::gui->kv->activate();
+			Gui::gui->kv->registerListener(this);
+			break;
 		default:
 			break;
 		}

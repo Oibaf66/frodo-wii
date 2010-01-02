@@ -259,6 +259,7 @@ const char VirtualKeyboard::keycodeToChar(int kc)
 
 void VirtualKeyboard::activate()
 {
+	Gui::gui->pushView(Gui::gui->kv);
 	this->is_active = true;
 	memset(this->buf, 0, sizeof(struct virtkey) * this->buf_len);
 	this->buf_head = 0;

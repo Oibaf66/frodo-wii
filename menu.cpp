@@ -272,10 +272,13 @@ void Menu::runLogic()
 			this->selectNext(ev);
 			break;
 		case KEY_SELECT:
-			this->selectCallback(this->cur_sel); break;
+			this->selectCallback(this->cur_sel);
+			/* Might be deleted */
+			return;
 		case KEY_ESCAPE:
-			this->escapeCallback(this->cur_sel); break;
-			break;
+			this->escapeCallback(this->cur_sel);
+			/* Might be deleted */
+			return;
 		default:
 			break;
 		}

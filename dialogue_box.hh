@@ -19,7 +19,7 @@ public:
 class DialogueBox : public Menu, public ListenerManager
 {
 public:
-	DialogueBox(const char *msgs[], int cancel = 1);
+	DialogueBox(const char *msgs[], bool delete_on_action = true);
 
 	virtual void selectCallback(int which);
 
@@ -31,13 +31,8 @@ public:
 
 	virtual void draw(SDL_Surface *where);
 
-	int cancelIndex()
-	{
-		return this->m_cancel;
-	}
-
 protected:
-	int m_cancel;
+	bool delete_on_action;
 };
 
 #endif /* __DIALOGUE_BOX_HH__ */
