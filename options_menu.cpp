@@ -11,6 +11,7 @@ public:
 	OptionsMenu(Font *font, HelpBox *help) : Menu(font)
 	{
 		this->help = help;
+		this->setText(options_menu_messages);
 	}
 
 	~OptionsMenu()
@@ -19,24 +20,9 @@ public:
 
 	virtual void selectCallback(int which)
 	{
-		printf("option entry %d selected: %s\n", which, this->pp_msgs[which]);
-		switch (which)
-		{
-		case 0: /* Insert disc */
-			break;
-		case 2: /* Load/save states */
-			break;
-		case 4: /* Keyboard */
-			break;
-		case 7: /* Reset the C64 */
-			break;
-		case 8: /* Networking */
-			break;
-		case 9: /* Options */
-			break;
-		case 10: /* Help */
-			break;
-		}
+		/* Doesn't matter which, it's just selection */
+		this->updatePrefs();
+		Gui::gui->popView();
 	}
 
 	virtual void hoverCallback(int which)
@@ -46,7 +32,50 @@ public:
 
 	virtual void escapeCallback(int which)
 	{
+		this->updatePrefs();
 		Gui::gui->popView();
+	}
+
+	void updatePrefs()
+	{
+		Gui::gui->np->Emul1541Proc = !this->p_submenus[1].sel;
+		Gui::gui->np->ShowLEDs = !this->p_submenus[2].sel;
+		Gui::gui->np->DisplayOption = this->p_submenus[3].sel;
+
+		switch (this->p_submenus[4].sel)
+		{
+		case 0:
+			Gui::gui->np->MsPerFrame = SPEED_95; break;
+		case 1:
+			Gui::gui->np->MsPerFrame = SPEED_100; break;
+		case 2:
+			Gui::gui->np->MsPerFrame = SPEED_110; break;
+		default:
+			panic("Impossible submenu value: %d\n", this->p_submenus[4].sel);
+		}
+	}
+
+	void updateSubmenus()
+	{
+		int submenu_defs[5];
+
+		submenu_defs[0] = 0;
+		submenu_defs[1] = !Gui::gui->np->Emul1541Proc;
+		submenu_defs[2] = !Gui::gui->np->ShowLEDs;
+		submenu_defs[3] = Gui::gui->np->DisplayOption;
+
+		switch (Gui::gui->np->MsPerFrame)
+		{
+	        case SPEED_95:
+	        	submenu_defs[4] = 0; break;
+		case SPEED_110:
+			submenu_defs[4] = 2; break;
+		default:
+	                /* If it has some other value... */
+		        submenu_defs[4] = 1; break;
+		}
+
+		this->setText(options_menu_messages, submenu_defs);
 	}
 
 private:
@@ -61,7 +90,6 @@ public:
 	{
 		this->help = new HelpBox(NULL, options_menu_help);
 		this->menu = new OptionsMenu(NULL, this->help);
-		this->menu->setText(options_menu_messages);
 	}
 
 	~OptionsView()
@@ -77,6 +105,11 @@ public:
 		this->menu->setSelectedBackground(Gui::gui->bg_left, Gui::gui->bg_middle,
 				Gui::gui->bg_right, Gui::gui->bg_submenu_left,
 				Gui::gui->bg_submenu_middle, Gui::gui->bg_submenu_right);
+	}
+
+	void viewPushCallback()
+	{
+		this->menu->updateSubmenus();
 	}
 
 	void runLogic()
