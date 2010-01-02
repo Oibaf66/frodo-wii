@@ -3,8 +3,10 @@
 
 #include "gui.hh"
 #include "utils.hh"
+#include <C64.h>
 
 SDL_Surface *screen;
+C64 *TheC64;
 
 static void run(void)
 {
@@ -28,6 +30,9 @@ static void run(void)
 
 static void init(void)
 {
+	/* Creation of the mocks */
+	TheC64 = new C64();
+
 	screen = SDL_SetVideoMode(640, 480, 16,
 			SDL_DOUBLEBUF);
 	panic_if(!screen, "Cannot initialize video: %s\n", SDL_GetError());

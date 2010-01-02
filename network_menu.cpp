@@ -2,6 +2,7 @@
 #include "menu.hh"
 #include "help_box.hh"
 #include "virtual_keyboard.hh"
+#include <C64.h>
 
 class NetworkView;
 
@@ -67,7 +68,7 @@ public:
 			if ( strncmp(Gui::gui->np->NetworkName, "Unset", strlen("Unset")) == 0)
 				Gui::gui->pushDialogueBox(new DialogueBox(network_unset_name_dlg));
 			else
-				printf("Connect NYI\n"); // FIXME! Do the actual connect
+				TheC64->network_connection_type = CONNECT;
 			break;
 		case 6:
 			printf("Send message NYI\n"); // FIXME! Send message
