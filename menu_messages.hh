@@ -11,5 +11,6 @@ extern const char **options_menu_help[];
 /* The menu messages are dynamically generated */
 extern const char **network_menu_help[];
 extern const char **network_port_dialogue_messages;
+extern const char **network_unset_name_dlg;
 
 #endif

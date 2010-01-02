@@ -15,7 +15,18 @@ const char **exit_dialogue_messages = (const char*[]){
 
 const char **network_port_dialogue_messages = (const char*[]){
 	/*00*/          "Please supply a number as",
-	/*01*/		"network port",
+	/*01*/		"network port.",
+	/*02*/		"#", /* Empty line */
+	/*03*/		"#",
+	/*04*/		"#",
+	/*05*/		"#",
+	/*06*/          "^|OK",
+	NULL
+};
+
+const char **network_unset_name_dlg = (const char*[]){
+	/*00*/          "Please setup a name to use",
+	/*01*/		"on network connections.",
 	/*02*/		"#", /* Empty line */
 	/*03*/		"#",
 	/*04*/		"#",

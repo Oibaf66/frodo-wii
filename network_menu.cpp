@@ -63,6 +63,15 @@ public:
 			Gui::gui->kv->activate();
 			Gui::gui->kv->registerListener(this);
 			break;
+		case 4:
+			if ( strncmp(Gui::gui->np->NetworkName, "Unset", strlen("Unset")) == 0)
+				Gui::gui->pushDialogueBox(new DialogueBox(network_unset_name_dlg));
+			else
+				printf("Connect NYI\n"); // FIXME! Do the actual connect
+			break;
+		case 6:
+			printf("Send message NYI\n"); // FIXME! Send message
+			break;
 		default:
 			break;
 		}
