@@ -81,13 +81,13 @@ Gui::Gui()
 	this->game_base_path = GAME_ROOT_PATH;
 
 	this->dlg = NULL;
+	this->kbd = NULL;
 
 	/* Create the views */
 	this->mv = new MainView();
 	this->dv = new DiscView();
 	this->ov = new OptionsView();
 	this->nv = new NetworkView();
-	this->kv = VirtualKeyboard::kbd;
 	this->pushView(mv);
 }
 
@@ -149,9 +149,10 @@ bool Gui::setTheme(const char *path)
 
 	this->mv->updateTheme();
 	this->dv->updateTheme();
-	this->kv->updateTheme();
 	this->ov->updateTheme();
 	this->nv->updateTheme();
+
+	VirtualKeyboard::kbd->updateTheme();
 
 	return true;
 }
@@ -164,6 +165,8 @@ void Gui::runLogic(void)
 		return;
 	if (this->dlg)
 		this->dlg->runLogic();
+	else if (this->kbd)
+		this->kbd->runLogic();
 	else
 		cur_view->runLogic();
 	this->timerController->tick();
@@ -234,11 +237,11 @@ void Gui::pushEvent(SDL_Event *ev)
 	if (!this->is_active || !cur_view)
 		return;
 	if (this->dlg)
-	{
 		this->dlg->pushEvent(ev);
-		return;
-	}
-	cur_view->pushEvent(ev);
+	else if (this->kbd)
+		this->kbd->pushEvent(ev);
+	else
+		cur_view->pushEvent(ev);
 }
 
 void Gui::draw(SDL_Surface *where)
@@ -250,6 +253,8 @@ void Gui::draw(SDL_Surface *where)
 
 	 SDL_BlitSurface(this->background, NULL, screen, NULL);
 	 cur_view->draw(where);
+	 if (this->kbd)
+		 this->kbd->draw(where);
 	 if (this->dlg)
 		 this->dlg->draw(where);
 }

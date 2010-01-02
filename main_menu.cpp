@@ -55,8 +55,8 @@ public:
 		case 2: /* Load/save states */
 			break;
 		case 4: /* Keyboard */
-			Gui::gui->kv->activate();
-			Gui::gui->kv->registerListener(new KeyboardTypingListener());
+			VirtualKeyboard::kbd->activate();
+			VirtualKeyboard::kbd->registerListener(new KeyboardTypingListener());
 			break;
 		case 7: /* Reset the C64 */
 			printf("Resetting the C64\n");

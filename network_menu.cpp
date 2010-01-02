@@ -60,8 +60,8 @@ public:
 		case 0:
 		case 1:
 		case 2:
-			Gui::gui->kv->activate();
-			Gui::gui->kv->registerListener(this);
+			VirtualKeyboard::kbd->activate();
+			VirtualKeyboard::kbd->registerListener(this);
 			break;
 		case 4:
 			if ( strncmp(Gui::gui->np->NetworkName, "Unset", strlen("Unset")) == 0)

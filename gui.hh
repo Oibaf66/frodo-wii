@@ -39,6 +39,8 @@ public:
 
 	void pushView(GuiView *view);
 
+	void pushVirtualKeyboard(VirtualKeyboard *kbd);
+
 	void pushDialogueBox(DialogueBox *dlg);
 
 	DialogueBox *popDialogueBox();
@@ -80,13 +82,14 @@ public:
 	Font *small_font;
 	TimerController *timerController;
 
+	/* Handled specially */
+	VirtualKeyboard *kbd;
 	DialogueBox *dlg;
 
 	MainView *mv;
 	DiscView *dv;
 	OptionsView *ov;
 	NetworkView *nv;
-	VirtualKeyboard *kv;
 	GuiView **views;
 	int n_views;
 
