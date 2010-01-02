@@ -27,7 +27,7 @@ class ExitListener : public DialogueListener
 	{
 		if (selected != which->cancelIndex())
 			exit(0);
-		Gui::gui->popView();
+		Gui::gui->popDialogueBox();
 		delete this;
 	}
 };
@@ -57,7 +57,6 @@ public:
 		case 2: /* Load/save states */
 			break;
 		case 4: /* Keyboard */
-			Gui::gui->pushView(Gui::gui->kv);
 			Gui::gui->kv->activate();
 			Gui::gui->kv->registerListener(new KeyboardTypingListener());
 			break;
