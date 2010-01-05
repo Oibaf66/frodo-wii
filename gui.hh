@@ -11,11 +11,14 @@
 /* Frodo stuff */
 #include <Prefs.h>
 
-class MainView;
 class DialogueBox;
+
+class MainView;
 class DiscView;
 class OptionsView;
 class NetworkView;
+class ThemeView;
+
 class VirtualKeyboard;
 
 class Gui
@@ -90,6 +93,8 @@ public:
 	DiscView *dv;
 	OptionsView *ov;
 	NetworkView *nv;
+	ThemeView *tv;
+
 	GuiView **views;
 	int n_views;
 

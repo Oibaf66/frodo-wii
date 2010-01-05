@@ -20,7 +20,15 @@ public:
 
 	virtual void selectCallback(int which)
 	{
-		/* Doesn't matter which, it's just selection */
+		/* Select theme */
+		if (which == 11)
+		{
+			Gui::gui->tv->setDirectory(Gui::gui->theme_base_path);
+			Gui::gui->pushView(Gui::gui->tv);
+			return;
+		}
+
+		/* Doesn't matter which otherwise, it's just selection */
 		this->updatePrefs();
 		Gui::gui->popView();
 	}

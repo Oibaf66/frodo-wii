@@ -12,5 +12,6 @@ extern const char **options_menu_help[];
 extern const char **network_menu_help[];
 extern const char **network_port_dialogue_messages;
 extern const char **network_unset_name_dlg;
+extern const char **broken_theme_dlg;
 
 #endif

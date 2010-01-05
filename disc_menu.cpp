@@ -72,7 +72,6 @@ public:
 	virtual void escapeCallback(int which)
 	{
 		Gui::gui->timerController->disarm(this);
-		Gui::gui->exitMenu();
 	}
 };
 

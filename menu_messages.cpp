@@ -35,6 +35,19 @@ const char **network_unset_name_dlg = (const char*[]){
 	NULL
 };
 
+const char **broken_theme_dlg = (const char*[]){
+	/*00*/          "The selected theme cannot be",
+	/*01*/		"loaded, probably something is",
+	/*02*/		"broken in it. Reverting to",
+	/*03*/		"default theme.",
+	/*04*/		"#",
+	/*05*/		"#",
+	/*06*/		"#",
+	/*07*/          "^|OK",
+	NULL
+};
+
+
 const char **main_menu_messages = (const char*[]){
 	/*00*/          "File",
 	/*01*/          "^|Insert|Start",
@@ -90,16 +103,32 @@ const char **main_menu_help[] = {
 
 
 const char **options_menu_messages = (const char*[]){
-                /*00*/          "Map Wiimote 1 to:",
+                /*00*/          "Map Controller 1 to:",
                 /*01*/          "^|Port 1|Port 2",
-                /*03*/          "True 1541 emulation",
-                /*04*/          "^|ON|OFF",
-                /*06*/          "1541 Floppy Drive LED",
-                /*07*/          "^|ON|OFF",
-                /*09*/          "Display resolution",
-                /*10*/          "^|double-center|stretched",
-                /*12*/          "Speed (approx. %)",
-                /*13*/          "^|95|100|110",
+                /*02*/          "True 1541 emulation",
+                /*03*/          "^|ON|OFF",
+                /*04*/          "1541 Floppy Drive LED",
+                /*05*/          "^|ON|OFF",
+                /*06*/          "Display resolution",
+                /*07*/          "^|double-center|stretched",
+                /*08*/          "Speed (approx. %)",
+                /*09*/          "^|95|100|110",
+                /*10*/          " ",
+                /*11*/          "Setup GUI theme",
+                NULL
+};
+
+const char **bind_key_menu_messages = (const char*[]){
+                /*00*/          "Bind Wiimote",
+                /*01*/          "^|Up|Down|Left|Right|A|B|+|-",
+                /*03*/          "Bind Nunchuk",
+                /*04*/          "^|Up|Down|Z",
+                /*06*/          "Bind Classic controller",
+                /*07*/          "^|Up|Down|Left|X|Y|A|B|+|-|Zr|Zl",
+                /*08*/          "Bind Classic controller (left analogue)",
+                /*09*/          "^|Up|Down|Left|Right",
+                /*08*/          "Bind Classic controller (right analogue)",
+                /*09*/          "^|Up|Down|Left|Right",
                 NULL
 };
 
@@ -140,6 +169,13 @@ const char **options_menu_help[] = {
 				"Should normally be 100",
 				"unless Simon did some bad",
 				"mistake.",
+				NULL,
+		},
+		NULL,
+		NULL,
+		(const char*[]){
+				"Setup theme for the Frodo",
+				"menus.",
 				NULL,
 		},
 		NULL,
