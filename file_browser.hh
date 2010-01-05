@@ -12,6 +12,9 @@ public:
 		this->path = NULL;
 		this->exts = exts;
 
+		if (!this->exts)
+			this->exts = (const char **){ NULL };
+
 		/* If nothing else: Set the default list */
 		this->setDefaultFileList();
 	}
