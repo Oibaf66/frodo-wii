@@ -30,6 +30,7 @@ static const char *get_theme_path(const char *dir, const char *what)
 
 /* These are a bit of special cases... */
 #include "disc_menu.cpp"
+#include "bind_keys_menu.cpp"
 #include "theme_menu.cpp"
 #include "options_menu.cpp"
 #include "network_menu.cpp"
@@ -90,6 +91,7 @@ Gui::Gui()
 	this->ov = new OptionsView();
 	this->nv = new NetworkView();
 	this->tv = new ThemeView();
+	this->bkv = new BindKeysView();
 	this->pushView(mv);
 }
 
@@ -153,6 +155,7 @@ bool Gui::setTheme(const char *path)
 	this->ov->updateTheme();
 	this->nv->updateTheme();
 	this->tv->updateTheme();
+	this->bkv->updateTheme();
 
 	VirtualKeyboard::kbd->updateTheme();
 

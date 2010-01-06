@@ -14,6 +14,7 @@
 class DialogueBox;
 
 class MainView;
+class BindKeysView;
 class DiscView;
 class OptionsView;
 class NetworkView;
@@ -94,6 +95,7 @@ public:
 	OptionsView *ov;
 	NetworkView *nv;
 	ThemeView *tv;
+	BindKeysView *bkv;
 
 	GuiView **views;
 	int n_views;

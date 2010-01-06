@@ -118,15 +118,15 @@ const char **options_menu_messages = (const char*[]){
 };
 
 const char **bind_key_menu_messages = (const char*[]){
-                /*00*/          "Bind Wiimote",
-                /*01*/          "^|Up|Down|Left|Right|A|B|+|-",
-                /*02*/          "Bind Nunchuk",
+                /*00*/          "Wiimote",
+                /*01*/          "^|Up|Down|Left|Right|A|B|1|2|+|-",
+                /*02*/          "Nunchuk",
                 /*03*/          "^|Horiz|Vert|Z|C",
-                /*04*/          "Bind Classic controller",
+                /*04*/          "Classic",
                 /*05*/          "^|Up|Down|Left|a|b|x|y|Zl|Zr|+|-",
-                /*06*/          "Bind Classic controller (left analogue)",
+                /*06*/          "Classic (left analogue)",
                 /*07*/          "^|Horiz|Vert",
-                /*08*/          "Bind Classic controller (right analogue)",
+                /*08*/          "Classic(right analogue)",
                 /*09*/          "^|Horiz|Vert",
                 NULL
 };

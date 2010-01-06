@@ -13,7 +13,7 @@ widget.oo: widget.cpp widget.hh
 gui.oo: gui.cpp gui.hh Makefile font.hh menu.hh sdl_ttf_font.hh \
 	dialogue_box.hh help_box.hh main_menu.cpp disc_menu.cpp \
 	file_browser.hh timer.hh game_info.hh widget.hh options_menu.cpp \
-	network_menu.cpp theme_menu.cpp mocks/Prefs.h mocks/C64.h
+	network_menu.cpp theme_menu.cpp bind_keys_menu.cpp mocks/Prefs.h mocks/C64.h
 
 virtual_keyboard.oo: virtual_keyboard.hh virtual_keyboard.cpp widget.hh listener.hh
 
@@ -27,7 +27,7 @@ dialogue_box.oo: dialogue_box.cpp dialogue_box.hh menu.hh listener.hh
 
 listener.oo: listener.cpp listener.hh
 
-main.oo: menu.hh utils.hh sdl_ttf_font.hh Makefile
+main.oo: menu.hh gui.hh utils.hh sdl_ttf_font.hh Makefile
 
 menu: $(OBJS)
 	g++ `sdl-config --libs` -lSDL -lSDL_image -lSDL_ttf -o $@ $+

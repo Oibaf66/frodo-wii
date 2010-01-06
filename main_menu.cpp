@@ -55,8 +55,20 @@ public:
 		case 2: /* Load/save states */
 			break;
 		case 4: /* Keyboard */
-			VirtualKeyboard::kbd->activate();
-			VirtualKeyboard::kbd->registerListener(new KeyboardTypingListener());
+			switch(this->p_submenus[2].sel)
+			{
+			case 0:
+				VirtualKeyboard::kbd->activate();
+				VirtualKeyboard::kbd->registerListener(new KeyboardTypingListener());
+				break;
+			case 1:
+				break;
+			case 2:
+				Gui::gui->pushView(Gui::gui->bkv);
+				break;
+			default:
+				panic("Illegal selection\n");
+			}
 			break;
 		case 7: /* Reset the C64 */
 			printf("Resetting the C64\n");

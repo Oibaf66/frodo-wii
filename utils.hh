@@ -17,7 +17,7 @@ class Font;
 #define panic(x...) do \
   { \
     fprintf(stderr, "=============PANIC PANIC PANIC===========\n"); \
-    fprintf(stderr, x); \
+    fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); fprintf(stderr, x); \
     fprintf(stderr, "=========================================\n"); \
     exit(1); \
   } while(0)
@@ -25,7 +25,7 @@ class Font;
 #define warning(x...) do \
   { \
     fprintf(stderr, "==============WARNING WARNING============\n"); \
-    fprintf(stderr, x); \
+    fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); fprintf(stderr, x); \
     fprintf(stderr, "=========================================\n"); \
   } while(0)
 

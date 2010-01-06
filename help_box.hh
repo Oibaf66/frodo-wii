@@ -8,11 +8,18 @@ class HelpBox : public Menu
 public:
 	HelpBox(Font *font, const char ***all_messages) : Menu(font)
 	{
+		this->setHelpMessages(all_messages);
+	}
+
+	void setHelpMessages(const char ***all_messages)
+	{
 		this->all_messages = all_messages;
 	}
 
 	void updateHelpMessage(int which)
 	{
+		if (!this->all_messages)
+			return;
 		this->setText(this->all_messages[which]);
 	}
 

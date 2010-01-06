@@ -241,6 +241,21 @@ virtkey_t VirtualKeyboard::eventToVirtkey(event_t ev)
 	return INVALID_VIRTKEY;
 }
 
+int VirtualKeyboard::stringToKeycode(const char *str)
+{
+	for (int i = 0; i < KEY_COLS * KEY_ROWS; i++)
+	{
+		virtkey_t key = keys[i];
+
+		if (key.name != NULL)
+		{
+			if (strcmp(key.name, str) == 0)
+				return key.kc;
+		}
+	}
+
+	return 0;
+}
 
 const char VirtualKeyboard::keycodeToChar(int kc)
 {
