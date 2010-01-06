@@ -10,6 +10,8 @@
 
 class Font;
 
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof(*x))
+
 #define BUG_ON(cond)
 
 #define panic(x...) do \
