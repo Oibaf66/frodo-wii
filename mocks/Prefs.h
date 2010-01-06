@@ -19,6 +19,7 @@ enum
 /* Insanely high, but the Wii has insanely many of these */
 #define MAX_JOYSTICK_AXES 32
 #define MAX_JOYSTICK_BUTTONS 32
+#define MAX_JOYSTICK_HATS 8
 
 class Prefs
 {
@@ -28,6 +29,7 @@ public:
 		/* Set to NONE by default */
 		memset(this->JoystickAxes, 0, sizeof(this->JoystickAxes));
 		memset(this->JoystickButtons, 0, sizeof(this->JoystickButtons));
+		memset(this->JoystickHats, 0, sizeof(this->JoystickHats));
 
 		strcpy(this->NetworkName, "Unset name");
 		strcpy(this->NetworkServer, "play.c64-network.org");
@@ -49,6 +51,7 @@ public:
 
 	/* This is borrowed from UAE */
 	int JoystickAxes[2][MAX_JOYSTICK_AXES];
+	int JoystickHats[2][MAX_JOYSTICK_HATS];
 	int JoystickButtons[2][MAX_JOYSTICK_BUTTONS];
 };
 
