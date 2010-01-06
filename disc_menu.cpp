@@ -31,9 +31,6 @@ public:
 protected:
 	DiscMenu *menu;
 	GameInfoBox *gameInfo;
-	SDL_Surface *bg;
-	SDL_Surface *infobox;
-	SDL_Surface *disc_info;
 };
 
 
@@ -155,10 +152,6 @@ DiscView::DiscView() : GuiView()
 {
 	this->menu = new DiscMenu(NULL);
 	this->gameInfo = new GameInfoBox(NULL);
-
-	this->bg = NULL;
-	this->infobox = NULL;
-	this->disc_info = NULL;
 }
 
 DiscView::~DiscView()
@@ -179,10 +172,6 @@ void DiscView::setDirectory(const char *path)
 
 void DiscView::updateTheme()
 {
-	this->bg = Gui::gui->main_menu_bg;
-	this->infobox = Gui::gui->infobox;
-	this->disc_info = Gui::gui->disc_info;
-
 	this->gameInfo->setFont(Gui::gui->small_font);
 	this->menu->setFont(Gui::gui->default_font);
 	this->menu->setSelectedBackground(Gui::gui->bg_left, Gui::gui->bg_middle,
@@ -206,10 +195,10 @@ void DiscView::draw(SDL_Surface *where)
 
 	/* Blit the backgrounds */
 	dst = (SDL_Rect){20,45,300,400};
-	SDL_BlitSurface(this->bg, NULL, where, &dst);
+	SDL_BlitSurface(Gui::gui->main_menu_bg, NULL, where, &dst);
 
 	dst = (SDL_Rect){350,13,0,0};
-	SDL_BlitSurface(this->disc_info, NULL, where, &dst);
+	SDL_BlitSurface(Gui::gui->disc_info, NULL, where, &dst);
 
 	this->menu->draw(where, 50, 70, 280, 375);
 	this->gameInfo->draw(where, 360, 55, 262, 447);
