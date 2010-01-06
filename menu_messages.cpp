@@ -37,13 +37,12 @@ const char **network_unset_name_dlg = (const char*[]){
 
 const char **broken_theme_dlg = (const char*[]){
 	/*00*/          "The selected theme cannot be",
-	/*01*/		"loaded, probably something is",
-	/*02*/		"broken in it. Reverting to",
-	/*03*/		"default theme.",
-	/*04*/		"#",
+	/*01*/		"loaded, probably some file",
+	/*02*/		"is missing or broken in it.",
+	/*03*/		"The default theme has been",
+	/*04*/		"reverted.",
 	/*05*/		"#",
-	/*06*/		"#",
-	/*07*/          "^|OK",
+	/*06*/          "^|OK",
 	NULL
 };
 
@@ -121,14 +120,14 @@ const char **options_menu_messages = (const char*[]){
 const char **bind_key_menu_messages = (const char*[]){
                 /*00*/          "Bind Wiimote",
                 /*01*/          "^|Up|Down|Left|Right|A|B|+|-",
-                /*03*/          "Bind Nunchuk",
-                /*04*/          "^|Up|Down|Z",
-                /*06*/          "Bind Classic controller",
-                /*07*/          "^|Up|Down|Left|X|Y|A|B|+|-|Zr|Zl",
-                /*08*/          "Bind Classic controller (left analogue)",
-                /*09*/          "^|Up|Down|Left|Right",
+                /*02*/          "Bind Nunchuk",
+                /*03*/          "^|Horiz|Vert|Z|C",
+                /*04*/          "Bind Classic controller",
+                /*05*/          "^|Up|Down|Left|a|b|x|y|Zl|Zr|+|-",
+                /*06*/          "Bind Classic controller (left analogue)",
+                /*07*/          "^|Horiz|Vert",
                 /*08*/          "Bind Classic controller (right analogue)",
-                /*09*/          "^|Up|Down|Left|Right",
+                /*09*/          "^|Horiz|Vert",
                 NULL
 };
 
