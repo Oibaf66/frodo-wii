@@ -83,6 +83,7 @@ public:
 			default:
 				panic("Classic: impossible selection %d", this->p_submenus[3].sel); break;
 			}
+			break;
 		case 8:
 			switch (this->p_submenus[4].sel)
 			{
@@ -91,6 +92,7 @@ public:
 			default:
 				panic("Classic: impossible selection %d", this->p_submenus[4].sel); break;
 			}
+			break;
 		default:
 			panic("Impossible menu option\n");
 			break;
