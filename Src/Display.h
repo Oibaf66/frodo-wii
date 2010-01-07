@@ -85,6 +85,10 @@ public:
 	void UpdateKeyMatrix(int c64_key, bool key_up, uint8 *key_matrix,
 			uint8 *rev_matrix, uint8 *joystick);
 	void Update(uint8 *src_pixels);
+	void Update_8(uint8 *src_pixels);
+	void Update_16(uint8 *src_pixels);
+	void Update_32(uint8 *src_pixels);
+	void Update_stretched(uint8 *src_pixels);
 	char *GetTextMessage();
 #endif
 	bool NumLock(void);

@@ -32,6 +32,10 @@
 
 // Display surface
 static Uint8 screen[DISPLAY_X * DISPLAY_Y];
+static Uint16 *screen_16;
+static Uint32 *screen_32;
+static int screen_bits_per_pixel;
+
 static SDL_Surface *sdl_screen;
 SDL_Surface *real_screen = NULL;
 
@@ -56,8 +60,10 @@ enum {
 	shadow_gray = 18,
 	red = 19,
 	green = 20,
-	PALETTE_SIZE = 21
+	PALETTE_SIZE = 21,
 };
+static Uint16 palette_16[PALETTE_SIZE];
+static Uint32 palette_32[PALETTE_SIZE];
 
 /*
   C64 keyboard matrix:
@@ -83,6 +89,7 @@ enum {
 int init_graphics(void)
 {
 	Uint32 rmask, gmask, bmask, amask;
+        const SDL_VideoInfo *info = SDL_GetVideoInfo();
 
 	/* SDL interprets each pixel as a 32-bit number, so our masks must depend                                                               
            on the endianness (byte order) of the machine */
@@ -109,12 +116,31 @@ int init_graphics(void)
 				SDL_GetError());
 		exit(1);
 	}
-	real_screen = SDL_SetVideoMode(FULL_DISPLAY_X, FULL_DISPLAY_Y, 8,
+	screen_bits_per_pixel = info->vfmt->BitsPerPixel;
+	real_screen = SDL_SetVideoMode(FULL_DISPLAY_X, FULL_DISPLAY_Y, screen_bits_per_pixel,
 			SDL_DOUBLEBUF);
 	if (!real_screen)
 	{
 		fprintf(stderr, "\n\nCannot initialize video: %s\n", SDL_GetError());
 		exit(1);
+	}
+
+	switch (screen_bits_per_pixel)
+	{
+	case 8:
+		/* Default, no need to do anything further */
+		break;
+	case 16:
+		/* Allocate a 16 bit screen */
+		screen_16 = (Uint16*)calloc(real_screen->pitch * FULL_DISPLAY_Y, sizeof(Uint16) );
+		break;
+	case 24:
+	case 32:
+		screen_32 = (Uint32*)calloc(real_screen->pitch * FULL_DISPLAY_Y, sizeof(Uint32) );
+		break;
+	default:
+		printf("What is this???\n");
+		break;
 	}
 
 	return 1;
@@ -182,53 +208,122 @@ void C64Display::NewPrefs(Prefs *prefs)
 /*
  *  Redraw bitmap
  */
+void C64Display::Update_32(uint8 *src_pixels)
+{
+	const Uint16 src_pitch = DISPLAY_X;
+	const int x_border = (DISPLAY_X - FULL_DISPLAY_X / 2) / 2;
+	const int y_border = (DISPLAY_Y - FULL_DISPLAY_Y / 2) / 2;
+	Uint32 *dst_pixels = (Uint32*)real_screen->pixels;
+	const int dst_pitch = real_screen->pitch / sizeof(Uint32);
+
+	/* Center, double size */
+	for (int y = y_border; y < (FULL_DISPLAY_Y/2) + y_border; y++)
+	{
+		for (int x = x_border; x < (FULL_DISPLAY_X / 2 + x_border); x++)
+		{
+			int src_off = y * src_pitch + x;
+			int dst_off = ((y * 2 - y_border * 2) * dst_pitch + (x * 2 - x_border * 2));
+			Uint32 v = palette_32[src_pixels[src_off]];
+
+			dst_pixels[ dst_off ] = v;
+			dst_pixels[ dst_off + 1 ] = v;
+			dst_pixels[ dst_off + dst_pitch ] = v;
+			dst_pixels[ dst_off + dst_pitch + 1] = v;
+		}
+	}
+}
+
+void C64Display::Update_16(uint8 *src_pixels)
+{
+	const Uint16 src_pitch = DISPLAY_X;
+	const int x_border = (DISPLAY_X - FULL_DISPLAY_X / 2) / 2;
+	const int y_border = (DISPLAY_Y - FULL_DISPLAY_Y / 2) / 2;
+	Uint16 *dst_pixels = (Uint16*)real_screen->pixels;
+	const Uint16 dst_pitch = real_screen->pitch / sizeof(Uint16);
+
+	/* Center, double size */
+	for (int y = y_border; y < (FULL_DISPLAY_Y/2) + y_border; y++)
+	{
+		for (int x = x_border; x < (FULL_DISPLAY_X / 2 + x_border); x++)
+		{
+			int src_off = y * src_pitch + x;
+			int dst_off = ((y * 2 - y_border * 2) * dst_pitch + (x * 2 - x_border * 2));
+			Uint16 v = palette_16[src_pixels[src_off]];
+
+			dst_pixels[ dst_off ] = v;
+			dst_pixels[ dst_off + 1 ] = v;
+			dst_pixels[ dst_off + dst_pitch ] = v;
+			dst_pixels[ dst_off + dst_pitch + 1] = v;
+		}
+	}
+}
+
+void C64Display::Update_8(uint8 *src_pixels)
+{
+	const Uint16 src_pitch = DISPLAY_X;
+	const int x_border = (DISPLAY_X - FULL_DISPLAY_X / 2) / 2;
+	const int y_border = (DISPLAY_Y - FULL_DISPLAY_Y / 2) / 2;
+	Uint8 *dst_pixels = (Uint8*)real_screen->pixels;
+	const Uint16 dst_pitch = real_screen->pitch;
+
+	/* Center, double size */
+	for (int y = y_border; y < (FULL_DISPLAY_Y/2) + y_border; y++)
+	{
+		for (int x = x_border; x < (FULL_DISPLAY_X / 2 + x_border); x++)
+		{
+			int src_off = y * src_pitch + x;
+			int dst_off = (y * 2 - y_border * 2) * dst_pitch + (x * 2 - x_border * 2);
+			Uint8 v = src_pixels[src_off];
+
+			dst_pixels[ dst_off ] = v;
+			dst_pixels[ dst_off + 1 ] = v;
+			dst_pixels[ dst_off + dst_pitch ] = v;
+			dst_pixels[ dst_off + dst_pitch + 1] = v;
+		}
+	}
+}
+
+void C64Display::Update_stretched(uint8 *src_pixels)
+{
+	SDL_Rect srcrect = {0, 0, DISPLAY_X, DISPLAY_Y};
+	SDL_Rect dstrect = {0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y};
+	Uint8 *dst_pixels = (Uint8*)sdl_screen->pixels;
+	const Uint16 src_pitch = DISPLAY_X;
+
+	/* Draw 1-1 */
+	for (int y = 0; y < DISPLAY_Y; y++)
+	{
+		for (int x = 0; x < DISPLAY_X; x++)
+		{
+			int src_off = y * src_pitch + x;
+			int dst_off = src_off;
+			Uint8 v = src_pixels[src_off];
+
+			dst_pixels[ dst_off ] = v;
+		}
+	}
+
+	/* Stretch */
+	SDL_SoftStretch(sdl_screen, &srcrect, real_screen, &dstrect);
+}
 
 void C64Display::Update(uint8 *src_pixels)
 {
-	const Uint16 src_pitch = DISPLAY_X;
-
-	if (ThePrefs.DisplayOption == 0) {
-		const int x_border = (DISPLAY_X - FULL_DISPLAY_X / 2) / 2;
-		const int y_border = (DISPLAY_Y - FULL_DISPLAY_Y / 2) / 2;
-		Uint8 *dst_pixels = (Uint8*)real_screen->pixels;
-		const Uint16 dst_pitch = real_screen->pitch;
-
-		/* Center, double size */
-		for (int y = y_border; y < (FULL_DISPLAY_Y/2) + y_border; y++)
+	if (ThePrefs.DisplayOption != 0)
+		this->Update_stretched(src_pixels);
+	else
+	{
+		switch (screen_bits_per_pixel)
 		{
-			for (int x = x_border; x < (FULL_DISPLAY_X / 2 + x_border); x++)
-			{
-				int src_off = y * src_pitch + x;
-				int dst_off = (y * 2 - y_border * 2) * dst_pitch + (x * 2 - x_border * 2);
-				Uint8 v = src_pixels[src_off];
-
-				dst_pixels[ dst_off ] = v;
-				dst_pixels[ dst_off + 1 ] = v;
-				dst_pixels[ dst_off + dst_pitch ] = v;
-				dst_pixels[ dst_off + dst_pitch + 1] = v;
-			}
+		case 8:
+			this->Update_8(src_pixels); break;
+		case 16:
+			this->Update_16(src_pixels); break;
+		case 24:
+		case 32:
+		default:
+			this->Update_32((Uint8*)screen); break;
 		}
-	}
-	else {
-		SDL_Rect srcrect = {0, 0, DISPLAY_X, DISPLAY_Y};
-		SDL_Rect dstrect = {0, 0, FULL_DISPLAY_X, FULL_DISPLAY_Y};
-		Uint8 *dst_pixels = (Uint8*)sdl_screen->pixels;
-
-		/* Draw 1-1 */
-		for (int y = 0; y < DISPLAY_Y; y++)
-		{
-			for (int x = 0; x < DISPLAY_X; x++)
-			{
-				int src_off = y * src_pitch + x;
-				int dst_off = src_off;
-				Uint8 v = src_pixels[src_off];
-
-				dst_pixels[ dst_off ] = v;
-			}
-		}
-
-		/* Stretch */
-		SDL_SoftStretch(sdl_screen, &srcrect, real_screen, &dstrect);                                                                     
 	}
 
 	if (this->TheC64->network_connection_type != NONE)
@@ -897,8 +992,26 @@ void C64Display::InitColors(uint8 *colors)
 	palette[red].g = palette[red].b = 0;
 	palette[green].g = 0xf0;
 	palette[green].r = palette[green].b = 0;
-	SDL_SetColors(real_screen, palette, 0, PALETTE_SIZE);
 
+	if (real_screen->format->BitsPerPixel == 8)
+		SDL_SetColors(real_screen, palette, 0, PALETTE_SIZE);
+ 	for (int i = 0; i < PALETTE_SIZE; i++) {
+ 		int rs = real_screen->format->Rshift;
+ 		int gs = real_screen->format->Gshift;
+ 		int bs = real_screen->format->Bshift;
+ 		int rl = real_screen->format->Rloss;
+ 		int gl = real_screen->format->Gloss;
+ 		int bl = real_screen->format->Bloss;
+ 		int rm = real_screen->format->Rmask;
+ 		int gm = real_screen->format->Gmask;
+ 		int bm = real_screen->format->Bmask;
+ 		uint32 r = palette_red[i] & 0xff;
+ 		uint32 g = palette_green[i] & 0xff;
+ 		uint32 b = palette_blue[i] & 0xff;
+
+		palette_16[i] = (((r >> rl) << rs) & rm) | (((g >> gl) << gs) & gm) | (((b >> bl) << bs) & bm);
+		palette_32[i] = (((r >> rl) << rs) & rm) | (((g >> gl) << gs) & gm) | (((b >> bl) << bs) & bm);
+	}
 
 	for (int i=0; i<256; i++)
 		colors[i] = i & 0x0f;
