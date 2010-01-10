@@ -39,6 +39,8 @@ public:
 	MainMenu(Font *font, HelpBox *help) : Menu(font)
 	{
 		this->help = help;
+
+		this->updatePauseState();
 	}
 
 	virtual void selectCallback(int which)
@@ -46,15 +48,19 @@ public:
 		printf("entry %d selected: %s\n", which, this->pp_msgs[which]);
 		switch (which)
 		{
-		case 0: /* Insert disc */
+		case 0:
+			TheC64->IsPaused() ? TheC64->Resume() : TheC64->Pause();
+			this->updatePauseState();
+			break;
+		case 2: /* Insert disc */
 			if (this->p_submenus[0].sel == 0) {
 				Gui::gui->dv->setDirectory("discs");
 				Gui::gui->pushView(Gui::gui->dv);
 			}
 			break;
-		case 2: /* Load/save states */
+		case 4: /* Load/save states */
 			break;
-		case 4: /* Keyboard */
+		case 6: /* Keyboard */
 			switch(this->p_submenus[2].sel)
 			{
 			case 0:
@@ -70,19 +76,16 @@ public:
 				panic("Illegal selection\n");
 			}
 			break;
-		case 7: /* Reset the C64 */
+		case 9: /* Reset the C64 */
 			printf("Resetting the C64\n");
 			break;
-		case 8: /* Networking */
+		case 10: /* Networking */
 			Gui::gui->pushView(Gui::gui->nv);
 			break;
-		case 9: /* Options */
+		case 11: /* Options */
 			Gui::gui->pushView(Gui::gui->ov);
 			break;
-		case 10: /* Help */
-			break;
-
-		case 11: /* Exit */
+		case 12: /* Exit */
 			DialogueBox *exit_dialogue = new DialogueBox(exit_dialogue_messages);
 			exit_dialogue->registerListener(new ExitListener());
 			Gui::gui->pushDialogueBox(exit_dialogue);
@@ -101,6 +104,15 @@ public:
 	}
 
 private:
+	void updatePauseState()
+	{
+		if (TheC64->IsPaused())
+			main_menu_messages[0] = "Resume";
+		else
+			main_menu_messages[0] = "Pause";
+		this->setText(main_menu_messages);
+	}
+
 	HelpBox *help;
 };
 
@@ -112,7 +124,6 @@ public:
 	{
 		this->help = new HelpBox(NULL, main_menu_help);
 		this->menu = new MainMenu(NULL, this->help);
-		this->menu->setText(main_menu_messages);
 	}
 
 	~MainView()

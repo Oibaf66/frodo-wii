@@ -60,22 +60,31 @@ const char **select_analogue_dlg = (const char*[]){
 
 
 const char **main_menu_messages = (const char*[]){
-	/*00*/          "File",
-	/*01*/          "^|Insert|Start",
-	/*02*/          "States",
-	/*03*/          "^|Load|Save|Delete",
-	/*04*/          "Keyboard",
-	/*05*/          "^|Type|Macro|Bind",
-	/*06*/          " ",
-	/*07*/          "Reset the C=64",
-	/*08*/          "Networking",
-	/*09*/          "Options",
-	/*10*/          "Help",
-	/*11*/          "Quit",
+	/*00*/          NULL, /* Setup dynamically */
+	/*01*/          " ",
+	/*02*/          "File",
+	/*03*/          "^|Insert|Start",
+	/*04*/          "States",
+	/*05*/          "^|Load|Save|Delete",
+	/*06*/          "Keyboard",
+	/*07*/          "^|Type|Macro|Bind",
+	/*08*/          " ",
+	/*09*/          "Reset the C=64",
+	/*10*/          "Networking",
+	/*11*/          "Options",
+	/*12*/          "Quit",
 	NULL
 };
 
 const char **main_menu_help[] = {
+		(const char*[]){
+				"Pause or resume the C64",
+				"emulation. Not available",
+				"when running in networked",
+				"mode.",
+				NULL,
+		},
+		NULL,
 		(const char*[]){
 				"Insert a disc/tape or",
 				"start it",
@@ -95,7 +104,6 @@ const char **main_menu_help[] = {
 				"virtual keyboard",
 				NULL,
 		},
-		NULL,
 		NULL,
 		NULL,
 		(const char*[]){
