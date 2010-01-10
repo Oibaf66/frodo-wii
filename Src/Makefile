@@ -175,5 +175,6 @@ CPU1541.o: Display.h CPU_emulline.h
 CPU1541_SC.o: sysdeps.h sysconfig.h CPU1541.h CIA.h Prefs.h C64.h
 CPU1541_SC.o: CPU_common.h 1541job.h Display.h CPU_emulcycle.h
 CPU_common.o: sysdeps.h sysconfig.h CPU_common.h
+main.o: main_x.h main.cpp main.h
 menu.o: menu.h
 gui/sdlwidgets.o: gui/sdl.hpp gui/sdlwidgets.cpp gui/widgets.hpp
