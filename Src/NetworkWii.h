@@ -90,11 +90,10 @@ void Network::InitNetwork()
 {
         char myIP[16];
 
-        if (if_config(myIP, NULL, NULL, true) < 0)
-        {
-        	fprintf(stderr, "\n\n\nError getting IP address via DHCP.\n");
-        	sleep(2);
-		exit(1);
+        /* Try twice */
+        if (if_config(myIP, NULL, NULL, true) < 0) {
+	        if (if_config(myIP, NULL, NULL, true) < 0)
+			TheC64->TheDisplay->display_status_string((char*)"NO DHCP ANSWER", 1);
         }
 }
 
