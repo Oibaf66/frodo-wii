@@ -46,6 +46,18 @@ const char **broken_theme_dlg = (const char*[]){
 	NULL
 };
 
+const char **select_analogue_dlg = (const char*[]){
+	/*00*/          "Select axis of analogue",
+	/*01*/		"joystick to bind.",
+	/*02*/		"#",
+	/*03*/		"#",
+	/*04*/		"#",
+	/*05*/		"#",
+	/*06*/          "^|None|Horiz|Vert",
+	NULL
+};
+
+
 
 const char **main_menu_messages = (const char*[]){
 	/*00*/          "File",

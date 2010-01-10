@@ -50,9 +50,9 @@ public:
 	unsigned int MsPerFrame;
 
 	/* This is borrowed from UAE */
-	int JoystickAxes[2][MAX_JOYSTICK_AXES];
-	int JoystickHats[2][MAX_JOYSTICK_HATS];
-	int JoystickButtons[2][MAX_JOYSTICK_BUTTONS];
+	int JoystickAxes[MAX_JOYSTICK_AXES];
+	int JoystickHats[MAX_JOYSTICK_HATS];
+	int JoystickButtons[MAX_JOYSTICK_BUTTONS];
 };
 
 #endif /* __MOCK_PREFS_HH__ */

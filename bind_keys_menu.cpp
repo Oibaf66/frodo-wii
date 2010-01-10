@@ -3,10 +3,33 @@
 #include "help_box.hh"
 #include "virtual_keyboard.hh"
 
+class BindKeysMenu;
+
+class AnalogueBindListener : public DialogueListener
+{
+public:
+	AnalogueBindListener(BindKeysMenu *menu)
+	{
+		this->menu = menu;
+	}
+
+	void escapeCallback(DialogueBox *which, int selected)
+	{
+		delete this;
+	}
+
+	void selectCallback(DialogueBox *which, int selected);
+
+private:
+	BindKeysMenu *menu;
+};
+
 class BindKeysView;
 class BindKeysMenu : public Menu, public KeyboardListener
 {
+	/* This is a very popular class with many friends */
 	friend class BindKeysView;
+	friend class AnalogueBindListener;
 
 public:
 	BindKeysMenu(Font *font, HelpBox *help) : Menu(font)
@@ -24,21 +47,23 @@ public:
 	virtual void selectCallback(int which)
 	{
 		int *ck = NULL;
+		/* Either the virtual keyboard or the analogue menu */
+		bool use_virtkbd = true;
 
 		switch(which)
 		{
 		case 0: /* Classic */
 			switch (this->p_submenus[0].sel)
 			{
-			case 0: ck = &Gui::gui->np->JoystickHats[0][0]; break;
-			case 1: ck = &Gui::gui->np->JoystickHats[0][1]; break;
-			case 2: ck = &Gui::gui->np->JoystickHats[0][2]; break;
-			case 3: ck = &Gui::gui->np->JoystickHats[0][3]; break;
-			case 4: ck = &Gui::gui->np->JoystickButtons[0][0]; break;
-			case 5: ck = &Gui::gui->np->JoystickButtons[0][1]; break;
-			case 6: ck = &Gui::gui->np->JoystickButtons[0][2]; break;
-			case 7: ck = &Gui::gui->np->JoystickButtons[0][3]; break;
-			case 8: ck = &Gui::gui->np->JoystickButtons[0][4]; break;
+			case 0: ck = &Gui::gui->np->JoystickHats[0]; break;
+			case 1: ck = &Gui::gui->np->JoystickHats[1]; break;
+			case 2: ck = &Gui::gui->np->JoystickHats[2]; break;
+			case 3: ck = &Gui::gui->np->JoystickHats[3]; break;
+			case 4: ck = &Gui::gui->np->JoystickButtons[0]; break;
+			case 5: ck = &Gui::gui->np->JoystickButtons[1]; break;
+			case 6: ck = &Gui::gui->np->JoystickButtons[2]; break;
+			case 7: ck = &Gui::gui->np->JoystickButtons[3]; break;
+			case 8: ck = &Gui::gui->np->JoystickButtons[4]; break;
 			default:
 				panic("Classic: impossible selection %d", this->p_submenus[0].sel); break;
 			}
@@ -46,10 +71,10 @@ public:
 		case 2: /* Nunchuk */
 			switch (this->p_submenus[1].sel)
 			{
-			case 0: ck = &Gui::gui->np->JoystickAxes[0][0]; break;
-			case 1: ck = &Gui::gui->np->JoystickAxes[0][1]; break;
-			case 2: ck = &Gui::gui->np->JoystickButtons[0][7]; break;
-			case 3: ck = &Gui::gui->np->JoystickButtons[0][8]; break;
+			case 0: ck = &Gui::gui->np->JoystickAxes[0]; use_virtkbd = false; break;
+			case 1: ck = &Gui::gui->np->JoystickAxes[1]; use_virtkbd = false; break;
+			case 2: ck = &Gui::gui->np->JoystickButtons[7]; break;
+			case 3: ck = &Gui::gui->np->JoystickButtons[8]; break;
 			default:
 				panic("Nunchuk: impossible selection %d", this->p_submenus[1].sel); break;
 			}
@@ -57,20 +82,20 @@ public:
 		case 4: /* Classic */
 			switch (this->p_submenus[2].sel)
 			{
-			case 0: ck = &Gui::gui->np->JoystickHats[0][0]; break;
-			case 1: ck = &Gui::gui->np->JoystickHats[0][1]; break;
-			case 2: ck = &Gui::gui->np->JoystickHats[0][2]; break;
-			case 3: ck = &Gui::gui->np->JoystickHats[0][3]; break;
-			case 4: ck = &Gui::gui->np->JoystickButtons[0][9]; break;
-			case 5: ck = &Gui::gui->np->JoystickButtons[0][10]; break;
-			case 6: ck = &Gui::gui->np->JoystickButtons[0][11]; break;
-			case 7: ck = &Gui::gui->np->JoystickButtons[0][12]; break;
-			case 8: ck = &Gui::gui->np->JoystickButtons[0][13]; break;
-			case 9: ck = &Gui::gui->np->JoystickButtons[0][14]; break;
-			case 10: ck = &Gui::gui->np->JoystickButtons[0][15]; break;
-			case 11: ck = &Gui::gui->np->JoystickButtons[0][16]; break;
-			case 12: ck = &Gui::gui->np->JoystickButtons[0][17]; break;
-			case 13: ck = &Gui::gui->np->JoystickButtons[0][18]; break;
+			case 0: ck = &Gui::gui->np->JoystickHats[0]; break;
+			case 1: ck = &Gui::gui->np->JoystickHats[1]; break;
+			case 2: ck = &Gui::gui->np->JoystickHats[2]; break;
+			case 3: ck = &Gui::gui->np->JoystickHats[3]; break;
+			case 4: ck = &Gui::gui->np->JoystickButtons[9]; break;
+			case 5: ck = &Gui::gui->np->JoystickButtons[10]; break;
+			case 6: ck = &Gui::gui->np->JoystickButtons[11]; break;
+			case 7: ck = &Gui::gui->np->JoystickButtons[12]; break;
+			case 8: ck = &Gui::gui->np->JoystickButtons[13]; break;
+			case 9: ck = &Gui::gui->np->JoystickButtons[14]; break;
+			case 10: ck = &Gui::gui->np->JoystickButtons[15]; break;
+			case 11: ck = &Gui::gui->np->JoystickButtons[16]; break;
+			case 12: ck = &Gui::gui->np->JoystickButtons[17]; break;
+			case 13: ck = &Gui::gui->np->JoystickButtons[18]; break;
 			default:
 				panic("Classic: impossible selection %d", this->p_submenus[2].sel); break;
 			}
@@ -78,8 +103,8 @@ public:
 		case 6:
 			switch (this->p_submenus[3].sel)
 			{
-			case 0: ck = &Gui::gui->np->JoystickAxes[0][0]; break;
-			case 1: ck = &Gui::gui->np->JoystickAxes[0][1]; break;
+			case 0: ck = &Gui::gui->np->JoystickAxes[0]; use_virtkbd = false; break;
+			case 1: ck = &Gui::gui->np->JoystickAxes[1]; use_virtkbd = false; break;
 			default:
 				panic("Classic: impossible selection %d", this->p_submenus[3].sel); break;
 			}
@@ -87,8 +112,8 @@ public:
 		case 8:
 			switch (this->p_submenus[4].sel)
 			{
-			case 0: ck = &Gui::gui->np->JoystickAxes[0][2]; break;
-			case 1: ck = &Gui::gui->np->JoystickAxes[0][3]; break;
+			case 0: ck = &Gui::gui->np->JoystickAxes[2]; use_virtkbd = false; break;
+			case 1: ck = &Gui::gui->np->JoystickAxes[3]; use_virtkbd = false; break;
 			default:
 				panic("Classic: impossible selection %d", this->p_submenus[4].sel); break;
 			}
@@ -99,8 +124,19 @@ public:
 		}
 		this->cur_key = ck;
 
-		VirtualKeyboard::kbd->activate();
-		VirtualKeyboard::kbd->registerListener(this);
+		if (use_virtkbd)
+		{
+			VirtualKeyboard::kbd->activate();
+			VirtualKeyboard::kbd->registerListener(this);
+		}
+		else
+		{
+			AnalogueBindListener *bl = new AnalogueBindListener(this);
+			DialogueBox *dlg = new DialogueBox(select_analogue_dlg);
+
+			dlg->registerListener(bl);
+			Gui::gui->pushDialogueBox(dlg);
+		}
 	}
 
 	virtual void hoverCallback(int which)
@@ -192,47 +228,47 @@ private:
 	int *stringToPtr_Classic(const char *str)
 	{
 		if (EQ("Up"))
-			return &Gui::gui->np->JoystickHats[0][0];
+			return &Gui::gui->np->JoystickHats[0];
 		if (EQ("Down"))
-			return &Gui::gui->np->JoystickHats[0][1];
+			return &Gui::gui->np->JoystickHats[1];
 		if (EQ("Left"))
-			return &Gui::gui->np->JoystickHats[0][2];
+			return &Gui::gui->np->JoystickHats[2];
 		if (EQ("Right"))
-			return &Gui::gui->np->JoystickHats[0][3];
+			return &Gui::gui->np->JoystickHats[3];
 		if (EQ("LAH"))
-			return &Gui::gui->np->JoystickAxes[0][0];
+			return &Gui::gui->np->JoystickAxes[0];
 		if (EQ("LAV"))
-			return &Gui::gui->np->JoystickAxes[0][1];
+			return &Gui::gui->np->JoystickAxes[1];
 		if (EQ("RAH"))
-			return &Gui::gui->np->JoystickAxes[0][2];
+			return &Gui::gui->np->JoystickAxes[2];
 		if (EQ("RAV"))
-			return &Gui::gui->np->JoystickAxes[0][3];
+			return &Gui::gui->np->JoystickAxes[3];
 		if (EQ("RA"))
-			return &Gui::gui->np->JoystickAxes[0][4];
+			return &Gui::gui->np->JoystickAxes[4];
 		if (EQ("LA"))
-			return &Gui::gui->np->JoystickAxes[0][5];
+			return &Gui::gui->np->JoystickAxes[5];
 		if (EQ("a"))
-			return &Gui::gui->np->JoystickButtons[0][9];
+			return &Gui::gui->np->JoystickButtons[9];
 		if (EQ("b"))
-			return &Gui::gui->np->JoystickButtons[0][10];
+			return &Gui::gui->np->JoystickButtons[10];
 		if (EQ("x"))
-			return &Gui::gui->np->JoystickButtons[0][11];
+			return &Gui::gui->np->JoystickButtons[11];
 		if (EQ("y"))
-			return &Gui::gui->np->JoystickButtons[0][12];
+			return &Gui::gui->np->JoystickButtons[12];
 		if (EQ("L"))
-			return &Gui::gui->np->JoystickButtons[0][13];
+			return &Gui::gui->np->JoystickButtons[13];
 		if (EQ("R"))
-			return &Gui::gui->np->JoystickButtons[0][14];
+			return &Gui::gui->np->JoystickButtons[14];
 		if (EQ("Zl"))
-			return &Gui::gui->np->JoystickButtons[0][15];
+			return &Gui::gui->np->JoystickButtons[15];
 		if (EQ("Zr"))
-			return &Gui::gui->np->JoystickButtons[0][16];
+			return &Gui::gui->np->JoystickButtons[16];
 		if (EQ("-"))
-			return &Gui::gui->np->JoystickButtons[0][17];
+			return &Gui::gui->np->JoystickButtons[17];
 		if (EQ("+"))
-			return &Gui::gui->np->JoystickButtons[0][18];
+			return &Gui::gui->np->JoystickButtons[18];
 		if (EQ("Home"))
-			return &Gui::gui->np->JoystickButtons[0][19];
+			return &Gui::gui->np->JoystickButtons[19];
 
 		/* Shound never happen! */
 		panic("Illegal string %s\n", str);
@@ -243,13 +279,13 @@ private:
 	int *stringToPtr_Nunchuk(const char *str)
 	{
 		if (EQ("Horiz"))
-			return &Gui::gui->np->JoystickAxes[0][0];
+			return &Gui::gui->np->JoystickAxes[0];
 		if (EQ("Vert"))
-			return &Gui::gui->np->JoystickAxes[0][1];
+			return &Gui::gui->np->JoystickAxes[1];
 		if (EQ("Z"))
-			return &Gui::gui->np->JoystickButtons[0][7];
+			return &Gui::gui->np->JoystickButtons[7];
 		if (EQ("C"))
-			return &Gui::gui->np->JoystickButtons[0][8];
+			return &Gui::gui->np->JoystickButtons[8];
 
 		/* Shound never happen! */
 		panic("Illegal string %s\n", str);
@@ -260,27 +296,27 @@ private:
 	int *stringToPtr_Wiimote(const char *str)
 	{
 		if (EQ("Up"))
-			return &Gui::gui->np->JoystickHats[0][0];
+			return &Gui::gui->np->JoystickHats[0];
 		if (EQ("Down"))
-			return &Gui::gui->np->JoystickHats[0][1];
+			return &Gui::gui->np->JoystickHats[1];
 		if (EQ("Left"))
-			return &Gui::gui->np->JoystickHats[0][2];
+			return &Gui::gui->np->JoystickHats[2];
 		if (EQ("Right"))
-			return &Gui::gui->np->JoystickHats[0][3];
+			return &Gui::gui->np->JoystickHats[3];
 		if (EQ("A"))
-			return &Gui::gui->np->JoystickButtons[0][0];
+			return &Gui::gui->np->JoystickButtons[0];
 		if (EQ("B"))
-			return &Gui::gui->np->JoystickButtons[0][1];
+			return &Gui::gui->np->JoystickButtons[1];
 		if (EQ("1"))
-			return &Gui::gui->np->JoystickButtons[0][2];
+			return &Gui::gui->np->JoystickButtons[2];
 		if (EQ("2"))
-			return &Gui::gui->np->JoystickButtons[0][3];
+			return &Gui::gui->np->JoystickButtons[3];
 		if (EQ("+"))
-			return &Gui::gui->np->JoystickButtons[0][4];
+			return &Gui::gui->np->JoystickButtons[4];
 		if (EQ("-"))
-			return &Gui::gui->np->JoystickButtons[0][5];
+			return &Gui::gui->np->JoystickButtons[5];
 		if (EQ("Home"))
-			return &Gui::gui->np->JoystickButtons[0][6];
+			return &Gui::gui->np->JoystickButtons[6];
 
 		/* Shound never happen! */
 		panic("Illegal string %s\n", str);
@@ -352,6 +388,25 @@ private:
 	int *cur_key;
 	const char **hm[10];
 };
+
+void AnalogueBindListener::selectCallback(DialogueBox *which, int selected)
+{
+	switch(selected)
+	{
+	case 1:
+		*menu->cur_key = JOY_HORIZ; break;
+	case 2:
+		*menu->cur_key = JOY_VERT; break;
+	case 0:
+	default:
+		*menu->cur_key = JOY_NONE; break;
+	}
+
+	this->menu->updateHelpMessages();
+	this->menu->help->updateHelpMessage(this->menu->cur_sel);
+
+	delete this;
+}
 
 
 class BindKeysView : public GuiView
