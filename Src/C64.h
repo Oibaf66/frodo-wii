@@ -25,6 +25,7 @@
 #include "menu.h"
 #include "VirtualKeyboard.h"
 #include "Network.h"
+#include "Prefs.h"
 #endif
 
 #ifdef __BEOS__
@@ -136,12 +137,18 @@ public:
 		this->have_a_break = true;
 	}
 
+	bool is_in_menu() {
+		return this->have_a_break;
+	}
 private:
 	void c64_ctor1(void);
 	void c64_ctor2(void);
 	void c64_dtor(void);
 	void open_close_joysticks(int oldjoy1, int oldjoy2, int newjoy1, int newjoy2);
 	uint8 poll_joystick(int port);
+	uint8 poll_joystick_axes(int port);
+	uint8 poll_joystick_hats(int port);
+	uint8 poll_joystick_buttons(int port);
 	void thread_func(void);
 
 	bool thread_running;	// Emulation thread is running
@@ -150,6 +157,7 @@ private:
 
 	int joy_minx[2], joy_maxx[2], joy_miny[2], joy_maxy[2]; // For dynamic joystick calibration
 	uint8 joykey;			// Joystick keyboard emulation mask value
+	bool joy_button_pressed[MAX_JOYSTICK_BUTTONS];
 
 	uint8 orig_kernal_1d84,	// Original contents of kernal locations $1d84 and $1d85
 		  orig_kernal_1d85;	// (for undoing the Fast Reset patch)

@@ -21,6 +21,9 @@
 #ifndef _PREFS_H
 #define _PREFS_H
 
+#define MAX_JOYSTICK_AXES 32
+#define MAX_JOYSTICK_BUTTONS 32
+#define MAX_JOYSTICK_HATS 8
 
 // SID types
 enum {
@@ -43,6 +46,14 @@ enum {
 enum {
 	DISPTYPE_WINDOW,	// Window
 	DISPTYPE_SCREEN		// Fullscreen
+};
+
+enum {
+ 	/* ASCII values before these */
+        JOY_NONE = 0,
+        JOY_HORIZ = 256,
+        JOY_VERT = 258,
+	JOY_FIRE = 259,
 };
 
 // Key bindings (WII)
@@ -153,6 +164,9 @@ private:
 	int DisplayOption;
 	uint32 MsPerFrame;
 #endif
+	int JoystickAxes[MAX_JOYSTICK_AXES];
+	int JoystickButtons[MAX_JOYSTICK_BUTTONS];
+
 	char NetworkName[32];
 	int NetworkKey;
 	uint32 NetworkAvatar;

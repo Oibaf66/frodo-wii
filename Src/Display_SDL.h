@@ -812,164 +812,123 @@ void check_analogue_joystick(joystick_t *js,
 }
 #endif
 
+/* The implementation principles are borrowed from UAE */
+uint8 C64::poll_joystick_axes(int port)
+{
+	SDL_Joystick *js = joy[port];
+	unsigned int i, axes;
+	uint8 out = 0xff;
+
+	axes = SDL_JoystickNumAxes (js);
+	for (i = 0; i < axes; i++) {
+		unsigned int axis;
+
+		if (ThePrefs.JoystickAxes[i] == JOY_NONE)
+			continue;
+
+		axis = SDL_JoystickGetAxis (js, i);
+
+		/* Assume horizontal */
+		int *max_axis = &this->joy_maxx[port];
+		int *min_axis = &this->joy_minx[port];
+		uint8 neg_val = 0xfb;
+		uint8 pos_val = 0xf7;
+
+		if (ThePrefs.JoystickAxes[i] == JOY_VERT)
+		{
+			max_axis = &this->joy_maxy[port];
+			min_axis = &this->joy_miny[port];
+			neg_val = 0xfe;
+			pos_val = 0xfd;
+		}
+
+		/* Dynamic joystick calibration */
+		if (axis > *max_axis)
+			*max_axis = axis;
+		if (axis < *min_axis)
+			*min_axis = axis;
+
+		/* Too small as of yet */
+		if (*max_axis - *min_axis < 100)
+			continue;
+
+		if (axis < (*min_axis + (*max_axis - *min_axis)/3))
+			out &= neg_val;
+		else if (axis > (*min_axis + 2*(*max_axis - *min_axis)/3))
+			out &= pos_val;
+	}
+
+	return out;
+}
+
+uint8 C64::poll_joystick_hats(int port)
+{
+	SDL_Joystick *js = joy[port];
+	unsigned int i, hats;
+	uint8 out = 0xff;
+
+	hats = SDL_JoystickNumHats(js);
+	for (i = 0; i < hats; i++) {
+
+		Uint8 v = SDL_JoystickGetHat (js, i);
+		int x = 0, y = 0;
+
+		/* FIXME! This is the wrong way for the Wii */
+		if (v & SDL_HAT_UP)
+			out &= 0xfe;
+		if (v & SDL_HAT_DOWN)
+			out &= 0xfd;
+		if (v & SDL_HAT_LEFT)
+			out &= 0xfb;
+		if (v & SDL_HAT_RIGHT)
+			out &= 0xf7;
+	}
+
+	return out;
+}
+
+uint8 C64::poll_joystick_buttons(int port)
+{
+	SDL_Joystick *js = joy[port];
+	uint8 out = 0xff;
+	unsigned int i;
+
+	for (i = 0; i < SDL_JoystickNumButtons (js); i++) {
+		bool old = this->joy_button_pressed[i];
+		bool cur = SDL_JoystickGetButton (js, i) ? true : false;
+		int kc = ThePrefs.JoystickButtons[i];
+
+		this->joy_button_pressed[i] = cur;
+
+		if (kc == JOY_NONE)
+			continue;
+
+		if (cur != old)
+			TheDisplay->UpdateKeyMatrix(kc, !cur,
+					TheCIA1->KeyMatrix, TheCIA1->RevMatrix,	&out);
+	}
+
+	return out;
+}
+
 /*
  *  Poll joystick port, return CIA mask
  */
-
 uint8 C64::poll_joystick(int port)
 {
-	uint8 j = 0xff;
+	uint8 out = 0xff;
 
-#ifdef GEKKO
-	int extra_keys[N_WIIMOTE_BINDINGS];
-	int controller = port;
-	Uint32 held = 0;
-	Uint32 held_classic = 0;
-        WPADData *wpad;
-
-        memset(extra_keys, 0, sizeof(extra_keys));
-	if (ThePrefs.JoystickSwap)
-		controller = !port;
-
-        wpad = WPAD_Data(controller);
-        if (!wpad)
-        	return j;
-
-        held = wpad->btns_h;
-
-	// Check classic controller as well
-	if (wpad->exp.type == WPAD_EXP_CLASSIC)
-		held_classic = wpad->exp.classic.btns_held; 
-
-        if ( (held & WPAD_BUTTON_HOME) || (held_classic & CLASSIC_CTRL_BUTTON_HOME) )
-                TheC64->enter_menu();
-
-	extra_keys[WIIMOTE_UP] = held & WPAD_BUTTON_RIGHT;
-	extra_keys[WIIMOTE_DOWN] = held & WPAD_BUTTON_LEFT;
-	extra_keys[WIIMOTE_LEFT] = held & WPAD_BUTTON_UP;
-	extra_keys[WIIMOTE_RIGHT] = held & WPAD_BUTTON_DOWN;
-
-	extra_keys[WIIMOTE_A] = held & WPAD_BUTTON_A;
-	extra_keys[WIIMOTE_B] = held & WPAD_BUTTON_B;
-	extra_keys[WIIMOTE_1] = held & WPAD_BUTTON_1;
-	extra_keys[WIIMOTE_2] = held & WPAD_BUTTON_2;
-
-	/* Classic buttons (might not be connected) */
-	extra_keys[CLASSIC_UP] = held_classic & CLASSIC_CTRL_BUTTON_UP;
-	extra_keys[CLASSIC_DOWN] = held_classic & CLASSIC_CTRL_BUTTON_DOWN;
-	extra_keys[CLASSIC_LEFT] = held_classic & CLASSIC_CTRL_BUTTON_LEFT;
-	extra_keys[CLASSIC_RIGHT] = held_classic & CLASSIC_CTRL_BUTTON_RIGHT;
-
-	extra_keys[CLASSIC_X] = held_classic & CLASSIC_CTRL_BUTTON_X;
-	extra_keys[CLASSIC_Y] = held_classic & CLASSIC_CTRL_BUTTON_Y;
-	extra_keys[CLASSIC_A] = held_classic & CLASSIC_CTRL_BUTTON_A;
-	extra_keys[CLASSIC_B] = held_classic & CLASSIC_CTRL_BUTTON_B;
-	extra_keys[CLASSIC_L] = held_classic & CLASSIC_CTRL_BUTTON_FULL_L;
-	extra_keys[CLASSIC_R] = held_classic & CLASSIC_CTRL_BUTTON_FULL_R;
-	extra_keys[CLASSIC_ZL] = held_classic & CLASSIC_CTRL_BUTTON_ZL;
-	extra_keys[CLASSIC_ZR] = held_classic & CLASSIC_CTRL_BUTTON_ZR;
-
-	extra_keys[WIIMOTE_PLUS] = (held_classic & CLASSIC_CTRL_BUTTON_PLUS) |
-		(held & WPAD_BUTTON_PLUS);
-	extra_keys[WIIMOTE_MINUS] = (held_classic & CLASSIC_CTRL_BUTTON_MINUS) |
-		(held & WPAD_BUTTON_MINUS);
-
-	/* nunchuck and classic analogue.. just map to the d-pad! */
-	if (wpad->exp.type == EXP_NUNCHUK)
-	{
-		check_analogue_joystick(&wpad->exp.nunchuk.js, extra_keys);
-
-		/* Fire on the Z button */
-		if (wpad->exp.nunchuk.btns_held & NUNCHUK_BUTTON_Z)
-			extra_keys[WIIMOTE_2] = 1;
-	}
-	else if (wpad->exp.type == WPAD_EXP_CLASSIC)
-	{
-		/* Map both analogue controllers to joystick dirs */
-		check_analogue_joystick(&wpad->exp.classic.ljs, extra_keys);
-		check_analogue_joystick(&wpad->exp.classic.rjs, extra_keys);
-	}
-
-	/* Merge common keys */
-	int active_binded_keys[N_WIIMOTE_BINDINGS];
-	memcpy(active_binded_keys, ThePrefs.JoystickKeyBinding, sizeof(active_binded_keys));
-	for (int first = 0; first < N_WIIMOTE_BINDINGS; first++)
-	{
-		if (!extra_keys[first])
-			continue;
-		for (int second = 0; second < N_WIIMOTE_BINDINGS; second++)
-		{
-			if (first == second)
-				continue;
-			if (active_binded_keys[first] == active_binded_keys[second])
-			{
-				/* Unbind this */
-				extra_keys[second] = 0;
-				active_binded_keys[second] = -1;
-			}
-		}
-	}
-
-	for (int i = 0; i < N_WIIMOTE_BINDINGS; i++)
-	{
-		static bool is_pressed[2][N_WIIMOTE_BINDINGS];
-		int kc = active_binded_keys[i];
-
-		if (kc < 0)
-			continue;
-
-		if (extra_keys[i])
-		{
-			TheDisplay->UpdateKeyMatrix(kc, false,
-					TheCIA1->KeyMatrix, TheCIA1->RevMatrix,
-					&j);
-			is_pressed[controller][i] = true;
-		}
-		else if (is_pressed[i])
-		{
-			TheDisplay->UpdateKeyMatrix(kc, true,
-					TheCIA1->KeyMatrix, TheCIA1->RevMatrix,
-					&j);
-			is_pressed[controller][i] = false;
-		}
-	}
-
-	return j;
-#else
 	if (port == 0 && (joy[0] || joy[1]))
 		SDL_JoystickUpdate();
 
-	if (joy[port]) {
-		int x = SDL_JoystickGetAxis(joy[port], 0), y = SDL_JoystickGetAxis(joy[port], 1);
+	if (!joy[port])
+		return out;
 
-		if (x > joy_maxx[port])
-			joy_maxx[port] = x;
-		if (x < joy_minx[port])
-			joy_minx[port] = x;
-		if (y > joy_maxy[port])
-			joy_maxy[port] = y;
-		if (y < joy_miny[port])
-			joy_miny[port] = y;
+	out &= this->poll_joystick_axes(port);
+	out &= this->poll_joystick_hats(port);
+	out &= this->poll_joystick_buttons(port);
 
-		if (joy_maxx[port] - joy_minx[port] < 100 || joy_maxy[port] - joy_miny[port] < 100)
-			return 0xff;
-
-		if (x < (joy_minx[port] + (joy_maxx[port]-joy_minx[port])/3))
-			j &= 0xfb;							// Left
-		else if (x > (joy_minx[port] + 2*(joy_maxx[port]-joy_minx[port])/3))
-			j &= 0xf7;							// Right
-
-		if (y < (joy_miny[port] + (joy_maxy[port]-joy_miny[port])/3))
-			j &= 0xfe;							// Up
-		else if (y > (joy_miny[port] + 2*(joy_maxy[port]-joy_miny[port])/3))
-			j &= 0xfd;							// Down
-
-		if (SDL_JoystickGetButton(joy[port], 0))
-			j &= 0xef;							// Button
-	}
-
-	return j;
-#endif
+	return out;
 }
 
 
