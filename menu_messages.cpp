@@ -106,6 +106,7 @@ const char **main_menu_help[] = {
 		},
 		NULL,
 		NULL,
+		NULL,
 		(const char*[]){
 				"Network setup for playing",
 				"C64 games against other",
@@ -116,7 +117,10 @@ const char **main_menu_help[] = {
 				"Configure Frodo",
 				NULL,
 		},
-		NULL,
+		(const char*[]){
+				"Quit Frodo",
+				NULL,
+		},
 		NULL,
 };
 
