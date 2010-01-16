@@ -51,6 +51,10 @@ public:
 		{
 		case 0:
 			TheC64->IsPaused() ? TheC64->Resume() : TheC64->Pause();
+			if (TheC64->IsPaused())
+				Gui::gui->status_bar->queueMessage("C64 emulation paused");
+			else
+				Gui::gui->status_bar->queueMessage("C64 emulation resumed");
 			this->updatePauseState();
 			break;
 		case 2: /* Insert disc */
