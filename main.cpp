@@ -8,11 +8,16 @@
 SDL_Surface *screen;
 C64 *TheC64;
 
+#define MS_PER_FRAME 28
+
 static void run(void)
 {
+	Uint32 last_frame = SDL_GetTicks();
+
 	while(1)
 	{
 		SDL_Event ev;
+		Uint32 now = SDL_GetTicks();
 
 		while (SDL_PollEvent(&ev)) {
 	        	if (ev.type == SDL_QUIT)
@@ -24,7 +29,9 @@ static void run(void)
 	        Gui::gui->draw(screen);
 
 	        SDL_Flip(screen);
-		SDL_Delay(50);
+
+	        if ( (now - last_frame) < MS_PER_FRAME)
+			SDL_Delay( MS_PER_FRAME - (now - last_frame));
 	}
 }
 
