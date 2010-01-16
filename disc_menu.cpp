@@ -7,7 +7,6 @@ static const char *game_exts[] = {".d64", ".D64", ".t64", ".T64",
 	".prg",".PRG", ".p00", ".P00", NULL};
 
 class DiscMenu;
-class GameInfoBox;
 
 class DiscView : public GuiView
 {
