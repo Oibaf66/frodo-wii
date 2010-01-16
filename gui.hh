@@ -13,6 +13,7 @@
 
 class DialogueBox;
 class StatusBar;
+class GameInfo;
 
 class MainView;
 class BindKeysView;
@@ -20,6 +21,7 @@ class DiscView;
 class OptionsView;
 class NetworkView;
 class ThemeView;
+class GameInfoView;
 
 class VirtualKeyboard;
 
@@ -59,6 +61,8 @@ public:
 		return this->views[this->n_views-1];
 	}
 
+	void updateGameInfo(GameInfo *gi);
+
 	void exitMenu();
 
 	/* These are private, keep off! */
@@ -97,6 +101,7 @@ public:
 	DiscView *dv;
 	OptionsView *ov;
 	NetworkView *nv;
+	GameInfoView *giv;
 	ThemeView *tv;
 	BindKeysView *bkv;
 
@@ -106,6 +111,8 @@ public:
 	const char *metadata_base_path;
 	const char *theme_base_path;
 	const char *game_base_path;
+
+	GameInfo *cur_gameInfo;
 
 	/* New preferences */
 	Prefs *np;

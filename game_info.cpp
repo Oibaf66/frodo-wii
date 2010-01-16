@@ -21,13 +21,22 @@ GameInfo::GameInfo(const char *filename,
 
 GameInfo::GameInfo(GameInfo *gi)
 {
-		this->name = xstrdup(gi->name);
-		this->author = xstrdup(gi->author);
-		this->filename = xstrdup(gi->filename);
+	if (!gi)
+	{
+		this->filename = NULL;
+		this->name = NULL;
+		this->author = NULL;
 		this->screenshot = NULL;
+		return;
+	}
 
-		if (gi->screenshot)
-			this->screenshot = SDL_DisplayFormatAlpha(gi->screenshot);
+	this->name = gi->name ? xstrdup(gi->name) : NULL;
+	this->author = gi->author ? xstrdup(gi->author) : NULL;
+	this->filename = gi->filename ? xstrdup(gi->filename) : NULL;
+	this->screenshot = NULL;
+
+	if (gi->screenshot)
+		this->screenshot = SDL_DisplayFormatAlpha(gi->screenshot);
 }
 
 GameInfo::~GameInfo()
@@ -163,4 +172,16 @@ GameInfo *GameInfo::loadFromFile(const char *fileName)
 	fclose(fp);
 
 	return out;
+}
+
+void GameInfo::setAuthor(const char *author)
+{
+	free((void*)this->author);
+	this->author = xstrdup(author);
+}
+
+void GameInfo::setName(const char *name)
+{
+	free((void*)this->name);
+	this->name = xstrdup(name);
 }

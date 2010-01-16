@@ -9,6 +9,7 @@ extern const char **bind_key_menu_messages;
 
 extern const char **options_menu_messages;
 extern const char **options_menu_help[];
+extern const char **game_info_menu_messages;
 
 /* The menu messages are dynamically generated */
 extern const char **network_menu_help[];

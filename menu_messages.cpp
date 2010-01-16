@@ -246,3 +246,11 @@ const char **network_menu_help[] = {
 		NULL,
 };
 
+
+const char **game_info_menu_messages = (const char*[]){
+	/*00*/          "Capture game screenshot",
+	/*01*/          " ",
+	/*02*/          "Set game name",
+	/*02*/          "Set game author",
+	NULL
+};

@@ -81,6 +81,7 @@ public:
 			}
 			break;
 		case 9: /* Game info */
+			Gui::gui->pushView(Gui::gui->giv);
 			break;
 		case 10: /* Networking */
 			Gui::gui->pushView(Gui::gui->nv);

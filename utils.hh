@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -19,6 +20,7 @@ class Font;
     fprintf(stderr, "=============PANIC PANIC PANIC===========\n"); \
     fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); fprintf(stderr, x); \
     fprintf(stderr, "=========================================\n"); \
+    assert(0); \
     exit(1); \
   } while(0)
 

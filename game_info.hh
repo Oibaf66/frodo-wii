@@ -26,6 +26,10 @@ public:
 
 	~GameInfo();
 
+	void setAuthor(const char *author);
+
+	void setName(const char *name);
+
 	void resetDefaults();
 
 	/** Returns an allocated dump structure */

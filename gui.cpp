@@ -34,6 +34,7 @@ static const char *get_theme_path(const char *dir, const char *what)
 #include "theme_menu.cpp"
 #include "options_menu.cpp"
 #include "network_menu.cpp"
+#include "game_info_menu.cpp"
 #include "main_menu.cpp"
 
 GuiView::GuiView()
@@ -83,6 +84,8 @@ Gui::Gui()
 	this->metadata_base_path = METADATA_ROOT_PATH;
 	this->game_base_path = GAME_ROOT_PATH;
 
+	this->cur_gameInfo = new GameInfo();
+
 	this->dlg = NULL;
 	this->kbd = NULL;
 
@@ -91,6 +94,7 @@ Gui::Gui()
 	this->ov = NULL;
 	this->nv = NULL;
 	this->tv = NULL;
+	this->giv = NULL;
 	this->bkv = NULL;
 }
 
@@ -162,16 +166,8 @@ bool Gui::setTheme(const char *path)
 		this->nv = new NetworkView();
 		this->tv = new ThemeView();
 		this->bkv = new BindKeysView();
+		this->giv = new GameInfoView();
 		this->pushView(mv);
-	}
-	else
-	{
-		this->mv->updateTheme();
-		this->dv->updateTheme();
-		this->ov->updateTheme();
-		this->nv->updateTheme();
-		this->tv->updateTheme();
-		this->bkv->updateTheme();
 	}
 
 	VirtualKeyboard::kbd->updateTheme();
@@ -315,6 +311,13 @@ Font *Gui::loadThemeFont(const char *dir, const char *what, int size)
 		return NULL;
 
 	return new Font_TTF(fnt, 255,255,255);
+}
+
+void Gui::updateGameInfo(GameInfo *gi)
+{
+	panic_if(!gi, "gi must be set\n");
+	delete this->cur_gameInfo;
+	this->cur_gameInfo = gi;
 }
 
 
