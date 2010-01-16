@@ -1,7 +1,8 @@
 #include "timer.hh"
 #include "utils.hh"
 
-#define MS_TO_TICKS(x) (x)
+// FIXME!
+#define MS_TO_TICKS(x) ((x) / 28)
 
 TimerController::TimerController()
 {
@@ -15,6 +16,9 @@ int TimerController::arm(TimeoutHandler *which, int ms)
 
 	/* Set the timeout */
 	which->timeout = MS_TO_TICKS(ms);
+
+	if (which->timeout == 0)
+		which->timeout = 1;
 
 	/* Re-register? */
 	for (i = 0; i < this->n_handlers; i++)
