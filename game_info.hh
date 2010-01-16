@@ -22,6 +22,8 @@ public:
 			const char *author = NULL,
 			SDL_Surface *image = NULL);
 
+	GameInfo(GameInfo *gi);
+
 	~GameInfo();
 
 	void resetDefaults();

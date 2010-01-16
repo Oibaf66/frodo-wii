@@ -19,6 +19,17 @@ GameInfo::GameInfo(const char *filename,
 	this->screenshot = image;
 }
 
+GameInfo::GameInfo(GameInfo *gi)
+{
+		this->name = xstrdup(gi->name);
+		this->author = xstrdup(gi->author);
+		this->filename = xstrdup(gi->filename);
+		this->screenshot = NULL;
+
+		if (gi->screenshot)
+			this->screenshot = SDL_DisplayFormatAlpha(gi->screenshot);
+}
+
 GameInfo::~GameInfo()
 {
 	this->resetDefaults();
