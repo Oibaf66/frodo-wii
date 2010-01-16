@@ -1,5 +1,6 @@
 #include "menu.hh"
 #include "dialogue_box.hh"
+#include "status_bar.hh"
 
 class KeyboardTypingListener : public KeyboardListener
 {
@@ -77,7 +78,8 @@ public:
 			}
 			break;
 		case 9: /* Reset the C64 */
-			printf("Resetting the C64\n");
+			Gui::gui->status_bar->queueMessage("Resetting the C64");
+			Gui::gui->popView();
 			break;
 		case 10: /* Networking */
 			Gui::gui->pushView(Gui::gui->nv);
