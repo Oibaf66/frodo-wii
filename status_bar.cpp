@@ -39,11 +39,16 @@ void StatusBar::timeoutCallback()
 	static const char *text[2];
 
 	this->cur_message = this->dequeueMessage();
-	if (this->cur_message)
-		Gui::gui->timerController->arm(this, 500);
 	text[0] = this->cur_message;
 	text[1] = NULL;
-	this->setText(text);
+
+	if (this->cur_message)
+	{
+		Gui::gui->timerController->arm(this, 500);
+		this->setText(text);
+	}
+	else
+		this->setText(NULL);
 }
 
 void StatusBar::draw(SDL_Surface *where)
