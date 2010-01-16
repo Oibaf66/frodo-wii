@@ -1,5 +1,6 @@
 OBJS=menu.oo main.oo utils.oo gui.oo dialogue_box.oo menu_messages.oo \
-	timer.oo game_info.oo widget.oo virtual_keyboard.oo listener.oo
+	timer.oo game_info.oo widget.oo virtual_keyboard.oo listener.oo \
+	status_bar.oo
 
 all: menu
 
