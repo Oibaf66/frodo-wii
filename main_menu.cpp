@@ -1,6 +1,5 @@
 #include "menu.hh"
 #include "dialogue_box.hh"
-#include "status_bar.hh"
 
 class KeyboardTypingListener : public KeyboardListener
 {
@@ -81,9 +80,7 @@ public:
 				panic("Illegal selection\n");
 			}
 			break;
-		case 9: /* Reset the C64 */
-			Gui::gui->status_bar->queueMessage("Resetting the C64");
-			Gui::gui->popView();
+		case 9: /* Game info */
 			break;
 		case 10: /* Networking */
 			Gui::gui->pushView(Gui::gui->nv);

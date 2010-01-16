@@ -1,6 +1,7 @@
 #include "gui.hh"
 #include "menu.hh"
 #include "help_box.hh"
+#include "status_bar.hh"
 
 class OptionsView;
 class OptionsMenu : public Menu
@@ -20,8 +21,14 @@ public:
 
 	virtual void selectCallback(int which)
 	{
+		if (which == 9) /* Game info */
+		{
+			Gui::gui->status_bar->queueMessage("Resetting the C64");
+			Gui::gui->popView();
+			return;
+		}
 		/* Select theme */
-		if (which == 11)
+		if (which == 12)
 		{
 			Gui::gui->tv->setDirectory(Gui::gui->theme_base_path);
 			Gui::gui->pushView(Gui::gui->tv);

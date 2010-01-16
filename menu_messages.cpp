@@ -69,7 +69,7 @@ const char **main_menu_messages = (const char*[]){
 	/*06*/          "Keyboard",
 	/*07*/          "^|Type|Macro|Bind",
 	/*08*/          " ",
-	/*09*/          "Reset the C=64",
+	/*09*/          "Game info",
 	/*10*/          "Networking",
 	/*11*/          "Options",
 	/*12*/          "Quit",
@@ -106,7 +106,12 @@ const char **main_menu_help[] = {
 		},
 		NULL,
 		NULL,
-		NULL,
+		(const char*[]){
+				"View and configure game",
+				"information (author,",
+				"screenshots etc)",
+				NULL,
+		},
 		(const char*[]){
 				"Network setup for playing",
 				"C64 games against other",
@@ -136,8 +141,9 @@ const char **options_menu_messages = (const char*[]){
                 /*07*/          "^|double-center|stretched",
                 /*08*/          "Speed (approx. %)",
                 /*09*/          "^|95|100|110",
-                /*10*/          " ",
-                /*11*/          "Setup GUI theme",
+        	/*10*/          "Reset the C=64",
+                /*11*/          " ",
+                /*12*/          "Setup GUI theme",
                 NULL
 };
 
