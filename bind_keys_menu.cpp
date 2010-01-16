@@ -414,23 +414,14 @@ class BindKeysView : public GuiView
 public:
 	BindKeysView() : GuiView()
 	{
-		this->help = new HelpBox(NULL, NULL);
-		this->menu = new BindKeysMenu(NULL, this->help);
+		this->help = new HelpBox(Gui::gui->small_font, NULL);
+		this->menu = new BindKeysMenu(Gui::gui->small_font, this->help);
 	}
 
 	~BindKeysView()
 	{
 		delete this->help;
 		delete this->menu;
-	}
-
-	void updateTheme()
-	{
-		this->menu->setFont(Gui::gui->small_font);
-		this->help->setFont(Gui::gui->small_font);
-		this->menu->setSelectedBackground(Gui::gui->bg_left, Gui::gui->bg_middle,
-				Gui::gui->bg_right, Gui::gui->bg_submenu_left,
-				Gui::gui->bg_submenu_middle, Gui::gui->bg_submenu_right);
 	}
 
 	void viewPushCallback()

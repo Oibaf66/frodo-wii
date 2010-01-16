@@ -7,10 +7,13 @@
 #include "utils.hh"
 
 #define VERSION_BASE   (0x1978)
-#define VERSION_MAGIC  (VERSION_BASE + 0)
+#define VERSION_MAGIC  (VERSION_BASE + 1)
 
-GameInfo::GameInfo(const char *name, const char *author, SDL_Surface *image)
+GameInfo::GameInfo(const char *filename,
+		const char *name, const char *author,
+		SDL_Surface *image)
 {
+	this->filename = filename;
 	this->name = name;
 	this->author = author;
 	this->screenshot = image;

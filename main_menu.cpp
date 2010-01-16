@@ -122,23 +122,17 @@ class MainView : public GuiView
 public:
 	MainView() : GuiView()
 	{
-		this->help = new HelpBox(NULL, main_menu_help);
-		this->menu = new MainMenu(NULL, this->help);
+		panic_if(!Gui::gui->default_font,
+				"Theme does not seem correctly loaded\n");
+
+		this->help = new HelpBox(Gui::gui->small_font, main_menu_help);
+		this->menu = new MainMenu(Gui::gui->default_font, this->help);
 	}
 
 	~MainView()
 	{
 		delete this->help;
 		delete this->menu;
-	}
-
-	void updateTheme()
-	{
-		this->menu->setFont(Gui::gui->default_font);
-		this->help->setFont(Gui::gui->small_font);
-		this->menu->setSelectedBackground(Gui::gui->bg_left, Gui::gui->bg_middle,
-				Gui::gui->bg_right, Gui::gui->bg_submenu_left,
-				Gui::gui->bg_submenu_middle, Gui::gui->bg_submenu_right);
 	}
 
 	void runLogic()

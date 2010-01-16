@@ -9,6 +9,7 @@ public:
 	HelpBox(Font *font, const char ***all_messages) : Menu(font)
 	{
 		this->setHelpMessages(all_messages);
+		this->setSelectedBackground(NULL, NULL, NULL, NULL, NULL, NULL);
 	}
 
 	void setHelpMessages(const char ***all_messages)

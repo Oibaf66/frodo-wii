@@ -22,8 +22,6 @@ public:
 	void setDirectory(const char *path);
 
 	/* Inherited */
-	void updateTheme();
-
 	void runLogic();
 
 	void draw(SDL_Surface *where);
@@ -79,6 +77,7 @@ public:
 	{
 		this->gi = NULL;
 		memset(this->gi_messages, 0, sizeof(this->gi_messages));
+		this->setSelectedBackground(NULL, NULL, NULL, NULL, NULL, NULL);
 	}
 
 	void loadGameInfo(const char *what)
@@ -150,8 +149,8 @@ private:
 
 DiscView::DiscView() : GuiView()
 {
-	this->menu = new DiscMenu(NULL);
-	this->gameInfo = new GameInfoBox(NULL);
+	this->menu = new DiscMenu(Gui::gui->default_font);
+	this->gameInfo = new GameInfoBox(Gui::gui->default_font);
 }
 
 DiscView::~DiscView()
@@ -168,15 +167,6 @@ void DiscView::loadGameInfo(const char *what)
 void DiscView::setDirectory(const char *path)
 {
 	this->menu->setDirectory(path);
-}
-
-void DiscView::updateTheme()
-{
-	this->gameInfo->setFont(Gui::gui->small_font);
-	this->menu->setFont(Gui::gui->default_font);
-	this->menu->setSelectedBackground(Gui::gui->bg_left, Gui::gui->bg_middle,
-			Gui::gui->bg_right, Gui::gui->bg_submenu_left,
-			Gui::gui->bg_submenu_middle, Gui::gui->bg_submenu_right);
 }
 
 void DiscView::runLogic()

@@ -10,13 +10,17 @@ struct game_info
 	uint16_t author_off;
 	uint16_t name_off;
 	uint16_t screenshot_off; /* In PNG format */
+	uint16_t filename_off;
+	uint16_t flags;
 	uint8_t data[]; /* 4-byte aligned */
 };
 
 class GameInfo
 {
 public:
-	GameInfo(const char *name = NULL, const char *author = NULL, SDL_Surface *image = NULL);
+	GameInfo(const char *filename = NULL, const char *name = NULL,
+			const char *author = NULL,
+			SDL_Surface *image = NULL);
 
 	~GameInfo();
 
@@ -33,6 +37,7 @@ public:
 	/* Should perhaps be protected but I trust you - just be careful! */
 	const char *name;
 	const char *author;
+	const char *filename;
 	SDL_Surface *screenshot;
 };
 

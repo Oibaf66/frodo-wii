@@ -85,14 +85,12 @@ Gui::Gui()
 	this->dlg = NULL;
 	this->kbd = NULL;
 
-	/* Create the views */
-	this->mv = new MainView();
-	this->dv = new DiscView();
-	this->ov = new OptionsView();
-	this->nv = new NetworkView();
-	this->tv = new ThemeView();
-	this->bkv = new BindKeysView();
-	this->pushView(mv);
+	this->mv = NULL;
+	this->dv = NULL;
+	this->ov = NULL;
+	this->nv = NULL;
+	this->tv = NULL;
+	this->bkv = NULL;
 }
 
 bool Gui::setTheme(const char *path)
@@ -150,12 +148,26 @@ bool Gui::setTheme(const char *path)
 		return false;
 	}
 
-	this->mv->updateTheme();
-	this->dv->updateTheme();
-	this->ov->updateTheme();
-	this->nv->updateTheme();
-	this->tv->updateTheme();
-	this->bkv->updateTheme();
+	/* Create the views */
+	if (!this->mv)
+	{
+		this->mv = new MainView();
+		this->dv = new DiscView();
+		this->ov = new OptionsView();
+		this->nv = new NetworkView();
+		this->tv = new ThemeView();
+		this->bkv = new BindKeysView();
+		this->pushView(mv);
+	}
+	else
+	{
+		this->mv->updateTheme();
+		this->dv->updateTheme();
+		this->ov->updateTheme();
+		this->nv->updateTheme();
+		this->tv->updateTheme();
+		this->bkv->updateTheme();
+	}
 
 	VirtualKeyboard::kbd->updateTheme();
 

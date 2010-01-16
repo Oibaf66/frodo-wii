@@ -15,8 +15,6 @@ public:
 	void setDirectory(const char *path);
 
 	/* Inherited */
-	void updateTheme();
-
 	void runLogic();
 
 	void draw(SDL_Surface *where);
@@ -63,7 +61,7 @@ public:
 
 ThemeView::ThemeView() : GuiView()
 {
-	this->menu = new ThemeMenu(NULL);
+	this->menu = new ThemeMenu(Gui::gui->default_font);
 }
 
 ThemeView::~ThemeView()
@@ -74,14 +72,6 @@ ThemeView::~ThemeView()
 void ThemeView::setDirectory(const char *path)
 {
 	this->menu->setDirectory(path);
-}
-
-void ThemeView::updateTheme()
-{
-	this->menu->setFont(Gui::gui->default_font);
-	this->menu->setSelectedBackground(Gui::gui->bg_left, Gui::gui->bg_middle,
-			Gui::gui->bg_right, Gui::gui->bg_submenu_left,
-			Gui::gui->bg_submenu_middle, Gui::gui->bg_submenu_right);
 }
 
 void ThemeView::runLogic()

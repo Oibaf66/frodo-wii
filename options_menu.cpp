@@ -96,23 +96,14 @@ class OptionsView : public GuiView
 public:
 	OptionsView() : GuiView()
 	{
-		this->help = new HelpBox(NULL, options_menu_help);
-		this->menu = new OptionsMenu(NULL, this->help);
+		this->help = new HelpBox(Gui::gui->small_font, options_menu_help);
+		this->menu = new OptionsMenu(Gui::gui->default_font, this->help);
 	}
 
 	~OptionsView()
 	{
 		delete this->help;
 		delete this->menu;
-	}
-
-	void updateTheme()
-	{
-		this->menu->setFont(Gui::gui->default_font);
-		this->help->setFont(Gui::gui->small_font);
-		this->menu->setSelectedBackground(Gui::gui->bg_left, Gui::gui->bg_middle,
-				Gui::gui->bg_right, Gui::gui->bg_submenu_left,
-				Gui::gui->bg_submenu_middle, Gui::gui->bg_submenu_right);
 	}
 
 	void viewPushCallback()

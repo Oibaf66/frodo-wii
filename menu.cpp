@@ -15,6 +15,7 @@
 #include "menu.hh"
 #include "font.hh"
 #include "utils.hh"
+#include "gui.hh"
 
 #define IS_SUBMENU(p_msg) ( (p_msg)[0] == '^' )
 #define IS_EMPTY(p_msg) ( (p_msg)[0] == '#' )
@@ -344,13 +345,6 @@ Menu::Menu(Font *font) : Widget()
 	this->setTextColor((SDL_Color){0xff,0xff,0xff,0});
 	this->font = font;
 
-	this->text_bg_left = NULL;
-	this->text_bg_middle = NULL;
-	this->text_bg_right = NULL;
-	this->submenu_bg_left =  NULL;
-	this->submenu_bg_middle = NULL;
-	this->submenu_bg_right = NULL;
-
 	this->pp_msgs = NULL;
 	this->n_entries = 0;
 	this->p_submenus = NULL;
@@ -359,6 +353,10 @@ Menu::Menu(Font *font) : Widget()
 	this->cur_sel = 0;
 	this->mouse_x = -1;
 	this->mouse_y = -1;
+
+	this->setSelectedBackground(Gui::gui->bg_left, Gui::gui->bg_middle,
+			Gui::gui->bg_right, Gui::gui->bg_submenu_left,
+			Gui::gui->bg_submenu_middle, Gui::gui->bg_submenu_right);
 }
 
 void Menu::setTextColor(SDL_Color clr)
