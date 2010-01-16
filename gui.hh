@@ -12,6 +12,7 @@
 #include <Prefs.h>
 
 class DialogueBox;
+class StatusBar;
 
 class MainView;
 class BindKeysView;
@@ -73,6 +74,7 @@ public:
 
 	SDL_Surface *background;
 	SDL_Surface *main_menu_bg;
+	SDL_Surface *status_bar_bg;
 	SDL_Surface *infobox;
 	SDL_Surface *textbox;
 	SDL_Surface *dialogue_bg;
@@ -89,6 +91,7 @@ public:
 	/* Handled specially */
 	VirtualKeyboard *kbd;
 	DialogueBox *dlg;
+	StatusBar *status_bar;
 
 	MainView *mv;
 	DiscView *dv;

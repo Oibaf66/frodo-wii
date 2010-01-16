@@ -68,6 +68,7 @@ Gui::Gui()
 	this->main_menu_bg = NULL;
 	this->infobox = NULL;
 	this->textbox = NULL;
+	this->status_bar_bg = NULL;
 	this->default_font = NULL;
 	this->dialogue_bg = NULL;
 	this->small_font = NULL;
@@ -104,6 +105,7 @@ bool Gui::setTheme(const char *path)
 
 	this->background = this->loadThemeImage(path, "background.png");
 	this->main_menu_bg = this->loadThemeImage(path, "main_menu_bg.png");
+	this->status_bar_bg = this->loadThemeImage(path, "status_bar.png");
 	this->infobox = this->loadThemeImage(path, "infobox.png");
 	this->textbox = this->loadThemeImage(path, "textbox.png");
 	this->dialogue_bg = this->loadThemeImage(path, "dialogue_box.png");
@@ -122,6 +124,7 @@ bool Gui::setTheme(const char *path)
 			!this->disc_info ||
 			!this->selected_key ||
 			!this->highlighted_key ||
+			!this->status_bar_bg ||
 			!this->default_font ||
 			!this->small_font)
 	{
@@ -151,6 +154,8 @@ bool Gui::setTheme(const char *path)
 	/* Create the views */
 	if (!this->mv)
 	{
+		this->status_bar = new StatusBar();
+
 		this->mv = new MainView();
 		this->dv = new DiscView();
 		this->ov = new OptionsView();
@@ -178,6 +183,9 @@ void Gui::runLogic(void)
 {
 	GuiView *cur_view = this->peekView();
 
+	this->status_bar->runLogic();
+	this->timerController->tick();
+
 	if (!this->is_active || !cur_view)
 		return;
 	if (this->dlg)
@@ -186,7 +194,6 @@ void Gui::runLogic(void)
 		this->kbd->runLogic();
 	else
 		cur_view->runLogic();
-	this->timerController->tick();
 }
 
 void Gui::pushView(GuiView *view)
@@ -266,7 +273,10 @@ void Gui::draw(SDL_Surface *where)
 	GuiView *cur_view = this->peekView();
 
 	if (!this->is_active || !cur_view)
+	{
+		this->status_bar->draw(where);
 		return;
+	}
 
 	 SDL_BlitSurface(this->background, NULL, screen, NULL);
 	 cur_view->draw(where);
@@ -274,6 +284,7 @@ void Gui::draw(SDL_Surface *where)
 		 this->kbd->draw(where);
 	 if (this->dlg)
 		 this->dlg->draw(where);
+	 this->status_bar->draw(where);
 }
 
 void Gui::activate()
