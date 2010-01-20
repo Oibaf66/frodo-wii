@@ -18,7 +18,7 @@ include $(DEVKITPPC)/wii_rules
 TARGET		:=	frodo
 BUILD		:=	build
 SOURCES		:=	Src
-DATA		:=	data  
+DATA		:=
 INCLUDES	:=
 
 #---------------------------------------------------------------------------------

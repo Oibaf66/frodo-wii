@@ -10,6 +10,18 @@
 		TODO: Handle Run/Stop in virtual keyboard (?)
 
 version 11:
+		* 
+
+		* Only one type of network connections now - no need
+                  to specify client or master
+
+		* Fix handling of network disconnects (also display a
+                  helpful message!)
+
+		* Don't display the network traffic string when connections close
+
+		* Fix handling of packets > 4096 bytes
+
 		* New SDL with GX graphics (although the impact for Frodo is
 		quite minimal!)
 
