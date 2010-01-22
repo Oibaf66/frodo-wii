@@ -1,4 +1,4 @@
-# Makefile.in for Frodo (generic Unix/X11)
+b# Makefile.in for Frodo (generic Unix/X11)
 
 ## Version information
 VERSION  = 4
