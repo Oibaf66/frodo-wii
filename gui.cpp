@@ -99,6 +99,26 @@ Gui::Gui()
 	this->bkv = NULL;
 }
 
+Gui::~Gui()
+{
+	delete this->mv;
+	delete this->dv;
+	delete this->ov;
+	delete this->nv;
+	delete this->tv;
+	delete this->giv;
+	delete this->bkv;
+
+	delete this->cur_gameInfo;
+	delete this->timerController;
+
+	if (this->dlg)
+		delete this->dlg;
+
+	if (VirtualKeyboard::kbd)
+		delete VirtualKeyboard::kbd;
+}
+
 bool Gui::setTheme(const char *path)
 {
 	this->bg_left = this->loadThemeImage(path, "bg_left.png");
@@ -340,7 +360,7 @@ void Gui::saveGameInfo()
 			return;
 		}
 		int n = fwrite((const void*)p, 1, p->sz, fp);
-		if (n != p->sz)
+		if (n != (int)p->sz)
 			warning("Could only write %d bytes of %s\n", n, buf);
 		fclose(fp);
 	}

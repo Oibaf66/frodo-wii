@@ -19,6 +19,9 @@ static void run(void)
 		SDL_Event ev;
 		Uint32 now = SDL_GetTicks();
 
+		if (!Gui::gui->is_active)
+			break;
+
 		while (SDL_PollEvent(&ev)) {
 	        	if (ev.type == SDL_QUIT)
 	                	exit(1);
@@ -49,9 +52,16 @@ static void init(void)
 	Gui::gui->activate();
 }
 
+static void fini(void)
+{
+	delete Gui::gui;
+}
+
 int main(int argc, char *argv[])
 {
 	init();
 	run();
+	fini();
+
 	return 0;
 }
