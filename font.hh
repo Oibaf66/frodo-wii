@@ -6,6 +6,10 @@
 class Font
 {
 public:
+	virtual ~Font()
+	{
+	}
+
 	virtual int getHeight(const char *str) = 0;
 
 	virtual int getHeight(const char c)
