@@ -12,13 +12,14 @@ TTF_Font *read_and_alloc_font(const char *path, int pt_size)
 {
 	TTF_Font *out;
 	SDL_RWops *rw;
-	Uint8 *data = (Uint8*)xmalloc(1 * 1024*1024);
+	Uint8 *data;
 	FILE *fp = fopen(path, "r");
 
 	if (!fp) {
 		fprintf(stderr, "Could not open font %s\n", path);
 		return NULL;
 	}
+	data = (Uint8*)xmalloc(1 * 1024*1024);
 	fread(data, 1, 1 * 1024 * 1024, fp);
 	rw = SDL_RWFromMem(data, 1 * 1024 * 1024);
 	if (!rw)

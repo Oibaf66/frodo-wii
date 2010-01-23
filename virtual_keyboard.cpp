@@ -92,6 +92,11 @@ VirtualKeyboard::VirtualKeyboard(Font *font) : GuiView(), ListenerManager()
 	memset(this->buf, 0, sizeof(struct virtkey) * this->buf_len);
 }
 
+VirtualKeyboard::~VirtualKeyboard()
+{
+	free(this->buf);
+}
+
 void VirtualKeyboard::draw(SDL_Surface *where, int x_base, int y_base, int w, int h)
 {
 	int key_w = w / KEY_COLS;

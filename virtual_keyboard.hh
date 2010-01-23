@@ -40,6 +40,7 @@ class VirtualKeyboard : public GuiView, public ListenerManager
 {
 public:
 	VirtualKeyboard(Font *font);
+	~VirtualKeyboard();
 
 	/* Conversions */
 	const char *keycodeToString(int kc);

@@ -366,6 +366,8 @@ void Menu::setTextColor(SDL_Color clr)
 
 Menu::~Menu()
 {
+	for (int i = 0; i < this->n_entries; i++)
+		free((void*)this->pp_msgs[i]);
 	free(this->pp_msgs);
 	free(this->p_submenus);
 }

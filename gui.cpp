@@ -112,6 +112,9 @@ Gui::~Gui()
 	delete this->cur_gameInfo;
 	delete this->timerController;
 
+	if (this->status_bar)
+		delete this->status_bar;
+
 	if (this->dlg)
 		delete this->dlg;
 
@@ -132,6 +135,7 @@ Gui::~Gui()
 	SDL_FreeSurface(this->textbox);
 	SDL_FreeSurface(this->selected_key);
 	SDL_FreeSurface(this->highlighted_key);
+	SDL_FreeSurface(this->status_bar_bg);
 
 	if (this->default_font)
 		delete this->default_font;
@@ -187,6 +191,7 @@ bool Gui::setTheme(const char *path)
 		SDL_FreeSurface(this->textbox);
 		SDL_FreeSurface(this->selected_key);
 		SDL_FreeSurface(this->highlighted_key);
+		SDL_FreeSurface(this->status_bar_bg);
 
 		if (this->default_font)
 			delete this->default_font;
