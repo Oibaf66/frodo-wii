@@ -85,6 +85,7 @@ Gui::Gui()
 	this->game_base_path = GAME_ROOT_PATH;
 
 	this->cur_gameInfo = new GameInfo();
+	this->gameInfoChanged = false;
 
 	this->dlg = NULL;
 	this->kbd = NULL;
@@ -318,6 +319,33 @@ void Gui::updateGameInfo(GameInfo *gi)
 	panic_if(!gi, "gi must be set\n");
 	delete this->cur_gameInfo;
 	this->cur_gameInfo = gi;
+	this->gameInfoChanged = true;
+}
+
+void Gui::saveGameInfo()
+{
+	struct game_info *p = this->cur_gameInfo->dump();
+
+	if (p)
+	{
+		char buf[255];
+		FILE *fp;
+
+		snprintf(buf, sizeof(buf), "%s/%s",
+				METADATA_ROOT_PATH, this->cur_gameInfo->filename);
+		fp = fopen(buf, "w");
+		if (!fp)
+		{
+			warning("Could not open %s for writing\n", buf);
+			return;
+		}
+		int n = fwrite((const void*)p, 1, p->sz, fp);
+		if (n != p->sz)
+			warning("Could only write %d bytes of %s\n", n, buf);
+		fclose(fp);
+	}
+
+	this->gameInfoChanged = false;
 }
 
 

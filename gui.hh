@@ -63,6 +63,8 @@ public:
 
 	void updateGameInfo(GameInfo *gi);
 
+	void saveGameInfo();
+
 	void exitMenu();
 
 	/* These are private, keep off! */
@@ -113,6 +115,7 @@ public:
 	const char *game_base_path;
 
 	GameInfo *cur_gameInfo;
+	bool gameInfoChanged;
 
 	/* New preferences */
 	Prefs *np;

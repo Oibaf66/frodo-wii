@@ -26,7 +26,6 @@ public:
 
 	void draw(SDL_Surface *where);
 
-protected:
 	DiscMenu *menu;
 	GameInfoBox *gameInfo;
 };
@@ -48,8 +47,15 @@ public:
 
 	virtual void selectCallback(int which)
 	{
-		printf("entry %d selected: %s\n", which, this->pp_msgs[which]);
+		const char *fileName = this->pp_msgs[this->cur_sel];
+
 		Gui::gui->timerController->disarm(this);
+		Gui::gui->dv->loadGameInfo(fileName);
+
+		if (Gui::gui->dv->gameInfo->gi)
+			Gui::gui->updateGameInfo(Gui::gui->dv->gameInfo->gi);
+		else
+			Gui::gui->updateGameInfo(new GameInfo(fileName));
 	}
 
 	virtual void hoverCallback(int which)
