@@ -19,7 +19,7 @@ public:
 
 	~Font_TTF()
 	{
-		free(this->font);
+		TTF_CloseFont(this->font);
 	}
 
 	int getHeight(const char *str)

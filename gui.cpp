@@ -117,6 +117,26 @@ Gui::~Gui()
 
 	if (VirtualKeyboard::kbd)
 		delete VirtualKeyboard::kbd;
+
+	SDL_FreeSurface(this->bg_left);
+	SDL_FreeSurface(this->bg_middle);
+	SDL_FreeSurface(this->bg_right);
+	SDL_FreeSurface(this->bg_submenu_left);
+	SDL_FreeSurface(this->bg_submenu_middle);
+	SDL_FreeSurface(this->bg_submenu_right);
+	SDL_FreeSurface(this->background);
+	SDL_FreeSurface(this->main_menu_bg);
+	SDL_FreeSurface(this->infobox);
+	SDL_FreeSurface(this->dialogue_bg);
+	SDL_FreeSurface(this->disc_info);
+	SDL_FreeSurface(this->textbox);
+	SDL_FreeSurface(this->selected_key);
+	SDL_FreeSurface(this->highlighted_key);
+
+	if (this->default_font)
+		delete this->default_font;
+	if (this->small_font)
+		delete this->small_font;
 }
 
 bool Gui::setTheme(const char *path)

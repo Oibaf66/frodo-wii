@@ -63,5 +63,7 @@ int main(int argc, char *argv[])
 	run();
 	fini();
 
+	SDL_Quit();
+
 	return 0;
 }
