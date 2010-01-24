@@ -7,7 +7,20 @@
 #include "utils.hh"
 
 #define VERSION_BASE   (0x1978)
-#define VERSION_MAGIC  (VERSION_BASE + 1)
+#define VERSION_MAGIC  (VERSION_BASE + 0)
+
+struct game_info_v0
+{
+	uint32_t sz;
+	uint16_t version_magic;
+
+	uint16_t author_off;
+	uint16_t name_off;
+	uint16_t screenshot_off; /* In PNG format */
+	uint16_t filename_off;
+	uint16_t flags;
+	uint8_t data[]; /* 4-byte aligned */
+};
 
 GameInfo::GameInfo(const char *filename,
 		const char *name, const char *author,

@@ -60,7 +60,7 @@ public:
 
 	virtual void hoverCallback(int which)
 	{
-		Gui::gui->timerController->arm(this, 5);
+		Gui::gui->timerController->arm(this, 100);
 	}
 
 	virtual void timeoutCallback()

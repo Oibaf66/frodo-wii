@@ -5,8 +5,10 @@
 
 struct game_info
 {
+	/* These two MUST stay the same */
 	uint32_t sz;
 	uint16_t version_magic;
+
 	uint16_t author_off;
 	uint16_t name_off;
 	uint16_t screenshot_off; /* In PNG format */
@@ -14,6 +16,7 @@ struct game_info
 	uint16_t flags;
 	uint8_t data[]; /* 4-byte aligned */
 };
+
 
 class GameInfo
 {
