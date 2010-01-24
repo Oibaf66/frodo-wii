@@ -84,6 +84,7 @@ VirtualKeyboard::VirtualKeyboard(Font *font) : GuiView(), ListenerManager()
 	this->sel_x = 0;
 	this->sel_y = 0;
 	this->shift_on = false;
+	this->kbd_only_input = false;
 
 	this->is_active = false;
 	this->buf_head = 0;
@@ -283,6 +284,8 @@ void VirtualKeyboard::activate()
 	this->is_active = true;
 	memset(this->buf, 0, sizeof(struct virtkey) * this->buf_len);
 	this->buf_head = 0;
+
+	this->kbd_only_input = false;
 }
 
 
@@ -403,14 +406,21 @@ void VirtualKeyboard::pushEvent(SDL_Event *ev)
 		case SDLK_RIGHT:
 		case SDLK_PAGEDOWN:
 		case SDLK_PAGEUP:
-		case SDLK_RETURN:
 		case SDLK_HOME:
 		case SDLK_ESCAPE:
 			/* Handle via the standard widget implementation (except for space) */
+			this->kbd_only_input = false;
 			Widget::pushEvent(ev);
+			return;
+		case SDLK_RETURN:
+			if (this->kbd_only_input)
+				this->done();
+			else
+				Widget::pushEvent(ev);
 			return;
 		case SDLK_SPACE ... SDLK_z:
 			Widget::pushEvent((event_t)(ev->key.keysym.sym));
+			this->kbd_only_input = true;
 		default:
 			break;
 		}

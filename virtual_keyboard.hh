@@ -89,6 +89,8 @@ private:
 	int sel_y;
 	bool shift_on;
 
+	bool kbd_only_input;
+
 	bool is_active;
 	struct virtkey *buf;
 	unsigned buf_head;
