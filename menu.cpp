@@ -93,7 +93,7 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 		entries_visible = this->n_entries - start_entry_visible;
 
 	for (int i = start_entry_visible;
-			i < start_entry_visible + entries_visible; i++)
+			i <= start_entry_visible + entries_visible; i++)
 	{
 		const char *msg = this->pp_msgs[i];
 		int cur_y;
