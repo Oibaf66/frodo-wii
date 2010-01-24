@@ -34,7 +34,7 @@ int TimerController::arm(TimeoutHandler *which, int ms)
 	{
 		this->n_handlers++;
 		this->handlers = (TimeoutHandler**)xrealloc(this->handlers,
-				(this->n_handlers + 1) * sizeof(TimeoutHandler*));
+				this->n_handlers * sizeof(TimeoutHandler*));
 	}
 	this->handlers[i] = which;
 	which->timer_id = i;
