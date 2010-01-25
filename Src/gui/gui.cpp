@@ -346,7 +346,15 @@ void Gui::activate()
 
 SDL_Surface *Gui::loadThemeImage(const char *dir, const char *what)
 {
-	return IMG_Load(get_theme_path(dir, what));
+	SDL_Surface *img = IMG_Load(get_theme_path(dir, what));
+	SDL_Surface *out;
+
+	if (!img)
+		return NULL;
+	out = SDL_DisplayFormatAlpha(img);
+	SDL_FreeSurface(img);
+
+	return out;
 }
 
 Font *Gui::loadThemeFont(const char *dir, const char *what, int size)
