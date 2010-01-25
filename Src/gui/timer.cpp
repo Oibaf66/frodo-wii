@@ -1,8 +1,8 @@
 #include "timer.hh"
 #include "utils.hh"
+#include "gui.hh"
 
-// FIXME!
-#define MS_TO_TICKS(x) ((x) / 28)
+#define MS_TO_TICKS(x) ((x) / Gui::gui->np->MsPerFrame)
 
 TimerController::TimerController()
 {
