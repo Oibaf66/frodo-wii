@@ -47,10 +47,13 @@ DEPS=$(patsubst %.cpp,deps/%.d,$(CPP_SRCS)) $(patsubst %.c,deps/%.d,$(C_SRCS))
 
 TARGET=frodo
 
-all: deps $(TARGET)
+all: Src/sysconfig.h deps $(TARGET)
 deps: $(DEPS)
 
 -include $(DEPS)
+
+Src/sysconfig.h: Src/sysconfig.h.Host-SDL
+	cp $< $@
 
 clean:
 	rm -rf objs-host/* deps/* *.gcda *.gcno *~ $(TARGET) $(TARGET)-gcov
