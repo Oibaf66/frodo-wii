@@ -57,7 +57,7 @@ public:
 			this->updatePauseState();
 			break;
 		case 2: /* Insert disc */
-			Gui::gui->dv->setDirectory("discs");
+			Gui::gui->dv->setDirectory(Gui::gui->game_base_path);
 			Gui::gui->pushView(Gui::gui->dv);
 
 			Gui::gui->dv->runStartSequence(this->p_submenus[0].sel == 1);
