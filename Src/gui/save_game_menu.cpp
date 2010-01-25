@@ -57,11 +57,14 @@ public:
 	virtual void selectCallback(int which)
 	{
 		const char *fileName = this->pp_msgs[this->cur_sel];
+		char buf[255];
 
+		snprintf(buf, sizeof(buf), "%s/%s",
+				Gui::gui->save_game_path, fileName);
 		if (this->loadSnapshot)
-			TheC64->LoadSnapshot(fileName);
+			TheC64->LoadSnapshot(buf);
 		else
-			unlink(fileName);
+			unlink(buf);
 		Gui::gui->popView();
 	}
 
