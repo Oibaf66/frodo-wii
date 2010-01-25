@@ -301,6 +301,7 @@ void Gui::exitMenu()
 	/* Pop all views */
 	while (this->popView())
 		;
+	TheC64->NewPrefs(this->np);
 }
 
 void Gui::pushEvent(SDL_Event *ev)
