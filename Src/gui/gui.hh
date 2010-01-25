@@ -122,6 +122,7 @@ public:
 	bool gameInfoChanged;
 
 	/* New preferences */
+	Prefs cur_prefs;
 	Prefs *np;
 
 	/* Singleton */

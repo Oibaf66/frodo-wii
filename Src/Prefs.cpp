@@ -83,27 +83,22 @@ Prefs::Prefs()
 	SystemKeys = true;
 	ShowLEDs = true;
 
+	for (int i = 0; i < MAX_JOYSTICK_AXES; i++)
+		this->JoystickAxes[i] = JOY_NONE;
+	for (int i = 0; i < MAX_JOYSTICK_HATS; i++)
+		this->JoystickHats[i] = JOY_NONE;
+	for (int i = 0; i < MAX_JOYSTICK_BUTTONS; i++)
+		this->JoystickButtons[i] = JOY_NONE;
+
 #ifdef HAVE_SDL
-	for (int i = 0; i < N_WIIMOTE_BINDINGS; i++)
-		this->JoystickKeyBinding[i] = -1;
-	this->JoystickKeyBinding[WIIMOTE_UP] = 0x40 | 0x1;
-	this->JoystickKeyBinding[WIIMOTE_DOWN] = 0x40 | 0x2;
-	this->JoystickKeyBinding[WIIMOTE_LEFT] = 0x40 | 0x4;
-	this->JoystickKeyBinding[WIIMOTE_RIGHT] = 0x40 | 0x8;
-	this->JoystickKeyBinding[WIIMOTE_2] = 0x40 | 0x10;
-
-	this->JoystickKeyBinding[CLASSIC_UP] = 0x40 | 0x1;
-	this->JoystickKeyBinding[CLASSIC_DOWN] = 0x40 | 0x2;
-	this->JoystickKeyBinding[CLASSIC_LEFT] = 0x40 | 0x4;
-	this->JoystickKeyBinding[CLASSIC_RIGHT] = 0x40 | 0x8;
-	this->JoystickKeyBinding[CLASSIC_B] = 0x40 | 0x10;
-
 	this->DisplayOption = 0;
-	this->MsPerFrame = 28;
+	this->MsPerFrame = SPEED_100;
 #endif
 	this->NetworkKey = rand() % 0xffff;
 	this->NetworkAvatar = 0;
 	snprintf(this->NetworkName, 32, "Unset name");
+	snprintf(this->NetworkServer, 64, "play.c64-network.org");
+	this->NetworkPort = 46214;
 }
 
 
@@ -113,6 +108,22 @@ Prefs::Prefs()
 
 bool Prefs::operator==(const Prefs &rhs) const
 {
+	for (int i = 0; i < MAX_JOYSTICK_AXES; i++)
+	{
+		if (this->JoystickAxes[i] != rhs.JoystickAxes[i])
+			return false;
+	}
+	for (int i = 0; i < MAX_JOYSTICK_HATS; i++)
+	{
+		if (this->JoystickHats[i] != rhs.JoystickHats[i])
+			return false;
+	}
+	for (int i = 0; i < MAX_JOYSTICK_BUTTONS; i++)
+	{
+		if (this->JoystickButtons[i] != rhs.JoystickButtons[i])
+			return false;
+	}
+
 	return (1
 		&& NormalCycles == rhs.NormalCycles
 		&& BadLineCycles == rhs.BadLineCycles
@@ -155,34 +166,14 @@ bool Prefs::operator==(const Prefs &rhs) const
 		&& SystemKeys == rhs.SystemKeys
 		&& ShowLEDs == rhs.ShowLEDs
 #ifdef HAVE_SDL
-		&& this->JoystickKeyBinding[0] == rhs.JoystickKeyBinding[0]
-		&& this->JoystickKeyBinding[1] == rhs.JoystickKeyBinding[1]
-		&& this->JoystickKeyBinding[2] == rhs.JoystickKeyBinding[2]
-		&& this->JoystickKeyBinding[3] == rhs.JoystickKeyBinding[3]
-		&& this->JoystickKeyBinding[4] == rhs.JoystickKeyBinding[4]
-                && this->JoystickKeyBinding[5] == rhs.JoystickKeyBinding[5]
-                && this->JoystickKeyBinding[6] == rhs.JoystickKeyBinding[6]
-                && this->JoystickKeyBinding[7] == rhs.JoystickKeyBinding[7]
-                && this->JoystickKeyBinding[8] == rhs.JoystickKeyBinding[8]
-                && this->JoystickKeyBinding[9] == rhs.JoystickKeyBinding[9]
-                && this->JoystickKeyBinding[10] == rhs.JoystickKeyBinding[10]
-                && this->JoystickKeyBinding[11] == rhs.JoystickKeyBinding[11]
-                && this->JoystickKeyBinding[12] == rhs.JoystickKeyBinding[12]
-                && this->JoystickKeyBinding[13] == rhs.JoystickKeyBinding[13]
-                && this->JoystickKeyBinding[14] == rhs.JoystickKeyBinding[14]
-                && this->JoystickKeyBinding[15] == rhs.JoystickKeyBinding[15]
-                && this->JoystickKeyBinding[16] == rhs.JoystickKeyBinding[16]
-                && this->JoystickKeyBinding[17] == rhs.JoystickKeyBinding[17]
-                && this->JoystickKeyBinding[18] == rhs.JoystickKeyBinding[18]
-                && this->JoystickKeyBinding[19] == rhs.JoystickKeyBinding[19]
-                && this->JoystickKeyBinding[20] == rhs.JoystickKeyBinding[20]
-                && this->JoystickKeyBinding[21] == rhs.JoystickKeyBinding[21]
 		&& this->DisplayOption == rhs.DisplayOption
 		&& this->MsPerFrame == rhs.MsPerFrame
 #endif
 		&& this->NetworkKey == rhs.NetworkKey
-		&& this->NetworkAvatar == rhs.NetworkAvatar
+		&& this->NetworkPort == rhs.NetworkPort
+		&& strcmp(this->NetworkServer, rhs.NetworkServer) == 0
 		&& strcmp(this->NetworkName, rhs.NetworkName) == 0
+		&& this->NetworkAvatar == rhs.NetworkAvatar
 	);
 }
 
@@ -315,51 +306,27 @@ void Prefs::Load(char *filename)
 					SystemKeys = !strcmp(value, "TRUE");
 				else if (!strcmp(keyword, "ShowLEDs"))
 					ShowLEDs = !strcmp(value, "TRUE");
-#if defined(HAVE_SDL)
-				else if (!strcmp(keyword, "JoystickKeyBinding0"))
-					JoystickKeyBinding[0] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding1"))
-					JoystickKeyBinding[1] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding2"))
-					JoystickKeyBinding[2] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding3"))
-					JoystickKeyBinding[3] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding4"))
-					JoystickKeyBinding[4] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding5"))
-					JoystickKeyBinding[5] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding6"))
-					JoystickKeyBinding[6] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding7"))
-					JoystickKeyBinding[7] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding8"))
-					JoystickKeyBinding[8] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding9"))
-					JoystickKeyBinding[9] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding10"))
-					JoystickKeyBinding[10] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding11"))
-					JoystickKeyBinding[11] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding12"))
-					JoystickKeyBinding[12] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding13"))
-					JoystickKeyBinding[13] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding14"))
-					JoystickKeyBinding[14] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding15"))
-					JoystickKeyBinding[15] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding16"))
-					JoystickKeyBinding[16] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding17"))
-					JoystickKeyBinding[17] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding18"))
-					JoystickKeyBinding[18] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding19"))
-					JoystickKeyBinding[19] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding20"))
-					JoystickKeyBinding[20] = atoi(value);
-				else if (!strcmp(keyword, "JoystickKeyBinding21"))
-					JoystickKeyBinding[21] = atoi(value);
+				else if (!strncmp(keyword, "JoystickAxes", strlen("JoystickAxes")))
+				{
+					int n = atoi(keyword + strlen("JoystickAxes"));
+
+					if (n >= 0 && n < MAX_JOYSTICK_AXES)
+						this->JoystickAxes[n] = atoi(value);
+				}
+				else if (!strncmp(keyword, "JoystickHats", strlen("JoystickHats")))
+				{
+					int n = atoi(keyword + strlen("JoystickHats"));
+
+					if (n >= 0 && n < MAX_JOYSTICK_HATS)
+						this->JoystickHats[n] = atoi(value);
+				}
+				else if (!strncmp(keyword, "JoystickButtons", strlen("JoystickButtons")))
+				{
+					int n = atoi(keyword + strlen("JoystickButtons"));
+
+					if (n >= 0 && n < MAX_JOYSTICK_BUTTONS)
+						this->JoystickButtons[n] = atoi(value);
+				}
 				else if (!strcmp(keyword, "DisplayOption"))
 					DisplayOption = atoi(value);
 				else if (!strcmp(keyword, "MsPerFrame"))
@@ -368,9 +335,14 @@ void Prefs::Load(char *filename)
 					NetworkKey = atoi(value);
 				else if (!strcmp(keyword, "NetworkName"))
 					strcpy(NetworkName, value);
+				else if (!strcmp(keyword, "NetworkServer"))
+					strcpy(NetworkServer, value);
+				else if (!strcmp(keyword, "NetworkPort"))
+					NetworkPort = atoi(value);
+				else if (!strcmp(keyword, "NetworkName"))
+					strcpy(NetworkName, value);
 				else if (!strcmp(keyword, "NetworkAvatar"))
 					NetworkAvatar = atoi(value);
-#endif
 			}
 		}
 		fclose(file);
@@ -454,17 +426,19 @@ bool Prefs::Save(char *filename)
 		fprintf(file, "AlwaysCopy = %s\n", AlwaysCopy ? "TRUE" : "FALSE");
 		fprintf(file, "SystemKeys = %s\n", SystemKeys ? "TRUE" : "FALSE");
 		fprintf(file, "ShowLEDs = %s\n", ShowLEDs ? "TRUE" : "FALSE");
-#if defined(HAVE_SDL)
-		for (int i = 0; i < N_WIIMOTE_BINDINGS; i++)
-			fprintf(file, "JoystickKeyBinding%d = %d\n",
-					i, JoystickKeyBinding[i]);
+
+		for (int i = 0; i < MAX_JOYSTICK_AXES; i++)
+			fprintf(file, "JoystickAxes%d = %d\n", i, JoystickAxes[i]);
+		for (int i = 0; i < MAX_JOYSTICK_HATS; i++)
+			fprintf(file, "JoystickHats%d = %d\n", i, JoystickHats[i]);
+		for (int i = 0; i < MAX_JOYSTICK_BUTTONS; i++)
+			fprintf(file, "JoystickButtons%d = %d\n", i, JoystickButtons[i]);
 
 		fprintf(file, "DisplayOption = %d\n", DisplayOption);
 		fprintf(file, "MsPerFrame = %d\n", MsPerFrame);
 		fprintf(file, "NetworkKey = %d\n", NetworkKey);
 		fprintf(file, "NetworkAvatar = %d\n", NetworkAvatar);
 		fprintf(file, "NetworkName = %s\n", NetworkName);
-#endif
 		fclose(file);
 		ThePrefsOnDisk = *this;
 		return true;

@@ -339,8 +339,10 @@ void Gui::draw(SDL_Surface *where)
 void Gui::activate()
 {
 	this->is_active = true;
-	/* FIXME! TMP! TMP! */
-	this->np = new Prefs();
+
+	this->cur_prefs = ThePrefs;
+	this->np = &cur_prefs;
+
 	this->pushView(this->mv);
 }
 

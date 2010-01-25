@@ -164,12 +164,11 @@ private:
 #endif
 
 #ifdef HAVE_SDL
-	int JoystickKeyBinding[N_WIIMOTE_BINDINGS];
 	int DisplayOption;
 	uint32 MsPerFrame;
 #endif
 	int JoystickAxes[MAX_JOYSTICK_AXES];
-	int JoystickHats[MAX_JOYSTICK_AXES];
+	int JoystickHats[MAX_JOYSTICK_HATS];
 	int JoystickButtons[MAX_JOYSTICK_BUTTONS];
 
 	char NetworkName[32];
