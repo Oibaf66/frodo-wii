@@ -57,10 +57,10 @@ public:
 			this->updatePauseState();
 			break;
 		case 2: /* Insert disc */
-			if (this->p_submenus[0].sel == 0) {
-				Gui::gui->dv->setDirectory("discs");
-				Gui::gui->pushView(Gui::gui->dv);
-			}
+			Gui::gui->dv->setDirectory("discs");
+			Gui::gui->pushView(Gui::gui->dv);
+
+			Gui::gui->dv->runStartSequence(this->p_submenus[0].sel == 1);
 			break;
 		case 4: /* Load/save states */
 			break;

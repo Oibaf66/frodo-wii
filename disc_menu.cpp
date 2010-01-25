@@ -1,5 +1,7 @@
 #include <unistd.h> /* unlink */
 
+#include <C64.h>
+
 #include "menu.hh"
 #include "file_browser.hh"
 #include "game_info.hh"
@@ -25,6 +27,8 @@ public:
 
 	void setDirectory(const char *path);
 
+	void runStartSequence(bool what);
+
 	/* Inherited */
 	void runLogic();
 
@@ -43,6 +47,7 @@ public:
 	DiscMenu(Font *font) :
 		FileBrowser(game_exts, font), TimeoutHandler()
 	{
+		this->runStartSequence = false;
 	}
 
 	~DiscMenu()
@@ -101,6 +106,9 @@ public:
 		else
 			Gui::gui->updateGameInfo(new GameInfo(fileName));
 		Gui::gui->popView();
+
+		if (this->runStartSequence)
+			TheC64->startFakeKeySequence("\nLOAD \"*\",8,1\nRUN\n");
 	}
 
 	virtual void hoverCallback(int which)
@@ -120,6 +128,8 @@ public:
 		Gui::gui->timerController->disarm(this);
 		Gui::gui->popView();
 	}
+
+	bool runStartSequence;
 };
 
 
@@ -143,6 +153,11 @@ void DiscView::loadGameInfo(const char *what)
 void DiscView::setDirectory(const char *path)
 {
 	this->menu->setDirectory(path);
+}
+
+void DiscView::runStartSequence(bool what)
+{
+	this->menu->runStartSequence = what;
 }
 
 void DiscView::runLogic()

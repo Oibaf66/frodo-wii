@@ -33,6 +33,11 @@ public:
 		return this->have_a_break;
 	}
 
+	void startFakeKeySequence(const char *what)
+	{
+		printf("Faking %s\n", what);
+	}
+
 	int network_connection_type;
 
 private:
