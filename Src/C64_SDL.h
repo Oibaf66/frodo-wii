@@ -338,6 +338,8 @@ void C64::VBlank(bool draw_frame)
 	}
 	this->network_vblank();
 
+	Gui::gui->runLogic();
+
 #if defined(GEKKO)
 	if (this->quit_thyself && Network::networking_started == true)
 		SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);

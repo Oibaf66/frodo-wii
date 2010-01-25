@@ -327,6 +327,7 @@ void C64Display::Update(uint8 *src_pixels)
 			this->Update_32((Uint8*)screen); break;
 		}
 	}
+	Gui::gui->draw(real_screen);
 
 	if (this->TheC64->network_connection_type != NONE)
 		draw_string(real_screen, 0, 0, networktraffic_string, black, fill_gray);
@@ -669,6 +670,8 @@ void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joyst
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
+		Gui::gui->pushEvent(&event);
+
 		switch (event.type) {
 
 			// Key pressed
@@ -691,7 +694,7 @@ void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joyst
 						break;
 
 					case SDLK_HOME:	// Home: Pause and enter menu
-						TheC64->enter_menu();
+						Gui::gui->activate();
 						break;
 
 					case SDLK_KP_PLUS:	// '+' on keypad: Increase SkipFrames
