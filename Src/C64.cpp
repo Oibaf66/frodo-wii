@@ -530,7 +530,7 @@ bool C64::Load1541JobState(FILE *f)
  *  snapshot is loaded into FrodoSC again.
  */
 
-void C64::SaveSnapshot(char *filename)
+void C64::SaveSnapshot(const char *filename)
 {
 	FILE *f;
 	uint8 flags;
@@ -595,7 +595,7 @@ void C64::SaveSnapshot(char *filename)
  *  Load snapshot (emulation must be paused and in VBlank)
  */
 
-bool C64::LoadSnapshot(char *filename)
+bool C64::LoadSnapshot(const char *filename)
 {
 	FILE *f;
 

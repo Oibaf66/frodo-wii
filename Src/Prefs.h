@@ -21,6 +21,10 @@
 #ifndef _PREFS_H
 #define _PREFS_H
 
+#define SPEED_95 30
+#define SPEED_100 20
+#define SPEED_110 18
+
 #define MAX_JOYSTICK_AXES 32
 #define MAX_JOYSTICK_BUTTONS 32
 #define MAX_JOYSTICK_HATS 8
@@ -165,9 +169,13 @@ private:
 	uint32 MsPerFrame;
 #endif
 	int JoystickAxes[MAX_JOYSTICK_AXES];
+	int JoystickHats[MAX_JOYSTICK_AXES];
 	int JoystickButtons[MAX_JOYSTICK_BUTTONS];
 
 	char NetworkName[32];
+	char NetworkServer[64];
+	int NetworkPort;
+
 	int NetworkKey;
 	uint32 NetworkAvatar;
 };

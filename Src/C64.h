@@ -21,9 +21,6 @@
 #define _C64_H
 
 #if defined(HAVE_SDL)
-/* SDL menu */
-#include "menu.h"
-#include "VirtualKeyboard.h"
 #include "Network.h"
 #include "Prefs.h"
 #endif
@@ -90,16 +87,24 @@ public:
 
 	void Run(void);
 	void Quit(void);
-	void Pause(void);
-	void Resume(void);
+	void Pause(void)
+	{
+		this->have_a_break = true;
+	}
+
+	void Resume(void)
+	{
+		this->have_a_break = false;
+	}
+
 	void Reset(void);
 	void NMI(void);
 	void VBlank(bool draw_frame);
 	void NewPrefs(Prefs *prefs);
 	void PatchKernal(bool fast_reset, bool emul_1541_proc);
 	void SaveRAM(char *filename);
-	void SaveSnapshot(char *filename);
-	bool LoadSnapshot(char *filename);
+	void SaveSnapshot(const char *filename);
+	bool LoadSnapshot(const char *filename);
 	int SaveCPUState(FILE *f);
 	int Save1541State(FILE *f);
 	bool Save1541JobState(FILE *f);
@@ -133,6 +138,11 @@ public:
 #ifdef FRODO_SC
 	uint32 CycleCounter;
 #endif
+	bool IsPaused()
+	{
+		return this->have_a_break;
+	}
+
 	void enter_menu() {
 		this->have_a_break = true;
 	}
@@ -201,12 +211,10 @@ public:
 	double speed_index;
 #endif
 #ifdef HAVE_SDL
-	VirtualKeyboard *virtual_keyboard;
 	char server_hostname[255];
 	int server_port;
 	int network_connection_type;
 	Network *peer;
-	TTF_Font *menu_font;
 	int linecnt;
 
 	bool fake_key_sequence;
@@ -219,16 +227,8 @@ public:
 
 	void network_vblank();
 
-	void select_disc(Prefs *np, bool start);
-	void start_fake_key_sequence(const char *str);
+	void startFakeKeySequence(const char *str);
 	void run_fake_key_sequence();
-	char * bind_one_key(Prefs *np, int which);
-	void bind_keys(Prefs *np);
-	void select_fake_key_sequence(Prefs *np);
-	void advanced_options(Prefs *np);
-	void other_options(Prefs *np);
-	void networking_menu(Prefs *np);
-	void save_load_state(Prefs *np, int do_what);
 #endif
 
 #ifdef WIN32

@@ -11,8 +11,6 @@
 #include <wiiuse/wpad.h>
 #include <network.h>
 
-#include "menu.h"
-
 extern int init_graphics(void);
 
 /*

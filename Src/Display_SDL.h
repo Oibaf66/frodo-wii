@@ -24,6 +24,8 @@
 #include "Version.h"
 
 #include "CIA.h"
+#include "gui/gui.hh"
+#include "gui/virtual_keyboard.hh"
 
 #include <SDL.h>
 #if defined(GEKKO)
@@ -626,7 +628,7 @@ void C64Display::TranslateKey(SDLKey key, bool key_up, uint8 *key_matrix,
 		shift_on = false;
 	else if (!key_up && this->entering_text_message)
 	{
-		char c = virtual_keyboard->keycode_to_char(c64_key | (shift_on ? 0x80 : 0) );
+		char c = Gui::gui->kbd->keycodeToChar(c64_key | (shift_on ? 0x80 : 0) );
 
 		if (this->text_message_idx >= sizeof(this->text_message) - 2 ||
 				c == '\n')

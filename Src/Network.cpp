@@ -24,7 +24,6 @@
 #include "Prefs.h"
 #include "main.h"
 #include "C64.h"
-#include "menu.h"
 
 #if defined(GEKKO)
 # include <wiiuse/wpad.h>
@@ -1088,7 +1087,7 @@ network_connection_error_t Network::WaitForPeerList()
 			return VERSION_ERROR;
 		}
 #endif
-	int sel = menu_select_peer(pi->peers, pi->n_peers);
+	int sel = 0; // FIXME! menu_select_peer(pi->peers, pi->n_peers);
 
 	/* FIXME! What to do here??? */
 	if (sel < 0)

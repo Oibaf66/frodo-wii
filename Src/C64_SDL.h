@@ -10,6 +10,9 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+#include "gui/gui.hh"
+#include "gui/virtual_keyboard.hh"
+
 #if defined(GEKKO)
 #include <wiiuse/wpad.h>
 #include <ogc/lwp_watchdog.h>
@@ -23,8 +26,6 @@
 #endif
 
 #define C64_NETWORK_BROKER "c64-network.game-host.org"
-
-#include "menutexts.h"
 
 /* TODO: */
 extern char *fixme_tmp_network_server;
@@ -54,9 +55,6 @@ void C64::c64_ctor1(void)
 	memset(this->save_game_name, 0, sizeof(this->save_game_name));
 	strcpy(this->save_game_name, "unknown");
 
-	this->virtual_keyboard = new VirtualKeyboard(real_screen, this->menu_font);
-	virtual_keyboard = this->virtual_keyboard;
-
 	strncpy(this->server_hostname, C64_NETWORK_BROKER,
 			sizeof(this->server_hostname));
 	this->server_port = 46214;
@@ -85,265 +83,11 @@ void C64::c64_dtor(void)
 {
 }
 
-void C64::select_disc(Prefs *np, bool start)
-{
-	const char *name;
-	const char *d64_name = NULL;
-
-	if (!start)
-		name = menu_select_file(IMAGE_PATH);
-	else
-		name = menu_select_file_start(IMAGE_PATH, &d64_name);
-
-	if (name== NULL)
-		return;
-
-	if (strcmp(name, "None") == 0)
-	{
-		strcpy(np->DrivePath[0], "\0");
-		strcpy(this->save_game_name, "unknown");
-	}
-	else
-	{
-		const char *save_game = strrchr(name, '/');
-
-		if (!save_game)
-			save_game = name;
-		else
-			save_game = save_game + 1; /* Skip '/' */
-		strncpy(np->DrivePath[0], name, 255);
-		strncpy(this->save_game_name, save_game, 255);
-		if (strstr(name, ".prg") || strstr(name, ".PRG") ||
-				strstr(name, ".p00") || strstr(name, ".P00") ||
-				strstr(name, ".s00") || strstr(name, ".S00")) {
-			FILE *src, *dst;
-
-			/* Clean temp dir first (we only want one file) */
-			unlink(TMP_PATH"/a");
-
-			src = fopen(np->DrivePath[0], "r");
-			if (src != NULL)
-			{
-				snprintf(np->DrivePath[0], 255, "%s", TMP_PATH);
-
-				/* Special handling of .prg: Copy to TMP_PATH and
-				 * load that as a dir */
-				dst = fopen(TMP_PATH"/a", "w");
-				if (dst)
-				{
-					Uint8 buf[1024];
-					size_t v;
-
-					do {
-						v = fread(buf, 1, 1024, src);
-						fwrite(buf, 1, v, dst);
-					} while (v > 0);
-					fclose(dst);
-				}
-				fclose(src);
-			}
-		}
-
-		NewPrefs(np);
-		ThePrefs = *np;
-	}
-	this->prefs_changed = true;
-
-	/* Cleanup*/
-	free((void*)name);
-
-	/* And maybe start the game */
-	if (d64_name)
-	{
-		static char buf[255];
-
-		snprintf(buf, 255, "\nLOAD \"%s\",8,1\nRUN\n", d64_name);
-		this->start_fake_key_sequence((const char*)buf);
-		free((void*)d64_name);
-	}
-	else if (start)
-		this->start_fake_key_sequence("\nLOAD \"*\",8,1\nRUN\n");
-}
-
-
-char *C64::bind_one_key(Prefs *np, int which)
-{
-	static const char *which_to_button_name[N_WIIMOTE_BINDINGS] = {
-			"up", "down", "left", "right",
-			"2", "1", "A", "B", "+", "-",
-			"classic up", "classic down", "classic left", "classic right", "classic a",
-			"classic b", "classic X", "classic Y", "classic L",
-			"classic R", "classic ZR", "classic ZL" };
-	static char strs[N_WIIMOTE_BINDINGS][255];
-	char *out = strs[which];
-	int cur = np->JoystickKeyBinding[which];
-
-	snprintf(out, 255, "Bind to %s (now %s)", which_to_button_name[which],
-			this->virtual_keyboard->keycode_to_string(cur));
-
-	return out;
-}
-
-void C64::bind_keys(Prefs *np)
-{
-	const char *bind_key_messages[N_WIIMOTE_BINDINGS + 1];
-	bool has_classic_controller = false;
-
-#if defined(GEKKO)
-        WPADData *wpad, *wpad_other;
-
-        wpad = WPAD_Data(0);
-        wpad_other = WPAD_Data(1);
-
-        if (wpad->exp.type == WPAD_EXP_CLASSIC ||
-        		wpad_other->exp.type == WPAD_EXP_CLASSIC)
-        	has_classic_controller = true;
-#endif
-
-        memset(bind_key_messages, 0, sizeof(const char*) * (N_WIIMOTE_BINDINGS + 1));
-
-        for (int i = 0; i < (has_classic_controller ? N_WIIMOTE_BINDINGS : CLASSIC_UP); i++)
-        	bind_key_messages[i] = this->bind_one_key(np, i);
-
-	int opt = menu_select(bind_key_messages, NULL);
-	if (opt >= 0)
-	{
-	        int key;
-	        bool shifted;
-
-		key = this->virtual_keyboard->get_key();
-		/* -2 means abort */
-		if (key != np->JoystickKeyBinding[opt] && key != -2)
-		{
-			this->prefs_changed = true;
-			np->JoystickKeyBinding[opt] = key;
-		}
-	}
-}
-
-void C64::networking_menu(Prefs *np)
-{
-	int opt;
-
-	do
-	{
-		char buf[3][255];
-		const char *network_client_messages[] = {
-				buf[0],                  /* 0 */
-				buf[1],                  /* 1 */
-				buf[2],                  /* 2 */
-				"#2 ",                   /* 3 */
-				"Connect to the C64 network!", /* 4 */
-				NULL,
-		};
-
-		snprintf(buf[0], 255, "Set username (%s)",
-				np->NetworkName);
-		snprintf(buf[1], 255, "Server hostname (%s)",
-				this->server_hostname);
-		snprintf(buf[2], 255, "Port (%d)",
-				this->server_port);
-		opt = menu_select("Networking", network_client_messages, NULL);
-
-		if (opt >= 0 && opt <= 2)
-		{
-			const char *m = this->virtual_keyboard->get_string();
-
-			if (m)
-			{
-				if (opt == 0)
-				{
-					memset(np->NetworkName, 0,
-							sizeof(np->NetworkName));
-					strncpy(np->NetworkName, m,
-							sizeof(np->NetworkName));
-				} else if (opt == 1)
-					strncpy(this->server_hostname, m,
-							sizeof(this->server_hostname));
-				if (opt == 2)
-					this->server_port = atoi(m);
-			}
-		}
-		else if (opt == 4) {
-			if (strncmp(np->NetworkName, "Unset", 5) == 0)
-			{
-				char *msg = "Select name first";
-
-				msgYesNo(msg, false, 160, 160);
-				continue;
-			}
-
-			this->peer = new Network(this->server_hostname, this->server_port);
-			this->network_connection_type = CONNECT;
-		}
-	} while (opt >= 0 && opt <= 2);
-
-	this->prefs_changed = true;
-}
-
-void C64::advanced_options(Prefs *np)
-{
-	int submenus[4] = { np->DisplayOption, 0,
-			np->SpriteCollisions, 0 };
-
-#define SPEED_95 30
-#define SPEED_100 20
-#define SPEED_110 18
-
-	switch (np->MsPerFrame)
-	{
-	case SPEED_95:
-		submenus[1] = 0; break;
-	case SPEED_110:
-		submenus[1] = 2; break;
-	default:
-		/* If it has some other value... */
-		submenus[1] = 1; break;
-	}
-
-	int opt = menu_select("Advanced options",
-			new_advanced_options_menu_messages,
-			submenus);
-	if (opt >= 0)
-	{
-		np->DisplayOption = submenus[0];
-		np->SpriteCollisions = submenus[2];
-
-		switch(submenus[1])
-		{
-		case 0:
-			np->MsPerFrame = SPEED_95; break;
-		case 1:
-			np->MsPerFrame = SPEED_100; break;
-		case 2:
-		default:
-			np->MsPerFrame = SPEED_110; break;
-		}
-
-		this->prefs_changed = true;
-	}
-}
-
-void C64::other_options(Prefs *np)
-{
-	int old_swap = np->JoystickSwap == true ? 1 : 0; 
-	int submenus[3] = { old_swap, !np->Emul1541Proc, 0 };
-
-	int opt = menu_select("Options", new_options_menu_messages,
-			submenus);
-	if (opt >= 0)
-	{
-		np->Emul1541Proc = submenus[1] == 0 ? true : false;
-		np->JoystickSwap = submenus[0] == 0 ? false : true;
-
-		this->prefs_changed = true;
-	}
-}
 
 /* From dreamcast port but heavily modified */
 void C64::run_fake_key_sequence()
 {
-	int kc = this->virtual_keyboard->char_to_keycode(this->fake_key_str[this->fake_key_index]);
+	int kc = Gui::gui->kbd->charToKeycode(this->fake_key_str[this->fake_key_index]);
 
 	TheDisplay->FakeKeyPress(kc, TheCIA1->KeyMatrix, TheCIA1->RevMatrix);
 
@@ -363,78 +107,10 @@ void C64::run_fake_key_sequence()
         }
 }
 
-void C64::start_fake_key_sequence(const char *str)
+void C64::startFakeKeySequence(const char *str)
 {
 	this->fake_key_str = str;
 	this->fake_key_sequence = true;
-}
-
-void C64::select_fake_key_sequence(Prefs *np)
-{
-	static const char *fake_key_sequences[] = {
-			"\nLOAD \"*\",8,1\nRUN\n",
-			"\nLOAD \"$\",8\n",
-			"\nLIST\n",
-			NULL};
-	const char *fake_key_messages[] = {
-			"LOAD \"*\",8,1  and  RUN",
-			"LOAD \"$\",8",
-			"LIST",
-			NULL};
-	int opt;
-
-	opt = menu_select("Keyboard macros", fake_key_messages, NULL);
-	if (opt < 0)
-		return;
-
-	this->start_fake_key_sequence(fake_key_sequences[opt]);
-}
-
-void C64::save_load_state(Prefs *np, int opt)
-{
-	switch(opt)
-	{
-	case 1: /* save */
-	{
-		char save_buf[255];
-		char prefs_buf[255];
-
-		snprintf(save_buf, 255, "%s/%s.sav", SAVES_PATH,
-				this->save_game_name);
-		snprintf(prefs_buf, 255, "%s.prefs", save_buf);
-
-		this->SaveSnapshot(save_buf);
-		np->Save(prefs_buf);
-	} break;
-	case 0: /* load/delete */
-	case 2:
-	{
-		const char *name = menu_select_file(SAVES_PATH);
-		char save_buf[255];
-		char prefs_buf[255];
-
-		if (name == NULL)
-			break;
-
-		snprintf(save_buf, 255, "%s", name);
-		snprintf(prefs_buf, 255, "%s.prefs", save_buf);
-		if (opt == 2)
-		{
-			unlink(save_buf);
-			unlink(prefs_buf);
-		}
-		else /* Load the snapshot */
-		{
-			this->LoadSnapshot(save_buf);
-			np->Load(prefs_buf);
-			this->prefs_changed = true;
-		}
-
-		free((void*)name);
-	} break;
-	default:
-		break;
-	}
 }
 
 /*
@@ -642,63 +318,11 @@ void C64::VBlank(bool draw_frame)
 	}
 
 	if (this->have_a_break) {
-		int submenus[3] = {1, 0, 0};
-		int opt;
 
 		Prefs np = ThePrefs;
 		this->prefs_changed = false;
 
 		TheSID->PauseSound();
-		opt = menu_select("Main menu", new_main_menu_messages, submenus);
-
-		switch(opt)
-		{
-		case 0: /* Insert disc/tape */
-			this->select_disc(&np, submenus[0] == 1);
-			break;
-		case 2: /* Save / load game */
-			this->save_load_state(&np, submenus[1]);
-			break;
-		case 4: /* Bind keys to joystick */
-			switch (submenus[2])
-			{
-			case 0: /* type */
-			{
-				const char *seq = this->virtual_keyboard->get_string();
-
-				if (seq != NULL)
-					this->start_fake_key_sequence(seq);
-			} break;
-			case 1: /* Macro */
-				this->select_fake_key_sequence(&np); break;
-			default:
-			case 2: /* Bind to controller */
-				this->bind_keys(&np); break;
-			}
-			break;
-		case 7: /* Reset the C64 */
-			Reset();
-			break;
-		case 8: /* Networking */
-			this->networking_menu(&np);
-			break;
-		case 9: /* Other options */
-			this->other_options(&np);
-			break;
-		case 10: /* Advanced options */
-			this->advanced_options(&np);
-			break;
-		case 11:
-		{
-			menu_select("Frodo help", welcome, NULL);
-		} break;
-		case 12: /* Quit */
-			quit_thyself = true;				
-			break;
-		case -1:
-		default:
-			break;
-		}
 
 		if (this->prefs_changed)
 		{

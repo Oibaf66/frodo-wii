@@ -24,7 +24,7 @@ datadir = ${PREFIX}/share
 #GCOV=-fprofile-arcs -ftest-coverage
 
 
-CFLAGS ?=-ggdb -Iinclude -Wall  `sdl-config --cflags`
+CFLAGS ?=-ggdb -Wall  `sdl-config --cflags` -ISrc
 DEFINES =-DFRODO_SC -DHAVE_CONFIG_H -DDATADIR=\"$(datadir)/frodo/\" -DBINDIR=\"$(bindir)/\" -DHAVE_SDL
 
 LDFLAGS ?= $(GCOV) `sdl-config --libs` -lSDL_ttf -lSDL_image
@@ -32,11 +32,13 @@ LDFLAGS ?= $(GCOV) `sdl-config --libs` -lSDL_ttf -lSDL_image
 
 CPP_SRCS=Src/C64_SC.cpp Src/main.cpp Src/Display.cpp Src/Prefs.cpp Src/SID.cpp \
      Src/REU.cpp Src/IEC.cpp Src/1541fs.cpp Src/1541d64.cpp Src/1541t64.cpp \
-     Src/1541job.cpp Src/SAM.cpp Src/CPUC64_SC.cpp Src/VIC_SC.cpp  Src/menu.cpp\
+     Src/1541job.cpp Src/SAM.cpp Src/CPUC64_SC.cpp Src/VIC_SC.cpp \
      Src/CIA_SC.cpp Src/CPU1541_SC.cpp Src/CPU_common.cpp Src/Network.cpp \
-     Src/VirtualKeyboard.cpp
-
-C_SRCS=Src/d64-read.c Src/menutexts.c
+     Src/gui/menu_messages.cpp Src/gui/dialogue_box.cpp Src/gui/widget.cpp \
+	 Src/gui/game_info.cpp Src/gui/status_bar.cpp Src/gui/gui.cpp Src/gui/listener.cpp \
+	 Src/gui/timer.cpp Src/gui/utils.cpp Src/gui/virtual_keyboard.cpp Src/gui/menu.cpp
+     
+C_SRCS=Src/d64-read.c
 
 
 OBJS=$(patsubst %.cpp,objs-host/%.o,$(CPP_SRCS)) $(patsubst %.c,objs-host/%.o,$(C_SRCS))

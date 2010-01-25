@@ -31,9 +31,9 @@ extern "C" int main(int argc, char *argv[]);
 #endif
 #if defined(HAVE_SDL)
 #include <SDL.h>
+#include <SDL_ttf.h>
+#include "gui/gui.hh"
 #endif
-
-#include "menu.h"
 
 extern int init_graphics(void);
 
@@ -75,7 +75,8 @@ int main(int argc, char **argv)
                 fprintf(stderr, "Unable to init TTF: %s\n", TTF_GetError() );
 		return 1;
         }
-	menu_init();
+        Gui::gui = new Gui();
+        Gui::gui->setTheme("default");
 #endif
 	if (!init_graphics())
 		return 1;
