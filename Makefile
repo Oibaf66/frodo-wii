@@ -1,39 +1,44 @@
-OBJS=menu.oo main.oo utils.oo gui.oo dialogue_box.oo menu_messages.oo \
-	timer.oo game_info.oo widget.oo virtual_keyboard.oo listener.oo \
-	status_bar.oo
+CXX = g++
+CC  = gcc
+LD  = g++
+CPP = cpp
 
-all: menu
+ERROR_FILTER := 2>&1 | sed -e 's/\(.[a-zA-Z]\+\):\([0-9]\+\):/\1(\2):/g'
 
-%.oo: %.cpp
-	g++ -Imocks -Wall -g -c `sdl-config --cflags` -o $@ $<
+CFLAGS ?=-ggdb -Iinclude -Wall  `sdl-config --cflags` -Imocks
+DEFINES =
+LDFLAGS ?= $(GCOV) `sdl-config --libs` -lSDL_ttf -lSDL_image
 
-menu.oo: menu.cpp menu.hh utils.hh font.hh widget.hh Makefile
 
-widget.oo: widget.cpp widget.hh
+CPP_SRCS=menu.cpp main.cpp utils.cpp gui.cpp dialogue_box.cpp menu_messages.cpp \
+	timer.cpp game_info.cpp widget.cpp virtual_keyboard.cpp listener.cpp \
+	status_bar.cpp
 
-gui.oo: gui.cpp gui.hh Makefile font.hh menu.hh sdl_ttf_font.hh \
-	dialogue_box.hh help_box.hh main_menu.cpp disc_menu.cpp \
-	file_browser.hh timer.hh game_info.hh widget.hh options_menu.cpp \
-	network_menu.cpp theme_menu.cpp bind_keys_menu.cpp game_info_menu.cpp \
-	game_info_box.hh \
-	mocks/Prefs.h mocks/C64.h \
+OBJS=$(patsubst %.cpp,objs/%.o,$(CPP_SRCS)) $(patsubst %.c,objs/%.o,$(C_SRCS))
+DEPS=$(patsubst %.cpp,deps/%.d,$(CPP_SRCS)) $(patsubst %.c,deps/%.d,$(C_SRCS))
 
-virtual_keyboard.oo: virtual_keyboard.hh virtual_keyboard.cpp widget.hh listener.hh
+TARGET=menu
 
-game_info.oo: game_info.hh game_info.cpp
 
-utils.oo: utils.cpp utils.hh Makefile
+all: $(DEPS) $(TARGET)
 
-timer.oo: timer.cpp timer.hh utils.hh Makefile
 
-dialogue_box.oo: dialogue_box.cpp dialogue_box.hh menu.hh listener.hh
+deps/%.d: %.cpp
+	@echo makedep $(notdir $<)
+	@install -d deps/$(dir $<)
+	@$(CPP) -M -MT objs/$(patsubst %.cpp,%.o,$<) $(DEFINES) $(CFLAGS) -o $@ $<
 
-listener.oo: listener.cpp listener.hh
-
-main.oo: menu.hh gui.hh utils.hh sdl_ttf_font.hh Makefile
-
-menu: $(OBJS)
-	g++ `sdl-config --libs` -lSDL -lSDL_image -lSDL_ttf -o $@ $+
+objs/%.o: %.cpp
+	@echo CXX $(notdir $<)
+	@install -d objs/$(dir $<)
+	@$(CXX) $(CFLAGS) $(DEFINES) -c -o $@ $< $(ERROR_FILTER)
 
 clean:
-	rm -f *.oo menu *~
+	rm -rf $(TARGET) *~ objs deps
+
+
+$(TARGET): $(OBJS)
+	@echo LD $@
+	@$(LD) $(LDFLAGS) -o $@ $+
+
+-include $(DEPS)
