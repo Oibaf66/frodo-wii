@@ -23,10 +23,11 @@ public:
 
 	virtual void selectCallback(int which)
 	{
-		if (which == 9) /* Game info */
+		if (which == 10) /* Game info */
 		{
 			Gui::gui->status_bar->queueMessage("Resetting the C64");
-			Gui::gui->popView();
+			Gui::gui->exitMenu();
+			TheC64->Reset();
 			return;
 		}
 		/* Select theme */
