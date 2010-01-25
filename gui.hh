@@ -113,6 +113,7 @@ public:
 	const char *metadata_base_path;
 	const char *theme_base_path;
 	const char *game_base_path;
+	const char *tmp_path;
 
 	GameInfo *cur_gameInfo;
 	bool gameInfoChanged;

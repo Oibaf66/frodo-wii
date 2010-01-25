@@ -1,10 +1,14 @@
+#include <unistd.h> /* unlink */
+
 #include "menu.hh"
 #include "file_browser.hh"
 #include "game_info.hh"
 #include "game_info_box.hh"
+#include "utils.hh"
 
 static const char *game_exts[] = {".d64", ".D64", ".t64", ".T64",
 	".prg",".PRG", ".p00", ".P00", NULL};
+static const char *prg_exts[] = {".prg",".PRG", ".p00", ".P00", NULL};
 
 class DiscMenu;
 
@@ -48,6 +52,46 @@ public:
 	virtual void selectCallback(int which)
 	{
 		const char *fileName = this->pp_msgs[this->cur_sel];
+                const char *save_game = strrchr(fileName, '/');
+
+                if (!save_game)
+                        save_game = fileName;
+                else
+                        save_game = save_game + 1; /* Skip '/' */
+                strncpy(Gui::gui->np->DrivePath[0], fileName, sizeof(Gui::gui->np->DrivePath[0]));
+
+                if (ext_matches_list(fileName, prg_exts)) {
+                	char tmp_filename[255];
+                        FILE *src, *dst;
+
+                        snprintf(tmp_filename, sizeof(tmp_filename), "%s/a", Gui::gui->tmp_path);
+
+                        /* Clean temp dir first (we only want one file) */
+                        unlink(tmp_filename);
+
+                        src = fopen(Gui::gui->np->DrivePath[0], "r");
+                        if (src != NULL)
+                        {
+                                snprintf(Gui::gui->np->DrivePath[0], sizeof(Gui::gui->np->DrivePath[0]),
+                                		"%s", Gui::gui->tmp_path);
+
+                                /* Special handling of .prg: Copy to TMP_PATH and
+                                 * load that as a dir */
+                                dst = fopen(tmp_filename, "w");
+                                if (dst)
+                                {
+                                        Uint8 buf[1024];
+                                        size_t v;
+
+                                        do {
+                                                v = fread(buf, 1, sizeof(buf), src);
+                                                fwrite(buf, 1, v, dst);
+                                        } while (v > 0);
+                                        fclose(dst);
+                                }
+                                fclose(src);
+                        }
+                }
 
 		Gui::gui->timerController->disarm(this);
 		Gui::gui->dv->loadGameInfo(fileName);
@@ -56,6 +100,7 @@ public:
 			Gui::gui->updateGameInfo(Gui::gui->dv->gameInfo->gi);
 		else
 			Gui::gui->updateGameInfo(new GameInfo(fileName));
+		Gui::gui->popView();
 	}
 
 	virtual void hoverCallback(int which)

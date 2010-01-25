@@ -69,6 +69,8 @@ static inline void *xrealloc(void *ptr, size_t sz)
 
 TTF_Font *read_and_alloc_font(const char *path, int pt_size);
 
+bool ext_matches_list(const char *name, const char **exts);
+
 const char **get_file_list(const char *base_dir, const char *exts[]);
 
 void *sdl_surface_to_png(SDL_Surface *src, size_t *out_sz);
