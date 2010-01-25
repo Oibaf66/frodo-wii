@@ -118,6 +118,10 @@ public:
 				panic("Classic: impossible selection %d", this->p_submenus[4].sel); break;
 			}
 			break;
+		case 11:
+			printf("Resetting joystick setup to defaults\n");
+			Gui::gui->popView();
+			return;
 		default:
 			panic("Impossible menu option\n");
 			break;
@@ -205,6 +209,8 @@ public:
 
 		this->hm[8] = this->addOne(this->hm[8], this->allocOne("Horiz: %s", stringToPtr_Classic("RAH")));
 		this->hm[8] = this->addOne(this->hm[8], this->allocOne("Vert: %s", stringToPtr_Classic("RAV")));
+
+		this->hm[11] = this->addOne(this->hm[11], "Revert to defaults");
 
 		this->help->setHelpMessages(this->hm);
 	}
@@ -386,7 +392,7 @@ private:
 
 	HelpBox *help;
 	int *cur_key;
-	const char **hm[10];
+	const char **hm[12];
 };
 
 void AnalogueBindListener::selectCallback(DialogueBox *which, int selected)

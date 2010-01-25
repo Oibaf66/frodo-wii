@@ -158,6 +158,8 @@ const char **bind_key_menu_messages = (const char*[]){
                 /*07*/          "^|Horiz|Vert",
                 /*08*/          "Classic(right analogue)",
                 /*09*/          "^|Horiz|Vert",
+                /*10*/          " ",
+                /*11*/          "Reset to defaults",
                 NULL
 };
 
