@@ -38,6 +38,16 @@ public:
 		printf("Faking %s\n", what);
 	}
 
+	void LoadSnapshot(const char *name)
+	{
+		printf("Loading savegame %s\n", name);
+	}
+
+	void SaveSnapshot(const char *name)
+	{
+		printf("Saving savegame %s\n", name);
+	}
+
 	int network_connection_type;
 
 private:

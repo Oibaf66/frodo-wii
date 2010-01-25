@@ -18,6 +18,7 @@ class GameInfo;
 class MainView;
 class BindKeysView;
 class DiscView;
+class SaveGameView;
 class OptionsView;
 class NetworkView;
 class ThemeView;
@@ -101,6 +102,7 @@ public:
 
 	MainView *mv;
 	DiscView *dv;
+	SaveGameView *sgv;
 	OptionsView *ov;
 	NetworkView *nv;
 	GameInfoView *giv;
@@ -114,6 +116,7 @@ public:
 	const char *theme_base_path;
 	const char *game_base_path;
 	const char *tmp_path;
+	const char *save_game_path;
 
 	GameInfo *cur_gameInfo;
 	bool gameInfoChanged;

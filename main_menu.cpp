@@ -63,6 +63,15 @@ public:
 			Gui::gui->dv->runStartSequence(this->p_submenus[0].sel == 1);
 			break;
 		case 4: /* Load/save states */
+			if (this->p_submenus[1].sel == 1)
+				Gui::gui->sgv->saveSnapshot();
+			else
+			{
+				Gui::gui->sgv->setDirectory(Gui::gui->save_game_path);
+				Gui::gui->pushView(Gui::gui->sgv);
+
+				Gui::gui->sgv->setLoadSnapshot(this->p_submenus[1].sel == 0);
+			}
 			break;
 		case 6: /* Keyboard */
 			switch(this->p_submenus[2].sel)

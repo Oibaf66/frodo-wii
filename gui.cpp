@@ -17,6 +17,7 @@ extern SDL_Surface *screen;
 #define METADATA_ROOT_PATH "metadata"
 #define GAME_ROOT_PATH "discs"
 #define TMP_ROOT_PATH "tmp"
+#define SAVE_GAME_ROOT_PATH "saves"
 
 static const char *get_theme_path(const char *dir, const char *what)
 {
@@ -31,6 +32,7 @@ static const char *get_theme_path(const char *dir, const char *what)
 
 /* These are a bit of special cases... */
 #include "disc_menu.cpp"
+#include "save_game_menu.cpp"
 #include "bind_keys_menu.cpp"
 #include "theme_menu.cpp"
 #include "options_menu.cpp"
@@ -85,6 +87,7 @@ Gui::Gui()
 	this->metadata_base_path = METADATA_ROOT_PATH;
 	this->game_base_path = GAME_ROOT_PATH;
 	this->tmp_path = TMP_ROOT_PATH;
+	this->save_game_path = SAVE_GAME_ROOT_PATH;
 
 	this->cur_gameInfo = new GameInfo();
 	this->gameInfoChanged = false;
@@ -94,6 +97,7 @@ Gui::Gui()
 
 	this->mv = NULL;
 	this->dv = NULL;
+	this->sgv = NULL;
 	this->ov = NULL;
 	this->nv = NULL;
 	this->tv = NULL;
@@ -105,6 +109,7 @@ Gui::~Gui()
 {
 	delete this->mv;
 	delete this->dv;
+	delete this->sgv;
 	delete this->ov;
 	delete this->nv;
 	delete this->tv;
@@ -210,6 +215,7 @@ bool Gui::setTheme(const char *path)
 
 		this->mv = new MainView();
 		this->dv = new DiscView();
+		this->sgv = new SaveGameView();
 		this->ov = new OptionsView();
 		this->nv = new NetworkView();
 		this->tv = new ThemeView();
