@@ -39,7 +39,10 @@ public:
 		this->ShowLEDs = 0;
 		this->DisplayOption = 0;
 		this->MsPerFrame = SPEED_100;
+		memset(this->DrivePath, 0, sizeof(this->DrivePath));
 	}
+
+	char DrivePath[4][256]; // Path for drive 8..11
 
 	char NetworkName[32];
 	char NetworkServer[128];
