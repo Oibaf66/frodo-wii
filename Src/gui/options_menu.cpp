@@ -56,6 +56,7 @@ public:
 
 	void updatePrefs()
 	{
+		Gui::gui->np->JoystickSwap = !this->p_submenus[0].sel;
 		Gui::gui->np->Emul1541Proc = !this->p_submenus[1].sel;
 		Gui::gui->np->ShowLEDs = !this->p_submenus[2].sel;
 		Gui::gui->np->DisplayOption = this->p_submenus[3].sel;
@@ -77,7 +78,7 @@ public:
 	{
 		int submenu_defs[5];
 
-		submenu_defs[0] = 0;
+		submenu_defs[0] = Gui::gui->np->JoystickSwap == true ? 0 : 1;
 		submenu_defs[1] = !Gui::gui->np->Emul1541Proc;
 		submenu_defs[2] = !Gui::gui->np->ShowLEDs;
 		submenu_defs[3] = Gui::gui->np->DisplayOption;

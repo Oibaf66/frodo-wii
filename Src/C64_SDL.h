@@ -261,10 +261,6 @@ void C64::VBlank(bool draw_frame)
         uint32_t now;
         uint8 j1, j2;
 
-#if defined(GEKKO)
-	WPAD_ScanPads();
-#endif
-
 	// Poll joysticks
 	j1 = poll_joystick(0);
 	j2 = poll_joystick(1);
@@ -276,13 +272,12 @@ void C64::VBlank(bool draw_frame)
 
 	if (this->fake_key_sequence)
 		this->run_fake_key_sequence();
-#ifndef GEKKO
-	// Joystick keyboard emulation
-	if (TheDisplay->NumLock())
+
+	/* Keyboard joystick input */
+	if (ThePrefs.JoystickSwap)
 		j1 &= joykey;
 	else
 		j2 &= joykey;
-#endif
 
 	if (this->network_connection_type == MASTER)
 	{
