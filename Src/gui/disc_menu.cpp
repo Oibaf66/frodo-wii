@@ -63,7 +63,8 @@ public:
                         save_game = fileName;
                 else
                         save_game = save_game + 1; /* Skip '/' */
-                strncpy(Gui::gui->np->DrivePath[0], fileName, sizeof(Gui::gui->np->DrivePath[0]));
+                snprintf(Gui::gui->np->DrivePath[0], sizeof(Gui::gui->np->DrivePath[0]),
+                		"%s/%s", Gui::gui->game_base_path, fileName);
 
                 if (ext_matches_list(fileName, prg_exts)) {
                 	char tmp_filename[255];
@@ -108,7 +109,10 @@ public:
 		Gui::gui->popView();
 
 		if (this->runStartSequence)
+		{
+			Gui::gui->exitMenu();
 			TheC64->startFakeKeySequence("\nLOAD \"*\",8,1\nRUN\n");
+		}
 	}
 
 	virtual void hoverCallback(int which)

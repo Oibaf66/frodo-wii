@@ -296,11 +296,10 @@ GuiView *Gui::popView()
 
 void Gui::exitMenu()
 {
-	printf("Exiting the menu system\n");
-
 	/* Pop all views */
 	while (this->popView())
 		;
+	ThePrefs = *this->np;
 	TheC64->NewPrefs(this->np);
 }
 
