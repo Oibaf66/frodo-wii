@@ -56,22 +56,23 @@ clean:
 deps/%.d: %.cpp
 	@echo makedep $(notdir $<)
 	@install -d deps/$(dir $<)
-	@$(CPP) -M $(DEFINES) $(CFLAGS) -o $@ $<
+	@$(CPP) -M -MT objs-host/$(patsubst %.cpp,%.o,$<) $(DEFINES) $(CFLAGS) -o $@ $<
 
 deps/%.d: %.c
 	@echo makedep $(notdir $<)
 	@install -d deps/$(dir $<)
-	@$(CPP) -M $(DEFINES) $(CFLAGS) -o $@ $<
+	@$(CPP) -M -MT objs-host/$(patsubst %.c,%.o,$<) $(DEFINES) $(CFLAGS) -o $@ $<
 
 objs-host/%.o: %.cpp
-	@echo $(notdir $<)
+	@echo CXX $(notdir $<)
 	@install -d objs-host/$(dir $<)
 	@$(CXX) $(CFLAGS) $(DEFINES) -c -o $@ $< $(ERROR_FILTER)
 
 objs-host/%.o: %.c
-	@echo $(notdir $<)
+	@echo CC $(notdir $<)
 	@install -d objs-host/$(dir $<)
 	@$(CC) $(CFLAGS) $(DEFINES) -c -o $@ $< $(ERROR_FILTER)
 
 $(TARGET): $(OBJS)
-	$(LD) $(LDFLAGS) -o $@ $+
+	@echo LD $@
+	@$(LD) $(LDFLAGS) -o $@ $+
