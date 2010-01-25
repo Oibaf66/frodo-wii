@@ -319,22 +319,7 @@ void C64::VBlank(bool draw_frame)
 
 	if (this->have_a_break) {
 
-		Prefs np = ThePrefs;
-		this->prefs_changed = false;
-
 		TheSID->PauseSound();
-
-		if (this->prefs_changed)
-		{
-			this->NewPrefs(&np);
-			ThePrefs = np;
-		}
-		TheDisplay->FakeKeyPress(-1, TheCIA1->KeyMatrix,
-				TheCIA1->RevMatrix);
-
-		this->have_a_break = false;
-		if (this->quit_thyself)
-			ThePrefs.Save((const char*)PREFS_PATH);
 	}
 	this->network_vblank();
 
@@ -347,6 +332,8 @@ void C64::VBlank(bool draw_frame)
 #else
         now = SDL_GetTicks();
 #endif
+	if (this->quit_thyself)
+		ThePrefs.Save((const char*)PREFS_PATH);
 
         if ( (now - lastFrame) < ThePrefs.MsPerFrame) {
         	usleep( (ThePrefs.MsPerFrame - (now - lastFrame)) * 1000);
