@@ -221,7 +221,6 @@ bool Gui::setTheme(const char *path)
 		this->tv = new ThemeView();
 		this->bkv = new BindKeysView();
 		this->giv = new GameInfoView();
-		this->pushView(mv);
 	}
 
 	VirtualKeyboard::kbd->updateTheme();
@@ -342,13 +341,7 @@ void Gui::activate()
 	this->is_active = true;
 	/* FIXME! TMP! TMP! */
 	this->np = new Prefs();
-}
-
-void Gui::deActivate()
-{
-	/* FIXME! TMP! TMP! */
-	delete this->np;
-	this->is_active = false;
+	this->pushView(this->mv);
 }
 
 SDL_Surface *Gui::loadThemeImage(const char *dir, const char *what)

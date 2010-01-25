@@ -39,8 +39,6 @@ public:
 
 	void activate();
 
-	void deActivate();
-
 	void runLogic(void);
 
 	void pushEvent(SDL_Event *ev);
