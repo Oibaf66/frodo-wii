@@ -57,12 +57,7 @@ public:
 	virtual void selectCallback(int which)
 	{
 		const char *fileName = this->pp_msgs[this->cur_sel];
-                const char *save_game = strrchr(fileName, '/');
 
-                if (!save_game)
-                        save_game = fileName;
-                else
-                        save_game = save_game + 1; /* Skip '/' */
                 snprintf(Gui::gui->np->DrivePath[0], sizeof(Gui::gui->np->DrivePath[0]),
                 		"%s/%s", Gui::gui->game_base_path, fileName);
 
