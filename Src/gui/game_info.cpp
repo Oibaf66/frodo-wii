@@ -3,8 +3,9 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
+#include <utils.hh>
+
 #include "game_info.hh"
-#include "utils.hh"
 
 #define VERSION_BASE   (0x1978)
 #define VERSION_MAGIC  (VERSION_BASE + 0)

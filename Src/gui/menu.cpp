@@ -12,9 +12,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <utils.hh>
+
 #include "menu.hh"
 #include "font.hh"
-#include "utils.hh"
 #include "gui.hh"
 
 #define IS_SUBMENU(p_msg) ( (p_msg)[0] == '^' )

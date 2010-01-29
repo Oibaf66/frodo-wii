@@ -1,9 +1,10 @@
 #ifndef __STATUS_BAR_HH__
 #define __STATUS_BAR_HH__
 
+#include <timer.hh>
+
 #include "menu.hh"
 #include "gui.hh"
-#include "timer.hh"
 
 #define N_STATUS_MESSAGES 8
 

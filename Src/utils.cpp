@@ -5,8 +5,8 @@
 #include <sys/stat.h>
 #include <SDL_ttf.h>
 
+#include "gui/font.hh"
 #include "utils.hh"
-#include "font.hh"
 
 TTF_Font *read_and_alloc_font(const char *path, int pt_size)
 {
@@ -14,13 +14,19 @@ TTF_Font *read_and_alloc_font(const char *path, int pt_size)
 	SDL_RWops *rw;
 	Uint8 *data;
 	FILE *fp = fopen(path, "r");
+	size_t r;
 
 	if (!fp) {
 		fprintf(stderr, "Could not open font %s\n", path);
 		return NULL;
 	}
 	data = (Uint8*)xmalloc(1 * 1024*1024);
-	fread(data, 1, 1 * 1024 * 1024, fp);
+	r = fread(data, 1, 1 * 1024 * 1024, fp);
+	if (r == 0 || ferror(fp))
+	{
+		free(data);
+		return NULL;
+	}
 	rw = SDL_RWFromMem(data, 1 * 1024 * 1024);
 	if (!rw)
 	{

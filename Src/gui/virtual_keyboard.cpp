@@ -11,8 +11,9 @@
  ********************************************************************/
 #include <SDL.h>
 
+#include <utils.hh>
+
 #include "virtual_keyboard.hh"
-#include "utils.hh"
 #include "gui.hh"
 
 typedef struct virtkey

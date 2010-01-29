@@ -1,8 +1,10 @@
+#include "sysdeps.h"
+#include "Prefs.h"
+
 #include "timer.hh"
 #include "utils.hh"
-#include "gui.hh"
 
-#define MS_TO_TICKS(x) ((x) / Gui::gui->np->MsPerFrame)
+#define MS_TO_TICKS(x) ((x) / ThePrefs.MsPerFrame)
 
 TimerController::TimerController()
 {

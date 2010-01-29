@@ -1,12 +1,12 @@
 #include <unistd.h> /* unlink */
 
 #include <C64.h>
+#include <utils.hh>
 
 #include "menu.hh"
 #include "file_browser.hh"
 #include "game_info.hh"
 #include "game_info_box.hh"
-#include "utils.hh"
 
 static const char *game_exts[] = {".d64", ".D64", ".t64", ".T64",
 	".prg",".PRG", ".p00", ".P00", NULL};

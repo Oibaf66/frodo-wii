@@ -2,10 +2,10 @@
 #define __GUI_HH__
 
 #include <SDL.h>
+#include <timer.hh>
 
 #include "menu.hh"
 #include "font.hh"
-#include "timer.hh"
 #include "gui_view.hh"
 
 /* Frodo stuff */

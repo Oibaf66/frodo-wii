@@ -2,13 +2,14 @@
 #include <SDL_ttf.h>
 #include <arpa/inet.h>
 
+#include <utils.hh>
+
 #include "menu.hh"
 #include "gui.hh"
 #include "menu_messages.hh"
 #include "help_box.hh"
 #include "dialogue_box.hh"
 #include "sdl_ttf_font.hh"
-#include "utils.hh"
 #include "virtual_keyboard.hh"
 
 extern SDL_Surface *screen;

@@ -1,8 +1,8 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
+#include <utils.hh>
 #include "font.hh"
-#include "utils.hh"
 
 #ifndef __SDL_TTF_FONT_HH__
 #define __SDL_TTF_FONT_HH__

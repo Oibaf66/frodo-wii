@@ -1,5 +1,6 @@
+#include <utils.hh>
+
 #include "listener.hh"
-#include "utils.hh"
 
 ListenerManager::ListenerManager()
 {
