@@ -390,6 +390,10 @@ void Gui::updateGameInfo(GameInfo *gi)
 
 void Gui::saveGameInfo()
 {
+	/* Don't save unset games */
+	if (strcmp(this->cur_gameInfo->filename, "unknown") == 0)
+		return;
+
 	struct game_info *p = this->cur_gameInfo->dump();
 
 	if (p)
