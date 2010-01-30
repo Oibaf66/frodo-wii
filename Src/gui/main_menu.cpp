@@ -26,7 +26,10 @@ class ExitListener : public DialogueListener
 	{
 		/* Cancel? */
 		if (selected != 1)
+		{
+			Gui::gui->exitMenu();
 			exit(0);
+		}
 	}
 };
 
