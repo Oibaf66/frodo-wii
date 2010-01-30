@@ -335,7 +335,7 @@ void VirtualKeyboard::runLogic()
 			if (this->buf_head > 1)
 			{
 				this->buf[this->buf_head - 1] = INVALID_VIRTKEY;
-				this->buf_head -= 2;
+				this->buf_head--;
 			}
 		}
 		else
@@ -430,6 +430,10 @@ void VirtualKeyboard::pushEvent(SDL_Event *ev)
 		case SDLK_RSHIFT:
 		case SDLK_LSHIFT:
 			this->shift_on = !this->default_shifted; break;
+		case SDLK_BACKSPACE:
+			if (this->buf_head > 0)
+				this->buf_head--;
+			break;
 		case SDLK_UP:
 		case SDLK_DOWN:
 		case SDLK_LEFT:
