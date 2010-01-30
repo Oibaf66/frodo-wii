@@ -58,7 +58,7 @@ public:
 	virtual void selectCallback(int which)
 	{
 		const char *fileName = this->pp_msgs[this->cur_sel];
-		char buf[255];
+		char *new_path;
 
 		/* If we selected a directory, just take the next one */
 		if (fileName[0] == '[')
@@ -66,13 +66,15 @@ public:
 			this->pushDirectory(fileName);
 			return;
 		}
+		new_path = (char *)xmalloc(strlen(this->cur_path_prefix) + 3 + strlen(fileName));
 
-		snprintf(buf, sizeof(buf), "%s/%s",
+		sprintf(new_path, "%s/%s",
 				this->cur_path_prefix, fileName);
 		if (this->loadSnapshot)
-			TheC64->LoadSnapshot(buf);
+			TheC64->LoadSnapshot(new_path);
 		else
-			unlink(buf);
+			unlink(new_path);
+		free(new_path);
 		Gui::gui->popView();
 	}
 

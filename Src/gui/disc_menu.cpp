@@ -69,10 +69,11 @@ public:
                 		"%s/%s", this->cur_path_prefix, fileName);
 
                 if (ext_matches_list(fileName, prg_exts)) {
-                	char tmp_filename[255];
+                	char *tmp_filename;
                         FILE *src, *dst;
 
-                        snprintf(tmp_filename, sizeof(tmp_filename), "%s/a", Gui::gui->tmp_path);
+                        tmp_filename = (char *)xmalloc(strlen(Gui::gui->tmp_path) + 4);
+                        sprintf(tmp_filename, "%s/a", Gui::gui->tmp_path);
 
                         /* Clean temp dir first (we only want one file) */
                         unlink(tmp_filename);
@@ -99,6 +100,7 @@ public:
                                 }
                                 fclose(src);
                         }
+                        free(tmp_filename);
                 }
 
 		Gui::gui->timerController->disarm(this);
