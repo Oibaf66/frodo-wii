@@ -5,6 +5,9 @@
 #include <sys/stat.h>
 #include <SDL_ttf.h>
 
+#include <sysdeps.h>
+#include <C64.h>
+
 #include "gui/font.hh"
 #include "utils.hh"
 
@@ -185,6 +188,8 @@ static void png_user_error(png_structp ctx, png_const_charp str)
 	fprintf(stderr, "libpng: error: %s\n", str);
 }
 
+extern SDL_Color sdl_palette[PALETTE_SIZE];
+
 /* This is taken from http://encelo.netsons.org/programming/sdl (GPLed) */
 void *sdl_surface_to_png(SDL_Surface *surf, size_t *out_sz)
 {
@@ -192,6 +197,7 @@ void *sdl_surface_to_png(SDL_Surface *surf, size_t *out_sz)
 	png_infop info_ptr;
 	int i, colortype;
 	png_bytep *row_pointers;
+	png_colorp palette;
 	struct png_write_user_struct out;
 
 	out.sz = 0;
@@ -222,6 +228,25 @@ void *sdl_surface_to_png(SDL_Surface *surf, size_t *out_sz)
 	colortype = png_colortype_from_surface(surf);
 	png_set_IHDR(png_ptr, info_ptr, surf->w, surf->h, 8, colortype,	PNG_INTERLACE_NONE,
 		PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+
+	if (colortype & PNG_COLOR_MASK_PALETTE)
+	{
+		/* Set the palette if there is one.  REQUIRED for indexed-color images */
+		palette = (png_colorp)png_malloc(png_ptr,
+				PNG_MAX_PALETTE_LENGTH * png_sizeof(png_color));
+
+		/* KLUDGE! For some reason, surf->format->palette doesn't work... */
+		for (int i = 0; i < PALETTE_SIZE; i++)
+		{
+			SDL_Color *p = &sdl_palette[i];
+
+			palette[i].red = p->r;
+			palette[i].green = p->g;
+			palette[i].blue = p->b;
+		}
+		/* ... Set palette colors ... */
+		png_set_PLTE(png_ptr, info_ptr, palette, PNG_MAX_PALETTE_LENGTH);
+	}
 
 	/* Writing the image */
 	png_write_info(png_ptr, info_ptr);

@@ -53,17 +53,6 @@ static itimerval pulse_tv;
 // SDL joysticks
 static SDL_Joystick *joy[2] = {NULL, NULL};
 
-// Colors for speedometer/drive LEDs
-enum {
-	black = 0,
-	white = 1,
-	fill_gray = 16,
-	shine_gray = 17,
-	shadow_gray = 18,
-	red = 19,
-	green = 20,
-	PALETTE_SIZE = 21,
-};
 static Uint16 palette_16[PALETTE_SIZE];
 static Uint32 palette_32[PALETTE_SIZE];
 SDL_Color sdl_palette[PALETTE_SIZE];
@@ -356,7 +345,7 @@ SDL_Surface *C64Display::SurfaceFromC64Display()
 #endif
 
 	out = SDL_CreateRGBSurface(SDL_SWSURFACE, DISPLAY_X / 2, DISPLAY_Y / 2, 8,
-			rmask,gmask,bmask,amask);
+			rmask, gmask, bmask, amask);
 	if (!out)
 		return NULL;
 
@@ -375,7 +364,7 @@ SDL_Surface *C64Display::SurfaceFromC64Display()
 			dst_pixels[ dst_off ] = v;
 		}
 	}
-	SDL_SetPalette(out, SDL_LOGPAL | SDL_PHYSPAL, sdl_palette, 0, PALETTE_SIZE);
+	SDL_SetColors(out, sdl_palette, 0, PALETTE_SIZE);
 
 	return out;
 }

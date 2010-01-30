@@ -34,6 +34,18 @@
 extern SDL_Surface *real_screen;
 #endif
 
+// Colors for speedometer/drive LEDs
+enum {
+	black = 0,
+	white = 1,
+	fill_gray = 16,
+	shine_gray = 17,
+	shadow_gray = 18,
+	red = 19,
+	green = 20,
+	PALETTE_SIZE = 21,
+};
+
 #ifdef WIN32
 #include <ddraw.h>
 #endif
