@@ -27,7 +27,7 @@ int TimerController::arm(TimeoutHandler *which, int ms)
 		if (this->handlers[i] == which)
 			return i;
 
-	/* Not already there */
+	/* Empty slot? */
 	for (i = 0; i < this->n_handlers; i++)
 		if (this->handlers[i] == NULL)
 			break;
@@ -46,6 +46,10 @@ int TimerController::arm(TimeoutHandler *which, int ms)
 
 void TimerController::disarm(TimeoutHandler *which)
 {
+	/*Trying to disarm something which is not armed! */
+	if (which->timer_id < 0)
+		return;
+
 	panic_if(which->timer_id >= this->n_handlers,
 			"timer_id %d is too out of bounds (max %d)\n",
 			which->timer_id, this->n_handlers);
