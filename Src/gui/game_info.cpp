@@ -52,7 +52,11 @@ GameInfo::GameInfo(GameInfo *gi)
 
 GameInfo::~GameInfo()
 {
-	this->resetDefaults();
+	free((void*)this->name);
+	free((void*)this->author);
+	free((void*)this->filename);
+
+	SDL_FreeSurface(this->screenshot);
 }
 
 void GameInfo::resetDefaults()
@@ -64,6 +68,7 @@ void GameInfo::resetDefaults()
 
 	this->name = xstrdup(" ");
 	this->author = xstrdup(" ");
+	this->filename = xstrdup(" ");
 	this->screenshot = NULL;
 }
 
@@ -121,6 +126,7 @@ bool GameInfo::fromDump(struct game_info *gi)
 
 	this->author = xstrdup((char*)gi->data + gi->author_off);
 	this->name = xstrdup((char*)gi->data + gi->name_off);
+	this->filename = xstrdup(" ");
 
 	rw = SDL_RWFromMem(gi->data + gi->screenshot_off,
 			gi->sz - gi->screenshot_off);
