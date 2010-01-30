@@ -59,6 +59,7 @@ void GuiView::viewPopCallback()
 
 Gui::Gui()
 {
+	this->is_active = false;
 	this->np = NULL;
 
 	this->focus = NULL;
