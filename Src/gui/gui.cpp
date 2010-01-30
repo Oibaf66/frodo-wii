@@ -410,6 +410,7 @@ void Gui::saveGameInfo()
 
 		sprintf(new_name, "%s/%s.lra", this->metadata_base_path,
 				this->cur_gameInfo->filename);
+		printf("Saving game metadata %s\n", new_name);
 		fp = fopen(new_name, "w");
 		if (fp)
 		{
