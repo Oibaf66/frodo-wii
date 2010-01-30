@@ -38,6 +38,23 @@ public:
 	GameInfoBox *gameInfo;
 };
 
+class SaveScreenshot : public TimeoutHandler
+{
+public:
+	SaveScreenshot() : TimeoutHandler()
+	{
+		/* ~45 seconds from now */
+		Gui::gui->timerController->arm(this, 45000);
+	}
+
+	virtual void timeoutCallback()
+	{
+		if (!Gui::gui->cur_gameInfo->screenshot)
+			Gui::gui->cur_gameInfo->screenshot = TheC64->TheDisplay->SurfaceFromC64Display();
+
+		delete this;
+	}
+};
 
 class DiscMenu : public FileBrowser, TimeoutHandler
 {
@@ -110,10 +127,14 @@ public:
 			Gui::gui->updateGameInfo(Gui::gui->dv->gameInfo->gi);
 		else
 			Gui::gui->updateGameInfo(new GameInfo(fileName));
+
 		Gui::gui->popView();
 
 		if (this->runStartSequence)
 		{
+			/* Timeout and save the screenshot if there isn't one */
+			new SaveScreenshot();
+
 			Gui::gui->exitMenu();
 			TheC64->startFakeKeySequence("\nLOAD \"*\",8,1\nRUN\n");
 		}
