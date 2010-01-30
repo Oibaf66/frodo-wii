@@ -303,6 +303,8 @@ void Gui::exitMenu()
 		;
 	TheC64->NewPrefs(this->np);
 	ThePrefs = *this->np;
+
+	this->saveGameInfo();
 }
 
 void Gui::pushEvent(SDL_Event *ev)
