@@ -50,6 +50,8 @@ public:
 	const char *author;
 	const char *filename;
 	SDL_Surface *screenshot;
+
+	Uint16 score;
 };
 
 #endif /*__GAME_INFO_HH__ */

@@ -34,6 +34,7 @@ GameInfo::GameInfo(const char *filename,
 		this->name = xstrdup(name);
 	this->author = xstrdup(author);
 	this->screenshot = image;
+	this->score = 0;
 }
 
 GameInfo::GameInfo(GameInfo *gi)
@@ -203,17 +204,22 @@ void GameInfo::setAuthor(const char *author)
 {
 	free((void*)this->author);
 	this->author = xstrdup(author);
+	if (strcmp(author, " ") != 0)
+		this->score++;
 }
 
 void GameInfo::setName(const char *name)
 {
 	free((void*)this->name);
 	this->name = xstrdup(name);
+	if (strcmp(name, " ") != 0)
+		this->score++;
 }
-
 
 void GameInfo::setScreenshot(SDL_Surface *scr)
 {
 	SDL_FreeSurface(this->screenshot);
 	this->screenshot = scr;
+	if (scr != NULL)
+		this->score++;
 }
