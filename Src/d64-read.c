@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Ugly kludge to remove warnings. This file should really be fixed instead... */
+#define fread(ptr, size, nmemb, stream) do { if (fread(ptr,size,nmemb,stream) != nmemb) printf("fread failed");} while(0)
+
 /********************************************************************************************/
 static long GetFilePos(int Track, int Sector)
 {
 	long pos;
 
-	char buffer[256];
 	pos = 0;
 
 	if (Track >= 1 && Track <= 17)
@@ -96,15 +98,15 @@ const char **DirD64(const char *FileName) //mode = 0: quiet mode
 	int cnt = 16;
 	int cur = 0;
 
-	file_list = (const char**)malloc(cnt * sizeof(char*));
-	file_list[cur] = strdup((char*)"Empty Disc");
-	file_list[cur + 1] = NULL;
-
 	File = fopen(FileName, "rb");
 	if (!File)
 	{
 		return NULL;
 	}
+
+	file_list = (const char**)malloc(cnt * sizeof(char*));
+	file_list[cur] = strdup((char*)"Empty Disc");
+	file_list[cur + 1] = NULL;
 
 	pos = GetFilePos(18, 0);
 	fseek(File, pos, SEEK_SET);
