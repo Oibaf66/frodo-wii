@@ -63,7 +63,7 @@ const char **main_menu_messages = (const char*[]){
 	/*00*/          NULL, /* Setup dynamically */
 	/*01*/          " ",
 	/*02*/          "File",
-	/*03*/          "^|Insert|Start",
+	/*03*/          "^|Start|Insert",
 	/*04*/          "States",
 	/*05*/          "^|Load|Save|Delete",
 	/*06*/          "Keyboard",

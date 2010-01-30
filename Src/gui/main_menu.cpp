@@ -78,7 +78,7 @@ public:
 			Gui::gui->dv->setDirectory(Gui::gui->game_base_path);
 			Gui::gui->pushView(Gui::gui->dv);
 
-			Gui::gui->dv->runStartSequence(this->p_submenus[0].sel == 1);
+			Gui::gui->dv->runStartSequence(this->p_submenus[0].sel == 0);
 			break;
 		case 4: /* Load/save states */
 			if (this->p_submenus[1].sel == 1)
