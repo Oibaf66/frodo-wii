@@ -176,6 +176,11 @@ public:
 		this->menu->pushEvent(ev);
 	}
 
+	void viewPushCallback()
+	{
+		this->menu->selectOne(0);
+	}
+
 	void draw(SDL_Surface *where)
 	{
 		 SDL_Rect dst;
