@@ -63,7 +63,6 @@ public:
 
 	virtual void selectCallback(int which)
 	{
-		printf("entry %d selected: %s\n", which, this->pp_msgs[which]);
 		switch (which)
 		{
 		case 0:
