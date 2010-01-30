@@ -75,6 +75,7 @@ Gui::Gui()
 	this->infobox = NULL;
 	this->textbox = NULL;
 	this->status_bar_bg = NULL;
+	this->keyboard = NULL;
 	this->default_font = NULL;
 	this->dialogue_bg = NULL;
 	this->small_font = NULL;
@@ -131,6 +132,7 @@ Gui::~Gui()
 		delete VirtualKeyboard::kbd;
 
 	SDL_FreeSurface(this->bg_left);
+	SDL_FreeSurface(this->keyboard);
 	SDL_FreeSurface(this->bg_middle);
 	SDL_FreeSurface(this->bg_right);
 	SDL_FreeSurface(this->bg_submenu_left);
@@ -165,6 +167,7 @@ bool Gui::setTheme(const char *path)
 	this->main_menu_bg = this->loadThemeImage(path, "main_menu_bg.png");
 	this->status_bar_bg = this->loadThemeImage(path, "status_bar.png");
 	this->infobox = this->loadThemeImage(path, "infobox.png");
+	this->keyboard = this->loadThemeImage(path, "keyboard.png");
 	this->textbox = this->loadThemeImage(path, "textbox.png");
 	this->dialogue_bg = this->loadThemeImage(path, "dialogue_box.png");
 	this->disc_info = this->loadThemeImage(path, "disc_info.png");
@@ -199,6 +202,7 @@ bool Gui::setTheme(const char *path)
 		SDL_FreeSurface(this->disc_info);
 		SDL_FreeSurface(this->textbox);
 		SDL_FreeSurface(this->selected_key);
+		SDL_FreeSurface(this->keyboard);
 		SDL_FreeSurface(this->highlighted_key);
 		SDL_FreeSurface(this->status_bar_bg);
 

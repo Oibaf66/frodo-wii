@@ -84,6 +84,7 @@ public:
 	SDL_Surface *status_bar_bg;
 	SDL_Surface *infobox;
 	SDL_Surface *textbox;
+	SDL_Surface *keyboard;
 	SDL_Surface *dialogue_bg;
 	SDL_Surface *disc_info;
 	SDL_Surface *bg_left, *bg_right, *bg_middle,

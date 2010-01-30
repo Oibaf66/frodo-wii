@@ -49,7 +49,7 @@ public:
 	int stringToKeycode(const char *str);
 	struct virtkey eventToVirtkey(event_t ev);
 
-	void activate();
+	void activate(bool default_shifted = true);
 
 	void setFont(Font *font)
 	{
@@ -73,6 +73,8 @@ public:
 
 	void pushEvent(SDL_Event *ev);
 
+	const char *getString();
+
 	/* Singleton object */
 	static VirtualKeyboard *kbd;
 private:
@@ -90,6 +92,7 @@ private:
 	bool shift_on;
 
 	bool kbd_only_input;
+	bool default_shifted;
 
 	bool is_active;
 	struct virtkey *buf;

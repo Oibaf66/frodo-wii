@@ -77,7 +77,7 @@ public:
 			switch(this->p_submenus[2].sel)
 			{
 			case 0:
-				VirtualKeyboard::kbd->activate();
+				VirtualKeyboard::kbd->activate(false);
 				VirtualKeyboard::kbd->registerListener(new KeyboardTypingListener());
 				break;
 			case 1:

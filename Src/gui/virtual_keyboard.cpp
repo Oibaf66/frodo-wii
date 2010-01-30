@@ -20,16 +20,18 @@ typedef struct virtkey
 {
 	const char *name;
 	int kc;
-	bool is_shift;
-	bool is_done;
+	int flags;
 } virtkey_t;
 
-#define INVALID_VIRTKEY ((struct virtkey){NULL, -1, false, false})
+#define F_IS_SHIFT 1
+#define F_IS_DONE  2
+#define F_SHIFT_ON 4
+
+#define INVALID_VIRTKEY ((struct virtkey){NULL, -1, 0})
 
 static inline bool IS_INVALID_VIRTKEY(virtkey_t *k)
 {
-	return k->name == NULL && k->kc == -1 &&
-			k->is_done == false && k->is_shift == false;
+	return k->name == NULL && k->kc == -1 && k->flags == 0;
 }
 /*
   C64 keyboard matrix:
@@ -47,15 +49,15 @@ static inline bool IS_INVALID_VIRTKEY(virtkey_t *k)
 #define MATRIX(a,b) (((a) << 3) | (b))
 
 #define K(name, a,b) \
-	{ name, MATRIX(a,b), false, false }
+	{ name, MATRIX(a,b), 0 }
 #define S(name, a,b) \
-	{ name, MATRIX(a,b), true, false }
+	{ name, MATRIX(a,b), F_IS_SHIFT }
 #define N(name) \
-	{ name, -1, false, false }
+	{ name, -1, 0 }
 #define D(name) \
-	{ name, -1, false, true }
+	{ name, -1, F_IS_DONE}
 #define J(name, v) \
-	{ name, 0x40 | (v), false, false }
+	{ name, 0x40 | (v), 0}
 
 #define KEY_COLS 15
 #define KEY_ROWS 8
@@ -86,6 +88,7 @@ VirtualKeyboard::VirtualKeyboard(Font *font) : GuiView(), ListenerManager()
 	this->sel_y = 0;
 	this->shift_on = false;
 	this->kbd_only_input = false;
+	this->default_shifted = false;
 
 	this->is_active = false;
 	this->buf_head = 0;
@@ -103,11 +106,6 @@ void VirtualKeyboard::draw(SDL_Surface *where, int x_base, int y_base, int w, in
 {
 	int key_w = w / KEY_COLS;
 	int key_h = h / KEY_ROWS;
-	SDL_Rect bg_rect = {x_base, y_base,
-			key_w * KEY_COLS, key_h * KEY_ROWS};
-
-	SDL_FillRect(where, &bg_rect,
-			SDL_MapRGB(where->format, 0x00, 0x80, 0x80));
 
 	for (int y = 0; y < KEY_ROWS; y++ )
 	{
@@ -279,8 +277,11 @@ const char VirtualKeyboard::keycodeToChar(int kc)
 	return s[0];
 }
 
-void VirtualKeyboard::activate()
+void VirtualKeyboard::activate(bool default_shifted)
 {
+	this->default_shifted = default_shifted;
+	this->shift_on = this->default_shifted;
+
 	Gui::gui->kbd = this;
 	this->is_active = true;
 	memset(this->buf, 0, sizeof(struct virtkey) * this->buf_len);
@@ -325,15 +326,15 @@ void VirtualKeyboard::runLogic()
 		if (!key)
 			return;
 
-		if (key->is_shift == true)
+		if (key->flags & F_IS_SHIFT)
 			this->toggleShift();
-		else if (key->is_done) /* We're done! */
+		else if (key->flags & F_IS_DONE) /* We're done! */
 			this->done();
 		else if (strcmp(key->name, "Del") == 0)
 		{
 			if (this->buf_head > 1)
 			{
-				this->buf[this->buf_head - 1] = (struct virtkey){NULL, -1, false, false};
+				this->buf[this->buf_head - 1] = INVALID_VIRTKEY;
 				this->buf_head -= 2;
 			}
 		}
@@ -345,9 +346,13 @@ void VirtualKeyboard::runLogic()
 void VirtualKeyboard::pushKey(struct virtkey *vk)
 {
 	int n_listeners = sizeof(this->listeners) / sizeof(*this->listeners);
+	struct virtkey key = *vk;
+
+	if (this->shift_on)
+		key.flags |= F_SHIFT_ON;
 
 	/* Add to buf */
-	this->buf[this->buf_head] = *vk;
+	this->buf[this->buf_head] = key;
 
 	this->buf_head++;
 	if (this->buf_head >= this->buf_len - 1)
@@ -367,26 +372,47 @@ void VirtualKeyboard::deactivate()
 	Gui::gui->kbd = NULL;
 }
 
+const char *VirtualKeyboard::getString()
+{
+	char *out = (char *)xmalloc(this->buf_head + 1);
+
+	for (unsigned i = 0; i < this->buf_head; i++)
+	{
+		virtkey_t *k = &this->buf[i];
+		int kc = k->kc | ((k->flags & F_SHIFT_ON) ? 0x80 : 0);
+
+		out[i] = this->keycodeToChar(kc);
+	}
+
+	return out;
+}
+
 void VirtualKeyboard::done()
 {
 	int n_listeners = sizeof(this->listeners) / sizeof(*this->listeners);
-	char *buf = (char *)xmalloc(this->buf_head + 1);
-
-	for (unsigned i = 0; i < this->buf_head; i++)
-		buf[i] = this->keycodeToChar(this->buf[i].kc);
+	const char *str = this->getString();
 
 	for (int i = 0; i < n_listeners; i++)
 	{
 		if (this->listeners[i])
-			((KeyboardListener*)this->listeners[i])->stringCallback(buf);
+			((KeyboardListener*)this->listeners[i])->stringCallback(str);
 	}
-	free(buf);
+	free((void*)str);
 	this->deactivate();
 }
 
 void VirtualKeyboard::draw(SDL_Surface *where)
 {
+	SDL_Rect r = (SDL_Rect){10, 210, 0, 0};
+
+	SDL_BlitSurface(Gui::gui->keyboard, NULL, where, &r);
 	this->draw(where, 20, 240, 600, 240);
+
+	const char *str = this->getString();
+	if (strlen(str) > 0)
+		this->font->draw(where, str,
+				15, 212, 600, 240);
+	free((void*)str);
 }
 
 void VirtualKeyboard::updateTheme()
@@ -401,6 +427,9 @@ void VirtualKeyboard::pushEvent(SDL_Event *ev)
 	case SDL_KEYDOWN:
 		switch (ev->key.keysym.sym)
 		{
+		case SDLK_RSHIFT:
+		case SDLK_LSHIFT:
+			this->shift_on = !this->default_shifted; break;
 		case SDLK_UP:
 		case SDLK_DOWN:
 		case SDLK_LEFT:
@@ -424,10 +453,16 @@ void VirtualKeyboard::pushEvent(SDL_Event *ev)
 			this->kbd_only_input = true;
 		default:
 			break;
+		} break;
+	case SDL_KEYUP:
+		switch (ev->key.keysym.sym)
+		{
+		case SDLK_RSHIFT:
+		case SDLK_LSHIFT:
+			this->shift_on = this->default_shifted; break;
+		default: break;
 		}
-		default:
-			break;
-
+	default: break;
 	}
 }
 
