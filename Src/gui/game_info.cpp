@@ -88,6 +88,7 @@ struct game_info *GameInfo::dump()
 
 	total_sz += strlen(this->author) + 1;
 	total_sz += strlen(this->name) + 1;
+	total_sz += strlen(this->filename) + 1;
 
 	total_sz += png_sz;
 	/* 4-byte align */
@@ -99,16 +100,19 @@ struct game_info *GameInfo::dump()
 	out->version_magic = VERSION_MAGIC;
 	out->author_off = 0; /* Starts AFTER the header */
 	out->name_off = out->author_off + strlen(this->author) + 1;
-	out->screenshot_off = out->name_off + strlen(this->name) + 1;
+	out->filename_off = out->name_off + strlen(this->name) + 1;
+	out->screenshot_off = out->filename_off + strlen(this->filename) + 1;
 
 	memcpy(out->data + out->author_off, this->author, strlen(this->author) + 1);
 	memcpy(out->data + out->name_off, this->name, strlen(this->name) + 1);
+	memcpy(out->data + out->filename_off, this->filename, strlen(this->filename) + 1);
 	memcpy(out->data + out->screenshot_off, png_data, png_sz);
 
 	out->sz = htonl(out->sz);
 	out->author_off = htons(out->author_off);
 	out->version_magic = htons(out->version_magic);
 	out->name_off = htons(out->name_off);
+	out->filename_off = htons(out->filename_off);
 	out->screenshot_off = htons(out->screenshot_off);
 
 	return out;
@@ -122,11 +126,12 @@ bool GameInfo::fromDump(struct game_info *gi)
 	gi->version_magic = ntohs(gi->version_magic);
 	gi->author_off = ntohs(gi->author_off);
 	gi->name_off = ntohs(gi->name_off);
+	gi->filename_off = ntohs(gi->filename_off);
 	gi->screenshot_off = ntohs(gi->screenshot_off);
 
 	this->author = xstrdup((char*)gi->data + gi->author_off);
 	this->name = xstrdup((char*)gi->data + gi->name_off);
-	this->filename = xstrdup(" ");
+	this->filename = xstrdup((char*)gi->data + gi->filename_off);
 
 	rw = SDL_RWFromMem(gi->data + gi->screenshot_off,
 			gi->sz - gi->screenshot_off);
