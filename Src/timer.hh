@@ -29,6 +29,8 @@ public:
 		this->timer_id = -1;
 	}
 
+	~TimeoutHandler();
+
 	void tick()
 	{
 		this->timeout--;

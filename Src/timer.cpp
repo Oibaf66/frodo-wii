@@ -1,10 +1,18 @@
 #include "sysdeps.h"
 #include "Prefs.h"
+#include "gui/gui.hh"
 
 #include "timer.hh"
 #include "utils.hh"
 
 #define MS_TO_TICKS(x) ((x) / ThePrefs.MsPerFrame)
+
+TimeoutHandler::~TimeoutHandler()
+{
+	/* If we haven't timed out yet, disarm us */
+	Gui::gui->timerController->disarm(this);
+}
+
 
 TimerController::TimerController()
 {
