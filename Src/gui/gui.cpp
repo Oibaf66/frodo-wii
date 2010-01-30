@@ -374,7 +374,11 @@ Font *Gui::loadThemeFont(const char *dir, const char *what, int size)
 void Gui::updateGameInfo(GameInfo *gi)
 {
 	panic_if(!gi, "gi must be set\n");
+
+	/* Store the current game info */
+	this->saveGameInfo();
 	delete this->cur_gameInfo;
+
 	this->cur_gameInfo = gi;
 	this->gameInfoChanged = true;
 }
@@ -385,21 +389,27 @@ void Gui::saveGameInfo()
 
 	if (p)
 	{
-		char buf[255];
+		char *new_name = (char *)xmalloc(strlen(this->metadata_base_path) +
+				3 + strlen(this->cur_gameInfo->filename));
 		FILE *fp;
 
-		snprintf(buf, sizeof(buf), "%s/%s",
-				METADATA_ROOT_PATH, this->cur_gameInfo->filename);
-		fp = fopen(buf, "w");
-		if (!fp)
+		sprintf(new_name, "%s/%s", this->metadata_base_path,
+				this->cur_gameInfo->filename);
+		fp = fopen(new_name, "w");
+		if (fp)
 		{
-			warning("Could not open %s for writing\n", buf);
-			return;
+			int n = fwrite((const void*)p, 1, p->sz, fp);
+
+			if (ferror(fp))
+				warning("Write error on %s\n", new_name);
+			else if ((size_t)n != p->sz)
+				warning("Could only write %d bytes of %s\n", n, new_name);
+			fclose(fp);
 		}
-		int n = fwrite((const void*)p, 1, p->sz, fp);
-		if (n != (int)p->sz)
-			warning("Could only write %d bytes of %s\n", n, buf);
-		fclose(fp);
+		else
+			warning("Could not open %s for writing\n", new_name);
+
+		free(new_name);
 	}
 
 	this->gameInfoChanged = false;
