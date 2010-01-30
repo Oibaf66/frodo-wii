@@ -616,7 +616,7 @@ void C64Display::TranslateKey(SDLKey key, bool key_up, uint8 *key_matrix,
 	{
 		char c = Gui::gui->kbd->keycodeToChar(c64_key | (shift_on ? 0x80 : 0) );
 
-		if (this->text_message_idx >= sizeof(this->text_message) - 2 ||
+		if ((size_t)this->text_message_idx >= sizeof(this->text_message) - 2 ||
 				c == '\n')
 		{
 			this->text_message[this->text_message_idx] = '\0';
@@ -865,7 +865,6 @@ uint8 C64::poll_joystick_hats(int port)
 	for (i = 0; i < hats; i++) {
 
 		Uint8 v = SDL_JoystickGetHat (js, i);
-		int x = 0, y = 0;
 
 		/* FIXME! This is the wrong way for the Wii */
 		if (v & SDL_HAT_UP)
@@ -885,7 +884,7 @@ uint8 C64::poll_joystick_buttons(int port)
 {
 	SDL_Joystick *js = joy[port];
 	uint8 out = 0xff;
-	unsigned int i;
+	int i;
 
 	for (i = 0; i < SDL_JoystickNumButtons (js); i++) {
 		bool old = this->joy_button_pressed[i];
