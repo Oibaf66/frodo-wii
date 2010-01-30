@@ -311,6 +311,8 @@ void Gui::pushEvent(SDL_Event *ev)
 
 	if (!this->is_active || !cur_view)
 		return;
+	if (ev->type == SDL_QUIT)
+		exit(0);
 	if (this->dlg)
 		this->dlg->pushEvent(ev);
 	else if (this->kbd)
