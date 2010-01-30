@@ -122,7 +122,7 @@ void Menu::draw(SDL_Surface *where, int x, int y, int w, int h)
 			int n_pipe = 0;
 			int total_chars = 0;
 			int tw, th, tw_first;
-			int n_chars;
+			int n_chars = 0;
 			char *p;
 			int n;
 
