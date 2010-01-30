@@ -41,7 +41,7 @@ public:
 		switch (which)
 		{
 		case 0:
-			this->box->gi->screenshot = TheC64->TheDisplay->SurfaceFromC64Display();;
+			this->box->gi->setScreenshot(TheC64->TheDisplay->SurfaceFromC64Display());
 			break;
 		case 2:
 		case 3:
@@ -65,7 +65,7 @@ public:
 		{
 			SDL_Surface *p = TheC64->TheDisplay->SurfaceFromC64Display();
 
-			this->box->gi->screenshot = p;
+			this->box->gi->setScreenshot(p);
 		}
 		Gui::gui->popView();
 	}

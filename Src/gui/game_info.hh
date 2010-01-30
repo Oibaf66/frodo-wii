@@ -33,6 +33,8 @@ public:
 
 	void setName(const char *name);
 
+	void setScreenshot(SDL_Surface *scr);
+
 	void resetDefaults();
 
 	/** Returns an allocated dump structure */

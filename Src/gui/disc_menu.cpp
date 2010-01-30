@@ -50,7 +50,7 @@ public:
 	virtual void timeoutCallback()
 	{
 		if (!Gui::gui->cur_gameInfo->screenshot)
-			Gui::gui->cur_gameInfo->screenshot = TheC64->TheDisplay->SurfaceFromC64Display();
+			Gui::gui->cur_gameInfo->setScreenshot(TheC64->TheDisplay->SurfaceFromC64Display());
 
 		delete this;
 	}

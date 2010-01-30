@@ -210,3 +210,10 @@ void GameInfo::setName(const char *name)
 	free((void*)this->name);
 	this->name = xstrdup(name);
 }
+
+
+void GameInfo::setScreenshot(SDL_Surface *scr)
+{
+	SDL_FreeSurface(this->screenshot);
+	this->screenshot = scr;
+}
