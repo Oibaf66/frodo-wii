@@ -27,9 +27,9 @@ GameInfo::GameInfo(const char *filename,
 		const char *name, const char *author,
 		SDL_Surface *image)
 {
-	this->filename = filename;
-	this->name = name;
-	this->author = author;
+	this->filename = xstrdup(filename);
+	this->name = xstrdup(name);
+	this->author = xstrdup(author);
 	this->screenshot = image;
 }
 
@@ -37,16 +37,13 @@ GameInfo::GameInfo(GameInfo *gi)
 {
 	if (!gi)
 	{
-		this->filename = NULL;
-		this->name = NULL;
-		this->author = NULL;
-		this->screenshot = NULL;
+		this->resetDefaults();
 		return;
 	}
 
-	this->name = gi->name ? xstrdup(gi->name) : NULL;
-	this->author = gi->author ? xstrdup(gi->author) : NULL;
-	this->filename = gi->filename ? xstrdup(gi->filename) : NULL;
+	this->name = xstrdup(gi->name);
+	this->author = xstrdup(gi->author);
+	this->filename = xstrdup(gi->filename);
 	this->screenshot = NULL;
 
 	if (gi->screenshot)
@@ -62,10 +59,11 @@ void GameInfo::resetDefaults()
 {
 	free((void*)this->name);
 	free((void*)this->author);
+	free((void*)this->filename);
 	SDL_FreeSurface(this->screenshot);
 
-	this->name = NULL;
-	this->author = NULL;
+	this->name = xstrdup(" ");
+	this->author = xstrdup(" ");
 	this->screenshot = NULL;
 }
 
