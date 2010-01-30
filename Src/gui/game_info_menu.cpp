@@ -41,6 +41,7 @@ public:
 		switch (which)
 		{
 		case 0:
+			this->box->gi->screenshot = TheC64->TheDisplay->SurfaceFromC64Display();;
 			break;
 		case 2:
 		case 3:
