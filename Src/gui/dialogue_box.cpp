@@ -50,7 +50,7 @@ void DialogueBox::escapeCallback(int which)
 {
 	for (int i = 0; i < this->nListeners(); i++)
 		if (this->listeners[i])
-			((DialogueListener*)this->listeners[i])->selectCallback(this,
+			((DialogueListener*)this->listeners[i])->escapeCallback(this,
 					this->p_submenus[0].sel);
 	Gui::gui->popDialogueBox();
 	if (this->delete_on_action)
