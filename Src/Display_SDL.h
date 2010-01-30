@@ -690,7 +690,7 @@ void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joyst
 		Gui::gui->pushEvent(&event);
 
 		/* Ignore keyboard input while the menu is active */
-		if (Gui::gui->is_active)
+		if (Gui::gui->is_active || Gui::gui->kbd)
 			continue;
 
 		switch (event.type) {

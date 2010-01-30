@@ -229,6 +229,7 @@ public:
 
 	void startFakeKeySequence(const char *str);
 	void run_fake_key_sequence();
+	void pushKeyCode(int kc, bool up);
 #endif
 
 #ifdef WIN32

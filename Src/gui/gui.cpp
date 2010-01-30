@@ -240,13 +240,13 @@ void Gui::runLogic(void)
 
 	this->status_bar->runLogic();
 	this->timerController->tick();
+	if (this->kbd)
+		this->kbd->runLogic();
 
 	if (!this->is_active || !cur_view)
 		return;
 	if (this->dlg)
 		this->dlg->runLogic();
-	else if (this->kbd)
-		this->kbd->runLogic();
 	else
 		cur_view->runLogic();
 }
@@ -316,7 +316,11 @@ void Gui::pushEvent(SDL_Event *ev)
 	GuiView *cur_view = this->peekView();
 
 	if (!this->is_active || !cur_view)
+	{
+		if (this->kbd)
+			this->kbd->pushEvent(ev);
 		return;
+	}
 	if (ev->type == SDL_QUIT)
 		exit(0);
 	if (this->dlg)
@@ -334,6 +338,8 @@ void Gui::draw(SDL_Surface *where)
 	if (!this->is_active || !cur_view)
 	{
 		this->status_bar->draw(where);
+		if (this->kbd)
+			this->kbd->draw(where);
 		return;
 	}
 

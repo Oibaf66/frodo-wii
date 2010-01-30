@@ -84,6 +84,11 @@ void C64::c64_dtor(void)
 }
 
 
+void C64::pushKeyCode(int kc, bool up)
+{
+	TheDisplay->UpdateKeyMatrix(kc, up, TheCIA1->KeyMatrix, TheCIA1->RevMatrix, NULL);
+}
+
 /* From dreamcast port but heavily modified */
 void C64::run_fake_key_sequence()
 {

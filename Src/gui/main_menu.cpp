@@ -1,19 +1,34 @@
 #include "menu.hh"
 #include "dialogue_box.hh"
 
-class KeyboardTypingListener : public KeyboardListener
+class KeyboardTypingListener : public KeyboardListener, TimeoutHandler
 {
+public:
 	virtual void stringCallback(const char *str)
 	{
-		printf("string: %s\n", str);
 		/* Remove thyself! */
 		delete this;
 	}
 
 	virtual void keyCallback(bool shift, const char *str)
 	{
-		printf("Vobb: %d: %s\n", shift, str);
+		this->kc = VirtualKeyboard::kbd->stringToKeycode(str);
+
+		if (shift)
+			this->kc |= 0x80;
+
+		TheC64->pushKeyCode(this->kc, false);
+		/* Release it soon */
+		Gui::gui->timerController->arm(this, 1);
 	}
+
+	virtual void timeoutCallback()
+	{
+		TheC64->pushKeyCode(this->kc, true);
+	}
+
+private:
+	int kc;
 };
 
 class ExitListener : public DialogueListener
@@ -82,6 +97,7 @@ public:
 			case 0:
 				VirtualKeyboard::kbd->activate(false);
 				VirtualKeyboard::kbd->registerListener(new KeyboardTypingListener());
+				Gui::gui->exitMenu();
 				break;
 			case 1:
 				break;
