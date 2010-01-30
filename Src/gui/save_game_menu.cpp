@@ -60,8 +60,15 @@ public:
 		const char *fileName = this->pp_msgs[this->cur_sel];
 		char buf[255];
 
+		/* If we selected a directory, just take the next one */
+		if (fileName[0] == '[')
+		{
+			this->pushDirectory(fileName);
+			return;
+		}
+
 		snprintf(buf, sizeof(buf), "%s/%s",
-				Gui::gui->save_game_path, fileName);
+				this->cur_path_prefix, fileName);
 		if (this->loadSnapshot)
 			TheC64->LoadSnapshot(buf);
 		else
