@@ -290,6 +290,7 @@ void Menu::runLogic()
 void Menu::setText(const char **messages, int *submenu_defaults)
 {
 	int submenu;
+	int i;
 
 	/* Free the old stuff */
 	this->n_submenus = 0;
@@ -311,15 +312,18 @@ void Menu::setText(const char **messages, int *submenu_defaults)
 			continue; /* Length of submenus is unimportant */
 		}
 	}
-	this->pp_msgs = (const char **)xmalloc(this->n_entries * sizeof(const char *));
+
+	this->pp_msgs = (const char **)xmalloc((this->n_entries + 1) * sizeof(const char *));
 	if (this->n_submenus)
 		this->p_submenus = (submenu_t *)xmalloc(this->n_submenus * sizeof(submenu_t));
-	for (int i = 0; i < this->n_entries; i++)
+	for (i = 0; i < this->n_entries; i++)
 		this->pp_msgs[i] = xstrdup(messages[i]);
+	this->pp_msgs[i] = NULL;
+
 
 	submenu = 0;
 
-	for (int i = 0; i < this->n_entries; i++)
+	for (i = 0; i < this->n_entries; i++)
 	{
 		if (IS_SUBMENU(this->pp_msgs[i]))
 		{
