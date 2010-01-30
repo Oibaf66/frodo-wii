@@ -355,7 +355,7 @@ SDL_Surface *C64Display::SurfaceFromC64Display()
     amask = 0xff000000;
 #endif
 
-	out = SDL_CreateRGBSurface(SDL_SWSURFACE, DISPLAY_X, DISPLAY_Y, 8,
+	out = SDL_CreateRGBSurface(SDL_SWSURFACE, DISPLAY_X / 2, DISPLAY_Y / 2, 8,
 			rmask,gmask,bmask,amask);
 	if (!out)
 		return NULL;
@@ -364,12 +364,12 @@ SDL_Surface *C64Display::SurfaceFromC64Display()
 	const Uint16 src_pitch = DISPLAY_X;
 
 	/* Draw 1-1 */
-	for (int y = 0; y < DISPLAY_Y; y++)
+	for (int y = 0; y < DISPLAY_Y / 2; y++)
 	{
-		for (int x = 0; x < DISPLAY_X; x++)
+		for (int x = 0; x < DISPLAY_X / 2; x++)
 		{
-			int src_off = y * src_pitch + x;
-			int dst_off = src_off;
+			int src_off = (y * 2) * src_pitch + (x * 2);
+			int dst_off = y * out->pitch + x;
 			Uint8 v = screen[src_off];
 
 			dst_pixels[ dst_off ] = v;
