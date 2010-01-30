@@ -245,6 +245,10 @@ int Menu::selectNext(event_t ev)
 		next = this->selectNext(0, -1); break;
 	case KEY_DOWN:
 		next = this->selectNext(0, 1); break;
+	case KEY_PAGEUP:
+		next = this->selectNext(0, -6); break;
+	case KEY_PAGEDOWN:
+		next = this->selectNext(0, 6); break;
 	case KEY_LEFT:
 		next = this->selectNext(-1, 0); break;
 	case KEY_RIGHT:
@@ -269,6 +273,8 @@ void Menu::runLogic()
 		{
 		case KEY_UP:
 		case KEY_DOWN:
+		case KEY_PAGEUP:
+		case KEY_PAGEDOWN:
 		case KEY_LEFT:
 		case KEY_RIGHT:
 			this->selectNext(ev);
