@@ -68,7 +68,7 @@ void GameInfo::resetDefaults()
 
 	this->name = xstrdup(" ");
 	this->author = xstrdup(" ");
-	this->filename = xstrdup(" ");
+	this->filename = xstrdup("unknown");
 	this->screenshot = NULL;
 }
 
