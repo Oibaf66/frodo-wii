@@ -672,6 +672,10 @@ void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joyst
 	while (SDL_PollEvent(&event)) {
 		Gui::gui->pushEvent(&event);
 
+		/* Ignore keyboard input while the menu is active */
+		if (Gui::gui->is_active)
+			continue;
+
 		switch (event.type) {
 
 			// Key pressed
