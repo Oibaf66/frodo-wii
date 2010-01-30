@@ -63,8 +63,8 @@ void TimerController::tick()
 		if (!cur)
 			continue;
 
-		cur->tick();
 		if (cur->timeout == 0)
 			this->disarm(cur);
+		cur->tick();
 	}
 }
