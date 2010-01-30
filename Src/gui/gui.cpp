@@ -394,6 +394,8 @@ void Gui::saveGameInfo()
 
 	if (p)
 	{
+		size_t sz = ntohl(p->sz);
+
 		char *new_name = (char *)xmalloc(strlen(this->metadata_base_path) +
 				3 + strlen(this->cur_gameInfo->filename));
 		FILE *fp;
@@ -403,12 +405,13 @@ void Gui::saveGameInfo()
 		fp = fopen(new_name, "w");
 		if (fp)
 		{
-			int n = fwrite((const void*)p, 1, p->sz, fp);
+			int n = fwrite((const void*)p, 1, sz, fp);
 
 			if (ferror(fp))
 				warning("Write error on %s\n", new_name);
-			else if ((size_t)n != p->sz)
-				warning("Could only write %d bytes of %s\n", n, new_name);
+			else if ((size_t)n != sz)
+				warning("Could only write %d bytes of %d for %s\n",
+						n, sz, new_name);
 			fclose(fp);
 		}
 		else
@@ -416,6 +419,7 @@ void Gui::saveGameInfo()
 
 		free(new_name);
 	}
+	free(p);
 
 	this->gameInfoChanged = false;
 }

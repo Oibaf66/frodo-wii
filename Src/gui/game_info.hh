@@ -21,7 +21,7 @@ struct game_info
 class GameInfo
 {
 public:
-	GameInfo(const char *filename = " ", const char *name = " ",
+	GameInfo(const char *filename = "unknown", const char *name = " ",
 			const char *author = " ",
 			SDL_Surface *image = NULL);
 
