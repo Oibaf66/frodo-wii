@@ -329,21 +329,6 @@ void C64Display::Update(uint8 *src_pixels)
 	}
 	Gui::gui->draw(real_screen);
 
-	if (this->TheC64->network_connection_type != NONE)
-		draw_string(real_screen, 0, 0, networktraffic_string, black, fill_gray);
-	if (this->on_screen_message) {
-		Uint32 time_now = SDL_GetTicks();
-
-		draw_string(real_screen, 60, 30,
-				this->on_screen_message, black, fill_gray);
-		if (time_now - this->on_screen_message_start_time > this->on_screen_message_time * 1000)
-			this->on_screen_message = NULL;
-	}
-	if (this->entering_text_message) {
-		draw_string(real_screen, 60, 30,
-				this->text_message, black, shadow_gray);
-	}
-
 	SDL_Flip(real_screen);
 }
 
