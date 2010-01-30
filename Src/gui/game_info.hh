@@ -13,7 +13,7 @@ struct game_info
 	uint16_t name_off;
 	uint16_t screenshot_off; /* In PNG format */
 	uint16_t filename_off;
-	uint16_t flags;
+	uint16_t score;
 	uint8_t data[]; /* 4-byte aligned */
 };
 

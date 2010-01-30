@@ -19,7 +19,7 @@ struct game_info_v0
 	uint16_t name_off;
 	uint16_t screenshot_off; /* In PNG format */
 	uint16_t filename_off;
-	uint16_t flags;
+	uint16_t score;
 	uint8_t data[]; /* 4-byte aligned */
 };
 
@@ -101,23 +101,28 @@ struct game_info *GameInfo::dump()
 	/* Allocate everything */
 	out = (struct game_info*)xmalloc(total_sz);
 	out->sz = total_sz;
+	out->score = this->score;
 	out->version_magic = VERSION_MAGIC;
+
 	out->author_off = 0; /* Starts AFTER the header */
 	out->name_off = out->author_off + strlen(this->author) + 1;
 	out->filename_off = out->name_off + strlen(this->name) + 1;
 	out->screenshot_off = out->filename_off + strlen(this->filename) + 1;
+
 
 	memcpy(out->data + out->author_off, this->author, strlen(this->author) + 1);
 	memcpy(out->data + out->name_off, this->name, strlen(this->name) + 1);
 	memcpy(out->data + out->filename_off, this->filename, strlen(this->filename) + 1);
 	memcpy(out->data + out->screenshot_off, png_data, png_sz);
 
+	/* Marshall it all */
 	out->sz = htonl(out->sz);
 	out->author_off = htons(out->author_off);
 	out->version_magic = htons(out->version_magic);
 	out->name_off = htons(out->name_off);
 	out->filename_off = htons(out->filename_off);
 	out->screenshot_off = htons(out->screenshot_off);
+	out->score = htons(out->score);
 
 	return out;
 }
@@ -126,16 +131,19 @@ bool GameInfo::fromDump(struct game_info *gi)
 {
 	SDL_RWops *rw;
 
+	/* Demarshal */
 	gi->sz = ntohl(gi->sz);
 	gi->version_magic = ntohs(gi->version_magic);
 	gi->author_off = ntohs(gi->author_off);
 	gi->name_off = ntohs(gi->name_off);
 	gi->filename_off = ntohs(gi->filename_off);
 	gi->screenshot_off = ntohs(gi->screenshot_off);
+	gi->score = ntohs(gi->score);
 
 	this->author = xstrdup((char*)gi->data + gi->author_off);
 	this->name = xstrdup((char*)gi->data + gi->name_off);
 	this->filename = xstrdup((char*)gi->data + gi->filename_off);
+	this->score = gi->score;
 
 	rw = SDL_RWFromMem(gi->data + gi->screenshot_off,
 			gi->sz - gi->screenshot_off);
