@@ -211,7 +211,7 @@ public:
 		this->hm[8] = this->addOne(this->hm[8], this->allocOne("Horiz: %s", stringToPtr_Classic("RAH")));
 		this->hm[8] = this->addOne(this->hm[8], this->allocOne("Vert: %s", stringToPtr_Classic("RAV")));
 
-		this->hm[11] = this->addOne(this->hm[11], "Revert to defaults");
+		this->hm[11] = this->addOne(this->hm[11], xstrdup("Revert to defaults"));
 
 		this->help->setHelpMessages(this->hm);
 	}
