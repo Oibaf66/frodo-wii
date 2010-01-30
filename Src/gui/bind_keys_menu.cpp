@@ -131,7 +131,7 @@ public:
 
 		if (use_virtkbd)
 		{
-			VirtualKeyboard::kbd->activate();
+			VirtualKeyboard::kbd->activate(false);
 			VirtualKeyboard::kbd->registerListener(this);
 		}
 		else
