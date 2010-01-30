@@ -815,7 +815,7 @@ uint8 C64::poll_joystick_axes(int port)
 
 	axes = SDL_JoystickNumAxes (js);
 	for (i = 0; i < axes; i++) {
-		unsigned int axis;
+		int axis;
 
 		if (ThePrefs.JoystickAxes[i] == JOY_NONE)
 			continue;
