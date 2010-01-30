@@ -397,10 +397,10 @@ void Gui::saveGameInfo()
 		size_t sz = ntohl(p->sz);
 
 		char *new_name = (char *)xmalloc(strlen(this->metadata_base_path) +
-				3 + strlen(this->cur_gameInfo->filename));
+				8 + strlen(this->cur_gameInfo->filename));
 		FILE *fp;
 
-		sprintf(new_name, "%s/%s", this->metadata_base_path,
+		sprintf(new_name, "%s/%s.lra", this->metadata_base_path,
 				this->cur_gameInfo->filename);
 		fp = fopen(new_name, "w");
 		if (fp)
