@@ -1,4 +1,8 @@
-#include <arpa/inet.h>
+#if defined(GEKKO)
+# include <network.h>
+#else
+ #include <arpa/inet.h>
+#endif
 #include <sys/stat.h>
 #include <SDL.h>
 #include <SDL_image.h>
