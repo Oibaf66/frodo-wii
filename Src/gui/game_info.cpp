@@ -158,7 +158,6 @@ GameInfo *GameInfo::loadFromFile(const char *fileName)
 	GameInfo *out = NULL;
 	FILE *fp;
 
-	printf("Woho! I'll load %s\n", fileName);
 	if (stat(fileName, &st) < 0)
 		return NULL;
 	if (st.st_size <= (signed)sizeof(struct game_info))

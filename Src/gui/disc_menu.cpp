@@ -147,8 +147,6 @@ public:
 
 	virtual void timeoutCallback()
 	{
-		printf("Hovering timed out over %s\n",
-				this->pp_msgs[this->cur_sel]);
 		Gui::gui->dv->loadGameInfo(this->pp_msgs[this->cur_sel]);
 	}
 
