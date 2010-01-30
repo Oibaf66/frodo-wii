@@ -3,11 +3,15 @@
 
 #include <SDL.h>
 
+/* This is just a link to some other file (filename is the link) */
+#define F_IS_LINK (1 << 0)
+
 struct game_info
 {
 	/* These two MUST stay the same */
 	uint32_t sz;
 	uint16_t version_magic;
+	uint16_t flags;
 
 	uint16_t author_off;
 	uint16_t name_off;
@@ -16,7 +20,6 @@ struct game_info
 	uint16_t score;
 	uint8_t data[]; /* 4-byte aligned */
 };
-
 
 class GameInfo
 {

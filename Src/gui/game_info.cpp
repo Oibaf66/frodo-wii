@@ -12,7 +12,9 @@
 #include "game_info.hh"
 
 #define VERSION_BASE   (0x1978)
-#define VERSION_MAGIC  (VERSION_BASE + 0)
+#define VERSION(x)     (VERSION_BASE + (x))
+/* Current magic */
+#define VERSION_MAGIC  VERSION(1)
 
 struct game_info_v0
 {
@@ -26,6 +28,79 @@ struct game_info_v0
 	uint16_t score;
 	uint8_t data[]; /* 4-byte aligned */
 };
+
+struct game_info_v1
+{
+	uint32_t sz;
+	uint16_t version_magic;
+	uint16_t flags;
+
+	uint16_t author_off;
+	uint16_t name_off;
+	uint16_t screenshot_off; /* In PNG format */
+	uint16_t filename_off;
+	uint16_t score;
+	uint8_t data[]; /* 4-byte aligned */
+};
+
+static void demarshal_v0(struct game_info_v0 *src)
+{
+	src->sz = ntohl(src->sz);
+	src->version_magic = ntohs(src->version_magic);
+	src->author_off = ntohs(src->author_off);
+	src->name_off = ntohs(src->name_off);
+	src->filename_off = ntohs(src->filename_off);
+	src->screenshot_off = ntohs(src->screenshot_off);
+	src->score = ntohs(src->score);
+}
+
+
+static void demarshal_v1(struct game_info_v1 *src)
+{
+	src->sz = ntohl(src->sz);
+	src->version_magic = ntohs(src->version_magic);
+	src->author_off = ntohs(src->author_off);
+	src->name_off = ntohs(src->name_off);
+	src->filename_off = ntohs(src->filename_off);
+	src->screenshot_off = ntohs(src->screenshot_off);
+	src->score = ntohs(src->score);
+	src->flags = ntohs(src->flags);
+}
+
+static struct game_info *from_v0(struct game_info_v0 *src)
+{
+	size_t d = sizeof(struct game_info_v1) - sizeof(struct game_info_v0);
+	struct game_info *dst;
+
+	printf("Converting v0->v1\n");
+	demarshal_v0(src);
+	dst = (struct game_info*)xmalloc(src->sz + d);
+
+	dst->sz = src->sz + d;
+	dst->version_magic = VERSION_MAGIC;
+	dst->flags = 0;
+	dst->score = src->score;
+
+	dst->author_off = src->author_off;
+	dst->name_off = src->name_off;
+	dst->screenshot_off = src->screenshot_off;
+	dst->filename_off = src->filename_off;
+	memcpy(dst->data, src->data, src->sz - sizeof(struct game_info_v0));
+
+	return dst;
+}
+
+static struct game_info *from_v1(struct game_info_v1 *src)
+{
+	struct game_info *dst;
+
+	demarshal_v1(src);
+	dst = (struct game_info*)xmalloc(src->sz);
+	memcpy(dst, src, src->sz);
+
+	return dst;
+}
+
 
 GameInfo::GameInfo(const char *filename,
 		const char *name, const char *author,
@@ -133,24 +208,31 @@ struct game_info *GameInfo::dump()
 
 bool GameInfo::fromDump(struct game_info *gi)
 {
+	struct game_info *p = gi;
 	SDL_RWops *rw;
 
 	/* Demarshal */
-	gi->sz = ntohl(gi->sz);
-	gi->version_magic = ntohs(gi->version_magic);
-	gi->author_off = ntohs(gi->author_off);
-	gi->name_off = ntohs(gi->name_off);
-	gi->filename_off = ntohs(gi->filename_off);
-	gi->screenshot_off = ntohs(gi->screenshot_off);
-	gi->score = ntohs(gi->score);
+	switch (ntohs(p->version_magic))
+	{
+	case VERSION(0):
+		p = from_v0((struct game_info_v0 *)p); break;
+	case VERSION(1):
+		p = from_v1((struct game_info_v1 *)p); break;
+	default:
+		/* Garbage, let's return */
+		warning("game info garbage magic: %2x\n",
+				ntohs(p->version_magic));
+		return false;
+		break;
+	}
 
-	this->author = xstrdup((char*)gi->data + gi->author_off);
-	this->name = xstrdup((char*)gi->data + gi->name_off);
-	this->filename = xstrdup((char*)gi->data + gi->filename_off);
-	this->score = gi->score;
+	this->author = xstrdup((char*)p->data + p->author_off);
+	this->name = xstrdup((char*)p->data + p->name_off);
+	this->filename = xstrdup((char*)p->data + p->filename_off);
+	this->score = p->score;
 
-	rw = SDL_RWFromMem(gi->data + gi->screenshot_off,
-			gi->sz - gi->screenshot_off);
+	rw = SDL_RWFromMem(p->data + p->screenshot_off,
+			p->sz - p->screenshot_off);
 	if (!rw)
 		goto bail_out;
 
@@ -158,10 +240,12 @@ bool GameInfo::fromDump(struct game_info *gi)
 	SDL_FreeRW(rw);
 	if (!this->screenshot)
 		goto bail_out;
+	free(p);
 
 	return true;
 
 bail_out:
+	free(p);
 	this->resetDefaults();
 
 	return false;
