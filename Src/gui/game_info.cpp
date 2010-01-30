@@ -28,7 +28,10 @@ GameInfo::GameInfo(const char *filename,
 		SDL_Surface *image)
 {
 	this->filename = xstrdup(filename);
-	this->name = xstrdup(name);
+	if (strcmp(name, " ") == 0)
+		this->name = xstrdup(filename);
+	else
+		this->name = xstrdup(name);
 	this->author = xstrdup(author);
 	this->screenshot = image;
 }
