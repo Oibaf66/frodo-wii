@@ -36,7 +36,8 @@ CPP_SRCS=Src/C64_SC.cpp Src/main.cpp Src/Display.cpp Src/Prefs.cpp Src/SID.cpp \
      Src/CIA_SC.cpp Src/CPU1541_SC.cpp Src/CPU_common.cpp Src/Network.cpp \
      Src/gui/menu_messages.cpp Src/gui/dialogue_box.cpp Src/gui/widget.cpp \
 	 Src/gui/game_info.cpp Src/gui/status_bar.cpp Src/gui/gui.cpp Src/gui/listener.cpp \
-	 Src/timer.cpp Src/utils.cpp Src/gui/virtual_keyboard.cpp Src/gui/menu.cpp
+	 Src/timer.cpp Src/utils.cpp Src/gui/virtual_keyboard.cpp Src/gui/menu.cpp \
+	 Src/gui/file_browser.cpp
      
 C_SRCS=Src/d64-read.c
 

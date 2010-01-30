@@ -58,8 +58,15 @@ public:
 	{
 		const char *fileName = this->pp_msgs[this->cur_sel];
 
+		/* If we selected a directory, just take the next one */
+		if (fileName[0] == '[')
+		{
+			this->pushDirectory(fileName);
+			return;
+		}
+
                 snprintf(Gui::gui->np->DrivePath[0], sizeof(Gui::gui->np->DrivePath[0]),
-                		"%s/%s", Gui::gui->game_base_path, fileName);
+                		"%s/%s", this->cur_path_prefix, fileName);
 
                 if (ext_matches_list(fileName, prg_exts)) {
                 	char tmp_filename[255];
