@@ -66,6 +66,7 @@ enum {
 };
 static Uint16 palette_16[PALETTE_SIZE];
 static Uint32 palette_32[PALETTE_SIZE];
+SDL_Color sdl_palette[PALETTE_SIZE];
 
 /*
   C64 keyboard matrix:
@@ -335,6 +336,48 @@ void C64Display::Update(uint8 *src_pixels)
 void C64Display::Update()
 {
 	this->Update((Uint8*)screen);
+}
+
+SDL_Surface *C64Display::SurfaceFromC64Display()
+{
+	Uint32 rmask,gmask,bmask,amask;
+	SDL_Surface *out;
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    rmask = 0xff000000;
+    gmask = 0x00ff0000;
+    bmask = 0x0000ff00;
+    amask = 0x000000ff;
+#else
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = 0xff000000;
+#endif
+
+	out = SDL_CreateRGBSurface(SDL_SWSURFACE, DISPLAY_X, DISPLAY_Y, 8,
+			rmask,gmask,bmask,amask);
+	if (!out)
+		return NULL;
+
+	Uint8 *dst_pixels = (Uint8*)out->pixels;
+	const Uint16 src_pitch = DISPLAY_X;
+
+	/* Draw 1-1 */
+	for (int y = 0; y < DISPLAY_Y; y++)
+	{
+		for (int x = 0; x < DISPLAY_X; x++)
+		{
+			int src_off = y * src_pitch + x;
+			int dst_off = src_off;
+			Uint8 v = screen[src_off];
+
+			dst_pixels[ dst_off ] = v;
+		}
+	}
+	SDL_SetPalette(out, SDL_LOGPAL | SDL_PHYSPAL, sdl_palette, 0, PALETTE_SIZE);
+
+	return out;
 }
 
 void C64Display::display_status_string(char *str, int seconds)
@@ -931,22 +974,21 @@ uint8 C64::poll_joystick(int port)
 
 void C64Display::InitColors(uint8 *colors)
 {
-	SDL_Color palette[PALETTE_SIZE];
 	for (int i=0; i<16; i++) {
-		palette[i].r = palette_red[i];
-		palette[i].g = palette_green[i];
-		palette[i].b = palette_blue[i];
+		sdl_palette[i].r = palette_red[i];
+		sdl_palette[i].g = palette_green[i];
+		sdl_palette[i].b = palette_blue[i];
 	}
-	palette[fill_gray].r = palette[fill_gray].g = palette[fill_gray].b = 0xd0;
-	palette[shine_gray].r = palette[shine_gray].g = palette[shine_gray].b = 0xf0;
-	palette[shadow_gray].r = palette[shadow_gray].g = palette[shadow_gray].b = 0x80;
-	palette[red].r = 0xf0;
-	palette[red].g = palette[red].b = 0;
-	palette[green].g = 0xf0;
-	palette[green].r = palette[green].b = 0;
+	sdl_palette[fill_gray].r = sdl_palette[fill_gray].g = sdl_palette[fill_gray].b = 0xd0;
+	sdl_palette[shine_gray].r = sdl_palette[shine_gray].g = sdl_palette[shine_gray].b = 0xf0;
+	sdl_palette[shadow_gray].r = sdl_palette[shadow_gray].g = sdl_palette[shadow_gray].b = 0x80;
+	sdl_palette[red].r = 0xf0;
+	sdl_palette[red].g = sdl_palette[red].b = 0;
+	sdl_palette[green].g = 0xf0;
+	sdl_palette[green].r = sdl_palette[green].b = 0;
 
 	if (real_screen->format->BitsPerPixel == 8)
-		SDL_SetColors(real_screen, palette, 0, PALETTE_SIZE);
+		SDL_SetColors(real_screen, sdl_palette, 0, PALETTE_SIZE);
  	for (int i = 0; i < PALETTE_SIZE; i++) {
  		int rs = real_screen->format->Rshift;
  		int gs = real_screen->format->Gshift;

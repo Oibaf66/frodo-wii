@@ -185,7 +185,6 @@ static void png_user_error(png_structp ctx, png_const_charp str)
 	fprintf(stderr, "libpng: error: %s\n", str);
 }
 
-
 /* This is taken from http://encelo.netsons.org/programming/sdl (GPLed) */
 void *sdl_surface_to_png(SDL_Surface *surf, size_t *out_sz)
 {

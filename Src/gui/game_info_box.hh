@@ -17,21 +17,12 @@ public:
 	void setGameInfo(GameInfo *gi)
 	{
 		/* Make a copy */
-		if (this->gi)
-			delete this->gi;
-		this->gi = new GameInfo(gi);
+		this->gi = gi;
 		this->updateMessages();
 	}
 
 	void loadGameInfo(const char *what)
 	{
-		/* Reset the current game info */
-		if (this->gi)
-		{
-			delete this->gi;
-			this->gi = NULL;
-		}
-
 		/* No need to do this for directories or the special "None" field */
 		if ( !(strcmp(what, "None") == 0 ||
 				what[0] == '[') )

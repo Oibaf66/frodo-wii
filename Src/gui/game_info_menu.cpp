@@ -1,3 +1,6 @@
+#include <Display.h>
+#include <C64.h>
+
 #include "gui.hh"
 #include "menu.hh"
 #include "game_info_box.hh"
@@ -56,6 +59,13 @@ public:
 
 	virtual void escapeCallback(int which)
 	{
+		/* If we haven't' saved a screenshot, save it anyway */
+		if (!this->box->gi->screenshot)
+		{
+			SDL_Surface *p = TheC64->TheDisplay->SurfaceFromC64Display();
+
+			this->box->gi->screenshot = p;
+		}
 		Gui::gui->popView();
 	}
 
@@ -92,6 +102,11 @@ public:
 	void viewPushCallback()
 	{
 		this->gameInfo->setGameInfo(Gui::gui->cur_gameInfo);
+	}
+
+	void viewPopCallback()
+	{
+		Gui::gui->cur_gameInfo = this->gameInfo->gi;
 	}
 
 	void draw(SDL_Surface *where)
