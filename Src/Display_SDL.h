@@ -771,7 +771,6 @@ bool C64Display::NumLock(void)
  */
 void C64::open_close_joystick(int port, int oldjoy, int newjoy)
 {
-#if !defined(GEKKO)
 	if (oldjoy != newjoy) {
 		joy_minx[port] = joy_miny[port] = 32767;	// Reset calibration
 		joy_maxx[port] = joy_maxy[port] = -32768;
@@ -786,7 +785,6 @@ void C64::open_close_joystick(int port, int oldjoy, int newjoy)
 			}
 		}
 	}
-#endif
 }
 
 void C64::open_close_joysticks(int oldjoy1, int oldjoy2, int newjoy1, int newjoy2)
