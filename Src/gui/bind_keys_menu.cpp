@@ -120,8 +120,8 @@ public:
 			}
 			break;
 		case 11:
-			printf("Resetting joystick setup to defaults\n");
-			Gui::gui->popView();
+			Gui::gui->np->SetupJoystickDefaults();
+			this->updateHelpMessages();
 			return;
 		default:
 			panic("Impossible menu option\n");

@@ -58,6 +58,7 @@ enum {
         JOY_HORIZ = 256,
         JOY_VERT = 258,
 	JOY_FIRE = 259,
+	JOY_ENTER_MENU = 260,
 };
 
 // Key bindings (WII)
@@ -100,6 +101,8 @@ public:
 
 	bool operator==(const Prefs &rhs) const;
 	bool operator!=(const Prefs &rhs) const;
+
+	void SetupJoystickDefaults();
 
 	int NormalCycles;		// Available CPU cycles in normal raster lines
 	int BadLineCycles;		// Available CPU cycles in Bad Lines

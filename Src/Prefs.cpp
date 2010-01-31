@@ -17,6 +17,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+#include <string.h>
+
 #include "sysdeps.h"
 
 #include "Prefs.h"
@@ -83,12 +85,7 @@ Prefs::Prefs()
 	SystemKeys = true;
 	ShowLEDs = true;
 
-	for (int i = 0; i < MAX_JOYSTICK_AXES; i++)
-		this->JoystickAxes[i] = JOY_NONE;
-	for (int i = 0; i < MAX_JOYSTICK_HATS; i++)
-		this->JoystickHats[i] = JOY_NONE;
-	for (int i = 0; i < MAX_JOYSTICK_BUTTONS; i++)
-		this->JoystickButtons[i] = JOY_NONE;
+	this->SetupJoystickDefaults();
 
 #ifdef HAVE_SDL
 	this->DisplayOption = 0;
@@ -101,6 +98,56 @@ Prefs::Prefs()
 	this->NetworkPort = 46214;
 }
 
+
+void Prefs::SetupJoystickDefaults()
+{
+	for (int i = 0; i < MAX_JOYSTICK_AXES; i++)
+		this->JoystickAxes[i] = JOY_NONE;
+	for (int i = 0; i < MAX_JOYSTICK_HATS; i++)
+		this->JoystickHats[i] = JOY_NONE;
+	for (int i = 0; i < MAX_JOYSTICK_BUTTONS; i++)
+		this->JoystickButtons[i] = JOY_NONE;
+
+	if (SDL_NumJoysticks() > 0)
+	{
+		const char *name = SDL_JoystickName(0);
+
+		if (strncmp(name, "Wiimote", 7) == 0)
+		{
+			/* Wiimote/Classic hat */
+			this->JoystickHats[0] = 0x41; /* Up */
+			this->JoystickHats[1] = 0x42; /* Down */
+			this->JoystickHats[2] = 0x44; /* Left */
+			this->JoystickHats[3] = 0x48; /* Right */
+
+			/* Nunchuk/classic analogue */
+			this->JoystickAxes[0] = JOY_HORIZ;
+			this->JoystickAxes[1] = JOY_VERT;
+			this->JoystickAxes[2] = JOY_HORIZ;
+			this->JoystickAxes[3] = JOY_VERT;
+
+			/* Wiimote 1, Nunchuk Z, classic a, b as fire */
+			this->JoystickButtons[3] = 0x50;
+			this->JoystickButtons[7] = 0x50;
+			this->JoystickButtons[9] = 0x50;
+			this->JoystickButtons[10] = 0x50;
+
+			/* Wiimote A, Classic Zr, Zl as space */
+			this->JoystickButtons[0] = (7 << 3) | 4;
+			this->JoystickButtons[15] = (7 << 3) | 4;
+			this->JoystickButtons[16] = (7 << 3) | 4;
+
+			/* Wiimote B, classic x, y as R/S (escape in the menu) */
+			this->JoystickButtons[1] = (7 << 3) | 7;
+			this->JoystickButtons[11] = (7 << 3) | 7;
+			this->JoystickButtons[12] = (7 << 3) | 7;
+
+			/* Wiimote, classic Home as enter menu */
+			this->JoystickButtons[6] = JOY_ENTER_MENU;
+			this->JoystickButtons[19] = JOY_ENTER_MENU;
+		}
+	}
+}
 
 /*
  *  Check if two Prefs structures are equal
