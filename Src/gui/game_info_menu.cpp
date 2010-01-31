@@ -29,6 +29,22 @@ public:
 		case 3:
 			this->box->gi->setAuthor(str);
 			break;
+		case 4:
+		{
+			unsigned long v;
+			char *endp;
+
+			v = strtoul(str, &endp, 0);
+			if (str != endp)
+			{
+				if (v < 1976 || v > 2040)
+					Gui::gui->pushDialogueBox(new DialogueBox(game_info_bad_year_dlg));
+				else
+					this->box->gi->setYear(v);
+			}
+			else
+				Gui::gui->pushDialogueBox(new DialogueBox(game_info_bad_number_dlg));
+		} break;
 		default:
 			panic("Cur sel is %d, not possible!\n", this->cur_sel);
 			break;
@@ -45,6 +61,7 @@ public:
 			break;
 		case 2:
 		case 3:
+		case 4:
 			VirtualKeyboard::kbd->activate();
 			VirtualKeyboard::kbd->registerListener(this);
 			break;

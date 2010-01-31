@@ -17,5 +17,7 @@ extern const char **network_port_dialogue_messages;
 extern const char **network_unset_name_dlg;
 extern const char **broken_theme_dlg;
 extern const char **select_analogue_dlg;
+extern const char **game_info_bad_year_dlg;
+extern const char **game_info_bad_number_dlg;
 
 #endif

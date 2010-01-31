@@ -40,6 +40,7 @@ struct game_info_v1
 	uint16_t screenshot_off; /* In PNG format */
 	uint16_t filename_off;
 	uint16_t score;
+	uint16_t year;
 	uint8_t data[]; /* 4-byte aligned */
 };
 
@@ -64,6 +65,7 @@ static void demarshal_v1(struct game_info_v1 *src)
 	src->filename_off = ntohs(src->filename_off);
 	src->screenshot_off = ntohs(src->screenshot_off);
 	src->score = ntohs(src->score);
+	src->year = ntohs(src->year);
 	src->flags = ntohs(src->flags);
 }
 
@@ -79,6 +81,7 @@ static struct game_info *from_v0(struct game_info_v0 *src)
 	dst->sz = src->sz + d;
 	dst->version_magic = VERSION_MAGIC;
 	dst->flags = 0;
+	dst->year = 1982; /* Got to assume something, right :-) */
 	dst->score = src->score;
 
 	dst->author_off = src->author_off;
@@ -114,6 +117,7 @@ GameInfo::GameInfo(const char *filename,
 	this->author = xstrdup(author);
 	this->screenshot = image;
 	this->score = 0;
+	this->year = 1982;
 }
 
 GameInfo::GameInfo(GameInfo *gi)
@@ -128,6 +132,7 @@ GameInfo::GameInfo(GameInfo *gi)
 	this->author = xstrdup(gi->author);
 	this->filename = xstrdup(gi->filename);
 	this->screenshot = NULL;
+	this->year = gi->year;
 
 	if (gi->screenshot)
 		this->screenshot = SDL_DisplayFormatAlpha(gi->screenshot);
@@ -181,6 +186,7 @@ struct game_info *GameInfo::dump()
 	out = (struct game_info*)xmalloc(total_sz);
 	out->sz = total_sz;
 	out->score = this->score;
+	out->year = this->year;
 	out->version_magic = VERSION_MAGIC;
 
 	out->author_off = 0; /* Starts AFTER the header */
@@ -202,6 +208,7 @@ struct game_info *GameInfo::dump()
 	out->filename_off = htons(out->filename_off);
 	out->screenshot_off = htons(out->screenshot_off);
 	out->score = htons(out->score);
+	out->year = htons(out->year);
 
 	return out;
 }
@@ -230,6 +237,7 @@ bool GameInfo::fromDump(struct game_info *gi)
 	this->name = xstrdup((char*)p->data + p->name_off);
 	this->filename = xstrdup((char*)p->data + p->filename_off);
 	this->score = p->score;
+	this->year = p->year;
 
 	rw = SDL_RWFromMem(p->data + p->screenshot_off,
 			p->sz - p->screenshot_off);
@@ -298,14 +306,25 @@ GameInfo *GameInfo::loadFromFile(const char *fileName)
 
 void GameInfo::setAuthor(const char *author)
 {
+	if (strlen(author) == 0)
+		author = " ";
 	free((void*)this->author);
 	this->author = xstrdup(author);
 	if (strcmp(author, " ") != 0)
 		this->score++;
 }
 
+void GameInfo::setYear(uint16_t year)
+{
+	this->year = year;
+	this->score++;
+}
+
 void GameInfo::setName(const char *name)
 {
+	if (strlen(name) == 0)
+		name = " ";
+
 	free((void*)this->name);
 	this->name = xstrdup(name);
 	if (strcmp(name, " ") != 0)

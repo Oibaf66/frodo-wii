@@ -18,6 +18,7 @@ struct game_info
 	uint16_t screenshot_off; /* In PNG format */
 	uint16_t filename_off;
 	uint16_t score;
+	uint16_t year;
 	uint8_t data[]; /* 4-byte aligned */
 };
 
@@ -35,6 +36,8 @@ public:
 	void setAuthor(const char *author);
 
 	void setName(const char *name);
+
+	void setYear(uint16_t year);
 
 	void setScreenshot(SDL_Surface *scr);
 
@@ -54,7 +57,8 @@ public:
 	const char *filename;
 	SDL_Surface *screenshot;
 
-	Uint16 score;
+	uint16_t year;
+	uint16_t score;
 };
 
 #endif /*__GAME_INFO_HH__ */

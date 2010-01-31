@@ -46,6 +46,28 @@ const char **broken_theme_dlg = (const char*[]){
 	NULL
 };
 
+const char **game_info_bad_year_dlg = (const char*[]){
+	/*00*/          "Impossible year selected,",
+	/*01*/		"try starting with 1981!",
+	/*02*/		"#", /* Empty line */
+	/*03*/		"#",
+	/*04*/		"#",
+	/*05*/		"#",
+	/*06*/          "^|OK",
+	NULL
+};
+
+const char **game_info_bad_number_dlg = (const char*[]){
+	/*00*/          "Please enter a number!",
+	/*01*/		"#",
+	/*02*/		"#", /* Empty line */
+	/*03*/		"#",
+	/*04*/		"#",
+	/*05*/		"#",
+	/*06*/          "^|OK",
+	NULL
+};
+
 const char **select_analogue_dlg = (const char*[]){
 	/*00*/          "Select axis of analogue",
 	/*01*/		"joystick to bind.",
@@ -253,6 +275,7 @@ const char **game_info_menu_messages = (const char*[]){
 	/*00*/          "Capture game screenshot",
 	/*01*/          " ",
 	/*02*/          "Set game name",
-	/*02*/          "Set game author",
+	/*03*/          "Set game author",
+	/*04*/          "Set publishing year",
 	NULL
 };

@@ -77,16 +77,22 @@ public:
 		this->gi_messages[1] = " ";
 		this->gi_messages[2] = "Author:";
 		this->gi_messages[3] = " ";
+		this->gi_messages[4] = "Year:";
+		this->gi_messages[5] = " ";
+
 		if (this->gi)
 		{
+			snprintf(this->year, sizeof(this->year), "%d", this->gi->year);
 			this->gi_messages[1] = this->gi->name ? this->gi->name : " ";
 			this->gi_messages[3] = this->gi->author ? this->gi->author : " ";
+			this->gi_messages[5] = year;
 		}
 
 		this->setText(this->gi_messages);
 	}
 
-	const char *gi_messages[6];
+	const char *gi_messages[8];
+	char year[8];
 	GameInfo *gi;
 };
 
