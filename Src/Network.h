@@ -34,6 +34,7 @@ typedef enum
 	ACK                = 94, /* Answer to broker */
 	BANDWIDTH_PING     = 92, /* Large packet to calculate bandwidth */
 	BANDWIDTH_ACK	   = 91, /* Answer to BANDWIDTH_PING */
+	REGISTER_DATA      = 90, /* Register data (screenshots typically) */
 	/* Non-data messages */
 	STOP               = 55, /* End of this update sequence */
 	/* Data transfer of various kinds */

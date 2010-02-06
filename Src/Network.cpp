@@ -969,8 +969,8 @@ bool Network::AppendScreenshot(NetworkUpdatePeerInfo *pi)
 	data = DataStore::ds->embedData(png, sz);
 	if (!data)
 		goto out_png;
-	ud = InitNetworkUpdate(this->ud, 0, sizeof(NetworkUpdate) +
-			sizeof(NetworkUpdateDataStore) + sz);
+	ud = InitNetworkUpdate(this->ud, REGISTER_DATA,
+			sizeof(NetworkUpdate) + sizeof(NetworkUpdateDataStore) + sz);
 	dsu = (NetworkUpdateDataStore *)ud->data;
 	dsu->key = data->key;
 	dsu->metadata = data->metadata;
