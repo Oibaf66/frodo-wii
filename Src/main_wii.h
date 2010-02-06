@@ -7,9 +7,12 @@
 #include "Version.h"
 
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include <fat.h>
 #include <wiiuse/wpad.h>
 #include <network.h>
+
+#include "gui/gui.hh"
 
 extern int init_graphics(void);
 
@@ -47,7 +50,6 @@ extern "C" int main(int argc, char **argv)
 	        fprintf(stderr, "Unable to init TTF: %s\n", TTF_GetError() );
 	        return 0;		
 	}
-	menu_init();
 
 	if (WPAD_Init() != WPAD_ERR_NONE)
 	{
@@ -97,6 +99,7 @@ void Frodo::ReadyToRun(void)
 
 	// Create and start C64
 	TheC64 = new C64;
+	Gui::init();
 	load_rom_files();
 	TheC64->Run();
 	delete TheC64;

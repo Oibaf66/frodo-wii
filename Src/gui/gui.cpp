@@ -1,6 +1,10 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
-#include <arpa/inet.h>
+#if defined(GEKKO)
+# include <network.h>
+#else
+# include <arpa/inet.h>
+#endif
 
 #include <utils.hh>
 

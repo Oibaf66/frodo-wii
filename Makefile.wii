@@ -27,7 +27,7 @@ INCLUDES	:=
 
 PCFLAGS = -DPRECISE_CPU_CYCLES=1 -DPRECISE_CIA_CYCLES=1 -DPC_IS_POINTER=0
 SCFLAGS = $(PCFLAGS) -DFRODO_SC
-CFLAGS	= -O3 -g -Wall $(MACHDEP) $(INCLUDE) -U__unix -DHAVE_SDL $(SCFLAGS) -I$(LIBOGC_INC)/SDL
+CFLAGS	= -O3 -g -Wall $(MACHDEP) $(INCLUDE) -U__unix -DHAVE_SDL $(SCFLAGS) -I$(LIBOGC_INC)/SDL -I$(PWD)/Src/
 CXXFLAGS = $(CFLAGS)
 
 LDFLAGS	= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -35,7 +35,7 @@ LDFLAGS	= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-lSDL_ttf -lz -lSDL -lfreetype -lfat -lwiiuse -lbte -logc -lm -lwiikeyboard
+LIBS	:=	-lSDL_ttf -lSDL_image -lpng -ljpeg -lz -lSDL -lfreetype -lfat -lwiiuse -lbte -logc -lm -lwiikeyboard
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -60,11 +60,15 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 #---------------------------------------------------------------------------------
 # automatically build a list of object files for our project
 #---------------------------------------------------------------------------------
-CFILES		:= gcaudio.c menutexts.c d64-read.c
+CFILES		:= gcaudio.c d64-read.c
 CPPFILES	:= Display.cpp main.cpp Prefs.cpp SID.cpp REU.cpp IEC.cpp 1541fs.cpp \
                1541d64.cpp 1541t64.cpp 1541job.cpp C64_SC.cpp CPUC64_SC.cpp VIC_SC.cpp \
-               CIA_SC.cpp CPU1541_SC.cpp menu.cpp CPU_common.cpp VirtualKeyboard.cpp \
-               Network.cpp
+               CIA_SC.cpp CPU1541_SC.cpp CPU_common.cpp \
+               Network.cpp gui/dialogue_box.cpp gui/widget.cpp utils.cpp \
+               gui/game_info.cpp gui/status_bar.cpp gui/gui.cpp gui/listener.cpp \
+               timer.cpp utils.cpp gui/virtual_keyboard.cpp gui/menu.cpp \
+               gui/file_browser.cpp data_store.cpp gui/menu_messages.cpp
+               
 sFILES		:=	
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
@@ -101,8 +105,8 @@ export OUTPUT	:=	$(CURDIR)/$(TARGET)
 
 #---------------------------------------------------------------------------------
 $(BUILD):
-	@[ -d $@ ] || mkdir -p $@
-	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	@[ -d $@ ] || mkdir -p $@ $@/gui
+	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.wii
 
 #---------------------------------------------------------------------------------
 clean:
@@ -116,6 +120,7 @@ dist: $(BUILD)
 	install -d $@/apps/frodo/saves
 	install -d $@/apps/frodo/tmp
 	cp $(TARGET).dol $@/apps/frodo/boot.dol
+	cp -rap themes $@/apps/frodo/themes
 	cp meta.xml $@/apps/frodo/
 	cp icon.png $@/apps/frodo/
 	cp FreeMono.ttf $@/apps/frodo/
