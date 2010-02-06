@@ -25,6 +25,9 @@
 #include "main.h"
 #include "C64.h"
 
+#include "utils.hh"
+#include "data_store.hh"
+
 #if defined(GEKKO)
 # include <wiiuse/wpad.h>
 #endif
@@ -611,7 +614,7 @@ bool Network::SendUpdate()
 
 		v = this->SendTo((void*)p, this->sock,
 				size_to_send, &this->connection_addr);
-		if (v < 0 || v != size_to_send)
+		if (v < 0 || (size_t)v != size_to_send)
 			return false;
 		cur_sz += size_to_send;
 		p += size_to_send;
@@ -715,7 +718,7 @@ bool Network::MarshalData(NetworkUpdate *p)
 		snd->flags = htons(snd->flags);
 		snd->n_items = htons(snd->n_items);
 
-		for (unsigned int i = 0; i < items; i++)
+		for (int i = 0; i < items; i++)
 		{
 			NetworkUpdateSoundInfo *cur = &info[i];
 
@@ -945,10 +948,50 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 	return out;
 }
 
+bool Network::AppendScreenshot(NetworkUpdatePeerInfo *pi)
+{
+	NetworkUpdateDataStore *dsu;
+	NetworkUpdate *ud;
+	SDL_Surface *scr;
+	struct ds_data *data;
+	void *png;
+	size_t sz;
+	bool out = NULL;
+
+	scr = TheC64->TheDisplay->SurfaceFromC64Display();
+	if (!scr)
+		goto out_none;
+
+	png = sdl_surface_to_png(scr, &sz);
+	if (!png)
+		goto out_scr;
+
+	data = DataStore::ds->embedData(png, sz);
+	if (!data)
+		goto out_png;
+	ud = InitNetworkUpdate(this->ud, 0, sizeof(NetworkUpdate) +
+			sizeof(NetworkUpdateDataStore) + sz);
+	dsu = (NetworkUpdateDataStore *)ud->data;
+	dsu->key = data->key;
+	dsu->metadata = data->metadata;
+	memcpy(dsu->data, data->data, sz);
+	this->AddNetworkUpdate(ud);
+
+	out = true;
+	free(data);
+out_png:
+	free(png);
+out_scr:
+	SDL_FreeSurface(scr);
+out_none:
+
+	return out;
+}
+
 bool Network::ConnectToBroker()
 {
 	NetworkUpdate *ud = InitNetworkUpdate(this->ud, CONNECT_TO_BROKER,
-			sizeof(NetworkUpdate) + sizeof(NetworkUpdatePeerInfo)); 
+			sizeof(NetworkUpdate) + sizeof(NetworkUpdatePeerInfo));
 	NetworkUpdatePeerInfo *pi = (NetworkUpdatePeerInfo *)ud->data;
 	bool out;
 
@@ -956,11 +999,13 @@ bool Network::ConnectToBroker()
 	pi->key = ThePrefs.NetworkKey;
 	pi->version = FRODO_NETWORK_PROTOCOL_VERSION;
 	pi->avatar = ThePrefs.NetworkAvatar;
-	this->EncodeScreenshot(pi->screenshot, TheC64->TheDisplay->BitmapBase());
+	pi->screenshot_key = 0;
 
 	strcpy((char*)pi->name, ThePrefs.NetworkName);
 	this->AddNetworkUpdate(ud);
-	out = this->SendUpdate();
+	out = this->AppendScreenshot(pi);
+	if (out)
+		out = this->SendUpdate();
 	this->ResetNetworkUpdate();
 
 	return out;
@@ -1059,7 +1104,6 @@ network_connection_error_t Network::WaitForPeerList()
 {
 	NetworkUpdateListPeers *pi;
 	struct timeval tv;
-	const char **msgs;
 
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;

@@ -106,6 +106,14 @@ struct NetworkUpdatePingAck
 	uint8 data[]; /* Only used for bandwidth ping/acks */
 };
 
+struct NetworkUpdateDataStore
+{
+	uint32_t key;
+	uint32_t metadata; /* Type etc */
+	uint8_t  data[];
+};
+
+
 struct NetworkUpdateSoundInfo
 {
 	uint16 delay_cycles;
@@ -144,8 +152,7 @@ struct NetworkUpdatePeerInfo
 	uint32 version;      /* Version number */
 
 	uint32 avatar;		 /* Hash of the avatar */
-	/* RAW-encoded screenshot of how the display looks like */
-	uint8  screenshot[(SCREENSHOT_X * SCREENSHOT_Y) / 2];
+	uint32 screenshot_key;	 /* Key number of the screenshot */
 };
 
 struct NetworkUpdateListPeers
@@ -322,6 +329,8 @@ protected:
 	bool ScanDataForStop(NetworkUpdate *ud, size_t max_size);
 
 	bool ConnectToBroker();
+
+	bool AppendScreenshot(NetworkUpdatePeerInfo *pi);
 
 	bool ConnectToPeer();
 
