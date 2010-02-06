@@ -95,7 +95,7 @@ Prefs::Prefs()
 	this->NetworkAvatar = 0;
 	snprintf(this->NetworkName, 32, "Unset name");
 	snprintf(this->NetworkServer, 64, "play.c64-network.org");
-	this->NetworkPort = 46214;
+	this->NetworkPort = 46215; // FIXME! Set back to 46214 when ready
 }
 
 
@@ -384,8 +384,9 @@ void Prefs::Load(char *filename)
 					strcpy(NetworkName, value);
 				else if (!strcmp(keyword, "NetworkServer"))
 					strcpy(NetworkServer, value);
-				else if (!strcmp(keyword, "NetworkPort"))
-					NetworkPort = atoi(value);
+#warning take back in real release
+//				else if (!strcmp(keyword, "NetworkPort"))
+//					NetworkPort = atoi(value);
 				else if (!strcmp(keyword, "NetworkName"))
 					strcpy(NetworkName, value);
 				else if (!strcmp(keyword, "NetworkAvatar"))
