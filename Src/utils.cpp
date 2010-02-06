@@ -200,6 +200,9 @@ void *sdl_surface_to_png(SDL_Surface *surf, size_t *out_sz)
 	png_colorp palette;
 	struct png_write_user_struct out;
 
+	if (!surf)
+		return NULL;
+
 	out.sz = 0;
 	out.data = NULL;
 
