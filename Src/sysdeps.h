@@ -22,7 +22,7 @@
 #if defined(GEKKO)
 # include "sysconfig.h.Wii"
 #else
-# include "sysconfig.h"
+# include "sysconfig.h.Host-SDL"
 #endif
 
 #include <stdio.h>

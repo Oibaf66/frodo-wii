@@ -111,7 +111,7 @@ $(BUILD):
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol Src/sysconfig.h Src/*.o \
+	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol Src/*.o \
           FrodoSC FrodoPC dist
 
 dist: $(BUILD)
