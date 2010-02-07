@@ -142,7 +142,7 @@ DEPENDS	:=	$(OFILES:.o=.d)
 # main targets
 #---------------------------------------------------------------------------------
 $(OUTPUT).dol: $(OUTPUT).elf
-$(OUTPUT).elf: sysconfig.h $(OFILES)
+$(OUTPUT).elf: $(OFILES)
 
 #---------------------------------------------------------------------------------
 # This rule links in binary data with the .jpg extension
@@ -151,9 +151,6 @@ $(OUTPUT).elf: sysconfig.h $(OFILES)
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	$(bin2o)
-
-sysconfig.h: sysconfig.h.Wii
-	cp $< $@
 
 Display.cpp: Display_SDL.h
 
