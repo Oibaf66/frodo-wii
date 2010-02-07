@@ -82,6 +82,9 @@ def DataEntry:
     def get_key(self):
         return self.key
 
+    def get_metadata(self):
+        return self.metadata
+
     def get_data(self):
         return self.data
 
@@ -327,11 +330,27 @@ class Peer:
             self.srv.log_connection(self.name, self.country)
 
             # Send list of peers if this is not a master
+            registered_data = []
             lp = ListPeersPacket(FRODO_NETWORK_PROTOCOL_VERSION)
 
             for peer in self.srv.peers.itervalues():
-                if peer != self: # and peer.is_master:
-                    lp.add_peer(peer)
+                if peer == self:
+                    continue
+                # Don't add peers which haven't sent their screenshots yet
+                # (yes, it's quite unlikely, but anyway)
+                try:
+                    entry = self.srv.data_store.get_entry(peer.screenshot_key)
+                    registered_data.append(entry)
+                except KeyError, e:
+                    log_info("Peer %s hasn't sent it's screenshot yet: %s" % (peer.name, str(e)))
+                    continue
+                lp.add_peer(peer)
+
+            # First send the registry data
+            for entry in registered_data:
+                rp = RegisterDataPacket(entry.get_key(), entry.get_metadata(), entry.get_data())
+                self.send_packet(rp.marshal())
+
             # And send the packet to this peer
             log_info("Sending list of peers (%d) to %s:%d" % (lp.n_peers,
                                                               self.addr[0], self.addr[1]) )
