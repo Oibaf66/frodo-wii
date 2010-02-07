@@ -17,6 +17,20 @@ DataStore::~DataStore()
 	free(this->registeredData);
 }
 
+struct ds_data *DataStore::registerNetworkData(uint32_t key, uint32_t metadata,
+		void *data, size_t data_sz)
+{
+	struct ds_data *out;
+
+	out = (struct ds_data *)xmalloc(sizeof(struct ds_data) + data_sz);
+	out->key = key;
+	out->metadata = metadata;
+
+	memcpy(out->data, data, data_sz);
+
+	return this->registerData(key, out);
+}
+
 struct ds_data *DataStore::registerData(uint32_t key,
 		struct ds_data *data)
 {
@@ -49,6 +63,7 @@ struct ds_data *DataStore::registerData(uint32_t key,
 				this->n_registeredData * sizeof(void*));
 	}
 	this->registeredData[i] = data;
+	data->key = key;
 
 	return NULL;
 }

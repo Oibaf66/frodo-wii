@@ -29,6 +29,9 @@ public:
 	 */
 	struct ds_data *registerData(uint32_t key, struct ds_data *data);
 
+	struct ds_data *registerNetworkData(uint32_t key, uint32_t metadata,
+			void *data, size_t data_sz);
+
 	/**
 	 * Embed existing data into a data store. The new data is reallocated,
 	 * but the old is not freed

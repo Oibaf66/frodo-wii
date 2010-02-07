@@ -682,6 +682,13 @@ bool Network::MarshalData(NetworkUpdate *p)
 		NetworkUpdateSelectPeer *sp = (NetworkUpdateSelectPeer *)p->data;
 		sp->server_id = htonl(sp->server_id);
 	} break;
+	case REGISTER_DATA:
+	{
+		NetworkUpdateRegisterData *ds = (NetworkUpdateRegisterData *)p->data;
+
+		ds->key = htonl(ds->key);
+		ds->metadata = htonl(ds->metadata);
+	} break;
 	case LIST_PEERS:
 	{
 		NetworkUpdateListPeers *lp = (NetworkUpdateListPeers *)p->data;
@@ -696,6 +703,7 @@ bool Network::MarshalData(NetworkUpdate *p)
 			peer->server_id = htonl(peer->server_id);
 			peer->version = htonl(peer->version);
 			peer->avatar = htonl(peer->avatar);
+			peer->screenshot_key = htonl(peer->screenshot_key);
 		}
 		lp->n_peers = htonl(lp->n_peers);
 		lp->your_port = htons(lp->your_port);
@@ -791,6 +799,13 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 		NetworkUpdateSelectPeer *sp = (NetworkUpdateSelectPeer *)p->data;
 		sp->server_id = ntohl(sp->server_id);
 	} break;
+	case REGISTER_DATA:
+	{
+		NetworkUpdateRegisterData *ds = (NetworkUpdateRegisterData *)p->data;
+
+		ds->key = ntohl(ds->key);
+		ds->metadata = ntohl(ds->metadata);
+	} break;
 	case LIST_PEERS:
 	{
 		NetworkUpdateListPeers *lp = (NetworkUpdateListPeers *)p->data;
@@ -807,6 +822,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 			peer->server_id = ntohl(peer->server_id);
 			peer->version = ntohl(peer->version);
 			peer->avatar = ntohl(peer->avatar);
+			peer->screenshot_key = ntohl(peer->screenshot_key);
 		}
 		lp->your_port = ntohs(lp->your_port);
 	} break;
@@ -921,6 +937,13 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 		} break;
 		case LIST_PEERS:
 		{
+		} break;
+		case REGISTER_DATA:
+		{
+			NetworkUpdateRegisterData *rd = (NetworkUpdateRegisterData *)p->data;
+
+			DataStore::ds->registerNetworkData(rd->key, rd->metadata, rd->data,
+					p->size - (sizeof(NetworkUpdateRegisterData) + sizeof(NetworkUpdate)));
 		} break;
 		case BANDWIDTH_PING:
 		case PING:
