@@ -23,7 +23,7 @@ def create_palette():
 
 palette = create_palette()
 
-def image_from_data(data):
+def image_from_data_raw(data):
     out = Image.new("RGB", (SCREENSHOT_X, SCREENSHOT_Y))
     p = 0
     blue_pixels = 0.0
@@ -53,6 +53,21 @@ def image_from_data(data):
 
     return out
 
+def image_from_data(data):
+    out = Image.open(data)
+    sz = out.size
+    blue_pixels = 0.0
+
+    for y in range(0, sz[1]):
+        for x in range(0, sz[1]):
+            pxl = out.getpixel( (x,y) )
+            if pxl == palette[6]:
+                blue_pixels = blue_pixels + 1
+
+    interestingness = 1.0 - (blue_pixels / (sz[0] * sz[1]))
+    out.interestingness = interestingness
+
+    return out
 
 def save_image(img, filename):
     img.save(filename)

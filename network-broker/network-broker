@@ -29,6 +29,7 @@ pkt_type_to_str = {
     PING              : "ping",
     ACK               : "ack",
     STOP              : "stop",
+    REGISTER_DATA     : "register-data",
 }
 
 def log(pri, msg, echo):
@@ -47,6 +48,42 @@ def log_info(msg, echo = False):
 
 def cur_time():
     return time.mktime(time.localtime())
+
+
+class DataStore:
+    def __init__(self):
+        self.data = {}
+
+    def add_entry(self, peer, key, entry):
+        entry.peer = peer
+        entry.key = key
+        self.data[key] = entry
+
+    def get_entry(self, key):
+        return self.data[key]
+
+    def remove_entry(self, key):
+        del self.data[key]
+
+    def remove_peer(self, peer):
+        try:
+            for entry in self.data.iteritems():
+                if entry == peer:
+                    self.remove_entry(entry.key)
+        except:
+            log_info("Cannot delete peer %s" % (peer))
+
+def DataEntry:
+    def __init__(self, key, metadata, data):
+        self.key = key
+        self.metadata = metadata
+        self.data = data
+
+    def get_key(self):
+        return self.key
+
+    def get_data(self):
+        return self.data
 
 class Packet:
     def __init__(self):
@@ -81,6 +118,32 @@ class StopPacket(Packet):
 
     def marshal(self):
         return struct.pack(">HHL", self.magic, self.type, self.size)
+
+
+class RegisterData(Packet):
+    def __init__(self, key = -1, metadata = 0, data = ""):
+        Packet.__init__(self)
+        self.type = REGISTER_DATA
+        self.key = key
+        self.metadata = metadata
+        self.data = data
+
+    def get_key(self):
+        return self.key
+
+    def get_entry(self):
+        return DataEntry(self.key, self.metadata, self.data)
+
+    def demarshal_from_data(self, data):
+        Packet.demarshal_from_data(self, data)
+        self.key = struct.unpack(">L", data[8:12])[0]
+        self.metadata = struct.unpack(">L", data[12:16])[0]
+        self.data = data[16:]
+
+    def marshal(self):
+        return Packet.marshal(self) + struct.pack(">L", self.key) + \
+            struct.pack(">L", self.metadata) + self.data
+
 
 class PingAckPacket(Packet):
     def __init__(self):
@@ -276,12 +339,13 @@ class Peer:
 
         if pkt.type == REGISTER_DATA:
             # Save screenshot (maybe) if this is the screenshot key
-            if pkt.get_key() == self.screenshot_key - self.data_key:
-                print "NYI!"
-                return
+            entry = pkt.get_entry()
+            self.srv.data_store.add_entry(self, entry.get_key() + self.data_key, entry)
+    
+            if entry.get_key() == self.screenshot_key - self.data_key:
                 try:
                     which = random.randrange(0,12)
-                    img = image.image_from_data(self.screenshot)
+                    img = image.image_from_data(entry.get_data())
                     if img.interestingness > 0.4 or random.randrange(0, 10) < 2:
                         img.save("%s%d.png" % (self.srv.image_dir, which))
                 except Exception, e:
@@ -375,6 +439,7 @@ class Broker(SocketServer.UDPServer):
         self.allow_reuse_address = True
         self.peers = {}
         self.peers_by_id = {}
+        self.data_store = DataStore()
         self.id = 0
         self.ping_seq = 0
         self.ip2c = ip2c
@@ -446,6 +511,8 @@ class Broker(SocketServer.UDPServer):
         try:
             del self.peers[ peer.addr ]
             del self.peers_by_id[ peer.id ]
+
+            self.data_store.remove_peer(peer)
         except:
             log_error("Could not remove %s (probably wrong version)" %
                       (str(peer.addr)))
@@ -476,6 +543,7 @@ def ping_thread_fn(broker, time_to_sleep):
 packet_class_by_type = {
     CONNECT_TO_BROKER : ConnectToBrokerPacket,
     SELECT_PEER : SelectPeerPacket,
+    REGISTER_DATA : RegisterData,
     ACK : PingAckPacket,
 }
 
