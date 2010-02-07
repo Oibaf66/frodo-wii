@@ -28,6 +28,7 @@
 #include "Prefs.h"
 #include "SAM.h"
 #include "gui/gui.hh"
+#include "utils.hh"
 
 
 // Global variables
@@ -35,7 +36,6 @@ extern int init_graphics(void);
 
 
 // Global variables
-char Frodo::prefs_path[256] = "";
 C64 *TheC64 = NULL;		// Global C64 object
 char AppDirPath[1024];	// Path of application directory
 
@@ -153,6 +153,82 @@ void Frodo::ArgvReceived(int argc, char **argv)
 		network_server_connect = argv[1];
 }
 
+const char *try_path(const char *path, const char *file)
+{
+	if (path == NULL || file == NULL)
+		return NULL;
+
+	char *what = (char *)xmalloc(strlen(path) + strlen(file) + 3);
+	struct stat st;
+	const char *out = NULL;
+
+	sprintf(what, "%s/%s", path, file);
+	if (stat(what, &st) < 0)
+		out = what;
+
+	return out;
+}
+
+void Frodo::LoadFrodorc()
+{
+	const char *paths[] = {
+			NULL, // Filled in below
+			NULL, // also filled in below
+			"frodo",
+			"/usr/share/frodo/",
+			"/apps/frodo",
+			NULL,
+	};
+	const char *prefs_path = NULL;
+	const char *prefs_name = NULL;
+	const char *total_name = NULL;
+	char home_1[255];
+	char home_2[255];
+	int i;
+
+	if (getenv("HOME"))
+	{
+		snprintf(home_1, sizeof(home_1), "%s/.frodo", getenv("HOME"));
+		snprintf(home_2, sizeof(home_2), "%s/frodo", getenv("HOME"));
+	}
+	else
+	{
+		strcpy(home_1, "");
+		strcpy(home_2, "");
+	}
+	paths[0] = home_1;
+	paths[1] = home_2;
+
+	for (i = 0; paths[i]; i++)
+	{
+		const char *p;
+		const char *name = "frodorc";
+
+		p = try_path(paths[i], name);
+		if (!p)
+		{
+			name = "frodorc.default";
+			p = try_path(paths[i], "frodorc.default");
+		}
+
+		if (p)
+		{
+			prefs_path = paths[i];
+			prefs_name = name;
+			total_name = p;
+			break;
+		}
+		free((void*)p);
+	}
+	panic_if(!total_name,
+			"Cannot find frodorc or frodorc.default in any tried directory");
+
+	// Load preferences
+	ThePrefs.Load(total_name);
+	strncpy(ThePrefs.PrefsPath, prefs_path, sizeof(ThePrefs.PrefsPath));
+
+	free((void*)total_name);
+}
 
 /*
  *  Arguments processed, run emulation
@@ -160,18 +236,10 @@ void Frodo::ArgvReceived(int argc, char **argv)
 
 void Frodo::ReadyToRun(void)
 {
-	getcwd(AppDirPath, 256);
+	if (getcwd(AppDirPath, 256) == NULL)
+		strcpy(AppDirPath, "");
 
-	// Load preferences
-	if (!prefs_path[0]) {
-		char *home = getenv("HOME");
-		if (home != NULL && strlen(home) < 240) {
-			strncpy(prefs_path, home, 200);
-			strcat(prefs_path, "/");
-		}
-		strcat(prefs_path, ".frodorc");
-	}
-	ThePrefs.Load(prefs_path);
+	this->LoadFrodorc();
 	if (network_server_connect)
 		strncpy(ThePrefs.NetworkServer, network_server_connect,
 				sizeof(ThePrefs.NetworkServer));

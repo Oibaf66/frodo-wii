@@ -51,6 +51,8 @@ Prefs::Prefs()
 	ScalingNumerator = 2;
 	ScalingDenominator = 2;
 
+	strcpy(BasePath, "");
+	strcpy(PrefsPath, "");
 	strcpy(DrivePath[0], "64prgs");
 	strcpy(DrivePath[1], "");
 	strcpy(DrivePath[2], "");

@@ -104,6 +104,8 @@ public:
 
 	void SetupJoystickDefaults();
 
+	char BasePath[256];		// Where theme data etc are found
+	char PrefsPath[256];		// Where the prefs will be stored
 	int NormalCycles;		// Available CPU cycles in normal raster lines
 	int BadLineCycles;		// Available CPU cycles in Bad Lines
 	int CIACycles;			// CIA timer ticks per raster line
