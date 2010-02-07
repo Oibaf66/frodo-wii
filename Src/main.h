@@ -35,6 +35,8 @@ public:
 	void ArgvReceived(int argc, char **argv);
 	void ReadyToRun(void);
 
+	void LoadFrodorc();
+
 private:
 	void load_rom(const char *which, const char *path, uint8 *where, size_t size, const uint8 *builtin);
 	void load_rom_files();

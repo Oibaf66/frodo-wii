@@ -17,6 +17,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+#include <SDL.h>
+#include <SDL_ttf.h>
 
 #include "sysdeps.h"
 
@@ -25,9 +27,15 @@
 #include "Display.h"
 #include "Prefs.h"
 #include "SAM.h"
+#include "gui/gui.hh"
 
 
 // Global variables
+extern int init_graphics(void);
+
+
+// Global variables
+char Frodo::prefs_path[256] = "";
 C64 *TheC64 = NULL;		// Global C64 object
 char AppDirPath[1024];	// Path of application directory
 
@@ -90,32 +98,99 @@ void Frodo::load_rom_files()
 	load_rom("1541", DRIVE_ROM_FILE, TheC64->ROM1541, DRIVE_ROM_SIZE, builtin_drive_rom);
 }
 
+/*
+ *  Create application object and start it
+ */
 
-#ifdef __BEOS__
-#include "main_Be.h"
-#endif
+extern "C" int main(int argc, char **argv)
+{
+	timeval tv;
+	gettimeofday(&tv, NULL);
+	srand(tv.tv_usec);
 
-#ifdef AMIGA
-#include "main_Amiga.h"
-#endif
+	// Init SDL
+        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0) {
+                fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
+                return 1;
+	}
+        if (TTF_Init() < 0)
+        {
+                fprintf(stderr, "Unable to init TTF: %s\n", TTF_GetError() );
+		return 1;
+        }
 
-#ifdef __unix
-#include "main_x.h"
-#endif
+	if (!init_graphics())
+		return 1;
+	fflush(stdout);
 
-#ifdef __mac__
-#include "main_mac.h"
-#endif
+	Frodo *the_app = new Frodo();
+	the_app->ArgvReceived(argc, argv);
+	the_app->ReadyToRun();
+	delete the_app;
 
-#ifdef WIN32
-#include "main_WIN32.h"
-#endif
+	return 0;
+}
 
-#ifdef __riscos__
-#include "main_Acorn.h"
-#endif
 
-#ifdef GEKKO
-#include "main_wii.h"
-#endif
+/*
+ *  Constructor: Initialize member variables
+ */
 
+Frodo::Frodo()
+{
+	TheC64 = NULL;
+}
+
+
+/*
+ *  Process command line arguments
+ */
+char *network_server_connect = 0;
+
+void Frodo::ArgvReceived(int argc, char **argv)
+{
+	if (argc == 2)
+		network_server_connect = argv[1];
+}
+
+
+/*
+ *  Arguments processed, run emulation
+ */
+
+void Frodo::ReadyToRun(void)
+{
+	getcwd(AppDirPath, 256);
+
+	// Load preferences
+	if (!prefs_path[0]) {
+		char *home = getenv("HOME");
+		if (home != NULL && strlen(home) < 240) {
+			strncpy(prefs_path, home, 200);
+			strcat(prefs_path, "/");
+		}
+		strcat(prefs_path, ".frodorc");
+	}
+	ThePrefs.Load(prefs_path);
+	if (network_server_connect)
+		strncpy(ThePrefs.NetworkServer, network_server_connect,
+				sizeof(ThePrefs.NetworkServer));
+
+	// Create and start C64
+	TheC64 = new C64;
+	Gui::init();
+	load_rom_files();
+	TheC64->Run();
+
+	delete TheC64;
+}
+
+/*
+ *  Determine whether path name refers to a directory
+ */
+
+bool IsDirectory(const char *path)
+{
+	struct stat st;
+	return stat(path, &st) == 0 && S_ISDIR(st.st_mode);
+}

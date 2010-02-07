@@ -28,7 +28,7 @@
 #define C64_NETWORK_BROKER "c64-network.game-host.org"
 
 /* TODO: */
-extern char *fixme_tmp_network_server;
+extern char *network_server_connect;
 
 
 static struct timeval tv_start;
@@ -61,9 +61,9 @@ void C64::c64_ctor1(void)
 	this->network_connection_type = NONE;
 	this->peer = NULL;
 
-	if (fixme_tmp_network_server) {
-		printf("Connecting to %s\n", fixme_tmp_network_server);
-		strcpy(this->server_hostname, fixme_tmp_network_server);
+	if (network_server_connect) {
+		printf("Connecting to %s\n", network_server_connect);
+		strcpy(this->server_hostname, network_server_connect);
 		this->peer = new Network(this->server_hostname, this->server_port);
 		this->network_connection_type = CONNECT;
 	}
