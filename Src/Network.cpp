@@ -976,7 +976,6 @@ bool Network::AppendScreenshot(NetworkUpdatePeerInfo *pi)
 	NetworkUpdateRegisterData *dsu;
 	NetworkUpdate *ud;
 	SDL_Surface *scr;
-	struct ds_data *data;
 	void *png;
 	size_t sz;
 	bool out = NULL;
@@ -989,20 +988,15 @@ bool Network::AppendScreenshot(NetworkUpdatePeerInfo *pi)
 	if (!png)
 		goto out_scr;
 
-	data = DataStore::ds->embedData(png, sz);
-	if (!data)
-		goto out_png;
 	ud = InitNetworkUpdate(this->ud, REGISTER_DATA,
 			sizeof(NetworkUpdate) + sizeof(NetworkUpdateRegisterData) + sz);
 	dsu = (NetworkUpdateRegisterData *)ud->data;
-	dsu->key = data->key;
-	dsu->metadata = data->metadata;
-	memcpy(dsu->data, data->data, sz);
+	dsu->key = DataStore::ds->getNextKey();
+	dsu->metadata = 0;
+	memcpy(dsu->data, png, sz);
 	this->AddNetworkUpdate(ud);
 
 	out = true;
-	free(data);
-out_png:
 	free(png);
 out_scr:
 	SDL_FreeSurface(scr);

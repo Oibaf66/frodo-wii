@@ -467,7 +467,7 @@ class Broker(SocketServer.UDPServer):
         self.stat_data = stat_data
         self.image_dir = image_dir
 
-        self.data_key = 0
+        self.data_key = DATA_KEY_RANGE
 
         stats.load(self.stat_data)
         try:
@@ -479,6 +479,9 @@ class Broker(SocketServer.UDPServer):
     def get_data_key(self):
         out = self.data_key
         self.data_key = (self.data_key + DATA_KEY_RANGE) & 0xffffffff
+        # Start at DATA_KEY_RANGE
+        if self.data_key < DATA_KEY_RANGE:
+            self.data_key = self.data_key + DATA_KEY_RANGE
 
         return out
 

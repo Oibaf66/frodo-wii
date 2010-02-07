@@ -68,20 +68,14 @@ struct ds_data *DataStore::registerData(uint32_t key,
 	return NULL;
 }
 
-struct ds_data *DataStore::embedData(void *data, size_t sz)
+uint32_t DataStore::getNextKey()
 {
-	struct ds_data *out;
+	uint32_t out = this->key_counter;
 
-	out = (struct ds_data *)xmalloc(sizeof(struct ds_data) + sz);
+	this->key_counter += 2;
 
-	out->key = this->key_counter;
-	out->metadata = 0; /* Setup by the embedder */
-	memcpy(out->data, data, sz);
-
-	panic_if(this->registerData(out->key, out) != NULL,
-			"Registering new data with key %u was non-NULL\n",
-			out->key);
-	out->key += 2;
+	if (this->key_counter > DATA_KEY_RANGE)
+		this->key_counter = 1;
 
 	return out;
 }

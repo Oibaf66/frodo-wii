@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define DATA_KEY_RANGE 1000
+
 struct ds_data
 {
 	uint32_t key;
@@ -20,28 +22,24 @@ public:
 	~DataStore();
 
 	/**
-	 * Register a new datum.
+	 * Register a new datum from the network.
 	 *
 	 * @param key The key to register with
+	 * @param metadata The metadata
 	 * @param data The data to register
+	 * @param data_sz The size of the data
 	 *
 	 * @return the old datum with that key, or NULL
 	 */
-	struct ds_data *registerData(uint32_t key, struct ds_data *data);
-
 	struct ds_data *registerNetworkData(uint32_t key, uint32_t metadata,
 			void *data, size_t data_sz);
 
 	/**
-	 * Embed existing data into a data store. The new data is reallocated,
-	 * but the old is not freed
+	 * Get the next key for registered data
 	 *
-	 * @param data The data to embed.
-	 * @param sz the size of the data
-	 *
-	 * @return the new data store data.
+	 * @return a valid key
 	 */
-	struct ds_data *embedData(void *data, size_t sz);
+	uint32_t getNextKey();
 
 	/**
 	 * Unregister a datum.
@@ -57,6 +55,8 @@ public:
 	static DataStore *ds;
 
 private:
+	struct ds_data *registerData(uint32_t key, struct ds_data *data);
+
 	struct ds_data **registeredData;
 	int n_registeredData;
 
