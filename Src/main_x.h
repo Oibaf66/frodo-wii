@@ -145,15 +145,6 @@ void Frodo::ReadyToRun(void)
 	delete TheC64;
 }
 
-
-Prefs *Frodo::reload_prefs(void)
-{
-	static Prefs newprefs;
-	newprefs.Load(prefs_path);
-	return &newprefs;
-}
-
-
 /*
  *  Determine whether path name refers to a directory
  */
