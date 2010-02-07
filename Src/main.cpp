@@ -163,7 +163,7 @@ const char *try_path(const char *path, const char *file)
 	const char *out = NULL;
 
 	sprintf(what, "%s/%s", path, file);
-	if (stat(what, &st) < 0)
+	if (stat(what, &st) == 0)
 		out = what;
 
 	return out;
@@ -174,9 +174,10 @@ void Frodo::LoadFrodorc()
 	const char *paths[] = {
 			NULL, // Filled in below
 			NULL, // also filled in below
+			".",
+			"/apps/frodo", // Wii
 			"frodo",
-			"/usr/share/frodo/",
-			"/apps/frodo",
+			"/usr/share/frodo",
 			NULL,
 	};
 	const char *prefs_path = NULL;
