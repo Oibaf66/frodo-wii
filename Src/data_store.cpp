@@ -8,8 +8,7 @@ DataStore::DataStore()
 	this->registeredData = NULL;
 	this->n_registeredData = 0;
 
-	/* Convention: Odd numbers for the clients */
-	this->key_counter = 1;
+	this->key_counter = 0;
 }
 
 DataStore::~DataStore()
@@ -72,10 +71,10 @@ uint32_t DataStore::getNextKey()
 {
 	uint32_t out = this->key_counter;
 
-	this->key_counter += 2;
+	this->key_counter++;
 
-	if (this->key_counter > DATA_KEY_RANGE)
-		this->key_counter = 1;
+	if (this->key_counter >= DATA_KEY_RANGE)
+		this->key_counter = 0;
 
 	return out;
 }
