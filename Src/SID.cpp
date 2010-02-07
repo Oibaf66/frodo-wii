@@ -996,11 +996,15 @@ void DigitalRenderer::WriteRegister(uint16 adr, uint8 byte)
 		case 18:
 			voice[v].wave = (byte >> 4) & 0xf;
 			if ((byte & 1) != voice[v].gate)
+			{
 				if (byte & 1)	// Gate turned on
 					voice[v].eg_state = EG_ATTACK;
 				else			// Gate turned off
+				{
 					if (voice[v].eg_state != EG_IDLE)
 						voice[v].eg_state = EG_RELEASE;
+				}
+			}
 			voice[v].gate = byte & 1;
 			voice[v].mod_by->sync = byte & 2;
 			voice[v].ring = byte & 4;
@@ -1172,10 +1176,12 @@ void DigitalRenderer::calc_filter(void)
 
 	// Stabilize filter
 	if (fabs(g1) >= g2 + 1.0)
+	{
 		if (g1 > 0.0)
 			g1 = g2 + 0.99;
 		else
 			g1 = -(g2 + 0.99);
+	}
 
 	// Calculate roots (filter characteristic) and input attenuation
 	switch (f_type) {
@@ -1437,10 +1443,6 @@ void MOS6581::open_close_renderer(int old_type, int new_type)
 #ifdef AMIGA
 	else if (new_type == SIDTYPE_SIDCARD)
 		the_renderer = new SIDCardRenderer;
-#endif
-#ifdef __linux__
-	else if (new_type == SIDTYPE_SIDCARD)
-		the_renderer = new CatweaselRenderer;
 #endif
 	else
 		the_renderer = NULL;

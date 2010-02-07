@@ -23,17 +23,7 @@
 #include <sys/ioctl.h>
 #include <linux/soundcard.h>
 
-// Catweasel ioctls (included here for convenience)
-#include <linux/ioctl.h>
-#define CWSID_IOCTL_TYPE ('S')
-#define CWSID_IOCTL_RESET        _IO(CWSID_IOCTL_TYPE, 0)
-#define CWSID_IOCTL_CARDTYPE	 _IOR(CWSID_IOCTL_TYPE, 4, int)
-#define CWSID_IOCTL_PAL          _IO(CWSID_IOCTL_TYPE, 0x11)
-#define CWSID_IOCTL_NTSC         _IO(CWSID_IOCTL_TYPE, 0x12)
-#define CWSID_IOCTL_DOUBLEBUFFER _IOW(CWSID_IOCTL_TYPE, 0x21, int)
-#define CWSID_IOCTL_DELAY        _IOW(CWSID_IOCTL_TYPE, 0x22, int)
-#define CWSID_MAGIC 0x100
-#define HAVE_CWSID 1
+#include "utils.hh"
 
 #include "VIC.h"
 #include "Network.h"
@@ -133,9 +123,13 @@ void DigitalRenderer::PushVolume(uint8 vol)
 	// the buffer entirely
 	if ((buffer_pos + to_output) >= sndbufsize) {
 		int datalen = sndbufsize - buffer_pos;
+		ssize_t written;
+
 		to_output -= datalen;
 		calc_buffer(sound_buffer + buffer_pos, datalen*2);
-		write(devfd, sound_buffer, sndbufsize*2);
+		written = write(devfd, sound_buffer, sndbufsize*2);
+		if (written < 0)
+			warning("Failed to write sound\n");
 		buffer_pos = 0;
 	}
 }
@@ -145,78 +139,4 @@ void DigitalRenderer::EmulateLine(void)
 	if (!ready)
 		return;
 	this->PushVolume(volume);
-}
-
-
-/*
- *  Renderer for Catweasel card
- */
-
-// Renderer class
-class CatweaselRenderer : public SIDRenderer {
-public:
-	CatweaselRenderer();
-	virtual ~CatweaselRenderer();
-
-	virtual void Reset(void);
-	virtual void EmulateLine(void) {}
-	virtual void PushVolume(uint8) {}
-	virtual void WriteRegister(uint16 adr, uint8 byte);
-	virtual void NewPrefs(Prefs *prefs) {}
-	virtual void Pause(void) {}
-	virtual void Resume(void) {}
-
-private:
-	int cwsid_fh; // Catweasel device file handle
-};
-
-// Constructor: Open Catweasel device and reset SID
-CatweaselRenderer::CatweaselRenderer()
-{
-	cwsid_fh = open("/dev/sid", O_WRONLY);
-	if (cwsid_fh >= 0) {
-		int i;
-		if (ioctl(cwsid_fh, CWSID_IOCTL_CARDTYPE, &i) < 0 || i != CWSID_MAGIC) {
-			close(cwsid_fh);
-			cwsid_fh = -1;
-		} else {
-			ioctl(cwsid_fh, CWSID_IOCTL_RESET);
-			ioctl(cwsid_fh, CWSID_IOCTL_DOUBLEBUFFER, 0);
-		}
-	}
-
-	Reset();
-}
-
-// Destructor: Reset SID and close Catweasel device
-CatweaselRenderer::~CatweaselRenderer()
-{
-	Reset();
-
-	if (cwsid_fh >= 0) {
-		close(cwsid_fh);
-		cwsid_fh = -1;
-	}
-}
-
-// Reset SID
-void CatweaselRenderer::Reset(void)
-{
-	if (cwsid_fh >= 0) {
-		uint8 zero = 0;
-		ioctl(cwsid_fh, CWSID_IOCTL_RESET);
-		lseek(cwsid_fh, 24, SEEK_SET);
-		write(cwsid_fh, &zero, 1);
-	}
-}
-
-// Write to register
-void CatweaselRenderer::WriteRegister(uint16 adr, uint8 byte)
-{
-	if (cwsid_fh >= 0 && adr < 0x1a) {
-		lseek(cwsid_fh, adr, SEEK_SET);
-		write(cwsid_fh, &byte, 1);
-		lseek(cwsid_fh, adr, SEEK_SET);
-		write(cwsid_fh, &byte, 1);
-	}
 }
