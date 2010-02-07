@@ -253,7 +253,7 @@ void Prefs::Check(void)
  *  Load preferences from file
  */
 
-void Prefs::Load(char *filename)
+void Prefs::Load(const char *filename)
 {
 	FILE *file;
 	char line[256], keyword[256], value[256];
@@ -405,7 +405,7 @@ void Prefs::Load(char *filename)
  *  true: success, false: error
  */
 
-bool Prefs::Save(char *filename)
+bool Prefs::Save(const char *filename)
 {
 	FILE *file;
 

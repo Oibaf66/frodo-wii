@@ -95,7 +95,7 @@ void Frodo::ReadyToRun(void)
 {
 	getcwd(AppDirPath, 256);
 
-	ThePrefs.Load((char*)PREFS_PATH);
+	ThePrefs.Load(PREFS_PATH);
 
 	// Create and start C64
 	TheC64 = new C64;
@@ -109,7 +109,7 @@ void Frodo::ReadyToRun(void)
 Prefs *Frodo::reload_prefs(void)
 {
 	static Prefs newprefs;
-	newprefs.Load((char*)PREFS_PATH);
+	newprefs.Load(PREFS_PATH);
 	return &newprefs;
 }
 
