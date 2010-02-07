@@ -950,7 +950,7 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 
 bool Network::AppendScreenshot(NetworkUpdatePeerInfo *pi)
 {
-	NetworkUpdateDataStore *dsu;
+	NetworkUpdateRegisterData *dsu;
 	NetworkUpdate *ud;
 	SDL_Surface *scr;
 	struct ds_data *data;
@@ -970,8 +970,8 @@ bool Network::AppendScreenshot(NetworkUpdatePeerInfo *pi)
 	if (!data)
 		goto out_png;
 	ud = InitNetworkUpdate(this->ud, REGISTER_DATA,
-			sizeof(NetworkUpdate) + sizeof(NetworkUpdateDataStore) + sz);
-	dsu = (NetworkUpdateDataStore *)ud->data;
+			sizeof(NetworkUpdate) + sizeof(NetworkUpdateRegisterData) + sz);
+	dsu = (NetworkUpdateRegisterData *)ud->data;
 	dsu->key = data->key;
 	dsu->metadata = data->metadata;
 	memcpy(dsu->data, data->data, sz);

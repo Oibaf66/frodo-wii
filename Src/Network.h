@@ -107,7 +107,7 @@ struct NetworkUpdatePingAck
 	uint8 data[]; /* Only used for bandwidth ping/acks */
 };
 
-struct NetworkUpdateDataStore
+struct NetworkUpdateRegisterData
 {
 	uint32_t key;
 	uint32_t metadata; /* Type etc */
