@@ -20,20 +20,9 @@
 
 #include "Version.h"
 
-#ifdef HAVE_GLADE
-#include <gnome.h>
-#endif
-
-// Qtopia Windowing System
-#ifdef QTOPIA
-extern "C" int main(int argc, char *argv[]);
-#include <SDL.h>
-#endif
-#if defined(HAVE_SDL)
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include "gui/gui.hh"
-#endif
 
 extern int init_graphics(void);
 
@@ -48,23 +37,10 @@ char Frodo::prefs_path[256] = "";
 
 int main(int argc, char **argv)
 {
-#ifdef HAVE_GLADE
-	gnome_program_init(PACKAGE_NAME, PACKAGE_VERSION, LIBGNOMEUI_MODULE, argc, argv,
-	                   GNOME_PARAM_APP_DATADIR, DATADIR, NULL);
-#endif
-
 	timeval tv;
 	gettimeofday(&tv, NULL);
 	srand(tv.tv_usec);
 
-#ifndef HAVE_GLADE
-	printf(
-		"%s Copyright (C) 1994-1997,2002-2005 Christian Bauer\n"
-		"This is free software with ABSOLUTELY NO WARRANTY.\n"
-		, VERSION_STRING
-	);
-#endif
-#if defined(HAVE_SDL)
 	// Init SDL
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0) {
                 fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
@@ -75,7 +51,7 @@ int main(int argc, char **argv)
                 fprintf(stderr, "Unable to init TTF: %s\n", TTF_GetError() );
 		return 1;
         }
-#endif
+
 	if (!init_graphics())
 		return 1;
 	fflush(stdout);
@@ -106,7 +82,6 @@ char *fixme_tmp_network_server = 0;
 
 void Frodo::ArgvReceived(int argc, char **argv)
 {
-	printf("Argc: %d\n", argc);
 	if (argc == 2)
 		fixme_tmp_network_server = argv[1];
 }
@@ -130,12 +105,6 @@ void Frodo::ReadyToRun(void)
 		strcat(prefs_path, ".frodorc");
 	}
 	ThePrefs.Load(prefs_path);
-
-	// Show preferences editor
-#ifdef HAVE_GLADE
-	if (!ThePrefs.ShowEditor(true, prefs_path))
-		return;
-#endif
 
 	// Create and start C64
 	TheC64 = new C64;
