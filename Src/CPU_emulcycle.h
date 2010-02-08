@@ -200,7 +200,7 @@
 				state = A_ABSX2;
 			else
 				state = A_ABSX3;
-			ar = (ar + x) & 0xff | (ar2 << 8);
+			ar = ((ar + x) & 0xff) | (ar2 << 8);
 			break;
 		case A_ABSX2:	// No page crossed
 			read_idle(ar);
@@ -220,7 +220,7 @@
 				state = A_ABSY2;
 			else
 				state = A_ABSY3;
-			ar = (ar + y) & 0xff | (ar2 << 8);
+			ar = ((ar + y) & 0xff) | (ar2 << 8);
 			break;
 		case A_ABSY2:	// No page crossed
 			read_idle(ar);
@@ -262,7 +262,7 @@
 				state = A_INDY3;
 			else
 				state = A_INDY4;
-			ar = (ar + y) & 0xff | (ar2 << 8);
+			ar = ((ar + y) & 0xff) | (ar2 << 8);
 			break;
 		case A_INDY3:	// No page crossed
 			read_idle(ar);
@@ -281,10 +281,10 @@
 		case AE_ABSX1:
 			read_to(pc++, data);
 			if (ar+x < 0x100) {
-				ar = (ar + x) & 0xff | (data << 8);
+				ar = ((ar + x) & 0xff) | (data << 8);
 				Execute;
 			} else {
-				ar = (ar + x) & 0xff | (data << 8);
+				ar = ((ar + x) & 0xff) | (data << 8);
 				state = AE_ABSX2;
 			}
 			break;
@@ -300,10 +300,10 @@
 		case AE_ABSY1:
 			read_to(pc++, data);
 			if (ar+y < 0x100) {
-				ar = (ar + y) & 0xff | (data << 8);
+				ar = ((ar + y) & 0xff) | (data << 8);
 				Execute;
 			} else {
-				ar = (ar + y) & 0xff | (data << 8);
+				ar = ((ar + y) & 0xff) | (data << 8);
 				state = AE_ABSY2;
 			}
 			break;
@@ -323,10 +323,10 @@
 		case AE_INDY2:
 			read_to((ar2 + 1) & 0xff, data);
 			if (ar+y < 0x100) {
-				ar = (ar + y) & 0xff | (data << 8);
+				ar = ((ar + y) & 0xff) | (data << 8);
 				Execute;
 			} else {
-				ar = (ar + y) & 0xff | (data << 8);
+				ar = ((ar + y) & 0xff) | (data << 8);
 				state = AE_INDY3;
 			}
 			break;
@@ -378,7 +378,7 @@
 				state = M_ABSX2;
 			else
 				state = M_ABSX3;
-			ar = (ar + x) & 0xff | (data << 8);
+			ar = ((ar + x) & 0xff) | (data << 8);
 			break;
 		case M_ABSX2:	// No page crossed
 			read_idle(ar);
@@ -398,7 +398,7 @@
 				state = M_ABSY2;
 			else
 				state = M_ABSY3;
-			ar = (ar + y) & 0xff | (data << 8);
+			ar = ((ar + y) & 0xff) | (data << 8);
 			break;
 		case M_ABSY2:	// No page crossed
 			read_idle(ar);
@@ -440,7 +440,7 @@
 				state = M_INDY3;
 			else
 				state = M_INDY4;
-			ar = (ar + y) & 0xff | (data << 8);
+			ar = ((ar + y) & 0xff) | (data << 8);
 			break;
 		case M_INDY3:	// No page crossed
 			read_idle(ar);
@@ -758,7 +758,7 @@
 			state = O_JMP_I1;
 			break;
 		case O_JMP_I1:
-			read_to((ar + 1) & 0xff | ar & 0xff00, data);
+			read_to(((ar + 1) & 0xff) | (ar & 0xff00), data);
 			pc |= data << 8;
 			Last;
 
@@ -1070,7 +1070,7 @@
 				z_flag = a;
 				v_flag = (data ^ a) & 0x40;
 				if ((data & 0x0f) + (data & 0x01) > 5)
-					a = a & 0xf0 | (a + 6) & 0x0f;
+					a = (a & 0xf0) | ((a + 6) & 0x0f);
 				if ((c_flag = ((data + (data & 0x10)) & 0x1f0) > 0x50) != 0)
 					a += 0x60;
 			}
