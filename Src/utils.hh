@@ -34,6 +34,9 @@ class Font;
 #define panic_if(cond, x...) \
   do { if ((cond)) panic(x); } while(0)
 
+#define warning_if(cond, x...) \
+  do { if ((cond)) warning(x); } while(0)
+
 static inline char *xstrdup(const char *s)
 {
   char *out = strdup(s);
