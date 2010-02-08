@@ -33,6 +33,7 @@
 #include "Prefs.h"
 #include "C64.h"
 #include "main.h"
+#include "utils.hh"
 
 #define DEBUG 0
 #include "debug.h"
@@ -217,10 +218,12 @@ uint8 ImageDrive::Open(int channel, const uint8 *name, int name_len)
 	}
 
 	if (name[0] == '$')
+	{
 		if (channel)
 			return open_file_ts(channel, DIR_TRACK, 0);
 		else
 			return open_directory(name + 1, name_len - 1);
+	}
 
 	if (name[0] == '#')
 		return open_direct(channel, name);
@@ -1998,7 +2001,8 @@ static bool parse_d64_file(FILE *f, image_file_desc &desc, bool has_header_id)
 	} else {
 		// Read header ID from BAM (use error_info as buffer)
 		fseek(f, accum_num_sectors[18] * 256, SEEK_SET);
-		fread(desc.error_info, 1, 256, f);
+		if (fread(desc.error_info, 1, 256, f) != 256)
+			warning("Can't read all bytes\n");
 		desc.id1 = desc.error_info[BAM_DISK_ID];
 		desc.id2 = desc.error_info[BAM_DISK_ID + 1];
 	}
@@ -2007,11 +2011,13 @@ static bool parse_d64_file(FILE *f, image_file_desc &desc, bool has_header_id)
 	memset(desc.error_info, 1, sizeof(desc.error_info));
 	if (size == NUM_SECTORS_35 * 257) {
 		fseek(f, NUM_SECTORS_35 * 256, SEEK_SET);
-		fread(desc.error_info, NUM_SECTORS_35, 1, f);
+		if (fread(desc.error_info, NUM_SECTORS_35, 1, f) != NUM_SECTORS_35)
+			warning("Can't read all sectors\n");
 		desc.has_error_info = true;
 	} else if (size == NUM_SECTORS_40 * 257) {
 		fseek(f, NUM_SECTORS_40 * 256, SEEK_SET);
-		fread(desc.error_info, NUM_SECTORS_40, 1, f);
+		if (fread(desc.error_info, NUM_SECTORS_40, 1, f) != NUM_SECTORS_40)
+			warning("Can't read all sectors\n");
 		desc.has_error_info = true;
 	} else
 		desc.has_error_info = false;
@@ -2032,7 +2038,8 @@ static bool parse_x64_file(FILE *f, image_file_desc &desc)
 
 	// Read header ID from BAM (use error_info as buffer)
 	fseek(f, desc.header_size + accum_num_sectors[18] * 256, SEEK_SET);
-	fread(desc.error_info, 1, 256, f);
+	if (fread(desc.error_info, 1, 256, f) != 256)
+		warning("Can't read all bytes\n");
 	desc.id1 = desc.error_info[BAM_DISK_ID];
 	desc.id2 = desc.error_info[BAM_DISK_ID + 1];
 
@@ -2046,7 +2053,8 @@ static bool parse_image_file(FILE *f, image_file_desc &desc)
 {
 	// Read header
 	uint8 header[64];
-	fread(header, 1, sizeof(header), f);
+	if (fread(header, 1, sizeof(header), f) != sizeof(header))
+		warning("Can't read all of the header\n");
 
 	// Determine file size
 	fseek(f, 0, SEEK_END);

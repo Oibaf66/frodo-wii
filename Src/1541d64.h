@@ -29,8 +29,8 @@
  */
 
 // Constants
-const int NUM_SECTORS_35 = 683;	// Number of sectors in a 35-track image
-const int NUM_SECTORS_40 = 768;	// Number of sectors in a 40-track image
+const unsigned int NUM_SECTORS_35 = 683;	// Number of sectors in a 35-track image
+const unsigned int NUM_SECTORS_40 = 768;	// Number of sectors in a 40-track image
 
 // Disk image types
 enum {
