@@ -51,8 +51,14 @@ Prefs::Prefs()
 	ScalingNumerator = 2;
 	ScalingDenominator = 2;
 
+#if defined(GEKKO)
+	strcpy(BasePath, "/frodo/");
+	strcpy(PrefsPath, "/frodo/");
+#else
 	strcpy(BasePath, "");
 	strcpy(PrefsPath, "");
+#endif
+
 	strcpy(DrivePath[0], "64prgs");
 	strcpy(DrivePath[1], "");
 	strcpy(DrivePath[2], "");

@@ -221,12 +221,14 @@ void Frodo::LoadFrodorc()
 		}
 		free((void*)p);
 	}
-	panic_if(!total_name,
-			"Cannot find frodorc or frodorc.default in any tried directory");
 
 	// Load preferences
-	ThePrefs.Load(total_name);
-	strncpy(ThePrefs.PrefsPath, prefs_path, sizeof(ThePrefs.PrefsPath));
+	if (total_name)
+	{
+		ThePrefs.Load(total_name);
+		strncpy(ThePrefs.PrefsPath, prefs_path, sizeof(ThePrefs.PrefsPath));
+	} else
+		warning("Cannot find frodorc or frodorc.default in any tried directory");
 
 	free((void*)total_name);
 }
