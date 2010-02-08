@@ -11,6 +11,7 @@
 #include <dirent.h>
 
 #include "gui/gui.hh"
+#include "gui/status_bar.hh"
 #include "gui/virtual_keyboard.hh"
 
 #if defined(GEKKO)
@@ -182,9 +183,8 @@ void C64::network_vblank()
         		}
         		else if (err != AGAIN_ERROR)
         		{
-        			if (err == VERSION_ERROR) {
-        				TheDisplay->display_status_string("YOUR FRODO IS TOO OLD, DOWNLOAD NEW AT HTTP://FRODO-WII.GOOGLECODE.COM", 5);
-        			}
+        			if (err == VERSION_ERROR)
+        				Gui::gui->status_bar->queueMessage("Get a new version at http://www.c64-network.org");
         			delete remote;
         			this->peer = NULL;
         		}
@@ -203,7 +203,7 @@ void C64::network_vblank()
         				js, this->TheSID) == false)
         		{
         			/* Disconnect or sending crap, remove this guy! */
-				TheDisplay->display_status_string("PEER DISCONNECTED", 3);
+        			Gui::gui->status_bar->queueMessage("Peer disconnected");
         			delete remote;
         			this->peer = NULL;
         			if (this->network_connection_type == CLIENT)

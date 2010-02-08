@@ -49,13 +49,13 @@ enum
 };
 
 // Sizes of memory areas
-const int C64_RAM_SIZE = 0x10000;
-const int COLOR_RAM_SIZE = 0x400;
-const int BASIC_ROM_SIZE = 0x2000;
-const int KERNAL_ROM_SIZE = 0x2000;
-const int CHAR_ROM_SIZE = 0x1000;
-const int DRIVE_RAM_SIZE = 0x800;
-const int DRIVE_ROM_SIZE = 0x4000;
+const size_t C64_RAM_SIZE = 0x10000;
+const size_t COLOR_RAM_SIZE = 0x400;
+const size_t BASIC_ROM_SIZE = 0x2000;
+const size_t KERNAL_ROM_SIZE = 0x2000;
+const size_t CHAR_ROM_SIZE = 0x1000;
+const size_t DRIVE_RAM_SIZE = 0x800;
+const size_t DRIVE_ROM_SIZE = 0x4000;
 
 
 // false: Frodo, true: FrodoSC
