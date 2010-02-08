@@ -93,6 +93,8 @@ Drive *IEC::create_drive(const char *path)
 			// print error?
 		}
 	}
+
+	return NULL;
 }
 
 IEC::IEC(C64Display *display) : the_display(display)
@@ -880,7 +882,7 @@ void Drive::unsupp_cmd(void)
 
 uint8 ascii2petscii(char c)
 {
-	if ((c >= 'A') && (c <= 'Z') || (c >= 'a') && (c <= 'z'))
+	if (((c >= 'A') && (c <= 'Z')) || ((c >= 'a') && (c <= 'z')))
 		return c ^ 0x20;
 	return c;
 }
@@ -892,7 +894,7 @@ void ascii2petscii(uint8 *dest, const char *src, int n)
 
 char petscii2ascii(uint8 c)
 {
-	if ((c >= 'A') && (c <= 'Z') || (c >= 'a') && (c <= 'z'))
+	if (((c >= 'A') && (c <= 'Z')) || ((c >= 'a') && (c <= 'z')))
 		return c ^ 0x20;
 	if ((c >= 0xc1) && (c <= 0xda))
 		return c ^ 0x80;
@@ -911,6 +913,9 @@ void petscii2ascii(char *dest, const uint8 *src, int n)
 
 bool IsMountableFile(const char *path, int &type)
 {
+	size_t n;
+	bool out = true;
+
 	// Read header and determine file size
 	uint8 header[64];
 	memset(header, 0, sizeof(header));
@@ -920,17 +925,19 @@ bool IsMountableFile(const char *path, int &type)
 	fseek(f, 0, SEEK_END);
 	long size = ftell(f);
 	fseek(f, 0, SEEK_SET);
-	fread(header, 1, sizeof(header), f);
+	n = fread(header, 1, sizeof(header), f);
+	if (n != 1)
+		out = false;
 	fclose(f);
 
-	if (IsImageFile(path, header, size)) {
+	if (IsImageFile(path, header, size))
 		type = FILE_IMAGE;
-		return true;
-	} else if (IsArchFile(path, header, size)) {
+	else if (IsArchFile(path, header, size))
 		type = FILE_ARCH;
-		return true;
-	} else
-		return false;
+	else
+		out = false;
+
+	return out;
 }
 
 

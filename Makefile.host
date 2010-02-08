@@ -32,7 +32,7 @@ LDFLAGS ?= $(GCOV) `sdl-config --libs` -lSDL_ttf -lSDL_image
 
 CPP_SRCS=Src/C64_SC.cpp Src/main.cpp Src/Display.cpp Src/Prefs.cpp Src/SID.cpp \
      Src/REU.cpp Src/IEC.cpp Src/1541fs.cpp Src/1541d64.cpp Src/1541t64.cpp \
-     Src/1541job.cpp Src/SAM.cpp Src/CPUC64_SC.cpp Src/VIC_SC.cpp \
+     Src/1541job.cpp Src/CPUC64_SC.cpp Src/VIC_SC.cpp \
      Src/CIA_SC.cpp Src/CPU1541_SC.cpp Src/CPU_common.cpp Src/Network.cpp \
      Src/gui/menu_messages.cpp Src/gui/dialogue_box.cpp Src/gui/widget.cpp \
 	 Src/gui/game_info.cpp Src/gui/status_bar.cpp Src/gui/gui.cpp Src/gui/listener.cpp \
