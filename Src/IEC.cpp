@@ -926,7 +926,7 @@ bool IsMountableFile(const char *path, int &type)
 	long size = ftell(f);
 	fseek(f, 0, SEEK_SET);
 	n = fread(header, 1, sizeof(header), f);
-	if (n != 1)
+	if (n != sizeof(header))
 		out = false;
 	fclose(f);
 
