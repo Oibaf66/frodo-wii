@@ -40,6 +40,7 @@
 #include "1541t64.h"
 #include "IEC.h"
 #include "Prefs.h"
+#include "utils.hh"
 
 #define DEBUG 0
 #include "debug.h"
@@ -100,7 +101,8 @@ bool ArchDrive::change_arch(const char *path)
 
 		// Read header, determine archive type and parse archive contents
 		uint8 header[64];
-		fread(header, 1, 64, new_file);
+		if (fread(header, 1, 64, new_file) != 64)
+			warning("Can't read all bytes\n");
 		bool parsed_ok = false;
 		if (is_t64_header(header)) {
 			archive_type = TYPE_T64;
@@ -236,7 +238,8 @@ uint8 ArchDrive::open_file(int channel, const uint8 *name, int name_len)
 			// Copy file contents from archive file to temp file
 			uint8 *buf = new uint8[file_info[num].size];
 			fseek(the_file, file_info[num].offset, SEEK_SET);
-			fread(buf, file_info[num].size, 1, the_file);
+			if (fread(buf, file_info[num].size, 1, the_file) != 1)
+				warning("Can't read all bytes\n");
 			fwrite(buf, file_info[num].size, 1, file[channel]);
 			rewind(file[channel]);
 			delete[] buf;
@@ -584,7 +587,8 @@ static bool parse_t64_file(FILE *f, vector<c64_dir_entry> &vec, char *dir_title)
 	// Read header and get maximum number of files contained
 	fseek(f, 32, SEEK_SET);
 	uint8 buf[32];
-	fread(&buf, 32, 1, f);
+	if (fread(&buf, 32, 1, f) != 1)
+		warning("Can't read all bytes\n");
 	int max = (buf[3] << 8) | buf[2];
 	if (max == 0)
 		max = 1;
@@ -593,7 +597,8 @@ static bool parse_t64_file(FILE *f, vector<c64_dir_entry> &vec, char *dir_title)
 
 	// Allocate buffer for file records and read them
 	uint8 *buf2 = new uint8[max * 32];
-	fread(buf2, 32, max, f);
+	if (fread(buf2, 32, max, f) != (unsigned)max)
+		warning("Can't read all bytes\n");
 
 	// Determine number of files contained
 	int num_files = 0;
@@ -641,12 +646,14 @@ static bool parse_lynx_file(FILE *f, vector<c64_dir_entry> &vec, char *dir_title
 	// Read header and get number of directory blocks and files contained
 	fseek(f, 0x60, SEEK_SET);
 	int dir_blocks;
-	fscanf(f, "%d", &dir_blocks);
+	if (fscanf(f, "%d", &dir_blocks) == 0)
+		return false;
 	while (getc(f) != 0x0d)
 		if (feof(f))
 			return false;
 	int num_files;
-	fscanf(f, "%d\x0d", &num_files);
+	if (fscanf(f, "%d\x0d", &num_files) == 0)
+		return false;
 
 	// Construct file information array
 	vec.reserve(num_files);
@@ -655,7 +662,8 @@ static bool parse_lynx_file(FILE *f, vector<c64_dir_entry> &vec, char *dir_title
 
 		// Read and convert file name (strip trailing shift-spaces)
 		uint8 name_buf[17];
-		fread(name_buf, 16, 1, f);
+		if (fread(name_buf, 16, 1, f) != 1)
+			warning("Can't read all bytes\n");
 		name_buf[16] = 0xa0;
 		uint8 *p = name_buf + 16;
 		while (*p-- == 0xa0) ;
@@ -664,7 +672,9 @@ static bool parse_lynx_file(FILE *f, vector<c64_dir_entry> &vec, char *dir_title
 		// Read file length and type
 		int num_blocks, last_block;
 		char type_char;
-		fscanf(f, "\x0d%d\x0d%c\x0d%d\x0d", &num_blocks, &type_char, &last_block);
+		if (fscanf(f, "\x0d%d\x0d%c\x0d%d\x0d", &num_blocks, &type_char, &last_block) == 0)
+			return false;
+
 		size_t size = (num_blocks - 1) * 254 + last_block - 1;
 
 		int type;
@@ -687,8 +697,10 @@ static bool parse_lynx_file(FILE *f, vector<c64_dir_entry> &vec, char *dir_title
 		long here = ftell(f);
 		uint8 sa_lo, sa_hi;
 		fseek(f, cur_offset, SEEK_SET);
-		fread(&sa_lo, 1, 1, f);
-		fread(&sa_hi, 1, 1, f);
+		if (fread(&sa_lo, 1, 1, f) != 1)
+			warning("Can't read all bytes\n");
+		if (fread(&sa_hi, 1, 1, f) != 1)
+			warning("Can't read all bytes\n");
 		fseek(f, here, SEEK_SET);
 
 		// Add entry
@@ -711,12 +723,16 @@ static bool parse_p00_file(FILE *f, vector<c64_dir_entry> &vec, char *dir_title)
 	// Read file name and start address
 	uint8 name_buf[17];
 	fseek(f, 8, SEEK_SET);
-	fread(name_buf, 17, 1, f);
+	if (fread(name_buf, 17, 1, f) != 1)
+		warning("Can't read all bytes\n");
+
 	name_buf[16] = 0;
 	uint8 sa_lo, sa_hi;
 	fseek(f, 26, SEEK_SET);
-	fread(&sa_lo, 1, 1, f);
-	fread(&sa_hi, 1, 1, f);
+	if (fread(&sa_lo, 1, 1, f) != 1)
+		warning("Can't read all bytes\n");
+	if (fread(&sa_hi, 1, 1, f) != 1)
+		warning("Can't read all bytes\n");
 
 	// Get file size
 	fseek(f, 0, SEEK_END);
@@ -735,7 +751,8 @@ bool ReadArchDirectory(const char *path, vector<c64_dir_entry> &vec)
 
 		// Read header
 		uint8 header[64];
-		fread(header, 1, sizeof(header), f);
+		if (fread(header, 1, sizeof(header), f) != sizeof(header))
+			warning("Can't read all bytes\n");
 
 		// Determine archive type and parse archive
 		bool result = false;
