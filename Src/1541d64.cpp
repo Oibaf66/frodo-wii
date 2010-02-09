@@ -126,6 +126,8 @@ ImageDrive::ImageDrive(IEC *iec, const char *filepath) : Drive(iec), the_file(NU
 	}
 	ch[15].mode = CHMOD_COMMAND;
 
+	memset(&this->desc, 0, sizeof(this->desc));
+
 	Reset();
 
 	// Open image file
