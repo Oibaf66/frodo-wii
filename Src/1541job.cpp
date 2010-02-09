@@ -43,6 +43,7 @@
 #include "CPU1541.h"
 #include "Prefs.h"
 
+#include "utils.hh"
 
 // Number of tracks/sectors
 const int NUM_TRACKS = 35;
@@ -164,7 +165,8 @@ void Job1541::open_d64_file(char *filepath)
 
 		// x64 image?
 		fseek(the_file, 0, SEEK_SET);
-		fread(&magic, 4, 1, the_file);
+		if (fread(&magic, 4, 1, the_file) != 1)
+			warning("Can't read all bytes\n");
 		if (magic[0] == 0x43 && magic[1] == 0x15 && magic[2] == 0x41 && magic[3] == 0x64)
 			image_header = 64;
 		else
@@ -176,7 +178,8 @@ void Job1541::open_d64_file(char *filepath)
 		// Load sector error info from .d64 file, if present
 		if (!image_header && size == NUM_SECTORS * 257) {
 			fseek(the_file, NUM_SECTORS * 256, SEEK_SET);
-			fread(&error_info, NUM_SECTORS, 1, the_file);
+			if (fread(&error_info, NUM_SECTORS, 1, the_file) != 1)
+				warning("Can't read all bytes\n");
 		};
 
 		// Read BAM and get ID
@@ -269,7 +272,8 @@ bool Job1541::read_sector(int track, int sector, uint8 *buffer)
 #else
 	fseek(the_file, offset + image_header, SEEK_SET);
 #endif
-	fread(buffer, 256, 1, the_file);
+	if (fread(buffer, 256, 1, the_file) != 1)
+		warning("Can't read all bytes\n");
 	return true;
 }
 
