@@ -299,6 +299,8 @@ void Menu::setText(const char **messages, int *submenu_defaults)
 	int i;
 
 	/* Free the old stuff */
+	for (i = 0; i < this->n_entries; i++)
+		free((void*)this->pp_msgs[i]);
 	this->n_submenus = 0;
 	free(this->p_submenus);
 	free(this->pp_msgs);
