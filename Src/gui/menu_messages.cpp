@@ -2,7 +2,7 @@
 
 #include "menu_messages.hh"
 
-const char **exit_dialogue_messages = (const char*[]){
+const char *exit_dialogue_messages[8] = {
 	/*00*/          "Do you really want to exit",
 	/*01*/		"Frodo?",
 	/*02*/		"#", /* Empty line */
@@ -13,7 +13,7 @@ const char **exit_dialogue_messages = (const char*[]){
 	NULL
 };
 
-const char **network_port_dialogue_messages = (const char*[]){
+const char *network_port_dialogue_messages[8] = {
 	/*00*/          "Please supply a number as",
 	/*01*/		"network port.",
 	/*02*/		"#", /* Empty line */
@@ -24,7 +24,7 @@ const char **network_port_dialogue_messages = (const char*[]){
 	NULL
 };
 
-const char **network_unset_name_dlg = (const char*[]){
+const char *network_unset_name_dlg[8] = {
 	/*00*/          "Please setup a name to use",
 	/*01*/		"on network connections.",
 	/*02*/		"#", /* Empty line */
@@ -35,7 +35,7 @@ const char **network_unset_name_dlg = (const char*[]){
 	NULL
 };
 
-const char **broken_theme_dlg = (const char*[]){
+const char *broken_theme_dlg[8] = {
 	/*00*/          "The selected theme cannot be",
 	/*01*/		"loaded, probably some file",
 	/*02*/		"is missing or broken in it.",
@@ -46,7 +46,7 @@ const char **broken_theme_dlg = (const char*[]){
 	NULL
 };
 
-const char **game_info_bad_year_dlg = (const char*[]){
+const char *game_info_bad_year_dlg[8] = {
 	/*00*/          "Impossible year selected,",
 	/*01*/		"try starting with 1981!",
 	/*02*/		"#", /* Empty line */
@@ -57,7 +57,7 @@ const char **game_info_bad_year_dlg = (const char*[]){
 	NULL
 };
 
-const char **game_info_bad_number_dlg = (const char*[]){
+const char *game_info_bad_number_dlg[8] = {
 	/*00*/          "Please enter a number!",
 	/*01*/		"#",
 	/*02*/		"#", /* Empty line */
@@ -68,7 +68,7 @@ const char **game_info_bad_number_dlg = (const char*[]){
 	NULL
 };
 
-const char **select_analogue_dlg = (const char*[]){
+const char *select_analogue_dlg[8] = {
 	/*00*/          "Select axis of analogue",
 	/*01*/		"joystick to bind.",
 	/*02*/		"#",
@@ -81,7 +81,7 @@ const char **select_analogue_dlg = (const char*[]){
 
 
 
-const char **main_menu_messages = (const char*[]){
+const char *main_menu_messages[14] = {
 	/*00*/          NULL, /* Setup dynamically */
 	/*01*/          " ",
 	/*02*/          "File",
@@ -98,7 +98,7 @@ const char **main_menu_messages = (const char*[]){
 	NULL
 };
 
-const char **main_menu_help[] = {
+const char **main_menu_help[14] = {
 		(const char*[]){
 				"Pause or resume the C64",
 				"emulation. Not available",
@@ -152,7 +152,7 @@ const char **main_menu_help[] = {
 };
 
 
-const char **options_menu_messages = (const char*[]){
+const char *options_menu_messages[14] = {
                 /*00*/          "Map Controller 1 to:",
                 /*01*/          "^|Port 1|Port 2",
                 /*02*/          "True 1541 emulation",
@@ -169,7 +169,7 @@ const char **options_menu_messages = (const char*[]){
                 NULL
 };
 
-const char **bind_key_menu_messages = (const char*[]){
+const char *bind_key_menu_messages[13] = {
                 /*00*/          "Wiimote",
                 /*01*/          "^|Up|Down|Left|Right|A|B|1|2|+|-",
                 /*02*/          "Nunchuk",
@@ -185,7 +185,7 @@ const char **bind_key_menu_messages = (const char*[]){
                 NULL
 };
 
-const char **options_menu_help[] = {
+const char **options_menu_help[14] = {
 		(const char*[]){
 				"Switch controller to",
 				"C64 joystick port",
@@ -234,7 +234,7 @@ const char **options_menu_help[] = {
 		NULL,
 };
 
-const char **network_menu_help[] = {
+const char **network_menu_help[8] = {
 		(const char*[]){
 				"Setup username to use on",
 				"the C64 network. Must be",
@@ -271,7 +271,7 @@ const char **network_menu_help[] = {
 };
 
 
-const char **game_info_menu_messages = (const char*[]){
+const char *game_info_menu_messages[6] = {
 	/*00*/          "Capture game screenshot",
 	/*01*/          " ",
 	/*02*/          "Set game name",
