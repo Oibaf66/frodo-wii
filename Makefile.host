@@ -34,12 +34,12 @@ CPP_SRCS=Src/C64_SC.cpp Src/main.cpp Src/Display.cpp Src/Prefs.cpp Src/SID.cpp \
      Src/REU.cpp Src/IEC.cpp Src/1541fs.cpp Src/1541d64.cpp Src/1541t64.cpp \
      Src/1541job.cpp Src/CPUC64_SC.cpp Src/VIC_SC.cpp \
      Src/CIA_SC.cpp Src/CPU1541_SC.cpp Src/CPU_common.cpp Src/Network.cpp \
-     Src/gui/menu_messages.cpp Src/gui/dialogue_box.cpp Src/gui/widget.cpp \
+     Src/gui/dialogue_box.cpp Src/gui/widget.cpp \
 	 Src/gui/game_info.cpp Src/gui/status_bar.cpp Src/gui/gui.cpp Src/gui/listener.cpp \
 	 Src/timer.cpp Src/utils.cpp Src/gui/virtual_keyboard.cpp Src/gui/menu.cpp \
 	 Src/gui/file_browser.cpp Src/data_store.cpp
      
-C_SRCS=Src/d64-read.c
+C_SRCS=Src/d64-read.c Src/gui/menu_messages.c
 
 
 OBJS=$(patsubst %.cpp,objs-host/%.o,$(CPP_SRCS)) $(patsubst %.c,objs-host/%.o,$(C_SRCS))
