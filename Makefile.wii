@@ -60,14 +60,14 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 #---------------------------------------------------------------------------------
 # automatically build a list of object files for our project
 #---------------------------------------------------------------------------------
-CFILES		:= gcaudio.c d64-read.c
+CFILES		:= gcaudio.c d64-read.c gui/menu_messages.c
 CPPFILES	:= Display.cpp main.cpp Prefs.cpp SID.cpp REU.cpp IEC.cpp 1541fs.cpp \
                1541d64.cpp 1541t64.cpp 1541job.cpp C64_SC.cpp CPUC64_SC.cpp VIC_SC.cpp \
                CIA_SC.cpp CPU1541_SC.cpp CPU_common.cpp \
                Network.cpp gui/dialogue_box.cpp gui/widget.cpp utils.cpp \
                gui/game_info.cpp gui/status_bar.cpp gui/gui.cpp gui/listener.cpp \
                timer.cpp utils.cpp gui/virtual_keyboard.cpp gui/menu.cpp \
-               gui/file_browser.cpp data_store.cpp gui/menu_messages.cpp
+               gui/file_browser.cpp data_store.cpp
                
 sFILES		:=	
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
