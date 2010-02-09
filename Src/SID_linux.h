@@ -66,6 +66,7 @@ void DigitalRenderer::init_sound(void)
 	if (arg < 30000 || arg > 45000)
 		return;
 
+	sndbufsize = 0;
 	ioctl(devfd, SNDCTL_DSP_GETBLKSIZE, &sndbufsize);
 	sound_buffer = new int16[sndbufsize];
 	ready = true;

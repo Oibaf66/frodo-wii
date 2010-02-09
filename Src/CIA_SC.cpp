@@ -66,7 +66,7 @@ enum {
  *  Constructors
  */
 
-MOS6526::MOS6526(MOS6510 *CPU) : the_cpu(CPU) {}
+MOS6526::MOS6526(MOS6510 *CPU) : the_cpu(CPU) { has_new_cra = false; has_new_crb = false; }
 MOS6526_1::MOS6526_1(MOS6510 *CPU, MOS6569 *VIC) : MOS6526(CPU), the_vic(VIC) {}
 MOS6526_2::MOS6526_2(MOS6510 *CPU, MOS6569 *VIC, MOS6502_1541 *CPU1541) : MOS6526(CPU), the_vic(VIC), the_cpu_1541(CPU1541) {}
 
