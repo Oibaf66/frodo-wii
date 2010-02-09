@@ -36,16 +36,21 @@ public:
 
 	virtual void selectCallback(int which)
 	{
-		char *p = xstrdup(this->pp_msgs[this->cur_sel]);
+		const char *msg = this->pp_msgs[this->cur_sel];
 
-		p[strlen(p) - 1] = '\0';
-		if (!Gui::gui->setTheme(p + 1))
+		if (strcmp(msg, "None") != 0)
 		{
-			/* Something is wrong, reset to default */
-			Gui::gui->setTheme("default");
-			Gui::gui->pushDialogueBox(new DialogueBox(broken_theme_dlg));
+			char *p = xstrdup(msg);
+
+			p[strlen(p) - 1] = '\0';
+			if (!Gui::gui->setTheme(p + 1))
+			{
+				/* Something is wrong, reset to default */
+				Gui::gui->setTheme("default");
+				Gui::gui->pushDialogueBox(new DialogueBox(broken_theme_dlg));
+			}
+			free(p);
 		}
-		free(p);
 		Gui::gui->popView();
 	}
 
