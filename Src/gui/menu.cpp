@@ -308,6 +308,7 @@ void Menu::setText(const char **messages, int *submenu_defaults)
 	/* Empty messages are allowed */
 	this->p_submenus = NULL;
 	this->pp_msgs = NULL;
+	this->n_entries = 0;
 	if (!messages)
 		return;
 
