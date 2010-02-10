@@ -78,6 +78,8 @@ const char **get_file_list(const char *base_dir, const char *exts[]);
 
 void *sdl_surface_to_png(SDL_Surface *src, size_t *out_sz);
 
+SDL_Surface *sdl_surface_from_data(void *data, size_t sz);
+
 void highlight_background(SDL_Surface *where, Font *font,
 		SDL_Surface *bg_left, SDL_Surface *bg_middle, SDL_Surface *bg_right,
 		int x, int y, int w, int h);

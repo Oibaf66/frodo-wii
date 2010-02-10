@@ -24,6 +24,7 @@ struct ds_data *DataStore::registerNetworkData(uint32_t key, uint32_t metadata,
 	out = (struct ds_data *)xmalloc(sizeof(struct ds_data) + data_sz);
 	out->key = key;
 	out->metadata = metadata;
+	out->sz = data_sz;
 
 	memcpy(out->data, data, data_sz);
 

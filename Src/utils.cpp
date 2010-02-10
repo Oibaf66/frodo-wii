@@ -4,6 +4,7 @@
 #include <png.h>
 #include <sys/stat.h>
 #include <SDL_ttf.h>
+#include <SDL_image.h>
 
 #include <sysdeps.h>
 #include <C64.h>
@@ -268,6 +269,21 @@ void *sdl_surface_to_png(SDL_Surface *surf, size_t *out_sz)
 	*out_sz = out.sz;
 
 	return out.data;
+}
+
+SDL_Surface *sdl_surface_from_data(void *data, size_t sz)
+{
+	SDL_RWops *rw;
+	SDL_Surface *out;
+
+	rw = SDL_RWFromMem(data, sz);
+	if (!rw)
+		return NULL;
+
+	out = IMG_Load_RW(rw, 0);
+	SDL_FreeRW(rw);
+
+	return out;
 }
 
 void highlight_background(SDL_Surface *where, Font *font,

@@ -9,6 +9,7 @@ struct ds_data
 {
 	uint32_t key;
 	uint32_t metadata; /* Type etc */
+	size_t   sz;
 	uint8_t  data[];
 };
 

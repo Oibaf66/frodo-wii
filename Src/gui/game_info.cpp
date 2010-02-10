@@ -216,7 +216,6 @@ struct game_info *GameInfo::dump()
 bool GameInfo::fromDump(struct game_info *gi)
 {
 	struct game_info *p = gi;
-	SDL_RWops *rw;
 
 	/* Demarshal */
 	switch (ntohs(p->version_magic))
@@ -239,13 +238,8 @@ bool GameInfo::fromDump(struct game_info *gi)
 	this->score = p->score;
 	this->year = p->year;
 
-	rw = SDL_RWFromMem(p->data + p->screenshot_off,
+	this->screenshot = sdl_surface_from_data(p->data + p->screenshot_off,
 			p->sz - p->screenshot_off);
-	if (!rw)
-		goto bail_out;
-
-	this->screenshot = IMG_Load_RW(rw, 0);
-	SDL_FreeRW(rw);
 	if (!this->screenshot)
 		goto bail_out;
 	free(p);
