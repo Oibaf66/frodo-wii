@@ -104,12 +104,6 @@ SDL_Surface *real_screen = NULL;
 // Keyboard
 static bool num_locked = false;
 
-#if defined(DO_ERROR_BLINK)
-// For LED error blinking
-static C64Display *c64_disp;
-static struct sigaction pulse_sa;
-static itimerval pulse_tv;
-#endif
 // SDL joysticks
 static SDL_Joystick *joy[2] = {NULL, NULL};
 
@@ -221,20 +215,6 @@ C64Display::C64Display(C64 *the_c64) : TheC64(the_c64)
 	// LEDs off
 	for (int i=0; i<4; i++)
 		led_state[i] = old_led_state[i] = LED_OFF;
-
-#if defined(DO_ERROR_BLINK)
-	// Start timer for LED error blinking
-	c64_disp = this;
-	pulse_sa.sa_handler = (void (*)(int))pulse_handler;
-	pulse_sa.sa_flags = SA_RESTART;
-	sigemptyset(&pulse_sa.sa_mask);
-	sigaction(SIGALRM, &pulse_sa, NULL);
-	pulse_tv.it_interval.tv_sec = 0;
-	pulse_tv.it_interval.tv_usec = 400000;
-	pulse_tv.it_value.tv_sec = 0;
-	pulse_tv.it_value.tv_usec = 400000;
-	setitimer(ITIMER_REAL, &pulse_tv, NULL);
-#endif
 }
 
 
@@ -467,26 +447,6 @@ void C64Display::draw_string(SDL_Surface *s, int x, int y, const char *str, uint
 
 
 /*
- *  LED error blink
- */
-
-#if defined(DO_ERROR_BLINK)
-void C64Display::pulse_handler(...)
-{
-	for (int i=0; i<4; i++)
-		switch (c64_disp->led_state[i]) {
-			case LED_ERROR_ON:
-				c64_disp->led_state[i] = LED_ERROR_OFF;
-				break;
-			case LED_ERROR_OFF:
-				c64_disp->led_state[i] = LED_ERROR_ON;
-				break;
-		}
-}
-#endif
-
-
-/*
  *  Draw speedometer
  */
 
@@ -649,11 +609,7 @@ void C64Display::TranslateKey(SDLKey key, bool key_up, uint8 *key_matrix,
 		case SDLK_PAGEUP: c64_key = MATRIX(6,0); break;
 		case SDLK_PAGEDOWN: c64_key = MATRIX(6,5); break;
 
-#if defined(GEKKO)
-		case SDLK_LCTRL:
-#else
 		case SDLK_LCTRL: c64_key = 0x10 | 0x40;  break;
-#endif
 		case SDLK_TAB: c64_key = MATRIX(7,2); break;
 		case SDLK_RCTRL: c64_key = MATRIX(7,5); break;
 		case SDLK_LSHIFT: c64_key = MATRIX(1,7); break;
@@ -661,17 +617,10 @@ void C64Display::TranslateKey(SDLKey key, bool key_up, uint8 *key_matrix,
 		case SDLK_LALT: case SDLK_LMETA: c64_key = MATRIX(7,5); break;
 		case SDLK_RALT: case SDLK_RMETA: c64_key = MATRIX(7,5); break;
 
-#if defined(GEKKO)
                 case SDLK_UP: c64_key = MATRIX(0,7)| 0x80; break;
                 case SDLK_DOWN: c64_key = MATRIX(0,7); break;
  	        case SDLK_LEFT: c64_key = MATRIX(0,2) | 0x80; break;
 	        case SDLK_RIGHT: c64_key = MATRIX(0,2); break;
-#else
-		case SDLK_UP: c64_key = 0x01 | 0x40; break;
-		case SDLK_DOWN: c64_key = 0x02 | 0x40; break;
-		case SDLK_LEFT: c64_key = 0x04 | 0x40; break;
-		case SDLK_RIGHT: c64_key = 0x08 | 0x40; break;
-#endif /* GEKKO */
 
 		case SDLK_F1: c64_key = MATRIX(0,4); break;
 		case SDLK_F2: c64_key = MATRIX(0,4) | 0x80; break;
