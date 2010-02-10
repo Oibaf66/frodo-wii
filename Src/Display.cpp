@@ -19,6 +19,9 @@
  */
 
 #include "sysdeps.h"
+#if defined(GEKKO)
+# include <ogc/system.h>
+#endif
 
 #include "Display.h"
 #include "Version.h"
@@ -849,49 +852,6 @@ void C64::open_close_joysticks(int oldjoy1, int oldjoy2, int newjoy1, int newjoy
 	open_close_joystick(0, oldjoy1, newjoy1);
 	open_close_joystick(1, oldjoy2, newjoy2);
 }
-
-#if defined(GEKKO)
-void check_analogue_joystick(joystick_t *js,
-		int *extra_keys)
-{
-	int held = 1;
-
-	if (js->mag < 0.9)
-		return;
-
-	// left
-	if (js->ang>=270-45 && js->ang<=270+45)
-		extra_keys[WIIMOTE_LEFT] = held;
-
-	// right
-	if (js->ang>=90-45 && js->ang<=90+45)
-		extra_keys[WIIMOTE_RIGHT] = held;
-
-	// up
-	if (js->ang>=360-45 || js->ang<=45)
-		extra_keys[WIIMOTE_UP] = held;
-
-	// down
-	if (js->ang>=180-45 && js->ang<=180+45)
-		extra_keys[WIIMOTE_DOWN] = held;
-
-	// up/left
-	if (js->ang>=315-20 && js->ang<=315+20)
-		extra_keys[WIIMOTE_LEFT] = extra_keys[WIIMOTE_UP] = held;
-
-	//up/right
-	if (js->ang>=45-20 && js->ang<=45+20)
-		extra_keys[WIIMOTE_RIGHT] = extra_keys[WIIMOTE_UP] = held;
-
-	//down/right
-	if (js->ang>=135-20 && js->ang<=135+20)
-		extra_keys[WIIMOTE_RIGHT] = extra_keys[WIIMOTE_DOWN] = held;
-
-	//down/left
-	if (js->ang>=225-20 && js->ang<=225+20)
-		extra_keys[WIIMOTE_LEFT] = extra_keys[WIIMOTE_DOWN] = held;
-}
-#endif
 
 /* The implementation principles are borrowed from UAE */
 uint8 C64::poll_joystick_axes(int port)

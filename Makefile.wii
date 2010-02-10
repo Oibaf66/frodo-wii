@@ -152,8 +152,6 @@ $(OUTPUT).elf: $(OFILES)
 	@echo $(notdir $<)
 	$(bin2o)
 
-Display.cpp: Display_SDL.h
-
 -include $(DEPENDS)
 
 #---------------------------------------------------------------------------------
