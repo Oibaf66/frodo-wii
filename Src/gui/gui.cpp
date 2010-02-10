@@ -36,6 +36,7 @@ static const char *get_theme_path(const char *dir, const char *what)
 }
 
 /* These are a bit of special cases... */
+#include "network_user_menu.cpp"
 #include "disc_menu.cpp"
 #include "save_game_menu.cpp"
 #include "bind_keys_menu.cpp"
