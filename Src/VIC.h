@@ -22,11 +22,6 @@
 #define _VIC_H
 
 
-// Define this if you want global variables instead of member variables
-#if defined(__i386) || defined(mc68000) || defined(__MC68K__)
-//#define GLOBAL_VARS
-#endif
-
 // Define this if you have a processor that can do unaligned accesses quickly
 #if defined(__i386) || defined(mc68000) || defined(__MC68K__)
 #define CAN_ACCESS_UNALIGNED
