@@ -111,6 +111,7 @@ Gui::Gui()
 	this->tv = NULL;
 	this->giv = NULL;
 	this->bkv = NULL;
+	this->nuv = NULL;
 }
 
 Gui::~Gui()
@@ -123,6 +124,7 @@ Gui::~Gui()
 	delete this->tv;
 	delete this->giv;
 	delete this->bkv;
+	delete this->nuv;
 
 	delete this->cur_gameInfo;
 	delete this->timerController;
@@ -232,6 +234,7 @@ bool Gui::setTheme(const char *path)
 		this->tv = new ThemeView();
 		this->bkv = new BindKeysView();
 		this->giv = new GameInfoView();
+		this->nuv = new NetworkUserView();
 	}
 
 	VirtualKeyboard::kbd->updateTheme();
