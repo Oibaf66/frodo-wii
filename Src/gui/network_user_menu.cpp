@@ -3,20 +3,49 @@
 #include "help_box.hh"
 #include "status_bar.hh"
 #include "data_store.hh"
+#include "network_user_menu.hh"
 
 #include <Network.h>
 
 class NetworkUserView;
 
+const char *ip_to_str(uint8 *ip_in)
+{
+	char *out = (char *)xmalloc(24);
+	int ip[4];
+
+	for (int i = 0; i < 4; i++)
+	{
+		char tmp[3];
+		char *endp;
+
+		tmp[0] = ip_in[i * 2];
+		tmp[1] = ip_in[i * 2 + 1];
+		tmp[2] = '\0';
+		ip[i] = strtoul(tmp, &endp, 16);
+		panic_if (endp == (const char*)tmp,
+			"Could not convert ip to str.\n");
+	}
+	sprintf(out, "%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
+
+	return out;
+}
+
+
 class PeerInfo
 {
 public:
-	PeerInfo(const char *name, int scr_key)
+	PeerInfo(NetworkUpdatePeerInfo *pi)
 	{
-		this->name = (const char*)xstrdup(name);
+		this->name = (const char*)xstrdup((char*)pi->name);
 		this->scr = NULL;
 		this->region = 0;
-		this->scr_key = scr_key;
+		this->scr_key = pi->screenshot_key;
+		this->public_port = pi->public_port;
+		this->private_port = pi->private_port;
+		this->server_id = pi->server_id;
+
+		this->hostname = ip_to_str(pi->public_ip);
 	}
 
 	~PeerInfo()
@@ -58,6 +87,9 @@ public:
 
 	SDL_Surface *scr;
 	const char *name;
+	const char *hostname;
+	uint16_t public_port, private_port;
+	uint32_t server_id;
 	int region;
 	int scr_key;
 };
@@ -165,7 +197,7 @@ public:
 		for (unsigned i = 0; i < peerList->n_peers; i++)
 		{
 			messages[i] = (const char*)xstrdup((char*)ps->name);
-			this->peers[i] = new PeerInfo(messages[i], ps->screenshot_key);
+			this->peers[i] = new PeerInfo(&peerList->peers[i]);
 		}
 		this->setText(messages);
 		free((void*)messages);
@@ -204,46 +236,43 @@ private:
 };
 
 
-class NetworkUserView : public GuiView
+NetworkUserView::NetworkUserView() : GuiView()
+			{
+	this->peerInfo = new PeerInfoBox(Gui::gui->default_font);
+	this->menu = new NetworkUserMenu(Gui::gui->default_font, this->peerInfo);
+			}
+
+NetworkUserView::~NetworkUserView()
 {
-public:
-	NetworkUserView() : GuiView()
-	{
-		this->peerInfo = new PeerInfoBox(Gui::gui->default_font);
-		this->menu = new NetworkUserMenu(Gui::gui->default_font, this->peerInfo);
-	}
+	delete this->menu;
+}
 
-	~NetworkUserView()
-	{
-		delete this->menu;
-	}
+void NetworkUserView::runLogic()
+{
+	this->menu->runLogic();
+}
 
-	void runLogic()
-	{
-		this->menu->runLogic();
-	}
+void NetworkUserView::pushEvent(SDL_Event *ev)
+{
+	this->menu->pushEvent(ev);
+}
 
-	void pushEvent(SDL_Event *ev)
-	{
-		this->menu->pushEvent(ev);
-	}
+void NetworkUserView::setPeers(NetworkUpdateListPeers *peerList)
+{
+	this->menu->setPeers(peerList);
+}
 
-	void draw(SDL_Surface *where)
-	{
-		 SDL_Rect dst;
+void NetworkUserView::draw(SDL_Surface *where)
+{
+	SDL_Rect dst;
 
-		 /* Blit the backgrounds */
-		 dst = (SDL_Rect){20,45,300,400};
-		 SDL_BlitSurface(Gui::gui->main_menu_bg, NULL, where, &dst);
+	/* Blit the backgrounds */
+	dst = (SDL_Rect){20,45,300,400};
+	SDL_BlitSurface(Gui::gui->main_menu_bg, NULL, where, &dst);
 
-		 dst = (SDL_Rect){350,13,0,0};
-		 SDL_BlitSurface(Gui::gui->disc_info, NULL, where, &dst);
+	dst = (SDL_Rect){350,13,0,0};
+	SDL_BlitSurface(Gui::gui->disc_info, NULL, where, &dst);
 
-		 this->menu->draw(where, 50, 70, 280, 375);
-		 this->peerInfo->draw(where, 360, 55, 262, 447);
-	}
-
-protected:
-	NetworkUserMenu *menu;
-	PeerInfoBox *peerInfo;
-};
+	this->menu->draw(where, 50, 70, 280, 375);
+	this->peerInfo->draw(where, 360, 55, 262, 447);
+}

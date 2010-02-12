@@ -27,6 +27,8 @@
 
 #include "utils.hh"
 #include "data_store.hh"
+#include "gui/gui.hh"
+#include "gui/network_user_menu.hh"
 
 #if defined(GEKKO)
 # include <wiiuse/wpad.h>
@@ -88,6 +90,7 @@ Network::Network(const char *remote_host, int port)
 	memset(this->screenshot, 0, sizeof(this->screenshot));
 
 	Network::networking_started = true;
+	this->peer_selected = false;
 	/* Peer addresses, if it fails we are out of luck */
 	if (this->InitSocket(remote_host, port) == false)
 	{
@@ -1012,6 +1015,9 @@ bool Network::ConnectToBroker()
 	NetworkUpdatePeerInfo *pi = (NetworkUpdatePeerInfo *)ud->data;
 	bool out;
 
+	/* Reset peer selection */
+	this->peer_selected = false;
+
 	pi->is_master = 0; /* Will be set later */
 	pi->key = ThePrefs.NetworkKey;
 	pi->version = FRODO_NETWORK_PROTOCOL_VERSION;
@@ -1026,26 +1032,6 @@ bool Network::ConnectToBroker()
 	this->ResetNetworkUpdate();
 
 	return out;
-}
-
-bool Network::IpToStr(char *dst, uint8 *ip_in)
-{
-	int ip[4];
-	for (int i = 0; i < 4; i++)
-	{
-		char tmp[3];
-		char *endp;
-
-		tmp[0] = ip_in[i * 2];
-		tmp[1] = ip_in[i * 2 + 1];
-		tmp[2] = '\0';
-		ip[i] = strtoul(tmp, &endp, 16);
-		if (endp == (const char*)tmp)
-			return false;
-	}
-	sprintf(dst, "%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
-
-	return true;
 }
 
 void Network::SendPingAck(int seq, uint16 type, size_t size_to_send)
@@ -1087,18 +1073,6 @@ network_connection_error_t Network::WaitForPeerAddress()
 	if (pi->peers[0].version != FRODO_NETWORK_PROTOCOL_VERSION)
 		return VERSION_ERROR;
 
-	/* Setup the peer info */
-	char buf[128];
-
-	/* Not sure what to do if this fails */
-	this->IpToStr(buf, pi->peers[0].public_ip);
-	printf("Converted ip to %s:%d\n", buf, pi->peers[0].public_port);
-	if (this->InitSockaddr(&this->connection_addr, buf,
-			pi->peers[0].public_port) == false)
-	{
-		printf("Init sockaddr error\n");
-		return SERVER_GARBAGE_ERROR;
-	}
 	return OK;
 }
 
@@ -1141,37 +1115,33 @@ network_connection_error_t Network::WaitForPeerList()
 		return SERVER_GARBAGE_ERROR;
 
 	pi = (NetworkUpdateListPeers *)this->ud->data;
-#if 0
+	for (unsigned i = 0; i < pi->n_peers; i++)
+	{
 		if (pi->peers[i].version != FRODO_NETWORK_PROTOCOL_VERSION)
-		{
-			free(msgs);
 			return VERSION_ERROR;
-		}
-#endif
-	int sel = 0; // FIXME! menu_select_peer(pi->peers, pi->n_peers);
-
-	/* FIXME! What to do here??? */
-	if (sel < 0)
-		return SERVER_GARBAGE_ERROR;
-	if (sel == 0) {
-		/* We want to wait for a connection, and are therefore
-		 * implicitly a master */
-		return NO_PEERS_ERROR;
 	}
-	/* Correct the index */
-	sel--;
-	/* Setup the peer info */
-	char buf[128];
-	uint16 port = pi->peers[sel].public_port;
 
-	/* Not sure what to do if this fails */
-	this->IpToStr(buf, pi->peers[sel].public_ip);
+	Gui::gui->nuv->setPeers(pi);
+	Gui::gui->activate();
+	Gui::gui->pushView(Gui::gui->nuv);
 
-	/* Finally tell the broker who we selected */
-	this->SelectPeer(pi->peers[sel].server_id);
-	if (this->InitSockaddr(&this->connection_addr, buf,
-			port) == false)
-		return SERVER_GARBAGE_ERROR;
+	return OK;
+}
+
+bool Network::SelectPeer(const char *hostname, uint16_t port, uint32_t server_id)
+{
+	this->SelectPeer(server_id);
+	this->InitSockaddr(&this->connection_addr, hostname, port);
+	this->peer_selected = true;
+
+	return true;
+}
+
+network_connection_error_t Network::WaitForPeerSelection()
+{
+	if (!this->peer_selected)
+		return AGAIN_ERROR;
+
 	return OK;
 }
 
@@ -1305,7 +1275,10 @@ network_connection_error_t Network::ConnectFSM()
 		break;
 	case CONN_WAIT_FOR_PEER_LIST:
 		/* Also tells the broker that we want to connect */
-		err = this->WaitForPeerList();
+		return this->WaitForPeerList();
+		break;
+	case CONN_WAIT_FOR_PEER_SELECT:
+		err = this->WaitForPeerSelection();
 		if (err == OK) {
 			this->network_connection_state = CONN_CONNECT_TO_PEER;
 			this->is_master = false;

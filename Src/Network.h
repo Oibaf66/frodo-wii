@@ -60,6 +60,7 @@ typedef enum
 	CONN_WAIT_FOR_PEER_REPLY,
 
 	CONN_WAIT_FOR_PEER_LIST,
+	CONN_WAIT_FOR_PEER_SELECT,
 	CONN_BANDWIDTH_PING,
 	CONN_BANDWIDTH_REPLY,
 
@@ -237,6 +238,8 @@ public:
 		return this->screen;
 	}
 
+	bool SelectPeer(const char *hostname, uint16_t port, uint32_t server_id);
+
 	network_connection_error_t ConnectFSM();
 
 	/**
@@ -345,6 +348,8 @@ protected:
 
 	network_connection_error_t WaitForPeerAddress();
 
+	network_connection_error_t WaitForPeerSelection();
+
 	bool SelectPeer(uint32 id);
 
 	size_t FillNetworkBuffer(NetworkUpdate *p);
@@ -376,6 +381,7 @@ protected:
 	Uint8 cur_joystick_data;
 
 	/* Connection to the peer */
+	bool peer_selected;
 	int sock;
 	struct sockaddr_in connection_addr;
 
