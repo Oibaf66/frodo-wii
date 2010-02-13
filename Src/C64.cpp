@@ -32,11 +32,6 @@
 #include "Display.h"
 #include "Prefs.h"
 
-#if defined(__unix) && !defined(__svgalib__)
-#include "CmdPipe.h"
-#endif
-
-
 #ifdef FRODO_SC
 bool IsFrodoSC = true;
 #else
