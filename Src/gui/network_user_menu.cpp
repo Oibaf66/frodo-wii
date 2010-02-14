@@ -188,7 +188,7 @@ public:
 		NetworkUpdatePeerInfo *ps = peerList->peers;
 		const char **messages;
 
-		if (ps == NULL)
+		if (ps == NULL || peerList->n_peers == 0)
 			return;
 
 		this->freePeers();
