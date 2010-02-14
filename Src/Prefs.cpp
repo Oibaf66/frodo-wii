@@ -53,10 +53,10 @@ Prefs::Prefs()
 
 #if defined(GEKKO)
 	strcpy(BasePath, "/frodo/");
-	strcpy(PrefsPath, "/frodo/");
+	strcpy(PrefsPath, "/frodo/frodorc");
 #else
 	strcpy(BasePath, "");
-	strcpy(PrefsPath, "");
+	strcpy(PrefsPath, "frodorc");
 #endif
 
 	strcpy(DrivePath[0], "64prgs");
@@ -495,6 +495,8 @@ bool Prefs::Save(const char *filename)
 		fprintf(file, "NetworkKey = %d\n", NetworkKey);
 		fprintf(file, "NetworkAvatar = %d\n", NetworkAvatar);
 		fprintf(file, "NetworkName = %s\n", NetworkName);
+		fprintf(file, "NetworkServer = %s\n", NetworkServer);
+		fprintf(file, "NetworkPort = %d\n", NetworkPort);
 		fclose(file);
 		ThePrefsOnDisk = *this;
 		return true;
