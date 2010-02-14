@@ -926,7 +926,7 @@ void MOS6581::EmulateLine(void)
 		static NetworkUpdateSoundInfo *cur = NULL;
 
 		if (!cur) {
-			cur = TheC64->peer->DequeueSound();
+			cur = TheC64->network->DequeueSound();
 		}
 
 		while (cur) {
@@ -936,7 +936,7 @@ void MOS6581::EmulateLine(void)
 				break;
 			/* Delayed long enough - write to the SID! */
 			this->WriteRegister(cur->adr, cur->val);
-			cur = TheC64->peer->DequeueSound();
+			cur = TheC64->network->DequeueSound();
 		}
 	}
 	if (TheC64->network_connection_type == MASTER ||
@@ -951,7 +951,7 @@ void DigitalRenderer::WriteRegister(uint16 adr, uint8 byte)
 
 	if (TheC64) {
 		if (TheC64->network_connection_type == MASTER)
-			TheC64->peer->RegisterSidWrite(TheC64->linecnt, adr, byte);
+			TheC64->network->RegisterSidWrite(TheC64->linecnt, adr, byte);
 	}
 
 	int v = adr/7;	// Voice number

@@ -210,11 +210,11 @@ public:
 		{
 			PeerInfo *peer = this->peers[which - 1];
 
-			TheC64->peer->SelectPeer(peer->hostname,
+			TheC64->network->SelectPeer(peer->hostname,
 					peer->public_port, peer->server_id);
 		}
 		else
-			TheC64->peer->CancelPeerSelection();
+			TheC64->network->CancelPeerSelection();
 		Gui::gui->popView();
 	}
 
@@ -229,7 +229,7 @@ public:
 
 	virtual void escapeCallback(int which)
 	{
-		TheC64->peer->CancelPeerSelection();
+		TheC64->network->CancelPeerSelection();
 		Gui::gui->popView();
 	}
 

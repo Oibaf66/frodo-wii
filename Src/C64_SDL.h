@@ -60,12 +60,12 @@ void C64::c64_ctor1(void)
 			sizeof(this->server_hostname));
 	this->server_port = 46214;
 	this->network_connection_type = NONE;
-	this->peer = NULL;
+	this->network = NULL;
 
 	if (network_server_connect) {
 		printf("Connecting to %s\n", network_server_connect);
 		strcpy(this->server_hostname, network_server_connect);
-		this->peer = new Network(this->server_hostname, this->server_port);
+		this->network = new Network(this->server_hostname, this->server_port);
 		this->network_connection_type = CONNECT;
 	}
 }
@@ -150,9 +150,9 @@ void C64::network_vblank()
         Uint32 now = SDL_GetTicks();
 #endif
 
-        if (this->peer) {
+        if (this->network) {
         	Uint8 *master = this->TheDisplay->BitmapBase();
-        	Network *remote = this->peer;
+        	Network *remote = this->network;
 		uint8 *js;
         	static bool has_throttled;
 
@@ -161,7 +161,7 @@ void C64::network_vblank()
         		if (this->network_connection_type != CONNECT)
         			remote->Disconnect();
 			delete remote;
-			this->peer = NULL;
+			this->network = NULL;
 			return;
 		}
 
@@ -172,10 +172,10 @@ void C64::network_vblank()
         		else
         			js = &TheCIA1->Joystick2;
         	} else if (this->network_connection_type == CONNECT) {
-        		network_connection_error_t err = this->peer->ConnectFSM();
+        		network_connection_error_t err = this->network->ConnectFSM();
 
         		if (err == OK) {
-        			if (this->peer->is_master)
+        			if (this->network->is_master)
         				this->network_connection_type = MASTER;
         			else
         				this->network_connection_type = CLIENT;
@@ -186,7 +186,7 @@ void C64::network_vblank()
         			if (err == VERSION_ERROR)
         				Gui::gui->status_bar->queueMessage("Get a new version at http://www.c64-network.org");
         			delete remote;
-        			this->peer = NULL;
+        			this->network = NULL;
         		}
         		return;
         	} else {
@@ -205,7 +205,7 @@ void C64::network_vblank()
         			/* Disconnect or sending crap, remove this guy! */
         			Gui::gui->status_bar->queueMessage("Peer disconnected");
         			delete remote;
-        			this->peer = NULL;
+        			this->network = NULL;
         			if (this->network_connection_type == CLIENT)
         				this->Reset();
         			this->network_connection_type = NONE;

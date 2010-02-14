@@ -214,7 +214,7 @@ public:
 	char server_hostname[255];
 	int server_port;
 	int network_connection_type;
-	Network *peer;
+	Network *network;
 	int linecnt;
 
 	bool fake_key_sequence;
