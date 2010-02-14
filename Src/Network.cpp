@@ -28,6 +28,7 @@
 #include "utils.hh"
 #include "data_store.hh"
 #include "gui/gui.hh"
+#include "gui/status_bar.hh"
 #include "gui/network_user_menu.hh"
 
 #if defined(GEKKO)
@@ -1272,10 +1273,12 @@ network_connection_error_t Network::ConnectFSM()
 	{
 	case CONN_CONNECT_TO_BROKER:
 	{
+		Gui::gui->status_bar->queueMessage("Connecting to broker...");
 		if (this->ConnectToBroker())
 			this->network_connection_state = CONN_WAIT_FOR_PEER_LIST;
 	} break;
 	case CONN_WAIT_FOR_PEER_ADDRESS:
+		Gui::gui->status_bar->queueMessage("Waiting for connection...");
 		TheC64->TheDisplay->display_status_string((char*)"WAITING FOR CONNECTION...", 1);
 		err = this->WaitForPeerAddress();
 		if (err == OK)
@@ -1284,6 +1287,7 @@ network_connection_error_t Network::ConnectFSM()
 			return err;
 		break;
 	case CONN_WAIT_FOR_PEER_LIST:
+		Gui::gui->status_bar->queueMessage("Waiting for peer list...");
 		/* Also tells the broker that we want to connect */
 		return this->WaitForPeerList();
 		break;
@@ -1301,6 +1305,7 @@ network_connection_error_t Network::ConnectFSM()
 			return err;
 		break;
 	case CONN_CONNECT_TO_PEER:
+		Gui::gui->status_bar->queueMessage("Connecting to peer...");
 		if (this->ConnectToPeer() == false)
 			return AGAIN_ERROR;
 		/* Allow some transit time */
@@ -1312,7 +1317,6 @@ network_connection_error_t Network::ConnectFSM()
 	case CONN_WAIT_FOR_PEER_REPLY:
 		/* Connect again in case the first sent was dropped on
 		 * its way to the peer */
-		TheC64->TheDisplay->display_status_string((char*)"CONNECTING TO PEER", 1);
 		if (this->WaitForPeerReply() == true)
 			this->network_connection_state = CONN_BANDWIDTH_PING;
 		else
@@ -1336,7 +1340,7 @@ network_connection_error_t Network::ConnectFSM()
 		return err;
 	} break;
 	case CONN_CONNECTED:
-		TheC64->TheDisplay->display_status_string((char*)"CONNECTED!", 2);
+		Gui::gui->status_bar->queueMessage("Connected!");
 		/* The lowest number is the default master */
 	default:
 		return OK;
