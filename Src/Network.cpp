@@ -996,7 +996,7 @@ bool Network::AppendScreenshot(NetworkUpdatePeerInfo *pi)
 	if (!png)
 		goto out_scr;
 
-	ud = InitNetworkUpdate(this->ud, REGISTER_DATA,
+	ud = InitNetworkUpdate(this->cur_ud, REGISTER_DATA,
 			sizeof(NetworkUpdate) + sizeof(NetworkUpdateRegisterData) + sz);
 	dsu = (NetworkUpdateRegisterData *)ud->data;
 	dsu->key = DataStore::ds->getNextKey();
@@ -1015,7 +1015,7 @@ out_none:
 
 bool Network::ConnectToBroker()
 {
-	NetworkUpdate *ud = InitNetworkUpdate(this->ud, CONNECT_TO_BROKER,
+	NetworkUpdate *ud = InitNetworkUpdate(this->cur_ud, CONNECT_TO_BROKER,
 			sizeof(NetworkUpdate) + sizeof(NetworkUpdatePeerInfo));
 	NetworkUpdatePeerInfo *pi = (NetworkUpdatePeerInfo *)ud->data;
 	bool out;
@@ -1125,6 +1125,8 @@ network_connection_error_t Network::WaitForPeerList()
 		if (pi->peers[i].version != FRODO_NETWORK_PROTOCOL_VERSION)
 			return VERSION_ERROR;
 	}
+	if (pi->n_peers == 0)
+		return NO_PEERS_ERROR;
 
 	Gui::gui->nuv->setPeers(pi);
 	Gui::gui->activate();
@@ -1279,7 +1281,6 @@ network_connection_error_t Network::ConnectFSM()
 	} break;
 	case CONN_WAIT_FOR_PEER_ADDRESS:
 		Gui::gui->status_bar->queueMessage("Waiting for connection...");
-		TheC64->TheDisplay->display_status_string((char*)"WAITING FOR CONNECTION...", 1);
 		err = this->WaitForPeerAddress();
 		if (err == OK)
 			this->network_connection_state = CONN_CONNECT_TO_PEER;
@@ -1289,7 +1290,14 @@ network_connection_error_t Network::ConnectFSM()
 	case CONN_WAIT_FOR_PEER_LIST:
 		Gui::gui->status_bar->queueMessage("Waiting for peer list...");
 		/* Also tells the broker that we want to connect */
-		return this->WaitForPeerList();
+		err = this->WaitForPeerList();
+		if (err == NO_PEERS_ERROR)
+		{
+                        this->network_connection_state = CONN_WAIT_FOR_PEER_ADDRESS;
+                        this->is_master = true;
+		}
+		else
+			this->network_connection_state = CONN_WAIT_FOR_PEER_SELECT;
 		break;
 	case CONN_WAIT_FOR_PEER_SELECT:
 		err = this->WaitForPeerSelection();
