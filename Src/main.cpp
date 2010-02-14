@@ -28,6 +28,7 @@
 #include "Prefs.h"
 #include "SAM.h"
 #include "gui/gui.hh"
+#include "data_store.hh"
 #include "utils.hh"
 
 
@@ -249,6 +250,7 @@ void Frodo::ReadyToRun(void)
 
 	// Create and start C64
 	TheC64 = new C64;
+	DataStore::ds = new DataStore();
 	Gui::init();
 	load_rom_files();
 	TheC64->Run();
