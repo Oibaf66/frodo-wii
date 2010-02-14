@@ -150,6 +150,11 @@ public:
 	bool is_in_menu() {
 		return this->have_a_break;
 	}
+
+	void quit()
+	{
+		this->quit_thyself = true;
+	}
 private:
 	void c64_ctor1(void);
 	void c64_ctor2(void);
