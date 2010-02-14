@@ -43,7 +43,7 @@ class ExitListener : public DialogueListener
 		if (selected != 1)
 		{
 			Gui::gui->exitMenu();
-			exit(0);
+			TheC64->quit();
 		}
 	}
 };
