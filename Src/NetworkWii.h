@@ -46,7 +46,7 @@ bool Network::InitSocket(const char *remote_host, int port)
 	set_sock_opts(this->sock);
 
 	/* Setup the socket address */
-	this->InitSockaddr(&this->connection_addr, remote_host, port);
+	this->InitSockaddr(&this->peer_addr, remote_host, port);
 
 	return true;
 }

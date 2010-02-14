@@ -388,7 +388,7 @@ protected:
 	/* Connection to the peer */
 	int peer_selected;
 	int sock;
-	struct sockaddr_in connection_addr;
+	struct sockaddr_in peer_addr;
 
 	const char *connection_error_message;
 

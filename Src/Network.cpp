@@ -616,7 +616,7 @@ bool Network::SendUpdate()
 		ssize_t v;
 
 		v = this->SendTo((void*)p, this->sock,
-				size_to_send, &this->connection_addr);
+				size_to_send, &this->peer_addr);
 		if (v < 0 || (size_t)v != size_to_send)
 			return false;
 		cur_sz += size_to_send;
@@ -1137,7 +1137,7 @@ bool Network::SelectPeer(const char *hostname, uint16_t port, uint32_t server_id
 	}
 
 	this->SelectPeer(server_id);
-	this->InitSockaddr(&this->connection_addr, hostname, port);
+	this->InitSockaddr(&this->peer_addr, hostname, port);
 	this->peer_selected = 1;
 
 	return true;
