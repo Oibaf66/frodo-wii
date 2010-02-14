@@ -227,7 +227,7 @@ void Frodo::LoadFrodorc()
 	if (total_name)
 	{
 		ThePrefs.Load(total_name);
-		strncpy(ThePrefs.PrefsPath, prefs_path, sizeof(ThePrefs.PrefsPath));
+		strncpy(ThePrefs.PrefsPath, total_name, sizeof(ThePrefs.PrefsPath));
 	} else
 		warning("Cannot find frodorc or frodorc.default in any tried directory");
 
