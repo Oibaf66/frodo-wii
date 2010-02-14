@@ -223,7 +223,17 @@ public:
 
 	void CloseSocket();
 
-	bool SendUpdate();
+	bool SendUpdate(struct sockaddr_in *addr);
+
+	bool SendPeerUpdate()
+	{
+		return this->SendUpdate(&this->peer_addr);
+	}
+
+	bool SendServerUpdate()
+	{
+		return this->SendUpdate(&this->server_addr);
+	}
 
 	bool ReceiveUpdate();
 
@@ -309,7 +319,7 @@ protected:
 
 	bool ReceiveData(void *dst, int sock, size_t sz);
 
-	bool InitSocket(const char *remote_host, int port);
+	bool InitSocket();
 
 	/* Simple wrapper around our friend recvfrom */
 	ssize_t ReceiveFrom(void *dst, int sock, size_t sz,
@@ -389,6 +399,7 @@ protected:
 	int peer_selected;
 	int sock;
 	struct sockaddr_in peer_addr;
+	struct sockaddr_in server_addr;
 
 	const char *connection_error_message;
 

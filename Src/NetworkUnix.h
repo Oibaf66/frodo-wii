@@ -35,7 +35,7 @@ bool Network::InitSockaddr (struct sockaddr_in *name,
 	return true;
 }
 
-bool Network::InitSocket(const char *remote_host, int port)
+bool Network::InitSocket()
 {
 	/* Create the socket. */
 	this->sock = socket (PF_INET, SOCK_DGRAM, 0);
@@ -46,9 +46,6 @@ bool Network::InitSocket(const char *remote_host, int port)
 	}
 
 	set_sock_opts(this->sock);
-
-	/* Connect to the server. */
-	this->InitSockaddr(&this->peer_addr, remote_host, port);
 
 	return true;
 }

@@ -234,7 +234,7 @@ void C64::network_vblank()
 
 		remote->EncodeJoystickUpdate(*js);
 
-		if (remote->SendUpdate() == false)
+		if (remote->SendPeerUpdate() == false)
         	{
         		/* Disconnect or broken data */
         		printf("Could not send update\n");

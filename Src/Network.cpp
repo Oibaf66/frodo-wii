@@ -92,11 +92,15 @@ Network::Network(const char *remote_host, int port)
 	Network::networking_started = true;
 	this->peer_selected = -1;
 	/* Peer addresses, if it fails we are out of luck */
-	if (this->InitSocket(remote_host, port) == false)
-	{
-		fprintf(stderr, "Could not init the socket\n");
-		exit(1);
-	}
+	panic_if (this->InitSocket() == false,
+			"Could not init the socket\n");
+
+	/* Setup the socket addresses */
+	memset(&this->peer_addr, 0, sizeof(this->peer_addr));
+	memset(&this->server_addr, 0, sizeof(this->server_addr));
+	panic_if (this->InitSockaddr(&this->server_addr, remote_host, port) == false,
+			"Can't initialize socket address to server\n");
+
 	this->network_connection_state = CONN_CONNECT_TO_BROKER;
 	this->connection_error_message = "Connection OK";
 }
@@ -589,7 +593,7 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
 	return true;
 }
 
-bool Network::SendUpdate()
+bool Network::SendUpdate(struct sockaddr_in *addr)
 {
 	NetworkUpdate *src = this->ud;
 	NetworkUpdate *stop = InitNetworkUpdate(this->cur_ud, STOP, sizeof(NetworkUpdate));
@@ -616,7 +620,7 @@ bool Network::SendUpdate()
 		ssize_t v;
 
 		v = this->SendTo((void*)p, this->sock,
-				size_to_send, &this->peer_addr);
+				size_to_send, addr);
 		if (v < 0 || (size_t)v != size_to_send)
 			return false;
 		cur_sz += size_to_send;
@@ -1028,7 +1032,7 @@ bool Network::ConnectToBroker()
 	this->AddNetworkUpdate(ud);
 	out = this->AppendScreenshot(pi);
 	if (out)
-		out = this->SendUpdate();
+		out = this->SendServerUpdate();
 	this->ResetNetworkUpdate();
 
 	return out;
@@ -1055,7 +1059,7 @@ network_connection_error_t Network::WaitForPeerAddress()
 		NetworkUpdatePingAck *p = (NetworkUpdatePingAck*)ud->data;
 		/* Send ack and go back to this state again */
 		this->SendPingAck(p->seq, ACK, ud->size);
-		this->SendUpdate();
+		this->SendServerUpdate();
 		this->ResetNetworkUpdate();
 		return AGAIN_ERROR;
 	}
@@ -1085,7 +1089,7 @@ bool Network::SelectPeer(uint32 id)
 
 	p->server_id = id;
 	this->AddNetworkUpdate(ud);
-	out = this->SendUpdate();
+	out = this->SendServerUpdate();
 	this->ResetNetworkUpdate();
 
 	return out;		
@@ -1107,7 +1111,7 @@ network_connection_error_t Network::WaitForPeerList()
 		NetworkUpdatePingAck *p = (NetworkUpdatePingAck*)ud->data;
 		/* Send ack and go back to this state again */
 		this->SendPingAck(p->seq, ACK, ud->size);
-		this->SendUpdate();
+		this->SendServerUpdate();
 		this->ResetNetworkUpdate();
 		return AGAIN_ERROR;
 	}
@@ -1175,7 +1179,7 @@ bool Network::ConnectToPeer()
 	bool out;
 
 	this->AddNetworkUpdate(ud);
-	out = this->SendUpdate();
+	out = this->SendServerUpdate();
 	this->ResetNetworkUpdate();
 
 	return out;
@@ -1202,7 +1206,7 @@ network_connection_error_t Network::WaitForBandWidthReply()
 
 			this->ResetNetworkUpdate();
 			this->SendPingAck(seq, BANDWIDTH_ACK, sz);
-			this->SendUpdate();
+			this->SendServerUpdate();
 			continue;
 		}
 		/* CONNECT_TO_PEER is sent twice, so we might get it here */
@@ -1317,7 +1321,7 @@ network_connection_error_t Network::ConnectFSM()
 	case CONN_BANDWIDTH_PING:
 		this->ResetNetworkUpdate();
 		this->SendPingAck(this->is_master, BANDWIDTH_PING, 1024);
-		this->SendUpdate();
+		this->SendServerUpdate();
 		this->bandwidth_ping_ms = SDL_GetTicks();
 		this->ResetNetworkUpdate();
 		this->network_connection_state = CONN_BANDWIDTH_REPLY;
@@ -1349,7 +1353,9 @@ void Network::Disconnect()
 
 	/* Add a stop at the end of the update */
 	this->AddNetworkUpdate(disconnect);
-	this->SendUpdate();
+	this->SendServerUpdate();
+	if (this->network_connection_state)
+		this->SendPeerUpdate();
 }
 
 bool Network::networking_started = false;
