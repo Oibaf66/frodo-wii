@@ -73,7 +73,7 @@ class DataStore:
         except:
             log_info("Cannot delete peer %s" % (peer))
 
-def DataEntry:
+class DataEntry:
     def __init__(self, key, metadata, data):
         self.key = key
         self.metadata = metadata
