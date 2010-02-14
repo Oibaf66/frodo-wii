@@ -6,6 +6,7 @@
 #include "network_user_menu.hh"
 
 #include <Network.h>
+#include <C64.h>
 
 class NetworkUserView;
 
@@ -205,6 +206,15 @@ public:
 
 	virtual void selectCallback(int which)
 	{
+		if (which > 0)
+		{
+			PeerInfo *peer = this->peers[which - 1];
+
+			TheC64->peer->SelectPeer(peer->hostname,
+					peer->public_port, peer->server_id);
+		}
+		else
+			TheC64->peer->CancelPeerSelection();
 		Gui::gui->popView();
 	}
 
@@ -219,6 +229,7 @@ public:
 
 	virtual void escapeCallback(int which)
 	{
+		TheC64->peer->CancelPeerSelection();
 		Gui::gui->popView();
 	}
 

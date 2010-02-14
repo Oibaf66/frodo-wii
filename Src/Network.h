@@ -240,6 +240,11 @@ public:
 
 	bool SelectPeer(const char *hostname, uint16_t port, uint32_t server_id);
 
+	bool CancelPeerSelection()
+	{
+		return this->SelectPeer(NULL,0,0);
+	}
+
 	network_connection_error_t ConnectFSM();
 
 	/**
@@ -381,7 +386,7 @@ protected:
 	Uint8 cur_joystick_data;
 
 	/* Connection to the peer */
-	bool peer_selected;
+	int peer_selected;
 	int sock;
 	struct sockaddr_in connection_addr;
 

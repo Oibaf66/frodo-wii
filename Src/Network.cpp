@@ -90,7 +90,7 @@ Network::Network(const char *remote_host, int port)
 	memset(this->screenshot, 0, sizeof(this->screenshot));
 
 	Network::networking_started = true;
-	this->peer_selected = false;
+	this->peer_selected = -1;
 	/* Peer addresses, if it fails we are out of luck */
 	if (this->InitSocket(remote_host, port) == false)
 	{
@@ -1016,7 +1016,7 @@ bool Network::ConnectToBroker()
 	bool out;
 
 	/* Reset peer selection */
-	this->peer_selected = false;
+	this->peer_selected = -1;
 
 	pi->is_master = 0; /* Will be set later */
 	pi->key = ThePrefs.NetworkKey;
@@ -1130,16 +1130,22 @@ network_connection_error_t Network::WaitForPeerList()
 
 bool Network::SelectPeer(const char *hostname, uint16_t port, uint32_t server_id)
 {
+	if (!hostname)
+	{
+		this->peer_selected = 0;
+		return true;
+	}
+
 	this->SelectPeer(server_id);
 	this->InitSockaddr(&this->connection_addr, hostname, port);
-	this->peer_selected = true;
+	this->peer_selected = 1;
 
 	return true;
 }
 
 network_connection_error_t Network::WaitForPeerSelection()
 {
-	if (!this->peer_selected)
+	if (this->peer_selected == 1)
 		return AGAIN_ERROR;
 
 	return OK;
