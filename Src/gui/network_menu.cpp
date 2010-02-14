@@ -70,7 +70,11 @@ public:
 			if ( strncmp(Gui::gui->np->NetworkName, "Unset", strlen("Unset")) == 0)
 				Gui::gui->pushDialogueBox(new DialogueBox(network_unset_name_dlg));
 			else
+			{
+				TheC64->network = new Network(Gui::gui->np->NetworkServer,
+						Gui::gui->np->NetworkPort);
 				TheC64->network_connection_type = CONNECT;
+			}
 			break;
 		case 6:
 			printf("Send message NYI\n"); // FIXME! Send message
