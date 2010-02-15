@@ -567,10 +567,12 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
 	if (sz_left <= 0)
 		return false;
 
+	printf("Have something\n");
 	/* Receive the header */
 	do {
 		ssize_t actual_sz = this->ReceiveFrom(p, this->sock,
 				4096, NULL);
+		printf("AS: %d\n", actual_sz);
 		if (actual_sz <= 0)
 			return false;
 
@@ -902,6 +904,7 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 
 	while (p->type != STOP)
 	{
+		printf("decoding %d\n", p->type);
 		switch(p->type)
 		{
 		case SOUND_UPDATE:
@@ -995,6 +998,8 @@ bool Network::AppendScreenshot(NetworkUpdatePeerInfo *pi)
 	png = sdl_surface_to_png(scr, &sz);
 	if (!png)
 		goto out_scr;
+	if ((sz & 3) != 0)
+		sz += 4 - (sz & 3);
 
 	ud = InitNetworkUpdate(this->cur_ud, REGISTER_DATA,
 			sizeof(NetworkUpdate) + sizeof(NetworkUpdateRegisterData) + sz);
@@ -1114,6 +1119,14 @@ network_connection_error_t Network::WaitForPeerList()
 		this->SendPingAck(p->seq, ACK, ud->size);
 		this->SendServerUpdate();
 		this->ResetNetworkUpdate();
+		return AGAIN_ERROR;
+	}
+	if (this->ud->type == REGISTER_DATA)
+	{
+		NetworkUpdateRegisterData *rd = (NetworkUpdateRegisterData *)this->ud->data;
+
+		DataStore::ds->registerNetworkData(rd->key, rd->metadata, rd->data,
+				this->ud->size - (sizeof(NetworkUpdateRegisterData) + sizeof(NetworkUpdate)));
 		return AGAIN_ERROR;
 	}
 	if (ud->type != LIST_PEERS)
@@ -1296,7 +1309,7 @@ network_connection_error_t Network::ConnectFSM()
                         this->network_connection_state = CONN_WAIT_FOR_PEER_ADDRESS;
                         this->is_master = true;
 		}
-		else
+		else if (err == OK)
 			this->network_connection_state = CONN_WAIT_FOR_PEER_SELECT;
 		break;
 	case CONN_WAIT_FOR_PEER_SELECT:
