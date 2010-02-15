@@ -1153,9 +1153,9 @@ bool Network::SelectPeer(const char *hostname, uint16_t port, uint32_t server_id
 network_connection_error_t Network::WaitForPeerSelection()
 {
 	if (this->peer_selected == 1)
-		return AGAIN_ERROR;
+		return OK;
 
-	return OK;
+	return AGAIN_ERROR;
 }
 
 bool Network::WaitForPeerReply()
@@ -1182,7 +1182,7 @@ bool Network::ConnectToPeer()
 	bool out;
 
 	this->AddNetworkUpdate(ud);
-	out = this->SendServerUpdate();
+	out = this->SendPeerUpdate();
 	this->ResetNetworkUpdate();
 
 	return out;
