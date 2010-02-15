@@ -24,7 +24,7 @@ datadir = ${PREFIX}/share
 #GCOV=-fprofile-arcs -ftest-coverage
 
 
-CFLAGS ?=-ggdb -Wall  `sdl-config --cflags` -ISrc -O2
+CFLAGS ?=-ggdb -Wall  `sdl-config --cflags` -ISrc -O2 -fno-exceptions
 DEFINES =-DFRODO_SC -DHAVE_CONFIG_H -DDATADIR=\"$(datadir)/frodo/\" -DBINDIR=\"$(bindir)/\" -DHAVE_SDL
 
 LDFLAGS ?= $(GCOV) `sdl-config --libs` -lSDL_ttf -lSDL_image
