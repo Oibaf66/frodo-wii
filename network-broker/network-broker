@@ -360,7 +360,7 @@ class Peer:
             # Save screenshot (maybe) if this is the screenshot key
             entry = pkt.get_entry()
             self.srv.data_store.add_entry(self, entry.get_key() + self.data_key, entry)
-    
+
             if entry.get_key() == self.screenshot_key - self.data_key:
                 try:
                     which = random.randrange(0,12)
@@ -406,49 +406,66 @@ class Peer:
                              self.name, self.key, self.is_master)
 
 class BrokerPacketHandler(SocketServer.DatagramRequestHandler):
-    def get_packet_from_data(self, data):
-        magic = struct.unpack(">H", data[0:2])[0]
-        type = struct.unpack(">H", data[2:4])[0]
+    def get_packets_from_data(self, data):
+        pkts = []
+        off = 0
 
-        if magic != FRODO_NETWORK_MAGIC:
-            raise Exception("Packet magic does not match: %4x vs %4x\n" % (magic,
+        while True:
+            if off >= len(data):
+                break
+            magic = struct.unpack(">H", data[off:off + 2])[0]
+            type = struct.unpack(">H", data[off + 2:off + 4])[0]
+            size = struct.unpack(">L", data[off + 4:off + 8])[0]
+
+            if type == STOP:
+                break
+
+            pkt_data = data[off:off + size]
+            off = off + size
+
+            if magic != FRODO_NETWORK_MAGIC:
+                raise Exception("Packet magic does not match: %4x vs %4x\n" % (magic,
                                                                            FRODO_NETWORK_MAGIC) )
-        try:
-            out = packet_class_by_type[type]()
-            out.demarshal_from_data(data)
-            return out
-        except KeyError, e:
-            raise Exception("Unknown packet type %d" % (type))
+            try:
+                out = packet_class_by_type[type]()
+                out.demarshal_from_data(pkt_data)
+
+                pkts.append(out)
+            except KeyError, e:
+                raise Exception("Unknown packet type %d" % (type))
+
+        return pkts
 
     def handle(self):
         srv = self.server
         data = self.rfile.read()
 
         try:
-            pkt = self.get_packet_from_data(data)
+            pkts = self.get_packets_from_data(data)
         except Exception, e:
-            log_error("Broken packet: %s" % e)
+            log_error("Broken packets: %s" % e)
             return
 
-        # Log received packets (except ping ACKs to avoid filling the server)
-        if pkt.get_type() != ACK:
-            t = pkt.get_type()
-            s = "%d" % (t)
+        for pkt in pkts:
+            # Log received packets (except ping ACKs to avoid filling the server)
+            if pkt.get_type() != ACK:
+                t = pkt.get_type()
+                s = "%d" % (t)
+                try:
+                    s = pkt_type_to_str[t]
+                except KeyError, e:
+                    pass
+                log_info("Received packet %s from %s:%d" % (s, self.client_address[0],
+                                                            self.client_address[1]))
+
+            peer = srv.get_peer(self.client_address)
+
             try:
-                s = pkt_type_to_str[t]
-            except KeyError, e:
-                pass
-            log_info("Received packet %s from %s:%d" % (s, self.client_address[0],
-                                                        self.client_address[1]))
-
-        peer = srv.get_peer(self.client_address)
-
-        try:
-            peer.handle_packet(pkt)
-        except Exception, e:
-            # Sends crap, let's remove it
-            log_error("Handling packet failed, removing peer: %s" % e)
-            srv.remove_peer(peer)
+                peer.handle_packet(pkt)
+            except Exception, e:
+                # Sends crap, let's remove it
+                log_error("Handling packets failed, removing peer: %s" % e)
+                srv.remove_peer(peer)
 
 class Broker(SocketServer.UDPServer):
 
