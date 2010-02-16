@@ -123,13 +123,14 @@ class StopPacket(Packet):
         return struct.pack(">HHL", self.magic, self.type, self.size)
 
 
-class RegisterData(Packet):
+class RegisterDataPacket(Packet):
     def __init__(self, key = -1, metadata = 0, data = ""):
         Packet.__init__(self)
         self.type = REGISTER_DATA
         self.key = key
         self.metadata = metadata
         self.data = data
+        self.size = self.size + 8
 
     def get_key(self):
         return self.key
@@ -417,6 +418,7 @@ class BrokerPacketHandler(SocketServer.DatagramRequestHandler):
             type = struct.unpack(">H", data[off + 2:off + 4])[0]
             size = struct.unpack(">L", data[off + 4:off + 8])[0]
 
+            print "   Pkt", type
             if type == STOP:
                 break
 
@@ -582,7 +584,7 @@ def ping_thread_fn(broker, time_to_sleep):
 packet_class_by_type = {
     CONNECT_TO_BROKER : ConnectToBrokerPacket,
     SELECT_PEER : SelectPeerPacket,
-    REGISTER_DATA : RegisterData,
+    REGISTER_DATA : RegisterDataPacket,
     ACK : PingAckPacket,
 }
 
