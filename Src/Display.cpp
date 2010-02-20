@@ -354,7 +354,7 @@ void C64Display::Update(uint8 *src_pixels)
 		case 24:
 		case 32:
 		default:
-			this->Update_32((Uint8*)screen); break;
+			this->Update_32((Uint8*)src_pixels); break;
 		}
 	}
 	Gui::gui->draw(real_screen);
