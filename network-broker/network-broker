@@ -119,9 +119,6 @@ class StopPacket(Packet):
         Packet.__init__(self)
         self.type = STOP
 
-    def marshal(self):
-        return struct.pack(">HHL", self.magic, self.type, self.size)
-
 
 class RegisterDataPacket(Packet):
     def __init__(self, key = -1, metadata = 0, data = ""):
@@ -130,7 +127,7 @@ class RegisterDataPacket(Packet):
         self.key = key
         self.metadata = metadata
         self.data = data
-        self.size = self.size + 8
+        self.size = self.size + 8 + len(data)
 
     def get_key(self):
         return self.key
@@ -418,7 +415,6 @@ class BrokerPacketHandler(SocketServer.DatagramRequestHandler):
             type = struct.unpack(">H", data[off + 2:off + 4])[0]
             size = struct.unpack(">L", data[off + 4:off + 8])[0]
 
-            print "   Pkt", type
             if type == STOP:
                 break
 
