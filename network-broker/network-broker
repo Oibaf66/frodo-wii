@@ -20,6 +20,9 @@ ACK                = 94 # Yep
 REGISTER_DATA      = 90
 STOP               = 55 # No more packets
 
+# Flags in list peers packet
+NETWORK_UPDATE_LIST_PEERS_IS_CONNECT = 1
+
 pkt_type_to_str = {
     CONNECT_TO_BROKER : "connect-to-broker",
     LIST_PEERS        : "list-peers",
@@ -112,6 +115,8 @@ byte order"""
         return self.size
 
     def marshal(self):
+        if self.type != STOP and self.type != PING:
+            log_info("Sending packet %d (%d bytes)" % (self.type, self.size))
         return struct.pack(">HHL", self.magic, self.type, self.size)
 
 class StopPacket(Packet):
@@ -228,13 +233,14 @@ class ConnectToBrokerPacket(Packet):
         return self._is_master
 
 class ListPeersPacket(Packet):
-    def __init__(self, version):
+    def __init__(self, version = FRODO_NETWORK_PROTOCOL_VERSION, flags = 0):
         Packet.__init__(self)
         self.n_peers = 0
         self.peers = []
         self.type = LIST_PEERS
         self.size = self.size + 24
         self.version = version
+        self.flags = flags
 
     def add_peer(self, peer):
         self.peers.append(peer)
@@ -246,7 +252,7 @@ class ListPeersPacket(Packet):
             self.size = self.size + 8
 
     def marshal(self):
-        out = struct.pack(">L16sHxx", self.n_peers, "", 0)
+        out = struct.pack(">L16sHBx", self.n_peers, "", 0, self.flags)
 
         for peer in self.peers:
             name = "%s (%s)" % (peer.name, peer.country)
@@ -329,7 +335,7 @@ class Peer:
 
             # Send list of peers if this is not a master
             registered_data = []
-            lp = ListPeersPacket(FRODO_NETWORK_PROTOCOL_VERSION)
+            lp = ListPeersPacket()
 
             for peer in self.srv.peers.itervalues():
                 if peer == self:
@@ -347,6 +353,7 @@ class Peer:
             # First send the registry data
             for entry in registered_data:
                 rp = RegisterDataPacket(entry.get_key(), entry.get_metadata(), entry.get_data())
+                print "Sending reg data", entry.get_key(), len(entry.get_data())
                 self.send_packet(rp.marshal())
 
             # And send the packet to this peer
@@ -373,7 +380,7 @@ class Peer:
             peer = self.srv.get_peer_by_id( pkt.get_id() )
 
             # Tell the peer that we have connected
-            lp = ListPeersPacket(FRODO_NETWORK_PROTOCOL_VERSION)
+            lp = ListPeersPacket( flags = NETWORK_UPDATE_LIST_PEERS_IS_CONNECT )
             lp.add_peer(self)
             log_info("Sending list of peers for peer selected to %s:%d" % (
                      self.addr[0], self.addr[1]))
