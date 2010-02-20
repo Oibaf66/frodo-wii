@@ -168,14 +168,12 @@ void C64::network_vblank()
         	remote->Tick( now - last_time_update );
         	if (this->network_connection_type == MASTER) {
         		if (ThePrefs.JoystickSwap)
-        			js = &TheCIA1->Joystick1;
-        		else
         			js = &TheCIA1->Joystick2;
+        		else
+        			js = &TheCIA1->Joystick1;
         	} else {
-        		if (ThePrefs.JoystickSwap)
+				/* Both are the same */
         			js = &TheCIA1->Joystick2;
-        		else
-        			js = &TheCIA1->Joystick1;
         	}
 
 		remote->ResetNetworkUpdate();
@@ -268,21 +266,10 @@ void C64::VBlank(bool draw_frame)
 	else
 		j2 &= joykey;
 
-	if (this->network_connection_type == MASTER)
+	if (this->network_connection_type == CLIENT)
 	{
-		/* Only poll one joystick for network servers */
-		if (ThePrefs.JoystickSwap)
-			TheCIA1->Joystick2 = j2;
-		else
-			TheCIA1->Joystick1 = j2;
-	}
-	else if (this->network_connection_type == CLIENT)
-	{
-		Uint8 which = j2;
+		Uint8 which = j1;
 
-		/* Set both joysticks to the updated value */
-		if (j2 != 0xff)
-			which = j2;
 		TheCIA1->Joystick1 = which;
 		TheCIA1->Joystick2 = which;
 	}
