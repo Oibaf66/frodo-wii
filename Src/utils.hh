@@ -84,4 +84,6 @@ void highlight_background(SDL_Surface *where, Font *font,
 		SDL_Surface *bg_left, SDL_Surface *bg_middle, SDL_Surface *bg_right,
 		int x, int y, int w, int h);
 
+const char *ip_to_str(uint8_t *ip_in);
+
 #endif /* __UTILS_H__ */

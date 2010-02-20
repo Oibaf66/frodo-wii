@@ -76,6 +76,7 @@ public:
 				TheC64->network_connection_type = CONNECT;
 				TheC64->network->ConnectToBroker();
 			}
+			Gui::gui->exitMenu();
 			break;
 		case 6:
 			printf("Send message NYI\n"); // FIXME! Send message

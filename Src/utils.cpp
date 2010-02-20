@@ -320,3 +320,25 @@ void highlight_background(SDL_Surface *where, Font *font,
 	dst = (SDL_Rect){bg_x_end, bg_y_start, 0,0};
 	SDL_BlitSurface(bg_right, NULL,	where, &dst);
 }
+
+const char *ip_to_str(uint8_t *ip_in)
+{
+	char *out = (char *)xmalloc(24);
+	int ip[4];
+
+	for (int i = 0; i < 4; i++)
+	{
+		char tmp[3];
+		char *endp;
+
+		tmp[0] = ip_in[i * 2];
+		tmp[1] = ip_in[i * 2 + 1];
+		tmp[2] = '\0';
+		ip[i] = strtoul(tmp, &endp, 16);
+		panic_if (endp == (const char*)tmp,
+			"Could not convert ip to str.\n");
+	}
+	sprintf(out, "%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
+
+	return out;
+}

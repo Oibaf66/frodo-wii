@@ -10,29 +10,6 @@
 
 class NetworkUserView;
 
-const char *ip_to_str(uint8 *ip_in)
-{
-	char *out = (char *)xmalloc(24);
-	int ip[4];
-
-	for (int i = 0; i < 4; i++)
-	{
-		char tmp[3];
-		char *endp;
-
-		tmp[0] = ip_in[i * 2];
-		tmp[1] = ip_in[i * 2 + 1];
-		tmp[2] = '\0';
-		ip[i] = strtoul(tmp, &endp, 16);
-		panic_if (endp == (const char*)tmp,
-			"Could not convert ip to str.\n");
-	}
-	sprintf(out, "%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
-
-	return out;
-}
-
-
 class PeerInfo
 {
 public:
@@ -53,6 +30,7 @@ public:
 	{
 		SDL_FreeSurface(this->scr);
 		free((void*)this->name);
+		free((void*)this->hostname);
 	}
 
 	SDL_Surface *getScreenshot()
@@ -193,14 +171,15 @@ public:
 
 		this->freePeers();
 		this->n_peers = peerList->n_peers;
-		messages = (const char **)xmalloc( (peerList->n_peers + 1) *
+		messages = (const char **)xmalloc( (peerList->n_peers + 2) *
 				sizeof(const char*));
 		this->peers = (PeerInfo**)xrealloc((void*)this->peers,
 				peerList->n_peers * sizeof(PeerInfo*));
 
+		messages[0] = (const char *)xstrdup("None");
 		for (unsigned i = 0; i < peerList->n_peers; i++)
 		{
-			messages[i] = (const char*)xstrdup((char*)ps->name);
+			messages[i + 1] = (const char*)xstrdup((char*)ps->name);
 			this->peers[i] = new PeerInfo(&peerList->peers[i]);
 		}
 		this->setText(messages);
@@ -218,16 +197,15 @@ public:
 		}
 		else
 			TheC64->network->CancelPeerSelection();
-		Gui::gui->popView();
+		Gui::gui->exitMenu();
 	}
 
 	virtual void hoverCallback(int which)
 	{
-		panic_if(which >= (int)this->n_peers,
-				"Which is impossibly large: %d vs %d\n",
-				which, this->n_peers);
+		if (which <= 0 || which > (int)this->n_peers)
+			return;
 
-		this->infoBox->setPeerInfo(this->peers[which]);
+		this->infoBox->setPeerInfo(this->peers[which - 1]);
 	}
 
 	virtual void escapeCallback(int which)
