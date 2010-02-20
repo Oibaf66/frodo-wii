@@ -50,22 +50,6 @@ typedef enum
 	SOUND_UPDATE	   = 10,
 } network_message_type_t;
 
-typedef enum
-{
-	CONN_CONNECTED,
-	CONN_CONNECT_TO_BROKER,
-	CONN_WAIT_FOR_PEER_ADDRESS,
-	CONN_CONNECT_TO_PEER,
-	CONN_SELECT_PEER,
-	CONN_WAIT_FOR_PEER_REPLY,
-
-	CONN_WAIT_FOR_PEER_LIST,
-	CONN_WAIT_FOR_PEER_SELECT,
-	CONN_BANDWIDTH_PING,
-	CONN_BANDWIDTH_REPLY,
-
-	FAILED,
-} network_connection_state_t;
 
 typedef enum
 {
@@ -114,7 +98,6 @@ struct NetworkUpdateRegisterData
 	uint32_t metadata; /* Type etc */
 	uint8_t  data[];
 };
-
 
 struct NetworkUpdateSoundInfo
 {
@@ -185,8 +168,6 @@ public:
 	Network(const char *remote_host, int port);
 
 	~Network();
-
-	void EncodeScreenshot(Uint8 *dst, Uint8 *master);
 
 	void EncodeDisplay(Uint8 *master, Uint8 *remote);
 
@@ -407,7 +388,6 @@ protected:
 
 	const char *connection_error_message;
 
-	network_connection_state_t network_connection_state;
 	uint32 bandwidth_ping_ms;
 
 	NetworkUpdateSoundInfo sound_active[NETWORK_SOUND_BUF_SIZE];

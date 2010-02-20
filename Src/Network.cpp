@@ -102,7 +102,6 @@ Network::Network(const char *remote_host, int port)
 	panic_if (this->InitSockaddr(&this->server_addr, remote_host, port) == false,
 			"Can't initialize socket address to server\n");
 
-	this->network_connection_state = CONN_CONNECT_TO_BROKER;
 	this->connection_error_message = "Connection OK";
 }
 
@@ -231,34 +230,8 @@ bool Network::CompareSquare(Uint8 *a, Uint8 *b)
 	return true;
 }
 
-void Network::EncodeScreenshot(Uint8 *dst, Uint8 *master)
-{
-	int x, y;
-	int cnt = 0;
-	int p = 0;
-
-	memset(dst, 0, (SCREENSHOT_X * SCREENSHOT_Y) / 2);
-	for (y = 0; y < DISPLAY_Y; y += SCREENSHOT_FACTOR)
-	{
-		for (x = 0; x < DISPLAY_X; x += SCREENSHOT_FACTOR)
-		{
-			Uint8 col_s = master[ y * DISPLAY_X + x ];
-			bool is_odd = (cnt & 1) == 1;
-			int raw_shift = (is_odd ? 0 : 4);
-
-			/* Every second is shifted */
-			dst[ p ] |=	(col_s << raw_shift);
-			if (is_odd)
-				p++;
-			cnt++;
-		}
-	}
-}
-
 void Network::EncodeDisplay(Uint8 *master, Uint8 *remote)
 {
-	if (!this->network_connection_state == MASTER)
-		return;
 	for ( int sq = 0; sq < N_SQUARES_H * N_SQUARES_W; sq++ )
 	{
 		Uint8 *p_master = &master[ SQUARE_TO_Y(sq) * DISPLAY_X + SQUARE_TO_X(sq) ]; 
@@ -969,8 +942,20 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 			if (lp->n_peers == 1 && (lp->flags & NETWORK_UPDATE_LIST_PEERS_IS_CONNECT))
 			{
 				NetworkUpdatePeerInfo *pi = &lp->peers[0];
+				const char *hostname;
 
-				printf("FiXME! Got peer: %s, %d\n", (char*)pi->public_ip, pi->public_port);
+				hostname = ip_to_str(pi->public_ip);
+				this->InitSockaddr(&this->peer_addr, hostname, pi->public_port);
+				free((void*)hostname);
+
+				/* Twice for luck (network equipment might drop these) */
+				this->ConnectToPeer();
+				SDL_Delay(500);
+				this->ConnectToPeer();
+
+				printf("Sent connect to peer packets\n");
+				this->is_master = true;
+				TheC64->network_connection_type = MASTER;
 				break;
 			}
 
@@ -992,12 +977,13 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 			/* FIXME! Not necessarily true! */
 			this->is_master = false;
 
-			Gui::gui->status_bar->queueMessage("Got list of peers");
+			Gui::gui->status_bar->queueMessage("list of peers");
 			Gui::gui->nuv->setPeers(lp);
 			Gui::gui->activate();
 			Gui::gui->pushView(Gui::gui->nuv);
 		} break;
 		case CONNECT_TO_PEER:
+			printf("Got conn to peer packet as %d!\n", this->is_master);
 			if (this->is_master)
 				TheC64->network_connection_type = MASTER;
 			else
@@ -1194,6 +1180,7 @@ bool Network::SelectPeer(const char *hostname, uint16_t port, uint32_t server_id
 
 	this->SelectPeer(server_id);
 	this->InitSockaddr(&this->peer_addr, hostname, port);
+	this->is_master = false;
 	this->peer_selected = 1;
 
 	return true;
@@ -1302,110 +1289,6 @@ network_connection_error_t Network::WaitForBandWidthReply()
 	return OK;
 }
 
-network_connection_error_t Network::ConnectFSM()
-{
-	network_connection_error_t err;
-
-	/* See http://www.brynosaurus.com/pub/net/p2pnat/ for how this works.
-	 *
-	 * For the client:
-	 *   1. Send connect to the broker
-	 *   2. Wait for the broker to return list of peers
-	 *   3. Tell the broker who to connect to
-	 *   4. Select peer
-	 *   	4.1 (master) Wait for broker to return peer address
-	 *   	4.2 (client) Connect to peer
-	 *   5. Until connected:
-	 *      5.1 Send connection message to peer
-	 *      5.2 Wait for reply from peer
-	 *   6. Test bandwidth
-	 */
-	switch(this->network_connection_state)
-	{
-	case CONN_CONNECT_TO_BROKER:
-	{
-		Gui::gui->status_bar->queueMessage("Connecting to broker...");
-		if (this->ConnectToBroker())
-			this->network_connection_state = CONN_WAIT_FOR_PEER_LIST;
-	} break;
-	case CONN_WAIT_FOR_PEER_ADDRESS:
-		Gui::gui->status_bar->queueMessage("Waiting for connection...");
-		err = this->WaitForPeerAddress();
-		if (err == OK)
-			this->network_connection_state = CONN_CONNECT_TO_PEER;
-		else
-			return err;
-		break;
-	case CONN_WAIT_FOR_PEER_LIST:
-		Gui::gui->status_bar->queueMessage("Waiting for peer list...");
-		/* Also tells the broker that we want to connect */
-		err = this->WaitForPeerList();
-		if (err == NO_PEERS_ERROR)
-		{
-                        this->network_connection_state = CONN_WAIT_FOR_PEER_ADDRESS;
-                        this->is_master = true;
-		}
-		else if (err == OK)
-			this->network_connection_state = CONN_WAIT_FOR_PEER_SELECT;
-		break;
-	case CONN_WAIT_FOR_PEER_SELECT:
-		err = this->WaitForPeerSelection();
-		if (err == OK) {
-			this->network_connection_state = CONN_CONNECT_TO_PEER;
-			this->is_master = false;
-		}
-		else if (err == NO_PEERS_ERROR) {
-			this->network_connection_state = CONN_WAIT_FOR_PEER_ADDRESS;
-			this->is_master = true;
-		}
-		else
-			return err;
-		break;
-	case CONN_CONNECT_TO_PEER:
-		Gui::gui->status_bar->queueMessage("Connecting to peer...");
-		if (this->ConnectToPeer() == false)
-			return AGAIN_ERROR;
-		/* Allow some transit time */
-		sleep(1);
-		if (this->ConnectToPeer() == false)
-			return AGAIN_ERROR;
-		this->network_connection_state = CONN_WAIT_FOR_PEER_REPLY;
-		break;
-	case CONN_WAIT_FOR_PEER_REPLY:
-		/* Connect again in case the first sent was dropped on
-		 * its way to the peer */
-		if (this->WaitForPeerReply() == true)
-			this->network_connection_state = CONN_BANDWIDTH_PING;
-		else
-			return AGAIN_ERROR;
-		break;
-	case CONN_BANDWIDTH_PING:
-		this->ResetNetworkUpdate();
-		this->SendPingAck(this->is_master, BANDWIDTH_PING, 1024);
-		this->SendServerUpdate();
-		this->bandwidth_ping_ms = SDL_GetTicks();
-		this->ResetNetworkUpdate();
-		this->network_connection_state = CONN_BANDWIDTH_REPLY;
-		break;
-	case CONN_BANDWIDTH_REPLY:
-	{
-		network_connection_error_t err = this->WaitForBandWidthReply();
-		if (err == OK) {
-			this->network_connection_state = CONN_CONNECTED;
-			return AGAIN_ERROR;
-		}
-		return err;
-	} break;
-	case CONN_CONNECTED:
-		Gui::gui->status_bar->queueMessage("Connected!");
-		/* The lowest number is the default master */
-	default:
-		return OK;
-	}
-
-	return AGAIN_ERROR;
-}
-
 
 void Network::Disconnect()
 {
@@ -1415,8 +1298,7 @@ void Network::Disconnect()
 	/* Add a stop at the end of the update */
 	this->AddNetworkUpdate(disconnect);
 	this->SendServerUpdate();
-	if (this->network_connection_state)
-		this->SendPeerUpdate();
+	this->SendPeerUpdate();
 }
 
 bool Network::networking_started = false;
