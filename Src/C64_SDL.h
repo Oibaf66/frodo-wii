@@ -171,24 +171,6 @@ void C64::network_vblank()
         			js = &TheCIA1->Joystick1;
         		else
         			js = &TheCIA1->Joystick2;
-        	} else if (this->network_connection_type == CONNECT) {
-        		network_connection_error_t err = this->network->ConnectFSM();
-
-        		if (err == OK) {
-        			if (this->network->is_master)
-        				this->network_connection_type = MASTER;
-        			else
-        				this->network_connection_type = CLIENT;
-        			this->linecnt = 0;
-        		}
-        		else if (err != AGAIN_ERROR)
-        		{
-        			if (err == VERSION_ERROR)
-        				Gui::gui->status_bar->queueMessage("Get a new version at http://www.c64-network.org");
-        			delete remote;
-        			this->network = NULL;
-        		}
-        		return;
         	} else {
         		if (ThePrefs.JoystickSwap)
         			js = &TheCIA1->Joystick2;
@@ -196,6 +178,7 @@ void C64::network_vblank()
         			js = &TheCIA1->Joystick1;
         	}
 
+		remote->ResetNetworkUpdate();
         	/* Has the peer sent any data? */
         	if (remote->ReceiveUpdate() == true)
         	{
@@ -214,6 +197,8 @@ void C64::network_vblank()
                 	if (this->network_connection_type == CLIENT)
                 		this->TheDisplay->Update(remote->GetScreen());
         	}
+        	if (this->network_connection_type == CONNECT)
+        		return;
 
         	/* Encode and send updates to the other side (what is determined by 
         	 * if this is the master or not) */
@@ -239,7 +224,6 @@ void C64::network_vblank()
         		/* Disconnect or broken data */
         		printf("Could not send update\n");
         	}
-		remote->ResetNetworkUpdate();
 
 		static uint32_t last_traffic_update;
 

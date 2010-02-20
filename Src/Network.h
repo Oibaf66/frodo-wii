@@ -157,12 +157,14 @@ struct NetworkUpdatePeerInfo
 	uint32 screenshot_key;	 /* Key number of the screenshot */
 };
 
+#define NETWORK_UPDATE_LIST_PEERS_IS_CONNECT 1
 struct NetworkUpdateListPeers
 {
 	uint32 n_peers;
 	uint8  your_ip[16];
 	uint16 your_port;
-	uint8  d[2];         /* Pad to 4 bytes */
+	uint8  flags;
+	uint8  d;		/* Pad to 4 bytes */
 
 	/* Followed by the actual peers */
 	NetworkUpdatePeerInfo peers[];
@@ -264,11 +266,31 @@ public:
 	void Disconnect();
 
 	bool is_master; /* Some peers are more equal than others */
-protected:
+
 	void InitNetwork();
 
 	void ShutdownNetwork();
 
+
+	bool ConnectToBroker();
+
+	bool ConnectToPeer();
+
+	bool WaitForPeerReply();
+
+	bool SendBandWidthTest();
+
+	network_connection_error_t WaitForBandWidthReply();
+
+	network_connection_error_t WaitForPeerList();
+
+	network_connection_error_t WaitForPeerAddress();
+
+	network_connection_error_t WaitForPeerSelection();
+
+	bool SelectPeer(uint32 id);
+
+protected:
 	/** Encode part of a screen into @a dst in a single sweep
 	 * 
 	 * @param dst the destination update structure
@@ -347,25 +369,7 @@ protected:
 
 	bool ScanDataForStop(NetworkUpdate *ud, size_t max_size);
 
-	bool ConnectToBroker();
-
 	bool AppendScreenshot(NetworkUpdatePeerInfo *pi);
-
-	bool ConnectToPeer();
-
-	bool WaitForPeerReply();
-
-	bool SendBandWidthTest();
-
-	network_connection_error_t WaitForBandWidthReply();
-
-	network_connection_error_t WaitForPeerList();
-
-	network_connection_error_t WaitForPeerAddress();
-
-	network_connection_error_t WaitForPeerSelection();
-
-	bool SelectPeer(uint32 id);
 
 	size_t FillNetworkBuffer(NetworkUpdate *p);
 

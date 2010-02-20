@@ -192,8 +192,11 @@ public:
 			return;
 
 		this->freePeers();
+		this->n_peers = peerList->n_peers;
 		messages = (const char **)xmalloc( (peerList->n_peers + 1) *
 				sizeof(const char*));
+		this->peers = (PeerInfo**)xrealloc((void*)this->peers,
+				peerList->n_peers * sizeof(PeerInfo*));
 
 		for (unsigned i = 0; i < peerList->n_peers; i++)
 		{

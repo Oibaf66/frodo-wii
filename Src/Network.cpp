@@ -561,18 +561,18 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
 	size_t received = 0;
 	bool has_stop = false;
 
-	if (this->Select(this->sock, tv) == false)
-		return false;
-
 	if (sz_left <= 0)
 		return false;
 
-	printf("Have something\n");
 	/* Receive the header */
 	do {
+		if (this->Select(this->sock, tv) == false)
+			return false;
+		/* Only timeout the first run */
+		tv = NULL;
+
 		ssize_t actual_sz = this->ReceiveFrom(p, this->sock,
 				4096, NULL);
-		printf("AS: %d\n", actual_sz);
 		if (actual_sz <= 0)
 			return false;
 
@@ -904,7 +904,8 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 
 	while (p->type != STOP)
 	{
-		printf("decoding %d\n", p->type);
+		if (p->magic != FRODO_NETWORK_MAGIC)
+			break;
 		switch(p->type)
 		{
 		case SOUND_UPDATE:
@@ -940,15 +941,8 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 			}
 			break;
 		case TEXT_MESSAGE:
-		{
-			static char display_buf[80];
-
-			strncpy(display_buf, (char*)p->data, 80);
-			display->display_status_string(display_buf, 4);
-		} break;
-		case LIST_PEERS:
-		{
-		} break;
+			Gui::gui->status_bar->queueMessage((const char*)p->data);
+			break;
 		case REGISTER_DATA:
 		{
 			NetworkUpdateRegisterData *rd = (NetworkUpdateRegisterData *)p->data;
@@ -965,7 +959,50 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 			if (ud->type == BANDWIDTH_PING)
 				type = BANDWIDTH_ACK;
 			this->SendPingAck(ping->seq, type, ud->size);
+			this->SendServerUpdate();
+			this->ResetNetworkUpdate();
 		} break;
+		case LIST_PEERS:
+		{
+			NetworkUpdateListPeers *lp = (NetworkUpdateListPeers *)this->ud->data;
+
+			if (lp->n_peers == 1 && (lp->flags & NETWORK_UPDATE_LIST_PEERS_IS_CONNECT))
+			{
+				NetworkUpdatePeerInfo *pi = &lp->peers[0];
+
+				printf("FiXME! Got peer: %s, %d\n", (char*)pi->public_ip, pi->public_port);
+				break;
+			}
+
+			for (unsigned i = 0; i < lp->n_peers; i++)
+			{
+				if (lp->peers[i].version != FRODO_NETWORK_PROTOCOL_VERSION)
+				{
+					warning("Peer %d has wrong version: %d vs %d\n",
+							i, lp->peers[i].version, FRODO_NETWORK_PROTOCOL_VERSION);
+					break;
+				}
+			}
+			if (lp->n_peers == 0)
+			{
+				Gui::gui->status_bar->queueMessage("No peers, waiting for connection...");
+				this->is_master = true;
+				break;
+			}
+			/* FIXME! Not necessarily true! */
+			this->is_master = false;
+
+			Gui::gui->status_bar->queueMessage("Got list of peers");
+			Gui::gui->nuv->setPeers(lp);
+			Gui::gui->activate();
+			Gui::gui->pushView(Gui::gui->nuv);
+		} break;
+		case CONNECT_TO_PEER:
+			if (this->is_master)
+				TheC64->network_connection_type = MASTER;
+			else
+				TheC64->network_connection_type = CLIENT;
+			break;
 		case BANDWIDTH_ACK:
 		case ACK:
 			/* We won't receive this, but it also doesn't really matter */
@@ -1028,7 +1065,6 @@ bool Network::ConnectToBroker()
 	/* Reset peer selection */
 	this->peer_selected = -1;
 
-	pi->is_master = 0; /* Will be set later */
 	pi->key = ThePrefs.NetworkKey;
 	pi->version = FRODO_NETWORK_PROTOCOL_VERSION;
 	pi->avatar = ThePrefs.NetworkAvatar;
