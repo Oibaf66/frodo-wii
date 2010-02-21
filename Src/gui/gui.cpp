@@ -42,6 +42,7 @@ static const char *get_theme_path(const char *dir, const char *what)
 #include "bind_keys_menu.cpp"
 #include "theme_menu.cpp"
 #include "options_menu.cpp"
+#include "network_region_menu.cpp"
 #include "network_menu.cpp"
 #include "game_info_menu.cpp"
 #include "main_menu.cpp"
@@ -112,6 +113,7 @@ Gui::Gui()
 	this->giv = NULL;
 	this->bkv = NULL;
 	this->nuv = NULL;
+	this->nrv = NULL;
 }
 
 Gui::~Gui()
@@ -125,6 +127,7 @@ Gui::~Gui()
 	delete this->giv;
 	delete this->bkv;
 	delete this->nuv;
+	delete this->nrv;
 
 	delete this->cur_gameInfo;
 	delete this->timerController;
@@ -235,6 +238,7 @@ bool Gui::setTheme(const char *path)
 		this->bkv = new BindKeysView();
 		this->giv = new GameInfoView();
 		this->nuv = new NetworkUserView();
+		this->nrv = new NetworkRegionView();
 	}
 
 	VirtualKeyboard::kbd->updateTheme();
@@ -305,6 +309,9 @@ GuiView *Gui::popView()
 
 	this->views = (GuiView**)xrealloc(this->views,
 			sizeof(GuiView*) * this->n_views);
+	if (this->peekView())
+		this->peekView()->viewPushCallback();
+
 	return cur;
 }
 

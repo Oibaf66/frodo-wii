@@ -24,6 +24,20 @@
 
 typedef enum
 {
+	REGION_UNKNOWN = 0,
+	REGION_EUROPE = 1,
+	REGION_AFRICA = 2,
+	REGION_NORTH_AMERICA = 3,
+	REGION_SOUTH_AMERICA = 4,
+	REGION_MIDDLE_EAST = 5,
+	REGION_SOUTH_ASIA = 6,
+	REGION_EAST_ASIA = 7,
+	REGION_OCEANIA = 8,
+	REGION_ANTARTICA = 9,
+} network_region_t;
+
+typedef enum
+{
 	/* Connection-related messages */
 	CONNECT_TO_BROKER  = 99, /* Hello, broker */
 	LIST_PEERS         = 98, /* List of peers */

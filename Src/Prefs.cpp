@@ -104,6 +104,7 @@ Prefs::Prefs()
 	snprintf(this->NetworkName, 32, "Unset name");
 	snprintf(this->NetworkServer, 64, "play.c64-network.org");
 	this->NetworkPort = 46215; // FIXME! Set back to 46214 when ready
+	this->NetworkRegion = REGION_UNKNOWN;
 }
 
 
@@ -226,6 +227,7 @@ bool Prefs::operator==(const Prefs &rhs) const
 #endif
 		&& this->NetworkKey == rhs.NetworkKey
 		&& this->NetworkPort == rhs.NetworkPort
+		&& this->NetworkRegion == rhs.NetworkRegion
 		&& strcmp(this->NetworkServer, rhs.NetworkServer) == 0
 		&& strcmp(this->NetworkName, rhs.NetworkName) == 0
 		&& this->NetworkAvatar == rhs.NetworkAvatar
@@ -392,11 +394,12 @@ void Prefs::Load(const char *filename)
 					strcpy(NetworkName, value);
 				else if (!strcmp(keyword, "NetworkServer"))
 					strcpy(NetworkServer, value);
-#warning take back in real release
-//				else if (!strcmp(keyword, "NetworkPort"))
-//					NetworkPort = atoi(value);
+				else if (!strcmp(keyword, "NetworkPort"))
+					NetworkPort = atoi(value);
 				else if (!strcmp(keyword, "NetworkName"))
 					strcpy(NetworkName, value);
+				else if (!strcmp(keyword, "NetworkRegion"))
+					NetworkRegion = atoi(value);
 				else if (!strcmp(keyword, "NetworkAvatar"))
 					NetworkAvatar = atoi(value);
 			}
@@ -497,6 +500,7 @@ bool Prefs::Save(const char *filename)
 		fprintf(file, "NetworkName = %s\n", NetworkName);
 		fprintf(file, "NetworkServer = %s\n", NetworkServer);
 		fprintf(file, "NetworkPort = %d\n", NetworkPort);
+		fprintf(file, "NetworkRegion = %d\n", NetworkRegion);
 		fclose(file);
 		ThePrefsOnDisk = *this;
 		return true;

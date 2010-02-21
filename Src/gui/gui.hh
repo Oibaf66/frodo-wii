@@ -26,6 +26,7 @@ class NetworkView;
 class ThemeView;
 class GameInfoView;
 class NetworkUserView;
+class NetworkRegionView;
 
 class VirtualKeyboard;
 
@@ -111,6 +112,7 @@ public:
 	ThemeView *tv;
 	BindKeysView *bkv;
 	NetworkUserView *nuv;
+	NetworkRegionView *nrv;
 
 	GuiView **views;
 	int n_views;

@@ -62,9 +62,11 @@ public:
 		{
 		case 0:
 		case 1:
-		case 2:
 			VirtualKeyboard::kbd->activate();
 			VirtualKeyboard::kbd->registerListener(this);
+			break;
+		case 2:
+			Gui::gui->pushView(Gui::gui->nrv);
 			break;
 		case 4:
 			if ( strncmp(Gui::gui->np->NetworkName, "Unset", strlen("Unset")) == 0)
@@ -104,8 +106,8 @@ private:
 				Gui::gui->np->NetworkName);
 		snprintf(this->strs[1], sizeof(this->strs[1]) - 1, "Server (%s)",
 				Gui::gui->np->NetworkServer);
-		snprintf(this->strs[2], sizeof(this->strs[2]) - 1, "Server port (%d)",
-				Gui::gui->np->NetworkPort);
+		snprintf(this->strs[2], sizeof(this->strs[2]) - 1, "Set region (%s)",
+				region_to_str(Gui::gui->np->NetworkRegion));
 
 		this->messages[0] = this->strs[0];
 		this->messages[1] = this->strs[1];

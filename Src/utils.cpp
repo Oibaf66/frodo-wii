@@ -8,6 +8,7 @@
 
 #include <sysdeps.h>
 #include <C64.h>
+#include <Network.h>
 
 #include "gui/font.hh"
 #include "utils.hh"
@@ -341,4 +342,24 @@ const char *ip_to_str(uint8_t *ip_in)
 	sprintf(out, "%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
 
 	return out;
+}
+
+const char *region_to_str(int region)
+{
+	switch (region)
+	{
+	case REGION_EUROPE: return "Europe";
+	case REGION_AFRICA: return "Africa";
+	case REGION_NORTH_AMERICA: return "North America";
+	case REGION_SOUTH_AMERICA: return "South America";
+	case REGION_EAST_ASIA: return "East asia";
+	case REGION_SOUTH_ASIA: return "South asia";
+	case REGION_MIDDLE_EAST: return "Middle east";
+	case REGION_OCEANIA: return "Oceania";
+	case REGION_ANTARTICA: return "Antartica"; // Likely, yes
+	default:
+		break;
+	}
+
+	return "Unknown";
 }

@@ -178,6 +178,7 @@ private:
 
 	char NetworkName[32];
 	char NetworkServer[64];
+	int NetworkRegion;
 	int NetworkPort;
 
 	int NetworkKey;

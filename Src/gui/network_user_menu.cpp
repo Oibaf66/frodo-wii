@@ -48,20 +48,7 @@ public:
 
 	const char *getRegion()
 	{
-		switch (this->region)
-		{
-		case 1: return "Europe";
-		case 2: return "Africa";
-		case 3: return "North America";
-		case 4: return "South America";
-		case 5: return "Asia";
-		case 6: return "Australia";
-		case 7: return "Antartica"; // Likely, yes
-		default:
-			break;
-		}
-
-		return "Unknown";
+		return region_to_str(this->region);
 	}
 
 	SDL_Surface *scr;
