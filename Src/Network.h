@@ -90,6 +90,13 @@ struct NetworkUpdateDisplay
 	uint8 data[];
 };
 
+#define NETWORK_UPDATE_TEXT_MESSAGE_BROADCAST 1
+struct NetworkUpdateTextMessage
+{
+	uint8 flags;  /* Broadcast or not */
+	uint8 data[]; /* NULL-terminated string */
+};
+
 struct NetworkUpdateJoystick
 {
 	uint8 val;
@@ -189,7 +196,7 @@ public:
 
 	void EncodeJoystickUpdate(Uint8 v);
 
-	void EncodeTextMessage(const char *str);
+	void EncodeTextMessage(const char *str, bool broadcast = false);
 
 	void EnqueueSound(uint32 linecnt, uint8 addr, uint8 val);
 

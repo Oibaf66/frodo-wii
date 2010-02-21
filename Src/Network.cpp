@@ -368,15 +368,17 @@ bool Network::DecodeDisplayUpdate(struct NetworkUpdate *src)
 	return false;
 }
 
-void Network::EncodeTextMessage(const char *str)
+void Network::EncodeTextMessage(const char *str, bool broadcast)
 {
 	NetworkUpdate *dst = (NetworkUpdate *)this->cur_ud;
-	char *p = (char*)dst->data;
+	struct NetworkUpdateTextMessage *tm = (struct NetworkUpdateTextMessage*)dst->data;
+	char *p = (char*)tm->data;
 	size_t len = strlen(str) + 1;
 
+	tm->flags = broadcast ? NETWORK_UPDATE_TEXT_MESSAGE_BROADCAST : 0;
 	len += (len & 3);
 	dst = InitNetworkUpdate(dst, TEXT_MESSAGE,
-			sizeof(NetworkUpdate) + len);
+			sizeof(NetworkUpdate) + sizeof(struct NetworkUpdateTextMessage) + len);
 	memset(p, 0, len);
 	strncpy(p, str, len - 1);
 
@@ -919,8 +921,11 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 			}
 			break;
 		case TEXT_MESSAGE:
-			Gui::gui->status_bar->queueMessage((const char*)p->data);
-			break;
+		{
+			NetworkUpdateTextMessage *tm = (NetworkUpdateTextMessage*)p->data;
+
+			Gui::gui->status_bar->queueMessage((const char*)tm->data);
+		} break;
 		case REGISTER_DATA:
 		{
 			NetworkUpdateRegisterData *rd = (NetworkUpdateRegisterData *)p->data;

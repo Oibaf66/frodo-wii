@@ -19,6 +19,7 @@ PING               = 95 # Are you alive?
 ACK                = 94 # Yep
 REGISTER_DATA      = 90
 STOP               = 55 # No more packets
+TEXT_MESSAGE       =  9
 
 # Network regions
 REGION_UNKNOWN       = 0
@@ -32,7 +33,8 @@ REGION_EAST_ASIA     = 7
 REGION_OCEANIA       = 8
 REGION_ANTARTICA     = 9
 
-# Flags in list peers packet
+# Flags in packets
+NETWORK_UPDATE_TEXT_MESSAGE_BROADCAST = 1
 NETWORK_UPDATE_LIST_PEERS_IS_CONNECT = 1
 
 pkt_type_to_str = {
@@ -200,6 +202,31 @@ class DisconnectPacket(Packet):
         Packet.__init__(self)
         self.type = DISCONNECT
 
+class TextMessagePacket(Packet):
+    def __init__(self, message = ""):
+        Packet.__init__(self)
+        msg_len = len(message) + 1 # NULL
+
+        # Used only by the server
+        self.timestamp = time.mktime(time.localtime())
+        self.type = TEXT_MESSAGE
+        self.message = message
+        self.flags = NETWORK_UPDATE_TEXT_MESSAGE_BROADCAST # Always here
+        self.size = self.size + 1 + msg_len
+
+    def get_timestamp(self):
+        return self.timestamp
+
+    def demarshal_from_data(self, data):
+        Packet.demarshal_from_data(self, data)
+        # Flags is always broadcast
+        self.message = struct.unpack(">s", data[9:])[0]
+        self.size = 8 + 1 + len(self.message) + 1 # NULL
+
+    def marshal(self):
+        to_pad = len(self.message) % 3
+        return Packet.marshal(self) + struct.pack(">B%dsx" % len(self.message),
+                                                  self.flags, self.message)
 
 class SelectPeerPacket(Packet):
     def __init__(self):
@@ -400,13 +427,16 @@ class Peer:
             # First send the registry data
             for entry in registered_data:
                 rp = RegisterDataPacket(entry.get_key(), entry.get_metadata(), entry.get_data())
-                print "Sending reg data", entry.get_key(), len(entry.get_data())
                 self.send_packet(rp.marshal())
 
             # And send the packet to this peer
             log_info("Sending list of peers (%d) to %s:%d" % (lp.n_peers,
                                                               self.addr[0], self.addr[1]) )
             self.send_packet(lp.marshal())
+
+            # Send all current messages
+            for msg in self.srv.messages:
+                self.send_packet(msg.marshal())
 
         if pkt.type == REGISTER_DATA:
             # Save screenshot (maybe) if this is the screenshot key
@@ -439,6 +469,9 @@ class Peer:
 
         if pkt.type == ACK:
             self.last_ping = cur_time()
+
+        if pkt.type == TEXT_MESSAGE:
+            self.srv.enqueue_message(pkt)
 
     def seconds_since_last_ping(self):
         now = cur_time()
@@ -538,6 +571,8 @@ class Broker(SocketServer.UDPServer):
         self.ping_seq = 0
         self.ip2c = ip2c
 
+        self.messages = []
+
         self.stat_html = stat_html
         self.stat_data = stat_data
         self.image_dir = image_dir
@@ -595,6 +630,21 @@ class Broker(SocketServer.UDPServer):
                 return v
         return None
 
+    def enqueue_message(self, message):
+        # Store last 10 messages
+        self.messages = self.messages[-9:] + [message]
+
+        for peer in self.peers:
+            peer.send_packet(message)
+
+    def dequeue_old_messages(self):
+        now = time.mktime(time.localtime())
+        for msg in self.messages:
+            diff = now - msg.get_timestamp()
+            # Older than one day?
+            if diff > 24 * 60 * 60:
+                del msg
+
     def ping_all_peers(self):
         """Ping all peers (to see that they are alive)"""
         for k,v in self.peers.iteritems():
@@ -619,6 +669,8 @@ def ping_thread_fn(broker, time_to_sleep):
 
     while True:
         try:
+            broker.dequeue_old_messages()
+
             broker.ping_all_peers()
             time.sleep( time_to_sleep )
 
@@ -642,6 +694,7 @@ packet_class_by_type = {
     SELECT_PEER : SelectPeerPacket,
     REGISTER_DATA : RegisterDataPacket,
     DISCONNECT : DisconnectPacket,
+    TEXT_MESSAGE : TextMessagePacket,
     ACK : PingAckPacket,
 }
 
