@@ -914,7 +914,6 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 			}
 			break;
 		case TEXT_MESSAGE:
-			printf("Got message: %d, %s\n", p->size, (char*)p->data);
 			Gui::gui->status_bar->queueMessage((const char*)p->data);
 			break;
 		case REGISTER_DATA:
@@ -984,7 +983,6 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 			Gui::gui->pushView(Gui::gui->nuv);
 		} break;
 		case CONNECT_TO_PEER:
-			printf("Got conn to peer packet as %d!\n", this->is_master);
 			if (this->is_master)
 				TheC64->network_connection_type = MASTER;
 			else
