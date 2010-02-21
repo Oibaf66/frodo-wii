@@ -229,6 +229,8 @@ public:
 
 	void CloseSocket();
 
+	bool SendUpdateDirect(struct sockaddr_in *addr, NetworkUpdate *what);
+
 	bool SendUpdate(struct sockaddr_in *addr);
 
 	bool SendPeerUpdate()

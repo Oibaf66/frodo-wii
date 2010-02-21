@@ -104,13 +104,15 @@ public:
 	void InitColors(uint8 *colors);
 	void NewPrefs(Prefs *prefs);
 
-	void TypeNetworkMessage();
+	void TypeNetworkMessage(bool broadcast = false);
 
 	C64 *TheC64;
 
 	bool quit_requested;
 
 
+	/* FIXME! Should not be public */
+	bool text_message_broadcast;
 private:
 	int led_state[4];
 	int old_led_state[4];

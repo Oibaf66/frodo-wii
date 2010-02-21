@@ -196,7 +196,12 @@ void C64::network_vblank()
                 	if (this->network_connection_type == CLIENT)
                 		this->TheDisplay->Update(remote->GetScreen());
         	}
-        	if (this->network_connection_type == CONNECT)
+		const char *msg = TheDisplay->GetTextMessage();
+		if (msg)
+			remote->EncodeTextMessage(msg, TheDisplay->text_message_broadcast);
+		free((void *)msg);
+
+		if (this->network_connection_type == CONNECT)
         		return;
 
         	/* Encode and send updates to the other side (what is determined by 
@@ -211,11 +216,6 @@ void C64::network_vblank()
 				remote->FlushSound();
 			}
         	}
-
-		const char *msg = TheDisplay->GetTextMessage();
-		if (msg)
-			remote->EncodeTextMessage(msg);
-		free((void *)msg);
 
 		remote->EncodeJoystickUpdate(*js);
 

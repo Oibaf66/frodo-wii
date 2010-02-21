@@ -648,10 +648,11 @@ private:
 	const char **out;
 };
 
-void C64Display::TypeNetworkMessage()
+void C64Display::TypeNetworkMessage(bool broadcast)
 {
 	TypeNetworkMessageListener *nl = new TypeNetworkMessageListener(&this->text_message_send);
 
+	this->text_message_broadcast = broadcast;
 	Gui::gui->status_bar->queueMessage("Type message to send to peer");
 	VirtualKeyboard::kbd->registerListener(nl);
 	VirtualKeyboard::kbd->activate();

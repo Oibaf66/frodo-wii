@@ -382,7 +382,18 @@ void Network::EncodeTextMessage(const char *str, bool broadcast)
 	memset(p, 0, len);
 	snprintf(p, len - 1, "%s: %s", ThePrefs.NetworkName, str);
 
-	this->AddNetworkUpdate(dst);
+	if (broadcast)
+	{
+		uint8_t *p_dst = (uint8_t *)dst;
+		NetworkUpdate *stop = InitNetworkUpdate((NetworkUpdate*)(p_dst + dst->size),
+				STOP, sizeof(NetworkUpdate));
+
+		this->MarshalData(dst);
+		this->MarshalData(stop);
+		this->SendUpdateDirect(&this->server_addr, dst);
+	}
+	else
+		this->AddNetworkUpdate(dst);
 }
 
 
@@ -567,6 +578,34 @@ bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
 		printf("Demarshal error\n");
 		return false;
 	}
+
+	return true;
+}
+
+
+bool Network::SendUpdateDirect(struct sockaddr_in *addr, NetworkUpdate *src)
+{
+	uint8_t *p = (uint8_t *)src;
+	size_t sz;
+
+	sz = src->size + sizeof(NetworkUpdate); /* stop */
+	if (sz <= 0)
+		return false;
+
+	size_t cur_sz = 0;
+	do
+	{
+		size_t size_to_send = this->FillNetworkBuffer((NetworkUpdate*)p);
+		ssize_t v;
+
+		v = this->SendTo((void*)p, this->sock,
+				size_to_send, addr);
+		if (v <= 0 || (size_t)v != size_to_send)
+			return false;
+		cur_sz += size_to_send;
+		p += size_to_send;
+	} while (cur_sz < sz);
+	this->traffic += cur_sz;
 
 	return true;
 }
