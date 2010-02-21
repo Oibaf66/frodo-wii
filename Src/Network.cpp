@@ -587,25 +587,18 @@ bool Network::SendUpdateDirect(struct sockaddr_in *addr, NetworkUpdate *src)
 {
 	uint8_t *p = (uint8_t *)src;
 	size_t sz;
+	ssize_t v;
 
-	sz = src->size + sizeof(NetworkUpdate); /* stop */
+	sz = ntohl(src->size) + sizeof(NetworkUpdate); /* stop */
 	if (sz <= 0)
 		return false;
 
-	size_t cur_sz = 0;
-	do
-	{
-		size_t size_to_send = this->FillNetworkBuffer((NetworkUpdate*)p);
-		ssize_t v;
-
-		v = this->SendTo((void*)p, this->sock,
-				size_to_send, addr);
-		if (v <= 0 || (size_t)v != size_to_send)
-			return false;
-		cur_sz += size_to_send;
-		p += size_to_send;
-	} while (cur_sz < sz);
-	this->traffic += cur_sz;
+	printf("Sending %d bytes\n", sz);
+	v = this->SendTo((void*)p, this->sock,
+			sz, addr);
+	if (v <= 0 || (size_t)v != sz)
+		return false;
+	this->traffic += sz;
 
 	return true;
 }
