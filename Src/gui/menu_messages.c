@@ -247,9 +247,8 @@ const char **network_menu_help[8] = {
 				NULL,
 		},
 		(const char*[]){
-				"UDP port to use. Only for",
-				"debugging, so leave as",
-				"it is",
+				"Setup the region of the",
+				"world where you live.",
 				NULL,
 		},
 		NULL,
