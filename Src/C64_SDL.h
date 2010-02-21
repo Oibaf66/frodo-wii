@@ -273,6 +273,14 @@ void C64::VBlank(bool draw_frame)
 		TheCIA1->Joystick1 = which;
 		TheCIA1->Joystick2 = which;
 	}
+	else if (this->network_connection_type == MASTER)
+	{
+		/* The other comes from the network */
+		if (ThePrefs.JoystickSwap)
+			TheCIA1->Joystick1 = j1;
+		else
+			TheCIA1->Joystick2 = j2;
+	}
 	else
 	{
 		TheCIA1->Joystick1 = j1;
