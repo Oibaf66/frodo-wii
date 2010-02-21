@@ -1,5 +1,6 @@
 #include "status_bar.hh"
 #include "gui.hh"
+#include "utils.hh"
 
 StatusBar::StatusBar() : Menu(Gui::gui->small_font), TimeoutHandler()
 {
@@ -12,7 +13,7 @@ StatusBar::StatusBar() : Menu(Gui::gui->small_font), TimeoutHandler()
 
 void StatusBar::queueMessage(const char *message)
 {
-	this->messages[this->head] = message;
+	this->messages[this->head] = xstrdup(message);
 
 	/* If this is the first message, display it as soon as possible */
 	if (this->head == this->tail)
@@ -49,6 +50,7 @@ void StatusBar::timeoutCallback()
 	}
 	else
 		this->setText(NULL);
+	free((void *)this->cur_message);
 }
 
 void StatusBar::draw(SDL_Surface *where)
