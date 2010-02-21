@@ -789,6 +789,8 @@ uint8 C64::poll_joystick_axes(int port)
 		int *min_axis = &this->joy_minx[port];
 		uint8 neg_val = 0xfb;
 		uint8 pos_val = 0xf7;
+		event_t gui_neg_val = KEY_LEFT;
+		event_t gui_pos_val = KEY_RIGHT;
 
 		if (ThePrefs.JoystickAxes[i] == JOY_VERT)
 		{
@@ -796,6 +798,8 @@ uint8 C64::poll_joystick_axes(int port)
 			min_axis = &this->joy_miny[port];
 			neg_val = 0xfe;
 			pos_val = 0xfd;
+			gui_neg_val = KEY_UP;
+			gui_pos_val = KEY_DOWN;
 		}
 
 		/* Dynamic joystick calibration */
@@ -808,10 +812,14 @@ uint8 C64::poll_joystick_axes(int port)
 		if (*max_axis - *min_axis < 100)
 			continue;
 
-		if (axis < (*min_axis + (*max_axis - *min_axis)/3))
+		if (axis < (*min_axis + (*max_axis - *min_axis)/3)) {
 			out &= neg_val;
-		else if (axis > (*min_axis + 2*(*max_axis - *min_axis)/3))
+			Gui::gui->pushEvent(gui_neg_val);
+		}
+		else if (axis > (*min_axis + 2*(*max_axis - *min_axis)/3)) {
 			out &= pos_val;
+			Gui::gui->pushEvent(gui_pos_val);
+		}
 	}
 
 	return out;
@@ -865,16 +873,16 @@ uint8 C64::poll_joystick_buttons(int port)
 
 		if (kc == JOY_NONE)
 			continue;
+		else if (kc == JOY_FIRE)
+			Gui::gui->pushEvent(KEY_SELECT);
+		else if (kc == JOY_ENTER_MENU)
+			Gui::gui->activate();
+		else
+			Gui::gui->pushEvent(KEY_ESCAPE);
 
 		if (cur != old) {
 			TheDisplay->UpdateKeyMatrix(kc, !cur,
 					TheCIA1->KeyMatrix, TheCIA1->RevMatrix,	&out);
-			if (kc == JOY_FIRE)
-				Gui::gui->pushEvent(KEY_SELECT);
-			else if (kc == JOY_ENTER_MENU)
-				Gui::gui->activate();
-			else
-				Gui::gui->pushEvent(KEY_ESCAPE);
 		}
 	}
 
