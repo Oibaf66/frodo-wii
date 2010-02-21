@@ -173,7 +173,7 @@ public:
 
 	void EncodeJoystickUpdate(Uint8 v);
 
-	void EncodeTextMessage(char *str);
+	void EncodeTextMessage(const char *str);
 
 	void EnqueueSound(uint32 linecnt, uint8 addr, uint8 val);
 

@@ -368,7 +368,7 @@ bool Network::DecodeDisplayUpdate(struct NetworkUpdate *src)
 	return false;
 }
 
-void Network::EncodeTextMessage(char *str)
+void Network::EncodeTextMessage(const char *str)
 {
 	NetworkUpdate *dst = (NetworkUpdate *)this->cur_ud;
 	char *p = (char*)dst->data;
@@ -914,6 +914,7 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 			}
 			break;
 		case TEXT_MESSAGE:
+			printf("Got message: %d, %s\n", p->size, (char*)p->data);
 			Gui::gui->status_bar->queueMessage((const char*)p->data);
 			break;
 		case REGISTER_DATA:

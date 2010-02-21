@@ -211,9 +211,10 @@ void C64::network_vblank()
 			}
         	}
 
-		char *msg = TheDisplay->GetTextMessage();
+		const char *msg = TheDisplay->GetTextMessage();
 		if (msg)
 			remote->EncodeTextMessage(msg);
+		free((void *)msg);
 
 		remote->EncodeJoystickUpdate(*js);
 

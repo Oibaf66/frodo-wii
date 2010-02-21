@@ -29,8 +29,10 @@
 #include "Prefs.h"
 #include "C64.h"
 #include "CIA.h"
+#include "utils.hh"
 
 #include "gui/gui.hh"
+#include "gui/status_bar.hh"
 #include "gui/virtual_keyboard.hh"
 
 // LED states
@@ -202,9 +204,6 @@ C64Display::C64Display(C64 *the_c64) : TheC64(the_c64)
 	quit_requested = false;
 	speedometer_string[0] = 0;
 	networktraffic_string[0] = 0;
-	memset(this->text_message, 0, sizeof(this->text_message));
-	this->text_message_idx = 0;
-	this->entering_text_message = false;
 	this->text_message_send = NULL;
 
 	// Open window
@@ -617,44 +616,47 @@ void C64Display::TranslateKey(SDLKey key, bool key_up, uint8 *key_matrix,
 		shift_on = true;
 	else if (c64_key == MATRIX(1,7) || c64_key == MATRIX(6,4))
 		shift_on = false;
-	else if (!key_up && this->entering_text_message)
-	{
-		char c = Gui::gui->kbd->keycodeToChar(c64_key | (shift_on ? 0x80 : 0) );
-
-		if ((size_t)this->text_message_idx >= sizeof(this->text_message) - 2 ||
-				c == '\n')
-		{
-			this->text_message[this->text_message_idx] = '\0';
-			this->text_message_send = this->text_message;
-			this->text_message_idx = 0;
-			this->entering_text_message = false;
-			return;
-		}
-		if (c == '\b')
-		{
-			this->text_message_idx--;
-			if (this->text_message_idx < 0)
-				this->text_message_idx = 0;
-			this->text_message[this->text_message_idx] = '\0';
-			return;
-		}
-
-		this->text_message[this->text_message_idx] = c;
-		this->text_message[this->text_message_idx + 1] = '\0';
-		this->text_message_idx++;
-		return;
-	}
 
 	this->UpdateKeyMatrix(c64_key, key_up, key_matrix, rev_matrix, joystick);
 }
 
-char *C64Display::GetTextMessage()
+const char *C64Display::GetTextMessage()
 {
-	char *out = this->text_message_send;
+	const char *out = this->text_message_send;
+
 	this->text_message_send = NULL;
 
 	return out;
 }
+
+class TypeNetworkMessageListener : public KeyboardListener
+{
+public:
+	TypeNetworkMessageListener(const char **out)
+	{
+		this->out = out;
+	}
+
+	virtual void stringCallback(const char *str)
+	{
+		*out = (const char *)xstrdup(str);
+		/* Remove thyself! */
+		delete this;
+	}
+
+private:
+	const char **out;
+};
+
+void C64Display::TypeNetworkMessage()
+{
+	TypeNetworkMessageListener *nl = new TypeNetworkMessageListener(&this->text_message_send);
+
+	Gui::gui->status_bar->queueMessage("Type message to send to peer");
+	VirtualKeyboard::kbd->registerListener(nl);
+	VirtualKeyboard::kbd->activate();
+}
+
 
 void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joystick)
 {
@@ -674,9 +676,9 @@ void C64Display::PollKeyboard(uint8 *key_matrix, uint8 *rev_matrix, uint8 *joyst
 
 					case SDLK_F10:	// F10/ScrLk: Enter text (for network taunts)
 					case SDLK_SCROLLOCK:
-						this->entering_text_message = !this->entering_text_message;
-						if (this->entering_text_message)
-							this->text_message[0] = '\0';
+						if (TheC64->network_connection_type == CLIENT ||
+								TheC64->network_connection_type == MASTER)
+							this->TypeNetworkMessage();
 						break;
 
 					case SDLK_F11:	// F11: NMI (Restore)
