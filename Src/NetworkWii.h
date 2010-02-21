@@ -90,7 +90,7 @@ void Network::InitNetwork()
         /* Try twice */
         if (if_config(myIP, NULL, NULL, true) < 0) {
 	        if (if_config(myIP, NULL, NULL, true) < 0)
-			TheC64->TheDisplay->display_status_string((char*)"NO DHCP ANSWER", 1);
+	        	Gui::gui->status_bar->queueMessage("No DHCP reply");
         }
 }
 

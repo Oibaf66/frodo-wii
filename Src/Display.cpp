@@ -202,9 +202,6 @@ C64Display::C64Display(C64 *the_c64) : TheC64(the_c64)
 	quit_requested = false;
 	speedometer_string[0] = 0;
 	networktraffic_string[0] = 0;
-	this->on_screen_message = NULL;
-	this->on_screen_message_start_time = 0;
-	this->on_screen_message_time = 0;
 	memset(this->text_message, 0, sizeof(this->text_message));
 	this->text_message_idx = 0;
 	this->entering_text_message = false;
@@ -409,42 +406,9 @@ SDL_Surface *C64Display::SurfaceFromC64Display()
 	return out;
 }
 
-void C64Display::display_status_string(char *str, int seconds)
-{
-	Uint32 time_now = SDL_GetTicks();
-
-	this->on_screen_message = str;
-	this->on_screen_message_start_time = time_now;
-	this->on_screen_message_time = seconds;
-}
-
 /*
  *  Draw string into surface using the C64 ROM font
  */
-
-void C64Display::draw_string(SDL_Surface *s, int x, int y, const char *str, uint8 front_color, uint8 back_color)
-{
-	uint8 *pb = (uint8 *)s->pixels + s->pitch*y + x;
-	char c;
-	while ((c = *str++) != 0) {
-		uint8 *q = TheC64->Char + c*8 + 0x800;
-		uint8 *p = pb;
-		for (int y=0; y<8; y++) {
-			uint8 v = *q++;
-			p[0] = (v & 0x80) ? front_color : back_color;
-			p[1] = (v & 0x40) ? front_color : back_color;
-			p[2] = (v & 0x20) ? front_color : back_color;
-			p[3] = (v & 0x10) ? front_color : back_color;
-			p[4] = (v & 0x08) ? front_color : back_color;
-			p[5] = (v & 0x04) ? front_color : back_color;
-			p[6] = (v & 0x02) ? front_color : back_color;
-			p[7] = (v & 0x01) ? front_color : back_color;
-			p += s->pitch;
-		}
-		pb += 8;
-	}
-}
-
 
 /*
  *  Draw speedometer
