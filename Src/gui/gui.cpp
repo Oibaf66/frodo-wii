@@ -326,6 +326,25 @@ void Gui::exitMenu()
 	this->saveGameInfo();
 }
 
+void Gui::pushEvent(event_t ev)
+{
+	GuiView *cur_view = this->peekView();
+
+	if (!this->is_active || !cur_view)
+	{
+		if (this->kbd)
+			this->kbd->pushEvent(ev);
+		return;
+	}
+
+	if (this->dlg)
+		this->dlg->pushEvent(ev);
+	else if (this->kbd)
+		this->kbd->pushEvent(ev);
+	else
+		cur_view->pushEvent(ev);
+}
+
 void Gui::pushEvent(SDL_Event *ev)
 {
 	GuiView *cur_view = this->peekView();

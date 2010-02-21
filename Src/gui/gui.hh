@@ -43,6 +43,8 @@ public:
 
 	void runLogic(void);
 
+	void pushEvent(event_t ev);
+
 	void pushEvent(SDL_Event *ev);
 
 	void draw(SDL_Surface *where);

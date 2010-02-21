@@ -420,6 +420,11 @@ void VirtualKeyboard::updateTheme()
 	this->setFont(Gui::gui->small_font);
 }
 
+void VirtualKeyboard::pushEvent(event_t ev)
+{
+	Widget::pushEvent(ev);
+}
+
 void VirtualKeyboard::pushEvent(SDL_Event *ev)
 {
 	switch(ev->type)

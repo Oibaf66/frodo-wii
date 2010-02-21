@@ -829,14 +829,22 @@ uint8 C64::poll_joystick_hats(int port)
 		Uint8 v = SDL_JoystickGetHat (js, i);
 
 		/* FIXME! This is the wrong way for the Wii */
-		if (v & SDL_HAT_UP)
+		if (v & SDL_HAT_UP) {
 			out &= 0xfe;
-		if (v & SDL_HAT_DOWN)
+			Gui::gui->pushEvent(KEY_UP);
+		}
+		if (v & SDL_HAT_DOWN) {
 			out &= 0xfd;
-		if (v & SDL_HAT_LEFT)
+			Gui::gui->pushEvent(KEY_DOWN);
+		}
+		if (v & SDL_HAT_LEFT) {
 			out &= 0xfb;
-		if (v & SDL_HAT_RIGHT)
+			Gui::gui->pushEvent(KEY_LEFT);
+		}
+		if (v & SDL_HAT_RIGHT) {
 			out &= 0xf7;
+			Gui::gui->pushEvent(KEY_RIGHT);
+		}
 	}
 
 	return out;
@@ -858,9 +866,16 @@ uint8 C64::poll_joystick_buttons(int port)
 		if (kc == JOY_NONE)
 			continue;
 
-		if (cur != old)
+		if (cur != old) {
 			TheDisplay->UpdateKeyMatrix(kc, !cur,
 					TheCIA1->KeyMatrix, TheCIA1->RevMatrix,	&out);
+			if (kc == JOY_FIRE)
+				Gui::gui->pushEvent(KEY_SELECT);
+			else if (kc == JOY_ENTER_MENU)
+				Gui::gui->activate();
+			else
+				Gui::gui->pushEvent(KEY_ESCAPE);
+		}
 	}
 
 	return out;

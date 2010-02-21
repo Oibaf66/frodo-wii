@@ -71,6 +71,8 @@ public:
 
 	void draw(SDL_Surface *where, int x, int y, int w, int h);
 
+	void pushEvent(event_t ev);
+
 	void pushEvent(SDL_Event *ev);
 
 	const char *getString();
