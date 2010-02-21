@@ -162,6 +162,8 @@ void C64::network_vblank()
         			remote->Disconnect();
 			delete remote;
 			this->network = NULL;
+			TheC64->network_connection_type = NONE;
+
 			return;
 		}
 

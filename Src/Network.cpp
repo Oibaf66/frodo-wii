@@ -597,7 +597,7 @@ bool Network::SendUpdate(struct sockaddr_in *addr)
 
 		v = this->SendTo((void*)p, this->sock,
 				size_to_send, addr);
-		if (v < 0 || (size_t)v != size_to_send)
+		if (v <= 0 || (size_t)v != size_to_send)
 			return false;
 		cur_sz += size_to_send;
 		p += size_to_send;
@@ -733,6 +733,12 @@ bool Network::MarshalData(NetworkUpdate *p)
 bool Network::MarshalAllData(NetworkUpdate *ud)
 {
 	NetworkUpdate *p = ud;
+
+	/* Already marshalled? */
+	if (ntohs(p->magic) == FRODO_NETWORK_MAGIC) {
+		warning("Data already marshalled\n");
+		return true;
+	}
 
 	while (p->type != STOP)
 	{
@@ -992,8 +998,9 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 			/* We won't receive this, but it also doesn't really matter */
 			break;
 		case DISCONNECT:
-			out = false;
-			break;
+			printf("Got disconnect\n");
+			TheC64->network_connection_type = NONE;
+			return false;
 		default:
 			break;
 		}
@@ -1290,18 +1297,19 @@ network_connection_error_t Network::WaitForBandWidthReply()
 
 void Network::Disconnect()
 {
-	this->ResetNetworkUpdate();
+	printf("Disconnecting\n");
 
+	this->ResetNetworkUpdate();
 	NetworkUpdate *disconnect = InitNetworkUpdate(this->cur_ud, DISCONNECT,
 			sizeof(NetworkUpdate));
 
 	/* Add a stop at the end of the update */
 	this->AddNetworkUpdate(disconnect);
-	this->SendServerUpdate();
-	this->SendPeerUpdate();
 
-	TheC64->network_connection_type = NONE;
+	this->SendPeerUpdate();
+	this->SendServerUpdate();
 }
+
 
 bool Network::networking_started = false;
 
