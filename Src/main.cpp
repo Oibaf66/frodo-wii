@@ -207,11 +207,6 @@ void Frodo::LoadFrodorc()
 		const char *name = "frodorc";
 
 		p = try_path(paths[i], name);
-		if (!p)
-		{
-			name = "frodorc.default";
-			p = try_path(paths[i], "frodorc.default");
-		}
 
 		if (p)
 		{
