@@ -219,8 +219,9 @@ class TextMessagePacket(Packet):
 
     def demarshal_from_data(self, data):
         Packet.demarshal_from_data(self, data)
+        strlen = self.size - 8 - 1
         # Flags is always broadcast
-        self.message = struct.unpack(">s", data[9:])[0]
+        self.message = struct.unpack(">%ds" % (strlen), data[9:])[0]
         self.size = 8 + 1 + len(self.message) + 1 # NULL
 
     def marshal(self):
@@ -471,7 +472,7 @@ class Peer:
             self.last_ping = cur_time()
 
         if pkt.type == TEXT_MESSAGE:
-            self.srv.enqueue_message(pkt)
+            self.srv.enqueue_message(self, pkt)
 
     def seconds_since_last_ping(self):
         now = cur_time()
@@ -630,12 +631,13 @@ class Broker(SocketServer.UDPServer):
                 return v
         return None
 
-    def enqueue_message(self, message):
+    def enqueue_message(self, sending_peer, message):
         # Store last 10 messages
         self.messages = self.messages[-9:] + [message]
 
-        for peer in self.peers:
-            peer.send_packet(message)
+        for addr, peer in self.peers.iteritems():
+            if peer != sending_peer:
+                peer.send_packet(message.marshal())
 
     def dequeue_old_messages(self):
         now = time.mktime(time.localtime())
