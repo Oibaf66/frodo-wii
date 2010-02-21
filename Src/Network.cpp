@@ -373,14 +373,14 @@ void Network::EncodeTextMessage(const char *str, bool broadcast)
 	NetworkUpdate *dst = (NetworkUpdate *)this->cur_ud;
 	struct NetworkUpdateTextMessage *tm = (struct NetworkUpdateTextMessage*)dst->data;
 	char *p = (char*)tm->data;
-	size_t len = strlen(str) + 1;
+	size_t len = strlen(ThePrefs.NetworkName) + strlen(str) + 4;
 
 	tm->flags = broadcast ? NETWORK_UPDATE_TEXT_MESSAGE_BROADCAST : 0;
 	len += (len & 3);
 	dst = InitNetworkUpdate(dst, TEXT_MESSAGE,
 			sizeof(NetworkUpdate) + sizeof(struct NetworkUpdateTextMessage) + len);
 	memset(p, 0, len);
-	strncpy(p, str, len - 1);
+	snprintf(p, len - 1, "%s: %s", ThePrefs.NetworkName, str);
 
 	this->AddNetworkUpdate(dst);
 }
