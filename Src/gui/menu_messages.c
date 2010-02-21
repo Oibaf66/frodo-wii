@@ -35,6 +35,28 @@ const char *network_unset_name_dlg[8] = {
 	NULL
 };
 
+const char *network_need_connection[8] = {
+	/*00*/          "You need to be connected",
+	/*01*/		"to the C64 network to",
+	/*02*/		"use this feature",
+	/*03*/		"#",
+	/*04*/		"#",
+	/*05*/		"#",
+	/*06*/          "^|OK",
+	NULL
+};
+
+const char *network_need_peer[8] = {
+	/*00*/          "You need to be connected",
+	/*01*/		"to a peer on the network",
+	/*02*/		"to use this feature",
+	/*03*/		"#",
+	/*04*/		"#",
+	/*05*/		"#",
+	/*06*/          "^|OK",
+	NULL
+};
+
 const char *broken_theme_dlg[8] = {
 	/*00*/          "The selected theme cannot be",
 	/*01*/		"loaded, probably some file",
@@ -271,6 +293,10 @@ const char **network_menu_help[9] = {
 				"you are playing with. You",
 				"must be connected to use",
 				"this feature.",
+				" ",
+				"You can also press F10 on",
+				"the keyboard to activate",
+				"this.",
 				NULL,
 		},
 		NULL,

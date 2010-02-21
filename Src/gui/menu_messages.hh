@@ -15,6 +15,8 @@ extern const char *game_info_menu_messages[];
 extern const char **network_menu_help[];
 extern const char *network_port_dialogue_messages[];
 extern const char *network_unset_name_dlg[];
+extern const char *network_need_connection[];
+extern const char *network_need_peer[];
 extern const char *broken_theme_dlg[];
 extern const char *select_analogue_dlg[];
 extern const char *game_info_bad_year_dlg[];

@@ -81,9 +81,20 @@ public:
 			Gui::gui->exitMenu();
 			break;
 		case 6:
-			printf("Send message NYI\n"); // FIXME! Send message
+			if (TheC64->network_connection_type == NONE)
+				Gui::gui->pushDialogueBox(new DialogueBox(network_need_connection));
+			else
+				printf("Send message NYI\n"); // FIXME! Send message
 			break;
 		case 7:
+			if (TheC64->network_connection_type != MASTER &&
+					TheC64->network_connection_type != CLIENT)
+				Gui::gui->pushDialogueBox(new DialogueBox(network_need_peer));
+			else
+			{
+				Gui::gui->exitMenu();
+				TheC64->TheDisplay->TypeNetworkMessage();
+			}
 			break;
 		default:
 			break;
