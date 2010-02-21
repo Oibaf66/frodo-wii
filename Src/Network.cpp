@@ -720,7 +720,6 @@ bool Network::MarshalData(NetworkUpdate *p)
 		/* Unknown data... */
 		fprintf(stderr, "Got unknown data %d while marshalling. Something is wrong\n",
 				p->type);
-		exit(0); // FIXME! TMP!!
 		return false;
 	}
 
@@ -1291,6 +1290,8 @@ network_connection_error_t Network::WaitForBandWidthReply()
 
 void Network::Disconnect()
 {
+	this->ResetNetworkUpdate();
+
 	NetworkUpdate *disconnect = InitNetworkUpdate(this->cur_ud, DISCONNECT,
 			sizeof(NetworkUpdate));
 
@@ -1298,6 +1299,8 @@ void Network::Disconnect()
 	this->AddNetworkUpdate(disconnect);
 	this->SendServerUpdate();
 	this->SendPeerUpdate();
+
+	TheC64->network_connection_type = NONE;
 }
 
 bool Network::networking_started = false;
