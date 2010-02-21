@@ -182,7 +182,7 @@ private:
 	int NetworkPort;
 
 	int NetworkKey;
-	uint32 NetworkAvatar;
+	uint16 NetworkAvatar;
 };
 
 

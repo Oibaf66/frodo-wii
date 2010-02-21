@@ -20,6 +20,18 @@ ACK                = 94 # Yep
 REGISTER_DATA      = 90
 STOP               = 55 # No more packets
 
+# Network regions
+REGION_UNKNOWN       = 0
+REGION_EUROPE        = 1
+REGION_AFRICA        = 2
+REGION_NORTH_AMERICA = 3
+REGION_SOUTH_AMERICA = 4
+REGION_MIDDLE_EAST   = 5
+REGION_SOUTH_ASIA    = 6
+REGION_EAST_ASIA     = 7
+REGION_OCEANIA       = 8
+REGION_ANTARTICA     = 9
+
 # Flags in list peers packet
 NETWORK_UPDATE_LIST_PEERS_IS_CONNECT = 1
 
@@ -33,6 +45,19 @@ pkt_type_to_str = {
     ACK               : "ack",
     STOP              : "stop",
     REGISTER_DATA     : "register-data",
+}
+
+region_to_str = {
+    REGION_UNKNOWN       : "Unknown",
+    REGION_EUROPE        : "Europe",
+    REGION_AFRICA        : "Africa",
+    REGION_NORTH_AMERICA : "North america",
+    REGION_SOUTH_AMERICA : "South america",
+    REGION_MIDDLE_EAST   : "Middle east",
+    REGION_SOUTH_ASIA    : "South asia",
+    REGION_EAST_ASIA     : "East asia",
+    REGION_OCEANIA       : "Oceania",
+    REGION_ANTARTICA     : "Antartica",
 }
 
 def log(pri, msg, echo):
@@ -200,6 +225,7 @@ class ConnectToBrokerPacket(Packet):
         self.name = ""
         self.server_id = 0
         self.avatar = 0
+        self.region = REGION_UNKNOWN
         self.screenshot_key = -1
 
     def demarshal_from_data(self, data):
@@ -214,7 +240,8 @@ class ConnectToBrokerPacket(Packet):
         self.name = self.name[0:self.name.find('\0')]
 
         if self.version >= 4:
-            self.avatar = struct.unpack(">L", data[88:92])[0]
+            self.region = struct.unpack(">B", data[88:89])[0]
+            self.avatar = struct.unpack(">H", data[90:92])[0]
             self.screenshot_key = struct.unpack(">L", data[92:96])[0]
 
     def get_key(self):
@@ -222,6 +249,9 @@ class ConnectToBrokerPacket(Packet):
 
     def get_avatar(self):
         return self.avatar
+
+    def get_region(self):
+        return self.region
 
     def get_screenshot_key(self):
         return self.screenshot_key
@@ -241,6 +271,8 @@ class ListPeersPacket(Packet):
         self.size = self.size + 24
         self.version = version
         self.flags = flags
+        self.region = REGION_UNKNOWN
+        self.avatar = 0
 
     def add_peer(self, peer):
         self.peers.append(peer)
@@ -264,7 +296,7 @@ class ListPeersPacket(Packet):
                                     peer.is_master, name,
                                     0, peer.id, self.version)
             if self.version >= 4:
-                out = out + struct.pack(">LL", peer.avatar, peer.screenshot_key)
+                out = out + struct.pack(">BxHL", peer.region, peer.avatar, peer.screenshot_key)
 
         return Packet.marshal(self) + out
 
@@ -277,6 +309,9 @@ class DummyPeer:
         self.key = 0
         self.is_master = 0
         self.id = 0
+        self.avatar = 0
+        self.region = 0
+
 
 class Peer:
     def __init__(self, addr, srv, id):
@@ -300,6 +335,7 @@ class Peer:
         self.id = id
 
         self.avatar = 0
+        self.region = 0
         self.screenshot_key = -1
         self.data_key = srv.get_data_key()
 
@@ -322,13 +358,19 @@ class Peer:
                 lp = ListPeersPacket(pkt.version)
                 lp.add_peer(DummyPeer("Your frodo is too old."))
                 lp.add_peer(DummyPeer("download a new version at"))
-                lp.add_peer(DummyPeer("http://frodo-wii.googlecode.com"))
+                lp.add_peer(DummyPeer("http://www.c64-network.org"))
                 log_info("Version too old, sending upgrade notice to %s:%d" %
                          (self.addr[0], self.addr[1]) )
                 self.send_packet(lp.marshal())
                 return
 
             self.avatar = pkt.get_avatar()
+            self.region = pkt.get_region()
+            if self.region != REGION_UNKNOWN and self.country == "Unknown location":
+                try:
+                    self.country = region_to_str[self.region]
+                except KeyError, e:
+                    self.country = "Unknown location"
             self.screenshot_key = pkt.get_screenshot_key() + self.data_key
 
             self.srv.log_connection(self.name, self.country)

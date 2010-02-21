@@ -685,7 +685,7 @@ bool Network::MarshalData(NetworkUpdate *p)
 			peer->is_master = htons(peer->is_master);
 			peer->server_id = htonl(peer->server_id);
 			peer->version = htonl(peer->version);
-			peer->avatar = htonl(peer->avatar);
+			peer->avatar = htons(peer->avatar);
 			peer->screenshot_key = htonl(peer->screenshot_key);
 		}
 		lp->n_peers = htonl(lp->n_peers);
@@ -809,7 +809,7 @@ bool Network::DeMarshalData(NetworkUpdate *p)
 			peer->is_master = ntohs(peer->is_master);
 			peer->server_id = ntohl(peer->server_id);
 			peer->version = ntohl(peer->version);
-			peer->avatar = ntohl(peer->avatar);
+			peer->avatar = ntohs(peer->avatar);
 			peer->screenshot_key = ntohl(peer->screenshot_key);
 		}
 		lp->your_port = ntohs(lp->your_port);
@@ -1059,6 +1059,7 @@ bool Network::ConnectToBroker()
 	pi->key = ThePrefs.NetworkKey;
 	pi->version = FRODO_NETWORK_PROTOCOL_VERSION;
 	pi->avatar = ThePrefs.NetworkAvatar;
+	pi->region = ThePrefs.NetworkRegion;
 	pi->screenshot_key = 0;
 
 	strcpy((char*)pi->name, ThePrefs.NetworkName);

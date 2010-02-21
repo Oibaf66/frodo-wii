@@ -150,7 +150,9 @@ struct NetworkUpdatePeerInfo
 	uint32 server_id;    /* Used by the server */
 	uint32 version;      /* Version number */
 
-	uint32 avatar;		 /* Hash of the avatar */
+	uint8  region;		 /* Europe, africa etc */
+	uint8  d;		 /* Dummy */
+	uint16 avatar;		 /* Hash of the avatar */
 	uint32 screenshot_key;	 /* Key number of the screenshot */
 };
 

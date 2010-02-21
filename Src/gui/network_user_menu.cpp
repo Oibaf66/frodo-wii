@@ -17,7 +17,9 @@ public:
 	{
 		this->name = (const char*)xstrdup((char*)pi->name);
 		this->scr = NULL;
-		this->region = 0;
+		this->region = pi->region;
+		if (this->region > REGION_ANTARTICA)
+			this->region = REGION_UNKNOWN;
 		this->scr_key = pi->screenshot_key;
 		this->public_port = pi->public_port;
 		this->private_port = pi->private_port;
@@ -113,7 +115,7 @@ public:
 		this->pi_messages[1] = " ";
 		this->pi_messages[2] = "Region:";
 		this->pi_messages[3] = " ";
-		this->pi_messages[4] = "Vobb:";
+		this->pi_messages[4] = " "; /* Maybe add something here later */
 		this->pi_messages[5] = " ";
 
 		if (this->pi)
