@@ -99,8 +99,6 @@ public:
 				Gui::gui->exitMenu();
 				break;
 			case 1:
-				break;
-			case 2:
 				Gui::gui->pushView(Gui::gui->bkv);
 				break;
 			default:
