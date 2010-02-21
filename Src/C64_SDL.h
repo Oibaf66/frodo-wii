@@ -158,9 +158,8 @@ void C64::network_vblank()
 
         	if (this->quit_thyself)
 		{
-        		if (this->network_connection_type != CONNECT)
-        			remote->Disconnect();
-			delete remote;
+        		remote->Disconnect();
+        		delete remote;
 			this->network = NULL;
 			TheC64->network_connection_type = NONE;
 

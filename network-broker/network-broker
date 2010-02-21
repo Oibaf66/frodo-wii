@@ -195,6 +195,11 @@ class PingAckPacket(Packet):
         """Create data representation of a packet"""
         return Packet.marshal(self) + struct.pack(">L", self.seq)
 
+class DisconnectPacket(Packet):
+    def __init__(self):
+        Packet.__init__(self)
+        self.type = DISCONNECT
+
 
 class SelectPeerPacket(Packet):
     def __init__(self):
@@ -507,6 +512,12 @@ class BrokerPacketHandler(SocketServer.DatagramRequestHandler):
 
             peer = srv.get_peer(self.client_address)
 
+            # Handle disconnects by removing the peer and ignoring the rest
+            if pkt.get_type() == DISCONNECT:
+                log_info("Peer disconnected, removing")
+                self.server.remove_peer(peer)
+                return
+
             try:
                 peer.handle_packet(pkt)
             except Exception, e:
@@ -630,6 +641,7 @@ packet_class_by_type = {
     CONNECT_TO_BROKER : ConnectToBrokerPacket,
     SELECT_PEER : SelectPeerPacket,
     REGISTER_DATA : RegisterDataPacket,
+    DISCONNECT : DisconnectPacket,
     ACK : PingAckPacket,
 }
 
