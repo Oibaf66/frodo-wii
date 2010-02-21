@@ -233,7 +233,7 @@ const char **options_menu_help[14] = {
 		NULL,
 };
 
-const char **network_menu_help[8] = {
+const char **network_menu_help[9] = {
 		(const char*[]){
 				"Setup username to use on",
 				"the C64 network. Must be",
@@ -260,9 +260,17 @@ const char **network_menu_help[8] = {
 		},
 		NULL,
 		(const char*[]){
-				"Post message to the C64",
+				"Post message to everyone",
+				"connected to the C64",
 				"network server. You must",
 				"be connected to use this.",
+				NULL,
+		},
+		(const char*[]){
+				"Post message to the peer",
+				"you are playing with. You",
+				"must be connected to use",
+				"this feature.",
 				NULL,
 		},
 		NULL,

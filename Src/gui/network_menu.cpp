@@ -83,6 +83,8 @@ public:
 		case 6:
 			printf("Send message NYI\n"); // FIXME! Send message
 			break;
+		case 7:
+			break;
 		default:
 			break;
 		}
@@ -117,12 +119,13 @@ private:
 		this->messages[4] = "Connect to the network!";
 		this->messages[5] = " ";
 		this->messages[6] = "Post network message";
-		this->messages[7] = NULL;
+		this->messages[7] = "Post peer message";
+		this->messages[8] = NULL;
 		this->setText(this->messages);
 	}
 
 	char strs[3][255];
-	const char *messages[8];
+	const char *messages[9];
 
 	HelpBox *help;
 };
