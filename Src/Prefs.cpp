@@ -103,7 +103,7 @@ Prefs::Prefs()
 	this->NetworkAvatar = 0;
 	snprintf(this->NetworkName, 32, "Unset name");
 	snprintf(this->NetworkServer, 64, "play.c64-network.org");
-	this->NetworkPort = 46215; // FIXME! Set back to 46214 when ready
+	this->NetworkPort = 46214;
 	this->NetworkRegion = REGION_UNKNOWN;
 }
 
