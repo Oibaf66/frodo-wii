@@ -444,12 +444,14 @@ class Peer:
             entry = pkt.get_entry()
             self.srv.data_store.add_entry(self, entry.get_key() + self.data_key, entry)
 
-            if entry.get_key() == self.screenshot_key - self.data_key:
+            print entry.get_key(), self.screenshot_key, self.data_key
+            if entry.get_key() == self.screenshot_key:
+                print "Save it all"
                 try:
                     which = random.randrange(0,12)
-                    img = image.image_from_data(entry.get_data())
-                    if img.interestingness > 0.4 or random.randrange(0, 10) < 2:
-                        img.save("%s%d.png" % (self.srv.image_dir, which))
+                    f = open("%s%d.png" % (self.srv.image_dir, which), "w")
+                    f.write(entry.get_data())
+                    f.close()
                 except Exception, e:
                     log_info("Could not convert image data" + str(e))
 
