@@ -593,7 +593,6 @@ bool Network::SendUpdateDirect(struct sockaddr_in *addr, NetworkUpdate *src)
 	if (sz <= 0)
 		return false;
 
-	printf("Sending %d bytes\n", sz);
 	v = this->SendTo((void*)p, this->sock,
 			sz, addr);
 	if (v <= 0 || (size_t)v != sz)
@@ -973,8 +972,8 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 
 			if (ud->type == BANDWIDTH_PING)
 				type = BANDWIDTH_ACK;
-			this->SendPingAck(ping->seq, type, ud->size);
-			this->SendServerUpdate();
+			this->SendPingAck(&this->server_addr, ping->seq, type, ud->size);
+			/* FIXME! Temporary crash fix */
 			this->ResetNetworkUpdate();
 		} break;
 		case LIST_PEERS:
@@ -1109,46 +1108,20 @@ bool Network::ConnectToBroker()
 	return out;
 }
 
-void Network::SendPingAck(int seq, uint16 type, size_t size_to_send)
+void Network::SendPingAck(struct sockaddr_in *addr, int seq, uint16 type, size_t size_to_send)
 {
-	NetworkUpdate *ud = InitNetworkUpdate(this->ud, type, size_to_send);
+	NetworkUpdate *ud = InitNetworkUpdate(this->ud, type,
+			sizeof(NetworkUpdate) + sizeof(NetworkUpdatePingAck) + size_to_send);
 	NetworkUpdatePingAck *p = (NetworkUpdatePingAck*)ud->data;
+	uint8_t *p_next = (uint8_t *)ud + sizeof(NetworkUpdate) + sizeof(NetworkUpdatePingAck) + size_to_send;
+	NetworkUpdate *stop = InitNetworkUpdate((NetworkUpdate *)p_next, STOP, sizeof(NetworkUpdate));
 
 	p->seq = seq;
-	this->AddNetworkUpdate(ud);
-}
 
-network_connection_error_t Network::WaitForPeerAddress()
-{
-	NetworkUpdateListPeers *pi;
+	this->MarshalData(ud);
+	this->MarshalData(stop);
 
-	this->ResetNetworkUpdate();
-	if (this->ReceiveUpdate() == false)
-		return AGAIN_ERROR;
-	if (this->ud->type == PING)
-	{
-		NetworkUpdatePingAck *p = (NetworkUpdatePingAck*)ud->data;
-		/* Send ack and go back to this state again */
-		this->SendPingAck(p->seq, ACK, ud->size);
-		this->SendServerUpdate();
-		this->ResetNetworkUpdate();
-		return AGAIN_ERROR;
-	}
-	if (this->ud->type != LIST_PEERS)
-		return SERVER_GARBAGE_ERROR;
-
-	pi = (NetworkUpdateListPeers *)this->ud->data;
-	if (pi->n_peers != 1)
-	{
-		fprintf(stderr, "There is something wrong with the server: Got %d peers on master connect\n"
-				"Contact Simon Kagstrom and ask him to correct it\n",
-				pi->n_peers);
-		return SERVER_GARBAGE_ERROR;
-	}
-	if (pi->peers[0].version != FRODO_NETWORK_PROTOCOL_VERSION)
-		return VERSION_ERROR;
-
-	return OK;
+	this->SendUpdateDirect(addr, ud);
 }
 
 bool Network::SelectPeer(uint32 id)
@@ -1164,53 +1137,6 @@ bool Network::SelectPeer(uint32 id)
 	this->ResetNetworkUpdate();
 
 	return out;		
-}
-
-network_connection_error_t Network::WaitForPeerList()
-{
-	NetworkUpdateListPeers *pi;
-	struct timeval tv;
-
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
-
-	this->ResetNetworkUpdate();
-	if (this->ReceiveUpdate(&tv) == false)
-		return AGAIN_ERROR;
-	if (this->ud->type == PING)
-	{
-		NetworkUpdatePingAck *p = (NetworkUpdatePingAck*)ud->data;
-		/* Send ack and go back to this state again */
-		this->SendPingAck(p->seq, ACK, ud->size);
-		this->SendServerUpdate();
-		this->ResetNetworkUpdate();
-		return AGAIN_ERROR;
-	}
-	if (this->ud->type == REGISTER_DATA)
-	{
-		NetworkUpdateRegisterData *rd = (NetworkUpdateRegisterData *)this->ud->data;
-
-		DataStore::ds->registerNetworkData(rd->key, rd->metadata, rd->data,
-				this->ud->size - (sizeof(NetworkUpdateRegisterData) + sizeof(NetworkUpdate)));
-		return AGAIN_ERROR;
-	}
-	if (ud->type != LIST_PEERS)
-		return SERVER_GARBAGE_ERROR;
-
-	pi = (NetworkUpdateListPeers *)this->ud->data;
-	for (unsigned i = 0; i < pi->n_peers; i++)
-	{
-		if (pi->peers[i].version != FRODO_NETWORK_PROTOCOL_VERSION)
-			return VERSION_ERROR;
-	}
-	if (pi->n_peers == 0)
-		return NO_PEERS_ERROR;
-
-	Gui::gui->nuv->setPeers(pi);
-	Gui::gui->activate();
-	Gui::gui->pushView(Gui::gui->nuv);
-
-	return OK;
 }
 
 bool Network::SelectPeer(const char *hostname, uint16_t port, uint32_t server_id)
@@ -1229,30 +1155,6 @@ bool Network::SelectPeer(const char *hostname, uint16_t port, uint32_t server_id
 	return true;
 }
 
-network_connection_error_t Network::WaitForPeerSelection()
-{
-	if (this->peer_selected == 1)
-		return OK;
-
-	return AGAIN_ERROR;
-}
-
-bool Network::WaitForPeerReply()
-{
-	struct timeval tv;
-
-	tv.tv_sec = 3;
-	tv.tv_usec = 0;
-
-	this->ResetNetworkUpdate();
-	if (this->ReceiveUpdate(&tv) == false)
-		return false;
-
-	if (this->ud->type != CONNECT_TO_PEER)
-		return false;
-
-	return true;
-}
 
 bool Network::ConnectToPeer()
 {
@@ -1266,72 +1168,6 @@ bool Network::ConnectToPeer()
 
 	return out;
 }
-
-network_connection_error_t Network::WaitForBandWidthReply()
-{
-	unsigned cnt;
-
-	/* Wait until we've got an ack */
-	for (cnt = 0; cnt < 5; cnt++) {
-		struct timeval tv;
-
-		tv.tv_sec = 3;
-		tv.tv_usec = 0;
-		this->ResetNetworkUpdate();
-
-		if (this->ReceiveUpdate(&tv) == false)
-			return AGAIN_ERROR;
-		if (this->ud->type == BANDWIDTH_PING) {
-			NetworkUpdatePingAck *ping = (NetworkUpdatePingAck *)this->ud->data;
-			uint32 seq = ping->seq;
-			size_t sz = this->ud->size;
-
-			this->ResetNetworkUpdate();
-			this->SendPingAck(seq, BANDWIDTH_ACK, sz);
-			this->SendServerUpdate();
-			continue;
-		}
-		/* CONNECT_TO_PEER is sent twice, so we might get it here */
-		if (this->ud->type == CONNECT_TO_PEER)
-			continue;
-		if (this->ud->type == BANDWIDTH_ACK)
-			break;
-		else /* Everything else is an error */
-			return SERVER_GARBAGE_ERROR;
-		cnt++;
-	}
-	if (cnt == 5) {
-		printf("Timeout. Setting default kbps (160)\n");
-		this->target_kbps = 160000;
-		return OK;
-	}
-
-	/* We got a bandwidth ACK */
-
-	uint32 now = SDL_GetTicks();
-	int32 ms_diff = now - this->bandwidth_ping_ms;
-	size_t sz = this->ud->size;
-
-	if (ms_diff <= 0) {
-		/* Fast indeed, or maybe wrong */
-		this->target_kbps = 240000;
-	} else {
-		int bits_per_second = ((sz * 1000) / ms_diff) * 8;
-
-		this->target_kbps = bits_per_second;
-	}
-
-	/* But force it to be within these limits */
-	if (this->target_kbps > 300000)
-		this->target_kbps = 300000;
-	if (this->target_kbps < 150000)
-		this->target_kbps = 150000;
-
-	printf("%d bytes in %d ms. Setting cap at %d\n", sz, ms_diff, this->target_kbps);
-
-	return OK;
-}
-
 
 void Network::Disconnect()
 {

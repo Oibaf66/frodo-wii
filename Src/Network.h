@@ -341,7 +341,7 @@ protected:
 	bool DecodeDisplayRaw(struct NetworkUpdate *src,
 			int x, int y);
 
-	void SendPingAck(int seq, uint16 type, size_t data_size);
+	void SendPingAck(struct sockaddr_in *addr, int seq, uint16 type, size_t data_size);
 
 	bool ReceiveUpdate(NetworkUpdate *dst, size_t sz, struct timeval *tv);
 
