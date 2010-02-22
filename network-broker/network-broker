@@ -641,11 +641,14 @@ class Broker(SocketServer.UDPServer):
 
     def dequeue_old_messages(self):
         now = time.mktime(time.localtime())
+        to_delete = 0
+
         for msg in self.messages:
             diff = now - msg.get_timestamp()
             # Older than one day?
             if diff > 24 * 60 * 60:
-                del msg
+                to_delete = to_delete + 1
+        self.messages = self.messages[ to_delete : ]
 
     def ping_all_peers(self):
         """Ping all peers (to see that they are alive)"""
