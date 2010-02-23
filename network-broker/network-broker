@@ -718,7 +718,7 @@ if __name__ == "__main__":
     ip2c = ip2country.IP2Country(verbose=0)
     syslog.openlog("frodo")
     log_info("Starting Frodo network broker", True)
-    broker = Broker( ("", 46215), BrokerPacketHandler,
+    broker = Broker( ("", 46214), BrokerPacketHandler,
                      ip2c, sys.argv[1], sys.argv[2], sys.argv[3])
     thread.start_new_thread(ping_thread_fn, (broker, 5))
     broker.serve_forever()
