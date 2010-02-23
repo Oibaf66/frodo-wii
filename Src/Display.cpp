@@ -748,8 +748,8 @@ bool C64Display::NumLock(void)
 void C64::open_close_joystick(int port, int oldjoy, int newjoy)
 {
 	if (oldjoy != newjoy) {
-		joy_minx[port] = joy_miny[port] = 32767;	// Reset calibration
-		joy_maxx[port] = joy_maxy[port] = -32768;
+		joy_minx[port] = joy_miny[port] = -32767;	// Reset calibration
+		joy_maxx[port] = joy_maxy[port] = 32768;
 		if (newjoy) {
 			joy[port] = SDL_JoystickOpen(newjoy - 1);
 			if (joy[port] == NULL)
@@ -766,7 +766,8 @@ void C64::open_close_joystick(int port, int oldjoy, int newjoy)
 void C64::open_close_joysticks(int oldjoy1, int oldjoy2, int newjoy1, int newjoy2)
 {
 	open_close_joystick(0, oldjoy1, newjoy1);
-	open_close_joystick(1, oldjoy2, newjoy2);
+	if (SDL_NumJoysticks() > 1)
+		open_close_joystick(1, oldjoy2, newjoy2);
 }
 
 /* The implementation principles are borrowed from UAE */
@@ -810,7 +811,7 @@ uint8 C64::poll_joystick_axes(int port)
 			*min_axis = axis;
 
 		/* Too small as of yet */
-		if (*max_axis - *min_axis < 100)
+		if (*max_axis - *min_axis < 1000)
 			continue;
 
 		if (axis < (*min_axis + (*max_axis - *min_axis)/3)) {
@@ -881,10 +882,8 @@ uint8 C64::poll_joystick_buttons(int port)
 		else
 			Gui::gui->pushEvent(KEY_ESCAPE);
 
-		if (cur != old) {
-			TheDisplay->UpdateKeyMatrix(kc, !cur,
-					TheCIA1->KeyMatrix, TheCIA1->RevMatrix,	&out);
-		}
+		TheDisplay->UpdateKeyMatrix(kc, !cur,
+				TheCIA1->KeyMatrix, TheCIA1->RevMatrix,	&out);
 	}
 
 	return out;
