@@ -139,7 +139,11 @@ extern "C" int main(int argc, char **argv)
 
 Frodo::Frodo()
 {
+	Prefs p;
+
 	TheC64 = NULL;
+	ThePrefs = p; /* Silly workaround to fix joystick bug */
+
 }
 
 
