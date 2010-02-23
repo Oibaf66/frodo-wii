@@ -110,7 +110,7 @@ extern "C" int main(int argc, char **argv)
 	srand(tv.tv_usec);
 
 	// Init SDL
-        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0) {
+        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) < 0) {
                 fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
                 return 1;
 	}
