@@ -155,6 +155,36 @@ void Prefs::SetupJoystickDefaults()
 			this->JoystickButtons[6] = JOY_ENTER_MENU;
 			this->JoystickButtons[19] = JOY_ENTER_MENU;
 		}
+		/* Saitek P380 */
+		else if (strcmp(name, "Jess Tech Dual Analog Pad") == 0)
+		{
+			/* Pad */
+			this->JoystickHats[0] = 0x41; /* Up */
+			this->JoystickHats[1] = 0x42; /* Down */
+			this->JoystickHats[2] = 0x44; /* Left */
+			this->JoystickHats[3] = 0x48; /* Right */
+
+			/* Analogue parts */
+			this->JoystickAxes[0] = JOY_HORIZ;
+			this->JoystickAxes[1] = JOY_VERT;
+			this->JoystickAxes[2] = JOY_HORIZ;
+			this->JoystickAxes[3] = JOY_VERT;
+
+			/* Button 4 Fire */
+			this->JoystickButtons[3] = 0x50;
+
+			/* Upper left front button R/S */
+			this->JoystickButtons[4] = (7 << 3) | 7;
+			/* Lower left front button space */
+			this->JoystickButtons[5] = (7 << 3) | 4;
+
+			/* Upper right 1, lower right 2 */
+			this->JoystickButtons[6] = (7 << 3) | 0;
+			this->JoystickButtons[7] = (7 << 3) | 3;
+
+			/* Start to enter the menu */
+		}
+
 	}
 }
 
