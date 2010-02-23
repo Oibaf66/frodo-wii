@@ -60,6 +60,7 @@ public:
 
 	virtual void escapeCallback(int which)
 	{
+		Gui::gui->popView();
 	}
 };
 
