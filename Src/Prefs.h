@@ -25,7 +25,7 @@
 #define SPEED_100 20
 #define SPEED_110 18
 
-#define MAX_JOYSTICK_AXES 32
+#define MAX_JOYSTICK_AXES 16
 #define MAX_JOYSTICK_BUTTONS 32
 #define MAX_JOYSTICK_HATS 8
 
@@ -58,7 +58,13 @@ enum {
         JOY_HORIZ = 256,
         JOY_VERT = 258,
 	JOY_FIRE = 259,
-	JOY_ENTER_MENU = 260,
+};
+
+enum {
+	HAT_PLAIN = 0,
+	HAT_ROTATED_90 = 1,
+	HAT_ROTATED_180 = 2,
+	HAT_ROTATED_270 = 2,
 };
 
 // Key bindings (WII)
@@ -175,6 +181,9 @@ private:
 	int JoystickAxes[MAX_JOYSTICK_AXES];
 	int JoystickHats[MAX_JOYSTICK_HATS];
 	int JoystickButtons[MAX_JOYSTICK_BUTTONS];
+
+	int MenuJoystickHats[MAX_JOYSTICK_HATS];
+	int MenuJoystickButtons[MAX_JOYSTICK_BUTTONS];
 
 	char NetworkName[32];
 	char NetworkServer[64];

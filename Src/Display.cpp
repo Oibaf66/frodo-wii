@@ -869,17 +869,13 @@ uint8 C64::poll_joystick_buttons(int port)
 	for (i = 0; i < SDL_JoystickNumButtons (js); i++) {
 		bool cur = SDL_JoystickGetButton (js, i) ? true : false;
 		int kc = ThePrefs.JoystickButtons[i];
+		event_t ev = (event_t)ThePrefs.MenuJoystickButtons[i];
 
 		this->joy_button_pressed[i] = cur;
+		Gui::gui->pushEvent(ev);
 
 		if (kc == JOY_NONE)
 			continue;
-		else if (kc == JOY_FIRE)
-			Gui::gui->pushEvent(KEY_SELECT);
-		else if (kc == JOY_ENTER_MENU)
-			Gui::gui->activate();
-		else
-			Gui::gui->pushEvent(KEY_ESCAPE);
 
 		TheDisplay->UpdateKeyMatrix(kc, !cur,
 				TheCIA1->KeyMatrix, TheCIA1->RevMatrix,	&out);

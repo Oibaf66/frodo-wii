@@ -335,6 +335,12 @@ void Gui::pushEvent(event_t ev)
 {
 	GuiView *cur_view = this->peekView();
 
+	if (ev == KEY_ENTER_MENU)
+	{
+		this->activate();
+		return;
+	}
+
 	if (!this->is_active || !cur_view)
 	{
 		if (this->kbd)

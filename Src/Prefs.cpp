@@ -25,6 +25,7 @@
 #include "Display.h"
 #include "C64.h"
 #include "main.h"
+#include "gui/widget.hh"
 
 
 // These are the active preferences
@@ -112,10 +113,17 @@ void Prefs::SetupJoystickDefaults()
 {
 	for (int i = 0; i < MAX_JOYSTICK_AXES; i++)
 		this->JoystickAxes[i] = JOY_NONE;
+
 	for (int i = 0; i < MAX_JOYSTICK_HATS; i++)
-		this->JoystickHats[i] = JOY_NONE;
+	{
+		this->JoystickHats[i] = HAT_PLAIN;
+		this->MenuJoystickHats[i] = HAT_PLAIN;
+	}
 	for (int i = 0; i < MAX_JOYSTICK_BUTTONS; i++)
+	{
 		this->JoystickButtons[i] = JOY_NONE;
+		this->MenuJoystickButtons[i] = EVENT_NONE;
+	}
 
 	if (SDL_NumJoysticks() > 0)
 	{
@@ -124,10 +132,8 @@ void Prefs::SetupJoystickDefaults()
 		if (strncmp(name, "Wiimote", 7) == 0)
 		{
 			/* Wiimote/Classic hat */
-			this->JoystickHats[0] = 0x41; /* Up */
-			this->JoystickHats[1] = 0x42; /* Down */
-			this->JoystickHats[2] = 0x44; /* Left */
-			this->JoystickHats[3] = 0x48; /* Right */
+			this->JoystickHats[0] = HAT_ROTATED_90;
+			this->MenuJoystickHats[0] = HAT_ROTATED_90;
 
 			/* Nunchuk/classic analogue */
 			this->JoystickAxes[0] = JOY_HORIZ;
@@ -140,24 +146,33 @@ void Prefs::SetupJoystickDefaults()
 			this->JoystickButtons[7] = 0x50;
 			this->JoystickButtons[9] = 0x50;
 			this->JoystickButtons[10] = 0x50;
+			this->MenuJoystickButtons[3] = KEY_SELECT;
+			this->MenuJoystickButtons[7] = KEY_SELECT;
+			this->MenuJoystickButtons[9] = KEY_SELECT;
+			this->MenuJoystickButtons[10] = KEY_SELECT;
 
 			/* Wiimote A, Classic Zr, Zl as space */
 			this->JoystickButtons[0] = (7 << 3) | 4;
 			this->JoystickButtons[15] = (7 << 3) | 4;
 			this->JoystickButtons[16] = (7 << 3) | 4;
 
-			/* Wiimote B, classic x, y as R/S (escape in the menu) */
+			/* Wiimote B, classic x, y as R/S and menu escape */
 			this->JoystickButtons[1] = (7 << 3) | 7;
 			this->JoystickButtons[11] = (7 << 3) | 7;
 			this->JoystickButtons[12] = (7 << 3) | 7;
+			this->MenuJoystickButtons[1] = KEY_ESCAPE;
+			this->MenuJoystickButtons[11] = KEY_ESCAPE;
+			this->MenuJoystickButtons[12] = KEY_ESCAPE;
 
 			/* Wiimote, classic Home as enter menu */
-			this->JoystickButtons[6] = JOY_ENTER_MENU;
-			this->JoystickButtons[19] = JOY_ENTER_MENU;
+			this->MenuJoystickButtons[6] = ENTER_MENU;
+			this->MenuJoystickButtons[19] = ENTER_MENU;
 		}
 		/* Saitek P380 */
 		else if (strcmp(name, "Jess Tech Dual Analog Pad") == 0)
 		{
+			/* Hat is plain */
+
 			/* Pad */
 			this->JoystickHats[0] = 0x41; /* Up */
 			this->JoystickHats[1] = 0x42; /* Down */
@@ -203,10 +218,14 @@ bool Prefs::operator==(const Prefs &rhs) const
 	{
 		if (this->JoystickHats[i] != rhs.JoystickHats[i])
 			return false;
+		if (this->MenuJoystickHats[i] != rhs.MenuJoystickHats[i])
+			return false;
 	}
 	for (int i = 0; i < MAX_JOYSTICK_BUTTONS; i++)
 	{
 		if (this->JoystickButtons[i] != rhs.JoystickButtons[i])
+			return false;
+		if (this->MenuJoystickButtons[i] != rhs.MenuJoystickButtons[i])
 			return false;
 	}
 
@@ -414,6 +433,20 @@ void Prefs::Load(const char *filename)
 					if (n >= 0 && n < MAX_JOYSTICK_BUTTONS)
 						this->JoystickButtons[n] = atoi(value);
 				}
+				else if (!strncmp(keyword, "MenuJoystickHats", strlen("MenuJoystickHats")))
+				{
+					int n = atoi(keyword + strlen("MenuJoystickHats"));
+
+					if (n >= 0 && n < MAX_JOYSTICK_HATS)
+						this->MenuJoystickHats[n] = atoi(value);
+				}
+				else if (!strncmp(keyword, "MenuJoystickButtons", strlen("MenuJoystickButtons")))
+				{
+					int n = atoi(keyword + strlen("MenuJoystickButtons"));
+
+					if (n >= 0 && n < MAX_JOYSTICK_BUTTONS)
+						this->MenuJoystickButtons[n] = atoi(value);
+				}
 				else if (!strcmp(keyword, "DisplayOption"))
 					DisplayOption = atoi(value);
 				else if (!strcmp(keyword, "MsPerFrame"))
@@ -519,9 +552,15 @@ bool Prefs::Save(const char *filename)
 		for (int i = 0; i < MAX_JOYSTICK_AXES; i++)
 			fprintf(file, "JoystickAxes%d = %d\n", i, JoystickAxes[i]);
 		for (int i = 0; i < MAX_JOYSTICK_HATS; i++)
+		{
 			fprintf(file, "JoystickHats%d = %d\n", i, JoystickHats[i]);
+			fprintf(file, "MenuJoystickHats%d = %d\n", i, MenuJoystickHats[i]);
+		}
 		for (int i = 0; i < MAX_JOYSTICK_BUTTONS; i++)
+		{
 			fprintf(file, "JoystickButtons%d = %d\n", i, JoystickButtons[i]);
+			fprintf(file, "MenuJoystickButtons%d = %d\n", i, MenuJoystickButtons[i]);
+		}
 
 		fprintf(file, "DisplayOption = %d\n", DisplayOption);
 		fprintf(file, "MsPerFrame = %d\n", MsPerFrame);
@@ -537,20 +576,3 @@ bool Prefs::Save(const char *filename)
 	}
 	return false;
 }
-
-
-#ifdef __BEOS__
-#include "Prefs_Be.h"
-#endif
-
-#ifdef AMIGA
-#include "Prefs_Amiga.h"
-#endif
-
-#ifdef WIN32
-#include "Prefs_WIN32.h"
-#endif
-
-#ifdef HAVE_GLADE
-#include "Prefs_glade.h"
-#endif

@@ -14,6 +14,7 @@ enum key_event {
 	KEY_PAGEDOWN = (1 << 15),
 	KEY_PAGEUP   = (1 << 16),
 	KEY_HELP     = (1 << 17),
+	KEY_ENTER_MENU = (1 << 18),
 };
 
 typedef enum key_event event_t;
