@@ -70,8 +70,8 @@ Prefs::Prefs()
 	SIDType = SIDTYPE_DIGITAL;
 	REUSize = REU_NONE;
 	DisplayType = DISPTYPE_WINDOW;
-	Joystick1Port = 0;
-	Joystick2Port = 0;
+	Joystick1Port = 1; /* Default to on */
+	Joystick2Port = 1;
 
 	SpritesOn = true;
 	SpriteCollisions = true;
