@@ -867,7 +867,6 @@ uint8 C64::poll_joystick_buttons(int port)
 	int i;
 
 	for (i = 0; i < SDL_JoystickNumButtons (js); i++) {
-		bool old = this->joy_button_pressed[i];
 		bool cur = SDL_JoystickGetButton (js, i) ? true : false;
 		int kc = ThePrefs.JoystickButtons[i];
 
