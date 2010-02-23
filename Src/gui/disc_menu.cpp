@@ -209,5 +209,5 @@ void DiscView::draw(SDL_Surface *where)
 	SDL_BlitSurface(Gui::gui->disc_info, NULL, where, &dst);
 
 	this->menu->draw(where, 50, 70, 280, 375);
-	this->gameInfo->draw(where, 360, 55, 262, 447);
+	this->gameInfo->draw(where, 390, 55, 242, 447);
 }

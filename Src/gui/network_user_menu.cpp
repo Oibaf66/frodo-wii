@@ -102,7 +102,7 @@ public:
 		dst = (SDL_Rect){x + w / 2 - screenshot->w / 2, y, w, h};
 		SDL_BlitSurface(screenshot, NULL, where, &dst);
 
-		Menu::draw(where, x, y + screenshot->h + 10, w, h - screenshot->h - 10);
+		Menu::draw(where, x + 20, y + screenshot->h + 10, w - 20, h - screenshot->h - 10);
 
 	}
 
@@ -111,12 +111,12 @@ public:
 		this->setText(NULL);
 		memset(this->pi_messages, 0, sizeof(this->pi_messages));
 
-		this->pi_messages[0] = "Name:";
-		this->pi_messages[1] = " ";
-		this->pi_messages[2] = "Region:";
-		this->pi_messages[3] = " ";
-		this->pi_messages[4] = " "; /* Maybe add something here later */
-		this->pi_messages[5] = " ";
+		this->pi_messages[0] = " ";
+		this->pi_messages[1] = "Name:";
+		this->pi_messages[2] = " ";
+		this->pi_messages[3] = "Region:";
+		this->pi_messages[4] = " ";
+		this->pi_messages[5] = " "; /* Maybe add something here later */
 
 		if (this->pi)
 		{
@@ -252,8 +252,8 @@ void NetworkUserView::draw(SDL_Surface *where)
 	SDL_BlitSurface(Gui::gui->main_menu_bg, NULL, where, &dst);
 
 	dst = (SDL_Rect){350,13,0,0};
-	SDL_BlitSurface(Gui::gui->disc_info, NULL, where, &dst);
+	SDL_BlitSurface(Gui::gui->network_info, NULL, where, &dst);
 
 	this->menu->draw(where, 50, 70, 280, 375);
-	this->peerInfo->draw(where, 360, 55, 262, 447);
+	this->peerInfo->draw(where, 390, 55, 242, 447);
 }

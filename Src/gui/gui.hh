@@ -91,6 +91,7 @@ public:
 	SDL_Surface *keyboard;
 	SDL_Surface *dialogue_bg;
 	SDL_Surface *disc_info;
+	SDL_Surface *network_info;
 	SDL_Surface *bg_left, *bg_right, *bg_middle,
 		*bg_submenu_left, *bg_submenu_right, *bg_submenu_middle;
 	SDL_Surface *highlighted_key;

@@ -61,32 +61,28 @@ public:
 			dst = (SDL_Rect){x + w / 2 - this->gi->screenshot->w / 2, y, w, h};
 			SDL_BlitSurface(this->gi->screenshot, NULL, where, &dst);
 
-			Menu::draw(where, x, y + this->gi->screenshot->h + 10,
-					w, h - this->gi->screenshot->h - 10);
+			Menu::draw(where, x + 20, y + this->gi->screenshot->h + 10,
+					w - 20, h - this->gi->screenshot->h - 10);
 		}
 		else
-			Menu::draw(where, x, y + 10, w, h - 10);
+			Menu::draw(where, x + 20, y + 288 / 2 + 2, w - 20, h - 10);
 	}
 
 	void updateMessages()
 	{
 		this->setText(NULL);
-		memset(this->gi_messages, 0, sizeof(this->gi_messages));
 
-		this->gi_messages[0] = "Game:";
-		this->gi_messages[1] = " ";
-		this->gi_messages[2] = "Author:";
-		this->gi_messages[3] = " ";
-		this->gi_messages[4] = "Year:";
-		this->gi_messages[5] = " ";
+		for (unsigned i = 0; i < ARRAY_SIZE(this->gi_messages) - 1; i++)
+			this->gi_messages[i] = " ";
+		this->gi_messages[ARRAY_SIZE(this->gi_messages) - 1] = NULL;
 
 		if (this->gi)
 		{
 			snprintf(this->year, sizeof(this->year), "%d", this->gi->year);
-			this->gi_messages[1] = this->gi->name ? this->gi->name : " ";
+			this->gi_messages[0] = this->gi->name ? this->gi->name : " ";
 			this->gi_messages[3] = this->gi->author ? this->gi->author : " ";
-			this->gi_messages[5] = year;
 		}
+		this->gi_messages[6] = year;
 
 		this->setText(this->gi_messages);
 	}
