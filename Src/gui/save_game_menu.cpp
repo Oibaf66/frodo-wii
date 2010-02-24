@@ -28,6 +28,8 @@ public:
 
 	void setLoadSnapshot(bool which);
 
+	void viewPushCallback();
+
 	void saveSnapshot();
 
 	/* Inherited */
@@ -135,6 +137,11 @@ void SaveGameView::setDirectory(const char *path)
 void SaveGameView::setLoadSnapshot(bool what)
 {
 	this->menu->loadSnapshot = what;
+}
+
+void SaveGameView::viewPushCallback()
+{
+	this->gameInfo->setGameInfo(NULL);
 }
 
 void SaveGameView::saveSnapshot()

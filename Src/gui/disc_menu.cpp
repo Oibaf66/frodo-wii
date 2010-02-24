@@ -29,6 +29,8 @@ public:
 
 	void runStartSequence(bool what);
 
+	void viewPushCallback();
+
 	/* Inherited */
 	void runLogic();
 
@@ -170,6 +172,11 @@ DiscView::~DiscView()
 {
 	delete this->menu;
 	delete this->gameInfo;
+}
+
+void DiscView::viewPushCallback()
+{
+	this->gameInfo->setGameInfo(NULL);
 }
 
 void DiscView::loadGameInfo(const char *what)
