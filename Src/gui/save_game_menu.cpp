@@ -175,6 +175,8 @@ void SaveGameView::saveSnapshot()
 	Gui::gui->saveGameInfo(Gui::gui->save_game_path, out_name);
 	ThePrefs.Save(prefs_name);
 
+	Gui::gui->pushDialogueBox(new DialogueBox(save_state_done));
+
 	free(save);
 	free(prefs_name);
 }

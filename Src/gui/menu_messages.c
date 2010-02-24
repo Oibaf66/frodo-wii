@@ -13,6 +13,17 @@ const char *exit_dialogue_messages[8] = {
 	NULL
 };
 
+const char *save_state_done[8] = {
+	/*00*/          "Game state saved!",
+	/*01*/		"#",
+	/*02*/		"#", /* Empty line */
+	/*03*/		"#",
+	/*04*/		"#",
+	/*05*/		"#",
+	/*06*/          "^|OK",
+	NULL
+};
+
 const char *network_port_dialogue_messages[8] = {
 	/*00*/          "Please supply a number as",
 	/*01*/		"network port.",
