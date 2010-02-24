@@ -68,7 +68,7 @@ public:
 
 	void updateGameInfo(GameInfo *gi);
 
-	void saveGameInfo();
+	void saveGameInfo(const char *base_path, const char *name);
 
 	void exitMenu();
 

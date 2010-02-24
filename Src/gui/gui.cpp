@@ -328,7 +328,7 @@ void Gui::exitMenu()
 	TheC64->NewPrefs(this->np);
 	ThePrefs = *this->np;
 
-	this->saveGameInfo();
+	this->saveGameInfo(this->metadata_base_path, this->cur_gameInfo->filename);
 }
 
 void Gui::pushEvent(event_t ev)
@@ -436,14 +436,14 @@ void Gui::updateGameInfo(GameInfo *gi)
 	panic_if(!gi, "gi must be set\n");
 
 	/* Store the current game info */
-	this->saveGameInfo();
+	this->saveGameInfo(this->metadata_base_path, this->cur_gameInfo->filename);
 	delete this->cur_gameInfo;
 
 	this->cur_gameInfo = gi;
 	this->gameInfoChanged = true;
 }
 
-void Gui::saveGameInfo()
+void Gui::saveGameInfo(const char *base_path, const char *name)
 {
 	/* Don't save unset games */
 	if (strcmp(this->cur_gameInfo->filename, "unknown") == 0)
@@ -455,12 +455,12 @@ void Gui::saveGameInfo()
 	{
 		size_t sz = ntohl(p->sz);
 
-		char *new_name = (char *)xmalloc(strlen(this->metadata_base_path) +
-				8 + strlen(this->cur_gameInfo->filename));
+		char *new_name = (char *)xmalloc(strlen(base_path) +
+				8 + strlen(name));
 		FILE *fp;
 
-		sprintf(new_name, "%s/%s.lra", this->metadata_base_path,
-				this->cur_gameInfo->filename);
+		sprintf(new_name, "%s/%s.lra", base_path,
+				name);
 		fp = fopen(new_name, "w");
 		if (fp)
 		{

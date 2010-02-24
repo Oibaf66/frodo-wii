@@ -174,7 +174,7 @@ DiscView::~DiscView()
 
 void DiscView::loadGameInfo(const char *what)
 {
-	this->gameInfo->loadGameInfo(what);
+	this->gameInfo->loadGameInfo(what, Gui::gui->metadata_base_path);
 }
 
 void DiscView::setDirectory(const char *path)

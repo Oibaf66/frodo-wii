@@ -21,16 +21,17 @@ public:
 		this->updateMessages();
 	}
 
-	void loadGameInfo(const char *what)
+	void loadGameInfo(const char *what, const char *base_path)
 	{
 		/* No need to do this for directories or the special "None" field */
 		if ( !(strcmp(what, "None") == 0 ||
 				what[0] == '[') )
 		{
-			size_t len = strlen(Gui::gui->metadata_base_path) + strlen(what) + 6;
+			size_t len = strlen(base_path) + strlen(what) + 6;
 			char *tmp = (char*)xmalloc(len);
 
-			sprintf(tmp, "%s/%s.lra", Gui::gui->metadata_base_path, what);
+			sprintf(tmp, "%s/%s.lra", base_path, what);
+			printf("Loading %s\n", tmp);
 
 			/* Might return NULL, but that's OK */
 			this->gi = GameInfo::loadFromFile(tmp);

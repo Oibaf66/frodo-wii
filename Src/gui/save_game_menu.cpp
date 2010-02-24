@@ -40,7 +40,7 @@ public:
 };
 
 
-class SaveGameMenu : public FileBrowser
+class SaveGameMenu : public FileBrowser, TimeoutHandler
 {
 	friend class SaveGameView;
 
@@ -59,6 +59,7 @@ public:
 	{
 		const char *fileName = this->pp_msgs[this->cur_sel];
 		char *new_path;
+		char *prefs_path;
 
 		/* If we selected a directory, just take the next one */
 		if (fileName[0] == '[')
@@ -67,24 +68,42 @@ public:
 			return;
 		}
 		new_path = (char *)xmalloc(strlen(this->cur_path_prefix) + 3 + strlen(fileName));
+		prefs_path = (char *)xmalloc(strlen(this->cur_path_prefix) + 8 + strlen(fileName));
 
-		sprintf(new_path, "%s/%s",
-				this->cur_path_prefix, fileName);
+		sprintf(new_path, "%s/%s", this->cur_path_prefix, fileName);
+		sprintf(prefs_path, "%s.prefs", new_path);
+
 		if (this->loadSnapshot)
+		{
 			TheC64->LoadSnapshot(new_path);
-		else
+			Gui::gui->sgv->loadGameInfo(fileName);
+			ThePrefs.Load(prefs_path);
+		} else
 			unlink(new_path);
+		free(prefs_path);
 		free(new_path);
 		Gui::gui->popView();
 	}
 
 	virtual void hoverCallback(int which)
 	{
+		Gui::gui->timerController->arm(this, 350);
 	}
 
 	virtual void escapeCallback(int which)
 	{
 		Gui::gui->popView();
+	}
+
+	virtual void timeoutCallback()
+	{
+		char *cpy = xstrdup(this->pp_msgs[this->cur_sel]);
+		char *p = strstr(cpy, ".sav");
+
+		if (p)
+			*p = '\0';
+		Gui::gui->sgv->loadGameInfo(cpy);
+		free(cpy);
 	}
 
 	bool loadSnapshot;
@@ -105,7 +124,7 @@ SaveGameView::~SaveGameView()
 
 void SaveGameView::loadGameInfo(const char *what)
 {
-	this->gameInfo->loadGameInfo(what);
+	this->gameInfo->loadGameInfo(what, Gui::gui->save_game_path);
 }
 
 void SaveGameView::setDirectory(const char *path)
@@ -122,7 +141,8 @@ void SaveGameView::saveSnapshot()
 {
 	const char *name = "unknown";
 	const char *out_name;
-	char buf[255];
+	char *prefs_name;
+	char *save;
 
 	if (strlen(Gui::gui->np->DrivePath[0]) != 0)
 		name = Gui::gui->np->DrivePath[0];
@@ -131,15 +151,25 @@ void SaveGameView::saveSnapshot()
 		out_name = name;
 	else
 		out_name++;
+	save = (char*)xmalloc( strlen(Gui::gui->save_game_path) + strlen(out_name) + 6 );
+	prefs_name = (char*)xmalloc( strlen(Gui::gui->save_game_path) + strlen(out_name) + 12 );
 
-	snprintf(buf, sizeof(buf), "%s/%s.sav", Gui::gui->save_game_path, out_name);
+	sprintf(save, "%s/%s.sav", Gui::gui->save_game_path, out_name);
+	sprintf(prefs_name, "%s.prefs", save);
 
 	bool was_paused = TheC64->IsPaused();
 	if (!was_paused)
 		TheC64->Pause();
-	TheC64->SaveSnapshot(buf);
+	TheC64->SaveSnapshot(save);
 	if (!was_paused)
 		TheC64->Resume();
+
+	Gui::gui->cur_gameInfo->setScreenshot(TheC64->TheDisplay->SurfaceFromC64Display());
+	Gui::gui->saveGameInfo(Gui::gui->save_game_path, out_name);
+	ThePrefs.Save(prefs_name);
+
+	free(save);
+	free(prefs_name);
 }
 
 void SaveGameView::runLogic()
@@ -164,5 +194,5 @@ void SaveGameView::draw(SDL_Surface *where)
 	SDL_BlitSurface(Gui::gui->disc_info, NULL, where, &dst);
 
 	this->menu->draw(where, 50, 70, 280, 375);
-	this->gameInfo->draw(where, 360, 55, 262, 447);
+	this->gameInfo->draw(where, 390, 55, 242, 447);
 }
