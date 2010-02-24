@@ -448,7 +448,8 @@ class Peer:
             if entry.get_key() == self.screenshot_key:
                 print "Save it all"
                 try:
-                    which = random.randrange(0,12)
+                    which = self.srv.next_image_nr
+                    self.srv.next_image_nr = (self.srv.next_image_nr + 1) % 12
                     f = open("%s%d.png" % (self.srv.image_dir, which), "w")
                     f.write(entry.get_data())
                     f.close()
@@ -581,6 +582,7 @@ class Broker(SocketServer.UDPServer):
         self.image_dir = image_dir
 
         self.data_key = DATA_KEY_RANGE
+        self.next_image_nr = random.randrange(0,12)
 
         stats.load(self.stat_data)
         try:
