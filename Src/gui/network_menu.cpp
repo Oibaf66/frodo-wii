@@ -77,8 +77,8 @@ public:
 						Gui::gui->np->NetworkPort);
 				TheC64->network_connection_type = CONNECT;
 				TheC64->network->ConnectToBroker();
+				Gui::gui->exitMenu();
 			}
-			Gui::gui->exitMenu();
 			break;
 		case 6:
 			if (TheC64->network_connection_type == NONE)
