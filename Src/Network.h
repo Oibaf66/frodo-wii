@@ -15,7 +15,7 @@
 
 #define FRODO_NETWORK_MAGIC 0x1976
 
-#define NETWORK_UPDATE_SIZE     (256 * 1024)
+#define NETWORK_UPDATE_SIZE     (128 * 1024)
 #define NETWORK_SOUND_BUF_SIZE   8192
 
 #define SCREENSHOT_FACTOR 4
@@ -384,6 +384,7 @@ protected:
 		return (NetworkUpdate*)((Uint8*)p + p->size);
 	}
 	
+	NetworkUpdate *receive_ud;
 	NetworkUpdate *ud;
 	NetworkUpdate *cur_ud;
 	Uint8 *raw_buf;

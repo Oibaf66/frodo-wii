@@ -59,8 +59,8 @@ Network::Network(const char *remote_host, int port)
 	this->connected = false;
 
 	/* "big enough" buffer */
-	this->ud = (NetworkUpdate*)malloc( size );
-	assert(this->ud);
+	this->ud = (NetworkUpdate*)xmalloc( size );
+	this->receive_ud = (NetworkUpdate*)xmalloc( size );
 
 	this->ResetNetworkUpdate();
 	this->traffic = 0;
@@ -108,6 +108,7 @@ Network::Network(const char *remote_host, int port)
 Network::~Network()
 {
 	free(this->ud);
+	free(this->receive_ud);
 	free(this->square_updated);
 	free(this->raw_buf);
 	free(this->rle_buf);
@@ -485,6 +486,7 @@ void Network::EncodeJoystickUpdate(Uint8 v)
 void Network::ResetNetworkUpdate(void)
 {
 	memset(this->ud, 0, NETWORK_UPDATE_SIZE);
+	memset(this->receive_ud, 0, NETWORK_UPDATE_SIZE);
 
 	this->cur_ud = InitNetworkUpdate(this->ud, STOP, sizeof(NetworkUpdate));
 }
@@ -531,12 +533,12 @@ bool Network::ReceiveUpdate()
 	struct timeval tv;
 
 	memset(&tv, 0, sizeof(tv));
-	return this->ReceiveUpdate(this->ud, NETWORK_UPDATE_SIZE, &tv);
+	return this->ReceiveUpdate(this->receive_ud, NETWORK_UPDATE_SIZE, &tv);
 }
 
 bool Network::ReceiveUpdate(struct timeval *tv)
 {
-	return this->ReceiveUpdate(this->ud, NETWORK_UPDATE_SIZE, tv);
+	return this->ReceiveUpdate(this->receive_ud, NETWORK_UPDATE_SIZE, tv);
 }
 
 bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
@@ -910,7 +912,7 @@ bool Network::ScanDataForStop(NetworkUpdate *ud, size_t max_size)
 
 bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 {
-	NetworkUpdate *p = this->ud;
+	NetworkUpdate *p = this->receive_ud;
 	bool out = true;
 
 	while (p->type != STOP)
@@ -970,15 +972,13 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 			NetworkUpdatePingAck *ping = (NetworkUpdatePingAck *)p->data;
 			uint16 type = ACK;
 
-			if (ud->type == BANDWIDTH_PING)
+			if (p->type == BANDWIDTH_PING)
 				type = BANDWIDTH_ACK;
-			this->SendPingAck(&this->server_addr, ping->seq, type, ud->size);
-			/* FIXME! Temporary crash fix */
-			this->ResetNetworkUpdate();
+			this->SendPingAck(&this->server_addr, ping->seq, type, p->size);
 		} break;
 		case LIST_PEERS:
 		{
-			NetworkUpdateListPeers *lp = (NetworkUpdateListPeers *)this->ud->data;
+			NetworkUpdateListPeers *lp = (NetworkUpdateListPeers *)p->data;
 
 			if (lp->n_peers == 1 && (lp->flags & NETWORK_UPDATE_LIST_PEERS_IS_CONNECT))
 			{
