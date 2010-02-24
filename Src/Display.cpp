@@ -858,7 +858,6 @@ uint8 C64::poll_joystick_hats(int port)
 			right_ev = KEY_DOWN;
 		}
 
-		/* FIXME! This is the wrong way for the Wii */
 		if (v & SDL_HAT_UP) {
 			out &= up_mask;
 			Gui::gui->pushEvent(up_ev);
