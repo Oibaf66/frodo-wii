@@ -34,6 +34,21 @@ Prefs ThePrefs;
 // These are the preferences on disk
 Prefs ThePrefsOnDisk;
 
+// These are the default preferences
+Prefs TheDefaultPrefs;
+
+static void maybe_write(FILE *fp, bool do_write, const char *fmt, ...)
+{
+     va_list ap;
+     int r;
+
+     if (!do_write)
+	  return;
+
+     va_start(ap, fmt);
+     r = vfprintf(fp, fmt, ap);
+     va_end(ap);
+}
 
 /*
  *  Constructor: Set up preferences with defaults
@@ -481,91 +496,98 @@ bool Prefs::Save(const char *filename)
 
 	Check();
 	if ((file = fopen(filename, "w")) != NULL) {
-		fprintf(file, "NormalCycles = %d\n", NormalCycles);
-		fprintf(file, "BadLineCycles = %d\n", BadLineCycles);
-		fprintf(file, "CIACycles = %d\n", CIACycles);
-		fprintf(file, "FloppyCycles = %d\n", FloppyCycles);
-		fprintf(file, "SkipFrames = %d\n", SkipFrames);
-		fprintf(file, "LatencyMin = %d\n", LatencyMin);
-		fprintf(file, "LatencyMax = %d\n", LatencyMax);
-		fprintf(file, "LatencyAvg = %d\n", LatencyAvg);
-		fprintf(file, "ScalingNumerator = %d\n", ScalingNumerator);
-		fprintf(file, "ScalingDenominator = %d\n", ScalingDenominator);
-		for (int i=0; i<4; i++)
-			fprintf(file, "DrivePath%d = %s\n", i+8, DrivePath[i]);
-		fprintf(file, "ViewPort = %s\n", ViewPort);
-		fprintf(file, "DisplayMode = %s\n", DisplayMode);
-		fprintf(file, "SIDType = ");
-		switch (SIDType) {
-			case SIDTYPE_NONE:
-				fprintf(file, "NONE\n");
-				break;
-			case SIDTYPE_DIGITAL:
-				fprintf(file, "DIGITAL\n");
-				break;
-			case SIDTYPE_SIDCARD:
-				fprintf(file, "SIDCARD\n");
-				break;
+		maybe_write(file, NormalCycles != TheDefaultPrefs.NormalCycles, "NormalCycles = %d\n", NormalCycles);
+		maybe_write(file, BadLineCycles != TheDefaultPrefs.BadLineCycles, "BadLineCycles = %d\n", BadLineCycles);
+		maybe_write(file, CIACycles != TheDefaultPrefs.CIACycles, "CIACycles = %d\n", CIACycles);
+		maybe_write(file, FloppyCycles != TheDefaultPrefs.FloppyCycles, "FloppyCycles = %d\n", FloppyCycles);
+		maybe_write(file, SkipFrames != TheDefaultPrefs.SkipFrames, "SkipFrames = %d\n", SkipFrames);
+		maybe_write(file, LatencyMin != TheDefaultPrefs.LatencyMin, "LatencyMin = %d\n", LatencyMin);
+		maybe_write(file, LatencyMax != TheDefaultPrefs.LatencyMax, "LatencyMax = %d\n", LatencyMax);
+		maybe_write(file, LatencyAvg != TheDefaultPrefs.LatencyAvg, "LatencyAvg = %d\n", LatencyAvg);
+		maybe_write(file, ScalingNumerator != TheDefaultPrefs.ScalingNumerator, "ScalingNumerator = %d\n", ScalingNumerator);
+		maybe_write(file, ScalingDenominator != TheDefaultPrefs.ScalingDenominator, "ScalingDenominator = %d\n", ScalingDenominator);
+		for (int i=0; i<4; i++) {
+			maybe_write(file, strcmp(DrivePath[i], TheDefaultPrefs.DrivePath[i]) != 0, "DrivePath%d = %s\n", i+8, DrivePath[i]);
 		}
-		fprintf(file, "REUSize = ");
-		switch (REUSize) {
-			case REU_NONE:
-				fprintf(file, "NONE\n");
-				break;
-			case REU_128K:
-				fprintf(file, "128K\n");
-				break;
-			case REU_256K:
-				fprintf(file, "256K\n");
-				break;
-			case REU_512K:
-				fprintf(file, "512K\n");
-				break;
-		};
-		fprintf(file, "DisplayType = %s\n", DisplayType == DISPTYPE_WINDOW ? "WINDOW" : "SCREEN");
-		fprintf(file, "Joystick1Port = %d\n", Joystick1Port);
-		fprintf(file, "Joystick2Port = %d\n", Joystick2Port);
-		fprintf(file, "SpritesOn = %s\n", SpritesOn ? "TRUE" : "FALSE");
-		fprintf(file, "SpriteCollisions = %s\n", SpriteCollisions ? "TRUE" : "FALSE");
-		fprintf(file, "JoystickSwap = %s\n", JoystickSwap ? "TRUE" : "FALSE");
-		fprintf(file, "LimitSpeed = %s\n", LimitSpeed ? "TRUE" : "FALSE");
-		fprintf(file, "FastReset = %s\n", FastReset ? "TRUE" : "FALSE");
-		fprintf(file, "CIAIRQHack = %s\n", CIAIRQHack ? "TRUE" : "FALSE");
-		fprintf(file, "MapSlash = %s\n", MapSlash ? "TRUE" : "FALSE");
-		fprintf(file, "Emul1541Proc = %s\n", Emul1541Proc ? "TRUE" : "FALSE");
-		fprintf(file, "SIDFilters = %s\n", SIDFilters ? "TRUE" : "FALSE");
-		fprintf(file, "DoubleScan = %s\n", DoubleScan ? "TRUE" : "FALSE");
-		fprintf(file, "HideCursor = %s\n", HideCursor ? "TRUE" : "FALSE");
-		fprintf(file, "DirectSound = %s\n", DirectSound ? "TRUE" : "FALSE");
-		fprintf(file, "ExclusiveSound = %s\n", ExclusiveSound ? "TRUE" : "FALSE");
-		fprintf(file, "AutoPause = %s\n", AutoPause ? "TRUE" : "FALSE");
-		fprintf(file, "PrefsAtStartup = %s\n", PrefsAtStartup ? "TRUE" : "FALSE");
-		fprintf(file, "SystemMemory = %s\n", SystemMemory ? "TRUE" : "FALSE");
-		fprintf(file, "AlwaysCopy = %s\n", AlwaysCopy ? "TRUE" : "FALSE");
-		fprintf(file, "SystemKeys = %s\n", SystemKeys ? "TRUE" : "FALSE");
-		fprintf(file, "ShowLEDs = %s\n", ShowLEDs ? "TRUE" : "FALSE");
+		maybe_write(file, strcmp(ViewPort, TheDefaultPrefs.ViewPort) != 0, "ViewPort = %s\n", ViewPort);
+		maybe_write(file, strcmp(DisplayMode, TheDefaultPrefs.DisplayMode) != 0, "DisplayMode = %s\n", DisplayMode);
+		if (SIDType != TheDefaultPrefs.SIDType)
+		{
+			fprintf(file, "SIDType = ");
+			switch (SIDType) {
+				case SIDTYPE_NONE:
+					fprintf(file, "NONE\n");
+					break;
+				case SIDTYPE_DIGITAL:
+					fprintf(file, "DIGITAL\n");
+					break;
+				case SIDTYPE_SIDCARD:
+					fprintf(file, "SIDCARD\n");
+					break;
+			}
+		}
+		if (REUSize != TheDefaultPrefs.REUSize)
+		{
+			fprintf(file, "REUSize = ");
+			switch (REUSize) {
+				case REU_NONE:
+					fprintf(file, "NONE\n");
+					break;
+				case REU_128K:
+					fprintf(file, "128K\n");
+					break;
+				case REU_256K:
+					fprintf(file, "256K\n");
+					break;
+				case REU_512K:
+					fprintf(file, "512K\n");
+					break;
+			};
+		}
+		maybe_write(file, DisplayType != TheDefaultPrefs.DisplayType, "DisplayType = %s\n", DisplayType == DISPTYPE_WINDOW ? "WINDOW" : "SCREEN");
+		maybe_write(file, Joystick1Port != TheDefaultPrefs.Joystick1Port, "Joystick1Port = %d\n", Joystick1Port);
+		maybe_write(file, Joystick2Port != TheDefaultPrefs.Joystick2Port, "Joystick1Port = %d\n", Joystick2Port);
+		maybe_write(file, SpritesOn != TheDefaultPrefs.SpritesOn, "SpritesOn = %s\n", SpritesOn ? "TRUE" : "FALSE");
+		maybe_write(file, SpriteCollisions != TheDefaultPrefs.SpriteCollisions, "SpriteCollisions = %s\n", SpriteCollisions ? "TRUE" : "FALSE");
+		maybe_write(file, JoystickSwap != TheDefaultPrefs.JoystickSwap, "JoystickSwap = %s\n", JoystickSwap ? "TRUE" : "FALSE");
+		maybe_write(file, LimitSpeed != TheDefaultPrefs.LimitSpeed, "LimitSpeed = %s\n", LimitSpeed ? "TRUE" : "FALSE");
+		maybe_write(file, FastReset != TheDefaultPrefs.FastReset, "FastReset = %s\n", FastReset ? "TRUE" : "FALSE");
+		maybe_write(file, CIAIRQHack != TheDefaultPrefs.CIAIRQHack, "CIAIRQHack = %s\n", CIAIRQHack ? "TRUE" : "FALSE");
+		maybe_write(file, MapSlash != TheDefaultPrefs.MapSlash, "MapSlash = %s\n", MapSlash ? "TRUE" : "FALSE");
+		maybe_write(file, Emul1541Proc != TheDefaultPrefs.Emul1541Proc, "Emul1541Proc = %s\n", Emul1541Proc ? "TRUE" : "FALSE");
+		maybe_write(file, SIDFilters != TheDefaultPrefs.SIDFilters, "SIDFilters = %s\n", SIDFilters ? "TRUE" : "FALSE");
+		maybe_write(file, DoubleScan != TheDefaultPrefs.DoubleScan, "DoubleScan = %s\n", DoubleScan ? "TRUE" : "FALSE");
+		maybe_write(file, HideCursor != TheDefaultPrefs.HideCursor, "HideCursor = %s\n", HideCursor ? "TRUE" : "FALSE");
+		maybe_write(file, DirectSound != TheDefaultPrefs.DirectSound, "DirectSound = %s\n", DirectSound ? "TRUE" : "FALSE");
+		maybe_write(file, ExclusiveSound != TheDefaultPrefs.ExclusiveSound, "ExclusiveSound = %s\n", ExclusiveSound ? "TRUE" : "FALSE");
+		maybe_write(file, AutoPause != TheDefaultPrefs.AutoPause, "AutoPause = %s\n", AutoPause ? "TRUE" : "FALSE");
+		maybe_write(file, PrefsAtStartup != TheDefaultPrefs.PrefsAtStartup, "PrefsAtStartup = %s\n", PrefsAtStartup ? "TRUE" : "FALSE");
+		maybe_write(file, SystemMemory != TheDefaultPrefs.SystemMemory, "SystemMemory = %s\n", SystemMemory ? "TRUE" : "FALSE");
+		maybe_write(file, AlwaysCopy != TheDefaultPrefs.AlwaysCopy, "AlwaysCopy = %s\n", AlwaysCopy ? "TRUE" : "FALSE");
+		maybe_write(file, SystemKeys != TheDefaultPrefs.SystemKeys, "SystemKeys = %s\n", SystemKeys ? "TRUE" : "FALSE");
+		maybe_write(file, ShowLEDs != TheDefaultPrefs.ShowLEDs, "ShowLEDs = %s\n", ShowLEDs ? "TRUE" : "FALSE");
 
 		for (int i = 0; i < MAX_JOYSTICK_AXES; i++)
-			fprintf(file, "JoystickAxes%d = %d\n", i, JoystickAxes[i]);
+			maybe_write(file, JoystickAxes[i] != TheDefaultPrefs.JoystickAxes[i], "JoystickAxes%d = %d\n", i, JoystickAxes[i]);
 		for (int i = 0; i < MAX_JOYSTICK_HATS; i++)
 		{
-			fprintf(file, "JoystickHats%d = %d\n", i, JoystickHats[i]);
-			fprintf(file, "MenuJoystickHats%d = %d\n", i, MenuJoystickHats[i]);
+			maybe_write(file, JoystickHats[i] != TheDefaultPrefs.JoystickHats[i], "JoystickHats%d = %d\n", i, JoystickHats[i]);
+			maybe_write(file, MenuJoystickHats[i] != TheDefaultPrefs.MenuJoystickHats[i], "MenuJoystickHats%d = %d\n", i, MenuJoystickHats[i]);
 		}
 		for (int i = 0; i < MAX_JOYSTICK_BUTTONS; i++)
 		{
-			fprintf(file, "JoystickButtons%d = %d\n", i, JoystickButtons[i]);
-			fprintf(file, "MenuJoystickButtons%d = %d\n", i, MenuJoystickButtons[i]);
+			maybe_write(file, JoystickButtons[i] != TheDefaultPrefs.JoystickButtons[i], "JoystickButtons%d = %d\n", i, JoystickButtons[i]);
+			maybe_write(file, MenuJoystickButtons[i] != TheDefaultPrefs.MenuJoystickButtons[i], "MenuJoystickButtons%d = %d\n", i, MenuJoystickButtons[i]);
 		}
 
-		fprintf(file, "DisplayOption = %d\n", DisplayOption);
-		fprintf(file, "MsPerFrame = %d\n", MsPerFrame);
-		fprintf(file, "NetworkKey = %d\n", NetworkKey);
-		fprintf(file, "NetworkAvatar = %d\n", NetworkAvatar);
-		fprintf(file, "NetworkName = %s\n", NetworkName);
-		fprintf(file, "NetworkServer = %s\n", NetworkServer);
-		fprintf(file, "NetworkPort = %d\n", NetworkPort);
-		fprintf(file, "NetworkRegion = %d\n", NetworkRegion);
+		maybe_write(file, DisplayOption != TheDefaultPrefs.DisplayOption, "DisplayOption = %d\n", DisplayOption);
+		maybe_write(file, MsPerFrame != TheDefaultPrefs.MsPerFrame, "MsPerFrame = %d\n", MsPerFrame);
+		maybe_write(file, NetworkKey != TheDefaultPrefs.NetworkKey, "NetworkKey = %d\n", NetworkKey);
+		maybe_write(file, NetworkAvatar != TheDefaultPrefs.NetworkAvatar, "NetworkAvatar = %d\n", NetworkAvatar);
+		maybe_write(file, strcmp(NetworkName, TheDefaultPrefs.NetworkName) != 0, "NetworkName = %s\n", NetworkName);
+		maybe_write(file, strcmp(NetworkServer, TheDefaultPrefs.NetworkServer) != 0, "NetworkServer = %s\n", NetworkServer);
+		maybe_write(file, NetworkPort != TheDefaultPrefs.NetworkPort, "NetworkPort = %d\n", NetworkPort);
+		maybe_write(file, NetworkRegion != TheDefaultPrefs.NetworkRegion, "NetworkRegion = %d\n", NetworkRegion);
 		fclose(file);
 		ThePrefsOnDisk = *this;
 		return true;

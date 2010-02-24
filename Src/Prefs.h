@@ -201,4 +201,7 @@ extern Prefs ThePrefs;
 // Theses are the preferences on disk
 extern Prefs ThePrefsOnDisk;
 
+// Theses are the default preferences
+extern Prefs TheDefaultPrefs;
+
 #endif

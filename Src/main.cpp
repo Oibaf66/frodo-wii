@@ -143,7 +143,7 @@ Frodo::Frodo()
 
 	TheC64 = NULL;
 	ThePrefs = p; /* Silly workaround to fix joystick bug */
-
+	TheDefaultPrefs = p;
 }
 
 
