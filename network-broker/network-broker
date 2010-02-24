@@ -412,7 +412,7 @@ class Peer:
             registered_data = []
             lp = ListPeersPacket()
 
-            for peer in self.srv.peers.itervalues():
+            for peer in self.srv.waiting_peers.itervalues():
                 if peer == self:
                     continue
                 # Don't add peers which haven't sent their screenshots yet
@@ -468,8 +468,8 @@ class Peer:
             peer.send_packet( lp.marshal() )
 
             # These two are no longer needed
-            self.srv.remove_peer(peer)
-            self.srv.remove_peer(self)
+            self.srv.make_peer_active(peer)
+            self.srv.make_peer_active(self)
 
         if pkt.type == ACK:
             self.last_ping = cur_time()
@@ -570,6 +570,9 @@ class Broker(SocketServer.UDPServer):
         self.allow_reuse_address = True
         self.peers = {}
         self.peers_by_id = {}
+        self.waiting_peers = {}
+        self.active_peers = {}
+
         self.data_store = DataStore()
         self.id = 0
         self.ping_seq = 0
@@ -622,6 +625,7 @@ class Broker(SocketServer.UDPServer):
         except KeyError, e:
             peer = Peer(key, self, self.id)
             self.peers[key] = peer
+            self.waiting_peers[key] = peer
             self.peers_by_id[self.id] = peer
             self.id = self.id + 1
         return peer
@@ -663,15 +667,29 @@ class Broker(SocketServer.UDPServer):
 
         self.ping_seq = self.ping_seq + 1
 
+    def make_peer_active(self, peer):
+        try:
+            del self.waiting_peers[ peer.addr ]
+            self.active_peers[ peer.addr ] = peer
+        except Exception, e:
+            log_error("Moving peer %s to active failed: %s" % (str(peer.addr), str(e)))
+        print "VOBB", len(self.waiting_peers), len(self.active_peers)
+
     def remove_peer(self, peer):
         try:
             del self.peers[ peer.addr ]
             del self.peers_by_id[ peer.id ]
 
+            # The peer is on one of these two lists
+            if self.active_peers.has_key( peer.addr ):
+                del self.active_peers[peer.addr]
+            if self.waiting_peers.has_key( peer.addr ):
+                del self.waiting_peers[peer.addr]
+
             self.data_store.remove_peer(peer)
-        except:
-            log_error("Could not remove %s (probably wrong version)" %
-                      (str(peer.addr)))
+        except Exception, e:
+            log_error("Could not remove %s (probably wrong version): %s" %
+                      (str(peer.addr), str(e)))
 
 def ping_thread_fn(broker, time_to_sleep):
     """Run as a separate thread to ping all peers"""
