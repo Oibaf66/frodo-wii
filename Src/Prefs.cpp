@@ -171,13 +171,9 @@ void Prefs::SetupJoystickDefaults()
 		/* Saitek P380 */
 		else if (strcmp(name, "Jess Tech Dual Analog Pad") == 0)
 		{
-			/* Hat is plain */
-
 			/* Pad */
-			this->JoystickHats[0] = 0x41; /* Up */
-			this->JoystickHats[1] = 0x42; /* Down */
-			this->JoystickHats[2] = 0x44; /* Left */
-			this->JoystickHats[3] = 0x48; /* Right */
+			this->JoystickHats[0] = HAT_PLAIN;
+			this->MenuJoystickHats[0] = HAT_PLAIN;
 
 			/* Analogue parts */
 			this->JoystickAxes[0] = JOY_HORIZ;

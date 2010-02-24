@@ -837,23 +837,43 @@ uint8 C64::poll_joystick_hats(int port)
 	for (i = 0; i < hats; i++) {
 
 		Uint8 v = SDL_JoystickGetHat (js, i);
+		Uint8 up_mask    = 0xfe;
+		Uint8 down_mask  = 0xfd;
+		Uint8 left_mask  = 0xfb;
+		Uint8 right_mask = 0xf7;
+		event_t up_ev    = KEY_UP;
+		event_t down_ev  = KEY_DOWN;
+		event_t left_ev  = KEY_LEFT;
+		event_t right_ev = KEY_RIGHT;
+
+		if (ThePrefs.MenuJoystickHats[0] == HAT_ROTATED_90)
+		{
+			up_mask    = 0xf7;
+			down_mask  = 0xfb;
+			left_mask  = 0xfe;
+			right_mask = 0xfd;
+			up_ev    = KEY_RIGHT;
+			down_ev  = KEY_LEFT;
+			left_ev  = KEY_UP;
+			right_ev = KEY_DOWN;
+		}
 
 		/* FIXME! This is the wrong way for the Wii */
 		if (v & SDL_HAT_UP) {
-			out &= 0xfe;
-			Gui::gui->pushEvent(KEY_UP);
+			out &= up_mask;
+			Gui::gui->pushEvent(up_ev);
 		}
 		if (v & SDL_HAT_DOWN) {
-			out &= 0xfd;
-			Gui::gui->pushEvent(KEY_DOWN);
+			out &= down_mask;
+			Gui::gui->pushEvent(down_ev);
 		}
 		if (v & SDL_HAT_LEFT) {
-			out &= 0xfb;
-			Gui::gui->pushEvent(KEY_LEFT);
+			out &= left_mask;
+			Gui::gui->pushEvent(left_ev);
 		}
 		if (v & SDL_HAT_RIGHT) {
-			out &= 0xf7;
-			Gui::gui->pushEvent(KEY_RIGHT);
+			out &= right_mask;
+			Gui::gui->pushEvent(right_ev);
 		}
 	}
 
