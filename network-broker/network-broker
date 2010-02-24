@@ -673,7 +673,6 @@ class Broker(SocketServer.UDPServer):
             self.active_peers[ peer.addr ] = peer
         except Exception, e:
             log_error("Moving peer %s to active failed: %s" % (str(peer.addr), str(e)))
-        print "VOBB", len(self.waiting_peers), len(self.active_peers)
 
     def remove_peer(self, peer):
         try:
