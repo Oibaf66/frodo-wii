@@ -121,13 +121,25 @@ void SaveGameView::setLoadSnapshot(bool what)
 void SaveGameView::saveSnapshot()
 {
 	const char *name = "unknown";
+	const char *out_name;
 	char buf[255];
 
 	if (strlen(Gui::gui->np->DrivePath[0]) != 0)
 		name = Gui::gui->np->DrivePath[0];
-	snprintf(buf, sizeof(buf), "%s/%s.sav", Gui::gui->save_game_path, name);
+	out_name = strrchr(name, '/');
+	if (!out_name)
+		out_name = name;
+	else
+		out_name++;
 
+	snprintf(buf, sizeof(buf), "%s/%s.sav", Gui::gui->save_game_path, out_name);
+
+	bool was_paused = TheC64->IsPaused();
+	if (!was_paused)
+		TheC64->Pause();
 	TheC64->SaveSnapshot(buf);
+	if (!was_paused)
+		TheC64->Resume();
 }
 
 void SaveGameView::runLogic()
