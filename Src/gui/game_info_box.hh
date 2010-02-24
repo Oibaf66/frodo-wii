@@ -31,7 +31,6 @@ public:
 			char *tmp = (char*)xmalloc(len);
 
 			sprintf(tmp, "%s/%s.lra", base_path, what);
-			printf("Loading %s\n", tmp);
 
 			/* Might return NULL, but that's OK */
 			this->gi = GameInfo::loadFromFile(tmp);
