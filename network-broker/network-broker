@@ -444,7 +444,6 @@ class Peer:
             entry = pkt.get_entry()
             self.srv.data_store.add_entry(self, entry.get_key() + self.data_key, entry)
 
-            print entry.get_key(), self.screenshot_key, self.data_key
             if entry.get_key() == self.screenshot_key:
                 print "Save it all"
                 try:
