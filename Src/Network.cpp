@@ -1036,6 +1036,7 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 		case DISCONNECT:
 			printf("Got disconnect\n");
 			TheC64->network_connection_type = NONE;
+			this->Disconnect();
 			return false;
 		default:
 			break;
