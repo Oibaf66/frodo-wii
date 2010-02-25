@@ -121,6 +121,8 @@ Network::~Network()
 
 void Network::Tick(int ms)
 {
+	if (ms == 0)
+		ms = 1;
 	int last_kbps = ((this->traffic - this->last_traffic) * 8) * (1000 / ms);
 
 	/* 1/3 of the new value, 2/3 of the old */
