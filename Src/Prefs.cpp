@@ -166,6 +166,12 @@ void Prefs::SetupJoystickDefaults()
 			this->MenuJoystickButtons[9] = KEY_SELECT;
 			this->MenuJoystickButtons[10] = KEY_SELECT;
 
+			/* Wiimote +/- as page up, page down */
+			this->MenuJoystickButtons[4] = KEY_PAGEUP;
+			this->MenuJoystickButtons[5] = KEY_PAGEDOWN;
+			this->MenuJoystickButtons[17] = KEY_PAGEUP;
+			this->MenuJoystickButtons[18] = KEY_PAGEDOWN;
+
 			/* Wiimote A, Classic Zr, Zl as space */
 			this->JoystickButtons[0] = (7 << 3) | 4;
 			this->JoystickButtons[15] = (7 << 3) | 4;
@@ -198,6 +204,7 @@ void Prefs::SetupJoystickDefaults()
 
 			/* Button 4 Fire */
 			this->JoystickButtons[3] = 0x50;
+			this->MenuJoystickButtons[3] = KEY_SELECT;
 
 			/* Upper left front button R/S */
 			this->JoystickButtons[4] = (7 << 3) | 7;
