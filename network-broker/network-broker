@@ -604,15 +604,16 @@ class Broker(SocketServer.UDPServer):
 
     def log_connection(self, who, country):
         stats.add_connection(who, country)
+        stats.update_peer_nr(len(self.waiting_peers), len(self.active_peers))
 
         try:
             stats.save(self.stat_data)
         except Exception, e:
-            error_log("saving stats failed with %s" % str(e) )
+            log_error("saving stats failed with %s" % str(e) )
         try:
             stats.generate_html(self.stat_html)
         except Exception, e:
-            error_log("generating HTML failed with %s" % str(e) )
+            log_error("generating HTML failed with %s" % str(e) )
 
     def send_data(self, dst, data):
         self.socket.sendto(data, dst)
@@ -672,6 +673,7 @@ class Broker(SocketServer.UDPServer):
             self.active_peers[ peer.addr ] = peer
         except Exception, e:
             log_error("Moving peer %s to active failed: %s" % (str(peer.addr), str(e)))
+        stats.update_peer_nr(len(self.waiting_peers), len(self.active_peers))
 
     def remove_peer(self, peer):
         try:
@@ -685,6 +687,8 @@ class Broker(SocketServer.UDPServer):
                 del self.waiting_peers[peer.addr]
 
             self.data_store.remove_peer(peer)
+            stats.update_peer_nr(len(self.waiting_peers), len(self.active_peers))
+            print "VOBB: ", len(self.waiting_peers), len(self.active_peers)
         except Exception, e:
             log_error("Could not remove %s (probably wrong version): %s" %
                       (str(peer.addr), str(e)))

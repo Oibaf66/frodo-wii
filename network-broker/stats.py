@@ -6,12 +6,22 @@ class Container:
         self.total_connections = 0
         self.country_count = {}
         self.last_10 = []
+        self.nr_active = 0
+        self.nr_waiting = 0
+
+    def set_nr_active(self, nr_active):
+        self.nr_active = nr_active
+
+    def set_nr_waiting(self, nr_waiting):
+        self.nr_waiting = nr_waiting
 
     def copy_from_other(self, other):
         try:
             self.total_connections = other.total_connections
             self.country_count = other.country_count
             self.last_10 = other.last_10
+            self.nr_active = other.nr_active
+            self.nr_waiting = other.nr_waiting
         except:
             pass
 
@@ -41,6 +51,7 @@ class HtmlGenerator:
         outf.write("<html><body>\n")
         outf.write("<H2>Frodo-Wii network statistics</H2>\n")
         outf.write("The total number of connections is <b>%d</b><br><br>\n" % (self.container.total_connections))
+        outf.write("There are currently <b>%d</b> players waiting for connections and <b>%d</b> players playing<br><br>\n" % (self.container.nr_waiting, self.container.nr_active))
         outf.write("<TABLE border=\"0\" cellpadding=\"0\">\n")
         outf.write("<TR><TD><H3>Last %d connections</H3></TD><TD>&nbsp;</TD<TD colspan=4><H3>Random connection screenshots</TD></TR>\n" %
                    (len(self.container.last_10)) )
@@ -105,6 +116,10 @@ def load(filename):
         of.close()
     except:
         pass
+
+def update_peer_nr(waiting, active):
+    g_stat.set_nr_waiting(waiting)
+    g_stat.set_nr_active(active)
 
 def add_connection(who, country):
     g_stat.add_connection(who, country)
