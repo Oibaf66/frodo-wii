@@ -257,7 +257,7 @@ void *sdl_surface_to_png(SDL_Surface *surf, size_t *out_sz)
 	png_write_info(png_ptr, info_ptr);
 	png_set_packing(png_ptr);
 
-	row_pointers = (png_bytep*) malloc(sizeof(png_bytep)*surf->h);
+	row_pointers = (png_bytep*) xmalloc(sizeof(png_bytep)*surf->h);
 	for (i = 0; i < surf->h; i++)
 		row_pointers[i] = (png_bytep)(Uint8 *)surf->pixels + i*surf->pitch;
 	png_write_image(png_ptr, row_pointers);
