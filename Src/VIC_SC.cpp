@@ -152,6 +152,10 @@ MOS6569::MOS6569(C64 *c64, C64Display *disp, MOS6510 *CPU, uint8 *RAM, uint8 *Ch
 {
 	int i;
 
+	is_bad_line = false;
+	spr_exp_y = 0;
+	memset(mc_base, 0, sizeof(mc_base));
+
 	// Set pointers
 	matrix_base = 0;
 	char_base = 0;
