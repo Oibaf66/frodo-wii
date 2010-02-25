@@ -985,6 +985,7 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 				NetworkUpdatePeerInfo *pi = &lp->peers[0];
 				const char *hostname;
 
+				Gui::gui->status_bar->queueMessage("Connecting to peer...");
 				hostname = ip_to_str(pi->public_ip);
 				this->InitSockaddr(&this->peer_addr, hostname, pi->public_port);
 				free((void*)hostname);
@@ -994,7 +995,6 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 				SDL_Delay(500);
 				this->ConnectToPeer();
 
-				printf("Sent connect to peer packets\n");
 				this->is_master = true;
 				TheC64->network_connection_type = MASTER;
 				break;
@@ -1018,12 +1018,13 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 			/* FIXME! Not necessarily true! */
 			this->is_master = false;
 
-			Gui::gui->status_bar->queueMessage("list of peers");
+			Gui::gui->status_bar->queueMessage("Got list of peers");
 			Gui::gui->nuv->setPeers(lp);
 			Gui::gui->activate();
 			Gui::gui->pushView(Gui::gui->nuv);
 		} break;
 		case CONNECT_TO_PEER:
+			Gui::gui->status_bar->queueMessage("Connected to peer!");
 			if (this->is_master)
 				TheC64->network_connection_type = MASTER;
 			else
@@ -1090,6 +1091,7 @@ bool Network::ConnectToBroker()
 	NetworkUpdatePeerInfo *pi = (NetworkUpdatePeerInfo *)ud->data;
 	bool out;
 
+	Gui::gui->status_bar->queueMessage("Connecting to broker...");
 	/* Reset peer selection */
 	this->peer_selected = -1;
 
