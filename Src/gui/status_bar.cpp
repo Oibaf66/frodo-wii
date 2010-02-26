@@ -44,12 +44,10 @@ void StatusBar::timeoutCallback()
 	text[1] = NULL;
 
 	if (this->cur_message)
-	{
-		Gui::gui->timerController->arm(this, 2000);
 		this->setText(text);
-	}
 	else
 		this->setText(NULL);
+	Gui::gui->timerController->arm(this, 2000);
 	free((void *)this->cur_message);
 }
 
