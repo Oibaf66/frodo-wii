@@ -10,6 +10,7 @@ public:
 	GameInfoBox(Font *font) : Menu(font)
 	{
 		this->gi = NULL;
+		memset(this->year, 0, sizeof(this->year));
 		memset(this->gi_messages, 0, sizeof(this->gi_messages));
 		this->setSelectedBackground(NULL, NULL, NULL, NULL, NULL, NULL);
 	}

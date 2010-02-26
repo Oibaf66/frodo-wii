@@ -72,6 +72,7 @@ Network::Network(const char *remote_host, int port)
 	this->rle_buf = (Uint8*)malloc(RLE_SIZE);
 	this->diff_buf = (Uint8*)malloc(DIFF_SIZE);
 	assert(this->raw_buf && this->rle_buf && this->diff_buf);
+	this->cur_joystick_data = 0;
 
 	/* Go from lower right to upper left */
 	this->refresh_square = N_SQUARES_W * N_SQUARES_H - 1;
