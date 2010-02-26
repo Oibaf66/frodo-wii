@@ -37,7 +37,7 @@ const char *StatusBar::dequeueMessage()
 
 void StatusBar::timeoutCallback()
 {
-	static const char *text[2];
+	const char *text[2];
 
 	this->cur_message = this->dequeueMessage();
 	text[0] = this->cur_message;
