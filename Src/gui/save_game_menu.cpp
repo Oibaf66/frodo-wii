@@ -78,7 +78,9 @@ public:
 		if (this->loadSnapshot)
 		{
 			TheC64->LoadSnapshot(new_path);
-			Gui::gui->sgv->loadGameInfo(fileName);
+
+			this->updateGameInfo(fileName);
+			Gui::gui->updateGameInfo(Gui::gui->sgv->gameInfo->gi);
 			ThePrefs.Load(prefs_path);
 		} else
 			unlink(new_path);
@@ -97,15 +99,20 @@ public:
 		Gui::gui->popView();
 	}
 
-	virtual void timeoutCallback()
+	void updateGameInfo(const char *fileName)
 	{
-		char *cpy = xstrdup(this->pp_msgs[this->cur_sel]);
+		char *cpy = xstrdup(fileName);
 		char *p = strstr(cpy, ".sav");
 
 		if (p)
 			*p = '\0';
 		Gui::gui->sgv->loadGameInfo(cpy);
 		free(cpy);
+	}
+
+	virtual void timeoutCallback()
+	{
+		this->updateGameInfo(this->pp_msgs[this->cur_sel]);
 	}
 
 	bool loadSnapshot;
