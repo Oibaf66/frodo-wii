@@ -445,7 +445,6 @@ class Peer:
             self.srv.data_store.add_entry(self, entry.get_key() + self.data_key, entry)
 
             if entry.get_key() == self.screenshot_key:
-                print "Save it all"
                 try:
                     which = self.srv.next_image_nr
                     self.srv.next_image_nr = (self.srv.next_image_nr + 1) % 12
