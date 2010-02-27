@@ -20,8 +20,8 @@ class Container:
             self.total_connections = other.total_connections
             self.country_count = other.country_count
             self.last_10 = other.last_10
-            self.nr_active = other.nr_active
-            self.nr_waiting = other.nr_waiting
+            self.nr_active = 0 # Always reset
+            self.nr_waiting = 0
         except:
             pass
 
