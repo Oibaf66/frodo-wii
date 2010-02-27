@@ -433,7 +433,9 @@ Font *Gui::loadThemeFont(const char *dir, const char *what, int size)
 
 void Gui::updateGameInfo(GameInfo *gi)
 {
-	panic_if(!gi, "gi must be set\n");
+	/* Ignore if empty */
+	if(!gi)
+		return;
 
 	/* Store the current game info */
 	this->saveGameInfo(this->metadata_base_path, this->cur_gameInfo->filename);
