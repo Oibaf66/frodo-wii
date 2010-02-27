@@ -688,7 +688,7 @@ class Broker(SocketServer.UDPServer):
 
             self.data_store.remove_peer(peer)
             stats.update_peer_nr(len(self.waiting_peers), len(self.active_peers))
-            print "VOBB: ", len(self.waiting_peers), len(self.active_peers)
+            stats.generate_html(self.stat_html)
         except Exception, e:
             log_error("Could not remove %s (probably wrong version): %s" %
                       (str(peer.addr), str(e)))
