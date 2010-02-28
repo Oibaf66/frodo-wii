@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
   <app version="11">
-    <name>Frodo</name>
+    <name>C64-network.org (Frodo)</name>
     <coder>Simon Kagstrom</coder>
-    <version>10</version>
-    <release_date>20090509</release_date>
+    <version>11</version>
+    <release_date>20100309</release_date>
     <short_description>Commodore 64 emulator</short_description>
-    <long_description>Frodo is a C64 emulator written by Christian Bauer. It supports C64 disk and tape images in the .d64, .t64 and .prg formats. The port to Wii was done by Simon Kagstrom.</long_description>
+    <long_description>C64-network.org is a networked C64 emulator based on Frodo written by Christian Bauer. It supports C64 disk and tape images in the .d64, .t64 and .prg formats. The port to Wii was done by Simon Kagstrom.</long_description>
   </app>
