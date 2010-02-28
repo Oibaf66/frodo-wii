@@ -130,6 +130,8 @@ C64::~C64()
 	delete TheCPU1541;
 	delete TheCPU;
 	delete TheDisplay;
+	if (this->network)
+		delete this->network;
 
 	delete[] RAM;
 	delete[] Basic;
