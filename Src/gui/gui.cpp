@@ -258,6 +258,18 @@ bool Gui::setTheme(const char *path)
 
 	VirtualKeyboard::kbd->updateTheme();
 
+	/* FIXME! Remove! */
+	{
+		static bool viewed = false;
+
+		if (!viewed)
+		{
+			this->activate();
+			this->pushDialogueBox(new DialogueBox(needs_help));
+			viewed = true;
+		}
+	}
+
 	return true;
 }
 

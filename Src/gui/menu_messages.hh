@@ -4,11 +4,12 @@
 extern const char *main_menu_messages[];
 extern const char *exit_dialogue_messages[];
 extern const char *frodo_help[];
-extern const char **main_menu_help[];
+extern const char *needs_help[];
 
 extern const char *bind_key_menu_messages[];
 
 extern const char *options_menu_messages[];
+extern const char **main_menu_help[];
 extern const char **options_menu_help[];
 extern const char *game_info_menu_messages[];
 
