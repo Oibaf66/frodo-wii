@@ -345,6 +345,13 @@ void Gui::exitMenu()
 void Gui::pushEvent(event_t ev)
 {
 	GuiView *cur_view = this->peekView();
+	static Uint32 last_ticks;
+	Uint32 cur_ticks;
+
+	cur_ticks = SDL_GetTicks();
+	if (cur_ticks - last_ticks < 150)
+		return;
+	last_ticks = cur_ticks;
 
 	if (ev == KEY_ENTER_MENU)
 	{
@@ -359,7 +366,6 @@ void Gui::pushEvent(event_t ev)
 		return;
 	}
 
-	printf("Pushing event %d\n", ev);
 	if (this->dlg)
 		this->dlg->pushEvent(ev);
 	else if (this->kbd)
