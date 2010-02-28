@@ -66,7 +66,7 @@ class HtmlGenerator:
             images = ""
             if cnt % 4 == 0:
                 cur = cnt
-                images = "<TH ROWSPAN=4><IMG SRC=\"images/%d.png\"></TH><TH ROWSPAN=4><IMG SRC=\"images/%d.png\"></TH><TH ROWSPAN=4><IMG SRC=\"images/%d.png\"></TH><TH ROWSPAN=4><IMG SRC=\"images/%d.png\"></TH>" % (cur, cur + 1, cur + 2, cur + 3)
+                images = "<TH ROWSPAN=4><IMG SRC=\"images/%d.png\"></TH><TH ROWSPAN=4><IMG SRC=\"images/%d.png\"></TH><TH ROWSPAN=4><IMG SRC=\"images/%d.png\"></TH>" % (cur, cur + 1, cur + 2)
             outf.write("<TR><TD>%s</TD><TD>&nbsp;</TD>%s</TR>\n" % (item, images) )
             cnt = cnt + 1
         outf.write("<TR><TD>&nbsp;</TD></TR>")
