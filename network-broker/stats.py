@@ -77,9 +77,10 @@ class HtmlGenerator:
         count = 1
 
         outf.write("<H3>Last server messages</H3>\n")
+        outf.write("<UL>\n")
         for msg in self.container.messages:
-            outf.write("<br>%s\n" % (msg))
-        outf.write("<br><br>")
+            outf.write("<LI>%s</LI>\n" % (msg))
+        outf.write("</UL><br>")
 
         n_countries = len(sorted_countries)
         for i in range(0, n_countries / 3):
