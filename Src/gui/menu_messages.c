@@ -199,7 +199,7 @@ const char **main_menu_help[14] = {
 
 const char *options_menu_messages[14] = {
                 /*00*/          "Help",
-                /*01*/          "#",
+                /*01*/          " ",
                 /*02*/          "Map Controller 1 to:",
                 /*03*/          "^|Port 1|Port 2",
                 /*04*/          "True 1541 emulation",
