@@ -144,7 +144,7 @@ public:
 		 SDL_BlitSurface(Gui::gui->infobox, NULL, where, &dst);
 
 		 dst = (SDL_Rect){350,242,0,0};
-		 SDL_BlitSurface(Gui::gui->textbox, NULL, where, &dst);
+		 SDL_BlitSurface(Gui::gui->network_message_box, NULL, where, &dst);
 
 		 this->menu->draw(where, 50, 70, 300, 400);
 		 this->help->draw(where, 354, 24, 264, 210);

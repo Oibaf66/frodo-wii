@@ -21,11 +21,11 @@ void NetworkServerMessages::draw(SDL_Surface *where)
 	SDL_Rect dst;
 	int x = 350;
 	int y = 242;
-	int w = Gui::gui->textbox->w;
-	int h = Gui::gui->textbox->h;
+	int w = Gui::gui->network_message_box->w;
+	int h = Gui::gui->network_message_box->h;
 
 	dst = (SDL_Rect){x,y,0,0};
-	SDL_BlitSurface(Gui::gui->textbox, NULL, where, &dst);
+	SDL_BlitSurface(Gui::gui->network_message_box, NULL, where, &dst);
 
 	Menu::draw(where, x+6, y+8, w-6, h-8);
 }
