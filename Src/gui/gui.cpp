@@ -87,6 +87,7 @@ Gui::Gui()
 	this->default_font = NULL;
 	this->dialogue_bg = NULL;
 	this->network_info = NULL;
+	this->bind_key_box = NULL;
 	this->small_font = NULL;
 
 	this->n_views = 0;
@@ -155,6 +156,7 @@ Gui::~Gui()
 	SDL_FreeSurface(this->bg_submenu_right);
 	SDL_FreeSurface(this->background);
 	SDL_FreeSurface(this->main_menu_bg);
+	SDL_FreeSurface(this->bind_key_box);
 	SDL_FreeSurface(this->infobox);
 	SDL_FreeSurface(this->dialogue_bg);
 	SDL_FreeSurface(this->disc_info);
@@ -188,6 +190,7 @@ bool Gui::setTheme(const char *path)
 	this->dialogue_bg = this->loadThemeImage(path, "dialogue_box.png");
 	this->disc_info = this->loadThemeImage(path, "disc_info.png");
 	this->network_info = this->loadThemeImage(path, "network_info.png");
+	this->bind_key_box = this->loadThemeImage(path, "bind_key_box.png");
 
 	this->highlighted_key = this->loadThemeImage(path, "highlighted_key.png");
 	this->selected_key = this->loadThemeImage(path, "selected_key.png");
@@ -203,6 +206,7 @@ bool Gui::setTheme(const char *path)
 			!this->selected_key ||
 			!this->highlighted_key ||
 			!this->status_bar_bg ||
+			!this->bind_key_box ||
 			!this->network_info ||
 			!this->default_font ||
 			!this->small_font)
@@ -222,6 +226,7 @@ bool Gui::setTheme(const char *path)
 		SDL_FreeSurface(this->network_message_box);
 		SDL_FreeSurface(this->selected_key);
 		SDL_FreeSurface(this->keyboard);
+		SDL_FreeSurface(this->bind_key_box);
 		SDL_FreeSurface(this->highlighted_key);
 		SDL_FreeSurface(this->status_bar_bg);
 

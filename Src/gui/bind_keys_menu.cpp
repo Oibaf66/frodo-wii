@@ -456,10 +456,10 @@ public:
 		 SDL_BlitSurface(Gui::gui->main_menu_bg, NULL, where, &dst);
 
 		 dst = (SDL_Rect){350,13,0,0};
-		 SDL_BlitSurface(Gui::gui->disc_info, NULL, where, &dst);
+		 SDL_BlitSurface(Gui::gui->bind_key_box, NULL, where, &dst);
 
 		 this->menu->draw(where, 50, 70, 300, 400);
-		 this->help->draw(where, 354, 24, 264, 210);
+		 this->help->draw(where, 358, 28, 264, 210);
 	}
 
 protected:

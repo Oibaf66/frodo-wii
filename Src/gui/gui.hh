@@ -88,6 +88,7 @@ public:
 	SDL_Surface *main_menu_bg;
 	SDL_Surface *status_bar_bg;
 	SDL_Surface *infobox;
+	SDL_Surface *bind_key_box;
 	SDL_Surface *network_message_box;
 	SDL_Surface *keyboard;
 	SDL_Surface *dialogue_bg;
