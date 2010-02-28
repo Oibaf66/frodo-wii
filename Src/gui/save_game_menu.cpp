@@ -77,11 +77,15 @@ public:
 
 		if (this->loadSnapshot)
 		{
+			int display_type = ThePrefs.DisplayType;
+
 			TheC64->LoadSnapshot(new_path);
 
 			this->updateGameInfo(fileName);
 			Gui::gui->updateGameInfo(Gui::gui->sgv->gameInfo->gi);
 			ThePrefs.Load(prefs_path);
+			/* Don't change display type */
+			ThePrefs.DisplayType = display_type;
 		} else
 			unlink(new_path);
 		free(prefs_path);

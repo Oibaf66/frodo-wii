@@ -120,8 +120,6 @@ extern "C" int main(int argc, char **argv)
 		return 1;
         }
 
-	if (!init_graphics())
-		return 1;
 	fflush(stdout);
 
 	Frodo *the_app = new Frodo();
@@ -246,6 +244,8 @@ void Frodo::ReadyToRun(void)
 	if (network_server_connect)
 		strncpy(ThePrefs.NetworkServer, network_server_connect,
 				sizeof(ThePrefs.NetworkServer));
+	panic_if (!init_graphics(),
+			"Can't initialize graphics!\n");
 
 	// Create and start C64
 	TheC64 = new C64;

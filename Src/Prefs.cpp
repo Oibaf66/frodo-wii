@@ -111,10 +111,7 @@ Prefs::Prefs()
 
 	this->SetupJoystickDefaults();
 
-#ifdef HAVE_SDL
-	this->DisplayOption = 0;
 	this->MsPerFrame = SPEED_100;
-#endif
 	this->NetworkKey = rand() % 0xffff;
 	this->NetworkAvatar = 0;
 	snprintf(this->NetworkName, 32, "Unset name");
@@ -292,10 +289,7 @@ bool Prefs::operator==(const Prefs &rhs) const
 		&& AlwaysCopy == rhs.AlwaysCopy
 		&& SystemKeys == rhs.SystemKeys
 		&& ShowLEDs == rhs.ShowLEDs
-#ifdef HAVE_SDL
-		&& this->DisplayOption == rhs.DisplayOption
 		&& this->MsPerFrame == rhs.MsPerFrame
-#endif
 		&& this->NetworkKey == rhs.NetworkKey
 		&& this->NetworkPort == rhs.NetworkPort
 		&& this->NetworkRegion == rhs.NetworkRegion
@@ -469,8 +463,6 @@ void Prefs::Load(const char *filename)
 					if (n >= 0 && n < MAX_JOYSTICK_BUTTONS)
 						this->MenuJoystickButtons[n] = atoi(value);
 				}
-				else if (!strcmp(keyword, "DisplayOption"))
-					DisplayOption = atoi(value);
 				else if (!strcmp(keyword, "MsPerFrame"))
 					MsPerFrame = atoi(value);
 				else if (!strcmp(keyword, "NetworkKey"))
@@ -591,7 +583,6 @@ bool Prefs::Save(const char *filename)
 			maybe_write(file, MenuJoystickButtons[i] != TheDefaultPrefs.MenuJoystickButtons[i], "MenuJoystickButtons%d = %d\n", i, MenuJoystickButtons[i]);
 		}
 
-		maybe_write(file, DisplayOption != TheDefaultPrefs.DisplayOption, "DisplayOption = %d\n", DisplayOption);
 		maybe_write(file, MsPerFrame != TheDefaultPrefs.MsPerFrame, "MsPerFrame = %d\n", MsPerFrame);
 		maybe_write(file, NetworkKey != TheDefaultPrefs.NetworkKey, "NetworkKey = %d\n", NetworkKey);
 		maybe_write(file, NetworkAvatar != TheDefaultPrefs.NetworkAvatar, "NetworkAvatar = %d\n", NetworkAvatar);

@@ -138,6 +138,7 @@ int init_graphics(void)
 {
 	Uint32 rmask, gmask, bmask, amask;
         const SDL_VideoInfo *info = SDL_GetVideoInfo();
+        Uint32 flags = SDL_DOUBLEBUF;
 
 	/* SDL interprets each pixel as a 32-bit number, so our masks must depend
            on the endianness (byte order) of the machine */
@@ -156,6 +157,7 @@ int init_graphics(void)
 	// Open window
 	SDL_ShowCursor(SDL_DISABLE);
 
+	SDL_FreeSurface(sdl_screen);
 	sdl_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, DISPLAY_X, DISPLAY_Y + 17, 8,
 			rmask, gmask, bmask, amask);
 	if (!sdl_screen)
@@ -164,14 +166,19 @@ int init_graphics(void)
 				SDL_GetError());
 		exit(1);
 	}
+	if (ThePrefs.DisplayType == DISPTYPE_SCREEN)
+		flags |= SDL_FULLSCREEN;
 	screen_bits_per_pixel = info->vfmt->BitsPerPixel;
+	SDL_FreeSurface(real_screen);
 	real_screen = SDL_SetVideoMode(FULL_DISPLAY_X, FULL_DISPLAY_Y, screen_bits_per_pixel,
-			SDL_DOUBLEBUF);
+			flags);
 	if (!real_screen)
 	{
 		fprintf(stderr, "\n\nCannot initialize video: %s\n", SDL_GetError());
 		exit(1);
 	}
+	free(screen_16);
+	free(screen_32);
 
 	switch (screen_bits_per_pixel)
 	{
@@ -337,7 +344,7 @@ void C64Display::Update_stretched(uint8 *src_pixels)
 
 void C64Display::Update(uint8 *src_pixels)
 {
-	if (ThePrefs.DisplayOption != 0)
+	if (0)
 		this->Update_stretched(src_pixels);
 	else
 	{

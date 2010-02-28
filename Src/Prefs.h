@@ -155,29 +155,8 @@ public:
 	bool SystemKeys;		// Enable system keys and menu keys (Win32)
 	bool ShowLEDs;			// Show LEDs (Win32)
 
-#ifdef __mac__
-	void ChangeDisks(void);
-#endif
-
-#ifdef WIN32
-private:
-	static BOOL CALLBACK StandardDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-	static BOOL CALLBACK WIN32DialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-	BOOL DialogProc(int page, HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-	void SetupControls(int page);
-	void SetValues(int page);
-	void GetValues(int page);
-	void BrowseForDevice(int id);
-
-	static Prefs *edit_prefs;
-	static char *edit_prefs_name;
-	static HWND hDlg;
-#endif
-
-#ifdef HAVE_SDL
-	int DisplayOption;
 	uint32 MsPerFrame;
-#endif
+
 	int JoystickAxes[MAX_JOYSTICK_AXES];
 	int JoystickHats[MAX_JOYSTICK_HATS];
 	int JoystickButtons[MAX_JOYSTICK_BUTTONS];
