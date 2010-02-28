@@ -359,6 +359,7 @@ void Gui::pushEvent(event_t ev)
 		return;
 	}
 
+	printf("Pushing event %d\n", ev);
 	if (this->dlg)
 		this->dlg->pushEvent(ev);
 	else if (this->kbd)
@@ -369,22 +370,44 @@ void Gui::pushEvent(event_t ev)
 
 void Gui::pushEvent(SDL_Event *ev)
 {
-	GuiView *cur_view = this->peekView();
-
-	if (!this->is_active || !cur_view)
+	switch(ev->type)
 	{
-		if (this->kbd)
-			this->kbd->pushEvent(ev);
-		return;
+	case SDL_KEYDOWN:
+		switch (ev->key.keysym.sym)
+		{
+		case SDLK_UP:
+			this->pushEvent(KEY_UP);
+			break;
+		case SDLK_DOWN:
+			this->pushEvent(KEY_DOWN);
+			break;
+		case SDLK_LEFT:
+			this->pushEvent(KEY_LEFT);
+			break;
+		case SDLK_RIGHT:
+			this->pushEvent(KEY_RIGHT);
+			break;
+		case SDLK_PAGEDOWN:
+			this->pushEvent(KEY_PAGEDOWN);
+			break;
+		case SDLK_PAGEUP:
+			this->pushEvent(KEY_PAGEUP);
+			break;
+		case SDLK_RETURN:
+		case SDLK_SPACE:
+			this->pushEvent(KEY_SELECT);
+			break;
+		case SDLK_HOME:
+		case SDLK_ESCAPE:
+			this->pushEvent(KEY_ESCAPE);
+			break;
+		default:
+			break;
+		}
+		default:
+			break;
+
 	}
-	if (ev->type == SDL_QUIT)
-		exit(0);
-	if (this->dlg)
-		this->dlg->pushEvent(ev);
-	else if (this->kbd)
-		this->kbd->pushEvent(ev);
-	else
-		cur_view->pushEvent(ev);
 }
 
 void Gui::draw(SDL_Surface *where)

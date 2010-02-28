@@ -439,23 +439,26 @@ void VirtualKeyboard::pushEvent(SDL_Event *ev)
 			if (this->buf_head > 0)
 				this->buf_head--;
 			break;
+		/* Handle via the standard widget implementation (except for space) */
 		case SDLK_UP:
+			this->kbd_only_input = false; Widget::pushEvent(KEY_UP); return;
 		case SDLK_DOWN:
+			this->kbd_only_input = false; Widget::pushEvent(KEY_DOWN); return;
 		case SDLK_LEFT:
+			this->kbd_only_input = false; Widget::pushEvent(KEY_LEFT); return;
 		case SDLK_RIGHT:
+			this->kbd_only_input = false; Widget::pushEvent(KEY_RIGHT); return;
 		case SDLK_PAGEDOWN:
+			this->kbd_only_input = false; Widget::pushEvent(KEY_PAGEDOWN); return;
 		case SDLK_PAGEUP:
-		case SDLK_HOME:
+			this->kbd_only_input = false; Widget::pushEvent(KEY_PAGEUP); return;
 		case SDLK_ESCAPE:
-			/* Handle via the standard widget implementation (except for space) */
-			this->kbd_only_input = false;
-			Widget::pushEvent(ev);
-			return;
+			this->kbd_only_input = false; Widget::pushEvent(KEY_ESCAPE); return;
 		case SDLK_RETURN:
 			if (this->kbd_only_input)
 				this->done();
 			else
-				Widget::pushEvent(ev);
+				Widget::pushEvent(KEY_SELECT);
 			return;
 		case SDLK_SPACE ... SDLK_z:
 			Widget::pushEvent((event_t)(ev->key.keysym.sym));

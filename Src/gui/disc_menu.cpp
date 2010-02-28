@@ -21,7 +21,7 @@ public:
 
 	~DiscView();
 
-	void pushEvent(SDL_Event *ev);
+	void pushEvent(event_t ev);
 
 	void loadGameInfo(const char *what);
 
@@ -199,7 +199,7 @@ void DiscView::runLogic()
 	this->menu->runLogic();
 }
 
-void DiscView::pushEvent(SDL_Event *ev)
+void DiscView::pushEvent(event_t ev)
 {
 	this->menu->pushEvent(ev);
 }

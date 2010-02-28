@@ -10,7 +10,7 @@ public:
 
 	~ThemeView();
 
-	void pushEvent(SDL_Event *ev);
+	void pushEvent(event_t ev);
 
 	void setDirectory(const char *path);
 
@@ -85,7 +85,7 @@ void ThemeView::runLogic()
 	this->menu->runLogic();
 }
 
-void ThemeView::pushEvent(SDL_Event *ev)
+void ThemeView::pushEvent(event_t ev)
 {
 	this->menu->pushEvent(ev);
 }

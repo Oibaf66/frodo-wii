@@ -17,7 +17,7 @@ public:
 
 	void runLogic();
 
-	void pushEvent(SDL_Event *ev);
+	void pushEvent(event_t ev);
 
 	void setPeers(NetworkUpdateListPeers *peerList);
 

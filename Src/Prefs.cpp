@@ -186,8 +186,8 @@ void Prefs::SetupJoystickDefaults()
 			this->MenuJoystickButtons[12] = KEY_ESCAPE;
 
 			/* Wiimote, classic Home as enter menu */
-			this->MenuJoystickButtons[6] = ENTER_MENU;
-			this->MenuJoystickButtons[19] = ENTER_MENU;
+			this->MenuJoystickButtons[6] = KEY_ENTER_MENU;
+			this->MenuJoystickButtons[19] = KEY_ENTER_MENU;
 		}
 		/* Saitek P380 */
 		else if (strcmp(name, "Jess Tech Dual Analog Pad") == 0)
@@ -216,6 +216,10 @@ void Prefs::SetupJoystickDefaults()
 			this->JoystickButtons[7] = (7 << 3) | 3;
 
 			/* Start to enter the menu */
+			this->MenuJoystickButtons[0] = KEY_PAGEDOWN;
+			this->MenuJoystickButtons[1] = KEY_PAGEUP;
+			this->MenuJoystickButtons[8] = KEY_ESCAPE;
+			this->MenuJoystickButtons[9] = KEY_ENTER_MENU;
 		}
 
 	}

@@ -26,8 +26,6 @@ public:
 
 	virtual void pushEvent(event_t ev);
 
-	virtual void pushEvent(SDL_Event *ev);
-
 	virtual void runLogic() = 0;
 
 	virtual void draw(SDL_Surface *where,

@@ -165,7 +165,7 @@ public:
 		this->menu->runLogic();
 	}
 
-	void pushEvent(SDL_Event *ev)
+	void pushEvent(event_t ev)
 	{
 		this->menu->pushEvent(ev);
 	}

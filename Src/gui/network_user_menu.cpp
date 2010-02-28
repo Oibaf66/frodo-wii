@@ -233,7 +233,7 @@ void NetworkUserView::runLogic()
 	this->menu->runLogic();
 }
 
-void NetworkUserView::pushEvent(SDL_Event *ev)
+void NetworkUserView::pushEvent(event_t ev)
 {
 	this->menu->pushEvent(ev);
 }
