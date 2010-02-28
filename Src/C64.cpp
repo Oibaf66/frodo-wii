@@ -680,6 +680,4 @@ bool C64::LoadSnapshot(const char *filename)
 	}
 }
 
-#ifdef GEKKO
-#  include "C64_SDL.h"
-#endif
+#include "C64_SDL.h"
