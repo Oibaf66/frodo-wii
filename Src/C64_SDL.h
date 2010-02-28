@@ -249,10 +249,14 @@ void C64::VBlank(bool draw_frame)
 	static uint32_t lastFrame;
         uint32_t now;
         uint8 j1, j2;
+        int joy_port_1 = 0;
+
+        if (ThePrefs.JoystickSwap)
+        	joy_port_1 = 1;
 
 	// Poll joysticks
-	j1 = poll_joystick(0);
-	j2 = poll_joystick(1);
+	j1 = poll_joystick(joy_port_1);
+	j2 = poll_joystick(!joy_port_1);
 
 	// Poll keyboard
 	TheDisplay->PollKeyboard(TheCIA1->KeyMatrix, TheCIA1->RevMatrix, &joykey);
