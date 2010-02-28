@@ -67,7 +67,7 @@ CPPFILES	:= Display.cpp main.cpp Prefs.cpp SID.cpp REU.cpp IEC.cpp 1541fs.cpp \
                Network.cpp gui/dialogue_box.cpp gui/widget.cpp utils.cpp \
                gui/game_info.cpp gui/status_bar.cpp gui/gui.cpp gui/listener.cpp \
                timer.cpp utils.cpp gui/virtual_keyboard.cpp gui/menu.cpp \
-               gui/file_browser.cpp data_store.cpp
+               gui/file_browser.cpp data_store.cpp Src/gui/network_server_messages.cpp
                
 sFILES		:=	
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))

@@ -16,6 +16,8 @@
 #include "sdl_ttf_font.hh"
 #include "virtual_keyboard.hh"
 
+#include "network_server_messages.hh"
+
 extern SDL_Surface *screen;
 
 #define THEME_ROOT_PATH "themes"
@@ -135,6 +137,8 @@ Gui::~Gui()
 
 	if (this->status_bar)
 		delete this->status_bar;
+	if (this->server_msgs)
+		delete this->server_msgs;
 
 	if (this->dlg)
 		delete this->dlg;
@@ -233,6 +237,7 @@ bool Gui::setTheme(const char *path)
 	if (!this->mv)
 	{
 		this->status_bar = new StatusBar();
+		this->server_msgs = new NetworkServerMessages();
 
 		this->mv = new MainView();
 		this->dv = new DiscView();
@@ -262,6 +267,7 @@ void Gui::runLogic(void)
 
 	if (!this->is_active || !cur_view)
 		return;
+	Gui::gui->server_msgs->runLogic();
 	if (this->dlg)
 		this->dlg->runLogic();
 	else

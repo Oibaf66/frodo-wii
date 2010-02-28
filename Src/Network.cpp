@@ -30,6 +30,7 @@
 #include "gui/gui.hh"
 #include "gui/status_bar.hh"
 #include "gui/network_user_menu.hh"
+#include "gui/network_server_messages.hh"
 
 #if defined(GEKKO)
 # include <wiiuse/wpad.h>
@@ -961,6 +962,9 @@ bool Network::DecodeUpdate(C64Display *display, uint8 *js, MOS6581 *dst)
 			NetworkUpdateTextMessage *tm = (NetworkUpdateTextMessage*)p->data;
 
 			Gui::gui->status_bar->queueMessage((const char*)tm->data);
+			/* Queue up text message */
+			if (tm->flags & NETWORK_UPDATE_TEXT_MESSAGE_BROADCAST)
+				Gui::gui->server_msgs->queueMessage((const char *)tm->data);
 		} break;
 		case REGISTER_DATA:
 		{

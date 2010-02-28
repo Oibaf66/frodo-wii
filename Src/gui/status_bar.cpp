@@ -13,6 +13,9 @@ StatusBar::StatusBar() : Menu(Gui::gui->small_font), TimeoutHandler()
 
 void StatusBar::queueMessage(const char *message)
 {
+	/* Free the existing message if we are overwriting it */
+	free((void*)this->messages[this->head]);
+
 	this->messages[this->head] = xstrdup(message);
 
 	/* If this is the first message, display it as soon as possible */
@@ -30,6 +33,7 @@ const char *StatusBar::dequeueMessage()
 
 	if (this->head == this->tail)
 		return NULL;
+	this->messages[this->tail] = NULL;
 	this->tail = (this->tail + 1) % N_STATUS_MESSAGES;
 
 	return out;

@@ -6,9 +6,9 @@
 #include "menu.hh"
 #include "gui.hh"
 
-#define N_STATUS_MESSAGES 8
+#define N_STATUS_MESSAGES 10
 
-class StatusBar : public Menu, TimeoutHandler
+class StatusBar : public Menu, public TimeoutHandler
 {
 public:
 	StatusBar();

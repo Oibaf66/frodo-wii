@@ -15,6 +15,7 @@
 
 class DialogueBox;
 class StatusBar;
+class NetworkServerMessages;
 class GameInfo;
 
 class MainView;
@@ -105,6 +106,7 @@ public:
 	VirtualKeyboard *kbd;
 	DialogueBox *dlg;
 	StatusBar *status_bar;
+	NetworkServerMessages *server_msgs;
 
 	MainView *mv;
 	DiscView *dv;
