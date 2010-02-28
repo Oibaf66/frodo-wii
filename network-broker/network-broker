@@ -655,6 +655,7 @@ class Broker(SocketServer.UDPServer):
             # Older than one day?
             if diff > 24 * 60 * 60:
                 to_delete = to_delete + 1
+                log_info("Deleting old message")
         self.messages = self.messages[ to_delete : ]
 
     def ping_all_peers(self):
