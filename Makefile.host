@@ -76,6 +76,21 @@ objs-host/%.o: %.c
 	@install -d objs-host/$(dir $<)
 	@$(CC) $(CFLAGS) $(DEFINES) -c -o $@ $< $(ERROR_FILTER)
 
+dist-host: $(BUILD)
+	rm -rf $@
+	install -d $@/frodo
+	install -d $@/frodo/images
+	install -d $@/frodo/saves
+	install -d $@/frodo/metadata
+	install -d $@/frodo/tmp
+	cp $(TARGET) $@/frodo/
+	cp -rap themes $@/frodo/themes
+	cp icon.png $@/frodo/
+	find $@ -name ".svn" | xargs rm -rf
+	cd $@ && tar -czf ../frodo-host-bin.tar.gz *
+
+dist: dist-host
+
 $(TARGET): $(OBJS)
 	@echo LD $@
 	@$(LD) $(LDFLAGS) -o $@ $+

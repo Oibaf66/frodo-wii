@@ -125,6 +125,7 @@ dist: $(BUILD)
 	cp -rap themes $@/apps/frodo/themes
 	cp meta.xml $@/apps/frodo/
 	cp icon.png $@/apps/frodo/
+	find $@ -name ".svn" | xargs rm -rf
 	cd $@ && tar -czf ../frodo-wii-bin.tar.gz *
 
 #---------------------------------------------------------------------------------
