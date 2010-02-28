@@ -112,6 +112,19 @@ const char *select_analogue_dlg[8] = {
 	NULL
 };
 
+const char *frodo_help[11] = {
+	/*00*/          "Welcome to the C64 network!",
+	/*01*/		"#",
+	/*02*/		"Key bindings:",
+	/*03*/		"Home - Enter menu",
+	/*04*/		"F10 - Type network message",
+	/*05*/		"F12 - Reset the C64",
+	/*06*/		"Ctrl - Fire",
+	/*07*/		"Arrows - Joystick",
+	/*08*/		"#",
+	/*09*/          "^|OK",
+	NULL
+};
 
 
 const char *main_menu_messages[14] = {
@@ -185,11 +198,11 @@ const char **main_menu_help[14] = {
 
 
 const char *options_menu_messages[14] = {
-                /*00*/          "Map Controller 1 to:",
-                /*01*/          "^|Port 1|Port 2",
-                /*02*/          "True 1541 emulation",
-                /*03*/          "^|ON|OFF",
-                /*04*/          "1541 Floppy Drive LED",
+                /*00*/          "Help",
+                /*01*/          "#",
+                /*02*/          "Map Controller 1 to:",
+                /*03*/          "^|Port 1|Port 2",
+                /*04*/          "True 1541 emulation",
                 /*05*/          "^|ON|OFF",
                 /*06*/          "Display",
                 /*07*/          "^|window|fullscreen",

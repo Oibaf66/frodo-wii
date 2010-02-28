@@ -3,6 +3,7 @@
 
 extern const char *main_menu_messages[];
 extern const char *exit_dialogue_messages[];
+extern const char *frodo_help[];
 extern const char **main_menu_help[];
 
 extern const char *bind_key_menu_messages[];

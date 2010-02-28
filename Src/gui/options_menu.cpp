@@ -23,7 +23,12 @@ public:
 
 	virtual void selectCallback(int which)
 	{
-		if (which == 10) /* Game info */
+		if (which == 0)
+		{
+			Gui::gui->pushDialogueBox(new DialogueBox(frodo_help));
+			return;
+		}
+		else if (which == 10)
 		{
 			Gui::gui->status_bar->queueMessage("Resetting the C64");
 			Gui::gui->exitMenu();
@@ -31,7 +36,7 @@ public:
 			return;
 		}
 		/* Select theme */
-		if (which == 12)
+		else if (which == 12)
 		{
 			Gui::gui->tv->setDirectory(Gui::gui->theme_base_path);
 			Gui::gui->pushView(Gui::gui->tv);
@@ -58,10 +63,9 @@ public:
 	{
 		Gui::gui->np->JoystickSwap = !this->p_submenus[0].sel;
 		Gui::gui->np->Emul1541Proc = !this->p_submenus[1].sel;
-		Gui::gui->np->ShowLEDs = !this->p_submenus[2].sel;
-		Gui::gui->np->DisplayType = this->p_submenus[3].sel == 0 ? DISPTYPE_WINDOW : DISPTYPE_SCREEN;
+		Gui::gui->np->DisplayType = this->p_submenus[2].sel == 0 ? DISPTYPE_WINDOW : DISPTYPE_SCREEN;
 
-		switch (this->p_submenus[4].sel)
+		switch (this->p_submenus[3].sel)
 		{
 		case 0:
 			Gui::gui->np->MsPerFrame = SPEED_95; break;
@@ -80,18 +84,17 @@ public:
 
 		submenu_defs[0] = Gui::gui->np->JoystickSwap == true ? 0 : 1;
 		submenu_defs[1] = !Gui::gui->np->Emul1541Proc;
-		submenu_defs[2] = !Gui::gui->np->ShowLEDs;
-		submenu_defs[3] = Gui::gui->np->DisplayType == DISPTYPE_SCREEN;
+		submenu_defs[2] = Gui::gui->np->DisplayType == DISPTYPE_SCREEN;
 
 		switch (Gui::gui->np->MsPerFrame)
 		{
 	        case SPEED_95:
-	        	submenu_defs[4] = 0; break;
+	        	submenu_defs[3] = 0; break;
 		case SPEED_110:
-			submenu_defs[4] = 2; break;
+			submenu_defs[3] = 2; break;
 		default:
 	                /* If it has some other value... */
-		        submenu_defs[4] = 1; break;
+		        submenu_defs[3] = 1; break;
 		}
 
 		this->setText(options_menu_messages, submenu_defs);
