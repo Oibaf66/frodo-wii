@@ -376,6 +376,12 @@ void Gui::pushEvent(event_t ev)
 
 void Gui::pushEvent(SDL_Event *ev)
 {
+	if (this->kbd)
+	{
+		this->kbd->pushEvent(ev);
+		return;
+	}
+
 	switch(ev->type)
 	{
 	case SDL_KEYDOWN:
