@@ -641,14 +641,23 @@ class Broker(SocketServer.UDPServer):
     def enqueue_message(self, sending_peer, message):
         # Store last 10 messages
         self.messages = self.messages[-9:] + [message]
+        all_msgs = []
 
         for addr, peer in self.peers.iteritems():
+            all_msgs.append(message.message)
             if peer != sending_peer:
                 peer.send_packet(message.marshal())
+        stats.set_messages(all_msgs)
+
+        try:
+            stats.generate_html(self.stat_html)
+        except Exception, e:
+            pass
 
     def dequeue_old_messages(self):
         now = time.mktime(time.localtime())
         to_delete = 0
+        all_msgs = []
 
         for msg in self.messages:
             diff = now - msg.get_timestamp()
@@ -657,6 +666,14 @@ class Broker(SocketServer.UDPServer):
                 to_delete = to_delete + 1
                 log_info("Deleting old message")
         self.messages = self.messages[ to_delete : ]
+
+        for msg in self.messages:
+            all_msgs.append(msg.message)
+        stats.set_messages(all_msgs)
+        try:
+            stats.generate_html(self.stat_html)
+        except Exception, e:
+            pass
 
     def ping_all_peers(self):
         """Ping all peers (to see that they are alive)"""

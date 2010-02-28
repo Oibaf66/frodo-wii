@@ -6,6 +6,7 @@ class Container:
         self.total_connections = 0
         self.country_count = {}
         self.last_10 = []
+        self.messages = []
         self.nr_active = 0
         self.nr_waiting = 0
 
@@ -17,11 +18,12 @@ class Container:
 
     def copy_from_other(self, other):
         try:
+            self.nr_active = 0 # Always reset
+            self.nr_waiting = 0
             self.total_connections = other.total_connections
             self.country_count = other.country_count
             self.last_10 = other.last_10
-            self.nr_active = 0 # Always reset
-            self.nr_waiting = 0
+            self.messages = other.messages
         except:
             pass
 
@@ -32,6 +34,9 @@ class Container:
             cur = 0
 
         self.country_count[country] = cur + 1
+
+    def set_messages(self, messages):
+        self.messages = messages
 
     def add_connection(self, who, country):
         time_now = time.strftime("%Y-%m-%d %H:%M", time.gmtime())
@@ -70,6 +75,11 @@ class HtmlGenerator:
         outf.write("<br><br><TABLE border=\"0\" cellpadding=\"0\">\n")
         outf.write("<TR><TD colspan=3><H3>List of countries</H3></TD></TR>\n")
         count = 1
+
+        outf.write("<H3>Last server messages</H3>\n")
+        for msg in self.container.messages:
+            outf.write("<br>%s\n" % (msg))
+        outf.write("<br><br>")
 
         n_countries = len(sorted_countries)
         for i in range(0, n_countries / 3):
@@ -124,6 +134,9 @@ def update_peer_nr(waiting, active):
 def add_connection(who, country):
     g_stat.add_connection(who, country)
 
+def set_messages(messages):
+    g_stat.set_messages(messages)
+
 if __name__ == "__main__":
     load("/tmp/vobb")
     for i in range(0, 10):
@@ -133,6 +146,7 @@ if __name__ == "__main__":
     add_connection("SIMONK", "Sweden")
     add_connection("Linda", "Germany")
     add_connection("Linda", "Germany")
+    set_messages(["Hej", "Who framed Roger Rabbit?", "IK+ at 19.00 CET?"])
     save("/tmp/vobb")
 
     hg = HtmlGenerator(g_stat)
