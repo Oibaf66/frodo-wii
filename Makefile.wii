@@ -67,7 +67,7 @@ CPPFILES	:= Display.cpp main.cpp Prefs.cpp SID.cpp REU.cpp IEC.cpp 1541fs.cpp \
                Network.cpp gui/dialogue_box.cpp gui/widget.cpp utils.cpp \
                gui/game_info.cpp gui/status_bar.cpp gui/gui.cpp gui/listener.cpp \
                timer.cpp utils.cpp gui/virtual_keyboard.cpp gui/menu.cpp \
-               gui/file_browser.cpp data_store.cpp Src/gui/network_server_messages.cpp
+               gui/file_browser.cpp data_store.cpp gui/network_server_messages.cpp
                
 sFILES		:=	
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
@@ -115,15 +115,16 @@ clean:
           FrodoSC FrodoPC dist
 
 dist: $(BUILD)
+	rm -rf $@
 	install -d $@/apps/frodo
 	install -d $@/apps/frodo/images
 	install -d $@/apps/frodo/saves
+	install -d $@/apps/frodo/metadata
 	install -d $@/apps/frodo/tmp
 	cp $(TARGET).dol $@/apps/frodo/boot.dol
 	cp -rap themes $@/apps/frodo/themes
 	cp meta.xml $@/apps/frodo/
 	cp icon.png $@/apps/frodo/
-	cp frodorc $@/apps/frodo/
 	cd $@ && tar -czf ../frodo-wii-bin.tar.gz *
 
 #---------------------------------------------------------------------------------
