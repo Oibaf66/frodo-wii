@@ -255,8 +255,8 @@ void C64::VBlank(bool draw_frame)
         	joy_port_1 = 1;
 
 	// Poll joysticks
-	j1 = poll_joystick(joy_port_1);
-	j2 = poll_joystick(!joy_port_1);
+	j1 = poll_joystick(!joy_port_1);
+	j2 = poll_joystick(joy_port_1);
 
 	// Poll keyboard
 	TheDisplay->PollKeyboard(TheCIA1->KeyMatrix, TheCIA1->RevMatrix, &joykey);
