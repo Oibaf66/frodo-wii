@@ -430,7 +430,9 @@ void Gui::pushEvent(SDL_Event *ev)
 		}
 		default:
 			break;
-
+	case SDL_QUIT:
+		TheC64->TheDisplay->quit_requested = true;
+		break;
 	}
 }
 
