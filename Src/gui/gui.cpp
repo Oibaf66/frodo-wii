@@ -22,7 +22,7 @@ extern SDL_Surface *screen;
 
 #define THEME_ROOT_PATH "themes"
 #define METADATA_ROOT_PATH "metadata"
-#define GAME_ROOT_PATH "discs"
+#define GAME_ROOT_PATH "images"
 #define TMP_ROOT_PATH "tmp"
 #define SAVE_GAME_ROOT_PATH "saves"
 
