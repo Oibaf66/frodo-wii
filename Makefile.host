@@ -76,7 +76,7 @@ objs-host/%.o: %.c
 	@install -d objs-host/$(dir $<)
 	@$(CC) $(CFLAGS) $(DEFINES) -c -o $@ $< $(ERROR_FILTER)
 
-dist-host: $(BUILD)
+dist-host: $(TARGET)
 	rm -rf $@
 	install -d $@/frodo
 	install -d $@/frodo/images
