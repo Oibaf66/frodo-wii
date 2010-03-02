@@ -232,6 +232,12 @@ const char *bind_key_menu_messages[13] = {
 
 const char **options_menu_help[14] = {
 		(const char*[]){
+				"Help and keyboard.",
+				"shortcuts",
+				NULL,
+		},
+		NULL,
+		(const char*[]){
 				"Switch controller to",
 				"C64 joystick port",
 				"mapping.",
@@ -272,7 +278,6 @@ const char **options_menu_help[14] = {
 				"mistake.",
 				NULL,
 		},
-		NULL,
 		NULL,
 		(const char*[]){
 				"Setup theme for the Frodo",
