@@ -17,13 +17,6 @@
 #if defined(GEKKO)
 #include <wiiuse/wpad.h>
 #include <ogc/lwp_watchdog.h>
-#define SAVES_PATH "/apps/frodo/saves"
-#define IMAGE_PATH "/apps/frodo/images"
-#define TMP_PATH "/apps/frodo/tmp"
-#else
-#define SAVES_PATH "saves"
-#define IMAGE_PATH "images"
-#define TMP_PATH "tmp"
 #endif
 
 #define C64_NETWORK_BROKER "c64-network.game-host.org"
