@@ -117,12 +117,12 @@ clean:
 dist: $(BUILD)
 	rm -rf $@
 	install -d $@/apps/frodo
-	install -d $@/apps/frodo/images
-	install -d $@/apps/frodo/saves
-	install -d $@/apps/frodo/metadata
-	install -d $@/apps/frodo/tmp
+	install -d $@/frodo/images
+	install -d $@/frodo/saves
+	install -d $@/frodo/metadata
+	install -d $@/frodo/tmp
 	cp $(TARGET).dol $@/apps/frodo/boot.dol
-	cp -rap themes $@/apps/frodo/themes
+	cp -rap themes $@/frodo/themes
 	cp meta.xml $@/apps/frodo/
 	cp icon.png $@/apps/frodo/
 	find $@ -name ".svn" | xargs rm -rf
