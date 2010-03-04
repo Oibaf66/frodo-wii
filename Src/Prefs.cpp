@@ -169,16 +169,31 @@ void Prefs::SetupJoystickDefaults()
 			this->MenuJoystickButtons[17] = KEY_PAGEUP;
 			this->MenuJoystickButtons[18] = KEY_PAGEDOWN;
 
-			/* Wiimote A, Classic Zr, Zl as space */
+			/* +/- as 1 and 2 */
+			this->JoystickButtons[4] = (7 << 3) | 0;
+			this->JoystickButtons[5] = (7 << 3) | 3;
+			this->JoystickButtons[17] = (7 << 3) | 0;
+			this->JoystickButtons[18] = (7 << 3) | 3;
+
+			/* Wiimote A, Nunchuk C, Classic Zr, Zl as space */
 			this->JoystickButtons[0] = (7 << 3) | 4;
+			this->JoystickButtons[8] = (7 << 3) | 4;
 			this->JoystickButtons[15] = (7 << 3) | 4;
 			this->JoystickButtons[16] = (7 << 3) | 4;
 
-			/* Wiimote B, classic x, y as R/S and menu escape */
-			this->JoystickButtons[1] = (7 << 3) | 7;
+			/* Wiimote B and Classic L as F1 */
+			this->JoystickButtons[0] = (0 << 3) | 4;
+			this->JoystickButtons[13] = (0 << 3) | 4;
+			/* Classic R as F3 */
+			this->JoystickButtons[16] = (0 << 3) | 5;
+
+			/* Wiimote 1 as R/S, classic X/Y */
+			this->JoystickButtons[2] = (7 << 3) | 7;
 			this->JoystickButtons[11] = (7 << 3) | 7;
 			this->JoystickButtons[12] = (7 << 3) | 7;
-			this->MenuJoystickButtons[1] = KEY_ESCAPE;
+
+			/* Wiimote 1, classic x, y as menu escape */
+			this->MenuJoystickButtons[2] = KEY_ESCAPE;
 			this->MenuJoystickButtons[11] = KEY_ESCAPE;
 			this->MenuJoystickButtons[12] = KEY_ESCAPE;
 
