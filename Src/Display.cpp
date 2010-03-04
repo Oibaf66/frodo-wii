@@ -853,7 +853,7 @@ uint8 C64::poll_joystick_hats(int port)
 		event_t left_ev  = KEY_LEFT;
 		event_t right_ev = KEY_RIGHT;
 
-		if (ThePrefs.MenuJoystickHats[0] == HAT_ROTATED_90)
+		if (ThePrefs.MenuJoystickHats[i] == HAT_ROTATED_90)
 		{
 			up_mask    = 0xf7;
 			down_mask  = 0xfb;
