@@ -182,7 +182,7 @@ void Prefs::SetupJoystickDefaults()
 			this->JoystickButtons[16] = (7 << 3) | 4;
 
 			/* Wiimote B and Classic L as F1 */
-			this->JoystickButtons[0] = (0 << 3) | 4;
+			this->JoystickButtons[1] = (0 << 3) | 4;
 			this->JoystickButtons[13] = (0 << 3) | 4;
 			/* Classic R as F3 */
 			this->JoystickButtons[16] = (0 << 3) | 5;
