@@ -92,13 +92,10 @@ void Network::InitNetwork()
 
         memset(myIP, 0, sizeof(myIP));
 	Gui::gui->status_bar->queueMessage("Getting IP address via DHCP...");
-        /* Try twice */
-        if (if_config(myIP, NULL, NULL, true) < 0) {
-	        if (if_config(myIP, NULL, NULL, true) < 0)
-	        {
+
+	if (if_config(myIP, NULL, NULL, true) < 0) {
 	        	Gui::gui->status_bar->queueMessage("No DHCP reply");
 	        	return;
-	        }
         }
 	Gui::gui->status_bar->queueMessage("Got an address");
 }
