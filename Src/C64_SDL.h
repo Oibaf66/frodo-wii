@@ -267,7 +267,10 @@ void C64::VBlank(bool draw_frame)
 
 	if (this->network_connection_type == CLIENT)
 	{
-		Uint8 which = j1;
+		Uint8 which = j2;
+
+		if (ThePrefs.JoystickSwap)
+			which = j1;
 
 		TheCIA1->Joystick1 = which;
 		TheCIA1->Joystick2 = which;
