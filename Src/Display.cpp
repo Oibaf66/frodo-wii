@@ -778,7 +778,7 @@ void C64::open_close_joysticks(int oldjoy1, int oldjoy2, int newjoy1, int newjoy
 }
 
 /* The implementation principles are borrowed from UAE */
-uint8 C64::poll_joystick_axes(int port)
+uint8 C64::poll_joystick_axes(int port, bool *has_event)
 {
 	SDL_Joystick *js = joy[port];
 	unsigned int i, axes;
@@ -823,18 +823,20 @@ uint8 C64::poll_joystick_axes(int port)
 
 		if (axis < (*min_axis + (*max_axis - *min_axis)/3)) {
 			out &= neg_val;
-			Gui::gui->pushEvent(gui_neg_val);
+			Gui::gui->pushJoystickEvent(gui_neg_val);
+			*has_event = true;
 		}
 		else if (axis > (*min_axis + 2*(*max_axis - *min_axis)/3)) {
 			out &= pos_val;
-			Gui::gui->pushEvent(gui_pos_val);
+			Gui::gui->pushJoystickEvent(gui_pos_val);
+			*has_event = true;
 		}
 	}
 
 	return out;
 }
 
-uint8 C64::poll_joystick_hats(int port)
+uint8 C64::poll_joystick_hats(int port, bool *has_event)
 {
 	SDL_Joystick *js = joy[port];
 	unsigned int i, hats;
@@ -865,28 +867,32 @@ uint8 C64::poll_joystick_hats(int port)
 			right_ev = KEY_DOWN;
 		}
 
+		if ((v & (SDL_HAT_UP | SDL_HAT_DOWN | SDL_HAT_LEFT | SDL_HAT_RIGHT)) == 0)
+			continue;
+		*has_event = true;
+
 		if (v & SDL_HAT_UP) {
 			out &= up_mask;
-			Gui::gui->pushEvent(up_ev);
+			Gui::gui->pushJoystickEvent(up_ev);
 		}
 		if (v & SDL_HAT_DOWN) {
 			out &= down_mask;
-			Gui::gui->pushEvent(down_ev);
+			Gui::gui->pushJoystickEvent(down_ev);
 		}
 		if (v & SDL_HAT_LEFT) {
 			out &= left_mask;
-			Gui::gui->pushEvent(left_ev);
+			Gui::gui->pushJoystickEvent(left_ev);
 		}
 		if (v & SDL_HAT_RIGHT) {
 			out &= right_mask;
-			Gui::gui->pushEvent(right_ev);
+			Gui::gui->pushJoystickEvent(right_ev);
 		}
 	}
 
 	return out;
 }
 
-uint8 C64::poll_joystick_buttons(int port)
+uint8 C64::poll_joystick_buttons(int port, bool *has_event)
 {
 	SDL_Joystick *js = joy[port];
 	uint8 out = 0xff;
@@ -898,8 +904,11 @@ uint8 C64::poll_joystick_buttons(int port)
 		event_t ev = (event_t)ThePrefs.MenuJoystickButtons[i];
 
 		this->joy_button_pressed[i] = cur;
-		if (cur)
-			Gui::gui->pushEvent(ev);
+		if (cur && ev != EVENT_NONE)
+		{
+			Gui::gui->pushJoystickEvent(ev);
+			*has_event = true;
+		}
 
 		if (kc == JOY_NONE)
 			continue;
@@ -916,6 +925,7 @@ uint8 C64::poll_joystick_buttons(int port)
  */
 uint8 C64::poll_joystick(int port)
 {
+	bool has_event = false;
 	uint8 out = 0xff;
 
 	if (port == 0 && (joy[0] || joy[1]))
@@ -924,9 +934,12 @@ uint8 C64::poll_joystick(int port)
 	if (!joy[port])
 		return out;
 
-	out &= this->poll_joystick_axes(port);
-	out &= this->poll_joystick_hats(port);
-	out &= this->poll_joystick_buttons(port);
+	out &= this->poll_joystick_axes(port, &has_event);
+	out &= this->poll_joystick_hats(port, &has_event);
+	out &= this->poll_joystick_buttons(port, &has_event);
+
+	if (!has_event)
+		Gui::gui->pushJoystickEvent(EVENT_NONE);
 
 	return out;
 }

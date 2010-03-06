@@ -44,6 +44,8 @@ public:
 
 	void runLogic(void);
 
+	void pushJoystickEvent(event_t ev);
+
 	void pushEvent(event_t ev);
 
 	void pushEvent(SDL_Event *ev);

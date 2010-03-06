@@ -362,16 +362,28 @@ void Gui::exitMenu()
 	this->saveGameInfo(this->metadata_base_path, this->cur_gameInfo->filename);
 }
 
-void Gui::pushEvent(event_t ev)
+
+void Gui::pushJoystickEvent(event_t ev)
 {
-	GuiView *cur_view = this->peekView();
+	static event_t last = EVENT_NONE;
 	static Uint32 last_ticks;
 	Uint32 cur_ticks;
+
+	if (last == ev)
+		return;
 
 	cur_ticks = SDL_GetTicks();
 	if (cur_ticks - last_ticks < 150)
 		return;
 	last_ticks = cur_ticks;
+
+	this->pushEvent(ev);
+	last = ev;
+}
+
+void Gui::pushEvent(event_t ev)
+{
+	GuiView *cur_view = this->peekView();
 
 	if (ev == KEY_ENTER_MENU)
 	{

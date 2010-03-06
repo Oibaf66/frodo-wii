@@ -50,6 +50,66 @@
 #define RLE_SIZE  ( RAW_SIZE * 4 + 8)
 #define DIFF_SIZE ( RAW_SIZE * 4 + 8)
 
+#if 0
+class ConnectionFSM : public TimeoutHandler
+{
+public:
+	ConnectionFSM()
+	{
+		this->rese();
+	}
+
+	void connectToPeer()
+	{
+		this->setState(CONNECT_TO_PEER);
+	}
+
+	void peerConnected()
+	{
+		/* Reset the FSM */
+		this->reset();
+	}
+
+	void connectToBroker()
+	{
+		this->setState(CONNECT_TO_BROKER);
+
+		Gui::gui->timerController->arm(this, 4000);
+	}
+
+	void timeoutCallback()
+	{
+		/* New state, everything is fine */
+		if (this->last_state != this->state)
+			return;
+
+		switch(state)
+		{
+		default:
+			break;
+		}
+	}
+
+	void reset()
+	{
+		this->state = 0;
+		this->last_state = -1;
+	}
+
+	static ConnectionFSM fsm;
+
+private:
+
+	void setState(int state)
+	{
+		this->last_state = this->state;
+		this->state = state;
+	}
+
+	int state, last_state;
+};
+#endif
+
 Network::Network(const char *remote_host, int port)
 {
 	const size_t size = NETWORK_UPDATE_SIZE;
