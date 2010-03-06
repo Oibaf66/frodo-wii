@@ -144,8 +144,8 @@ void Prefs::SetupJoystickDefaults()
 		if (strncmp(name, "Wiimote", 7) == 0)
 		{
 			/* Wiimote/Classic hat */
-			this->JoystickHats[0] = HAT_ROTATED_90;
-			this->MenuJoystickHats[0] = HAT_ROTATED_90;
+			this->JoystickHats[0] = HAT_PLAIN;
+			this->MenuJoystickHats[0] = HAT_PLAIN;
 
 			/* Nunchuk/classic analogue */
 			this->JoystickAxes[0] = JOY_HORIZ;
