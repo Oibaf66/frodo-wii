@@ -121,6 +121,7 @@ dist: $(BUILD)
 	install -d $@/frodo/saves
 	install -d $@/frodo/metadata
 	install -d $@/frodo/tmp
+	touch $@/apps/frodo/frodorc
 	cp $(TARGET).dol $@/apps/frodo/boot.dol
 	cp -rap themes $@/frodo/themes
 	cp meta.xml $@/apps/frodo/
