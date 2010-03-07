@@ -752,29 +752,21 @@ bool C64Display::NumLock(void)
  *  Open/close joystick drivers given old and new state of
  *  joystick preferences
  */
-void C64::open_close_joystick(int port, int oldjoy, int newjoy)
+void C64::open_joystick(int port)
 {
-	if (oldjoy != newjoy) {
-		joy_minx[port] = joy_miny[port] = -32767;	// Reset calibration
-		joy_maxx[port] = joy_maxy[port] = 32768;
-		if (newjoy) {
-			joy[port] = SDL_JoystickOpen(newjoy - 1);
-			if (joy[port] == NULL)
-				fprintf(stderr, "Couldn't open joystick %d\n", port + 1);
-		} else {
-			if (joy[port]) {
-				SDL_JoystickClose(joy[port]);
-				joy[port] = NULL;
-			}
-		}
-	}
+	joy_minx[port] = joy_miny[port] = -32767;	// Reset calibration
+	joy_maxx[port] = joy_maxy[port] = 32768;
+	joy[port] = SDL_JoystickOpen(port);
+	if (joy[port] == NULL)
+		fprintf(stderr, "Couldn't open joystick %d\n", port + 1);
 }
 
-void C64::open_close_joysticks(int oldjoy1, int oldjoy2, int newjoy1, int newjoy2)
+void C64::close_joystick(int port)
 {
-	open_close_joystick(0, oldjoy1, newjoy1);
-	if (SDL_NumJoysticks() > 1)
-		open_close_joystick(1, oldjoy2, newjoy2);
+	if (joy[port]) {
+		SDL_JoystickClose(joy[port]);
+		joy[port] = NULL;
+	}
 }
 
 /* The implementation principles are borrowed from UAE */

@@ -86,7 +86,7 @@ Prefs::Prefs()
 	SIDType = SIDTYPE_DIGITAL;
 	REUSize = REU_NONE;
 	DisplayType = DISPTYPE_WINDOW;
-	Joystick1Port = 1; /* Default to on */
+	Joystick1Port = 0; /* Default to on */
 	Joystick2Port = 1;
 
 	SpritesOn = true;
@@ -204,6 +204,7 @@ void Prefs::SetupJoystickDefaults()
 		/* Saitek P380 */
 		else if (strcmp(name, "Jess Tech Dual Analog Pad") == 0)
 		{
+			printf("Found joystikk\n");
 			/* Pad */
 			this->JoystickHats[0] = HAT_PLAIN;
 			this->MenuJoystickHats[0] = HAT_PLAIN;
@@ -213,6 +214,9 @@ void Prefs::SetupJoystickDefaults()
 			this->JoystickAxes[1] = JOY_VERT;
 			this->JoystickAxes[2] = JOY_HORIZ;
 			this->JoystickAxes[3] = JOY_VERT;
+
+			this->JoystickButtons[0] = (0 << 3) | 4;
+			this->JoystickButtons[1] = (0 << 3) | 5;
 
 			/* Button 4 Fire */
 			this->JoystickButtons[3] = 0x50;

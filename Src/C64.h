@@ -159,7 +159,8 @@ private:
 	void c64_ctor1(void);
 	void c64_ctor2(void);
 	void c64_dtor(void);
-	void open_close_joysticks(int oldjoy1, int oldjoy2, int newjoy1, int newjoy2);
+	void open_joystick(int port);
+	void close_joystick(int port);
 	uint8 poll_joystick(int port);
 	uint8 poll_joystick_axes(int port, bool *has_event);
 	uint8 poll_joystick_hats(int port, bool *has_event);
@@ -206,13 +207,11 @@ private:
 #endif
 
 #ifdef __unix
-	void open_close_joystick(int port, int oldjoy, int newjoy);
 	double speed_index;
 public:
 	CmdPipe *gui;
 #elif defined(GEKKO)
 public:
-	void open_close_joystick(int port, int oldjoy, int newjoy);
 	double speed_index;
 #endif
 #ifdef HAVE_SDL
