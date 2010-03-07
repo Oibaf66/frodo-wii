@@ -918,7 +918,7 @@ uint8 C64::poll_joystick(int port)
 	bool has_event = false;
 	uint8 out = 0xff;
 	static uint8 last_table_ports[2][0xff];
-	static uint8 table_ports[2][0xff];
+	uint8 table_ports[2][0xff];
 	uint8 *last_table = last_table_ports[port];
 	uint8 *table = table_ports[port];
 
