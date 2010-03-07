@@ -164,7 +164,7 @@ private:
 	uint8 poll_joystick(int port);
 	uint8 poll_joystick_axes(int port, bool *has_event);
 	uint8 poll_joystick_hats(int port, bool *has_event);
-	uint8 poll_joystick_buttons(int port, bool *has_event);
+	uint8 poll_joystick_buttons(int port, uint8 *table, bool *has_event);
 	void thread_func(void);
 
 	bool thread_running;	// Emulation thread is running

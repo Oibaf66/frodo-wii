@@ -158,6 +158,7 @@ void Prefs::SetupJoystickDefaults()
 			this->JoystickButtons[7] = 0x50;
 			this->JoystickButtons[9] = 0x50;
 			this->JoystickButtons[10] = 0x50;
+
 			this->MenuJoystickButtons[3] = KEY_SELECT;
 			this->MenuJoystickButtons[7] = KEY_SELECT;
 			this->MenuJoystickButtons[9] = KEY_SELECT;
@@ -204,7 +205,6 @@ void Prefs::SetupJoystickDefaults()
 		/* Saitek P380 */
 		else if (strcmp(name, "Jess Tech Dual Analog Pad") == 0)
 		{
-			printf("Found joystikk\n");
 			/* Pad */
 			this->JoystickHats[0] = HAT_PLAIN;
 			this->MenuJoystickHats[0] = HAT_PLAIN;

@@ -247,6 +247,7 @@ void C64::VBlank(bool draw_frame)
         if (ThePrefs.JoystickSwap)
         	joy_port_1 = 1;
 
+	SDL_JoystickUpdate();
 	// Poll joysticks
 	j1 = poll_joystick(!joy_port_1);
 	j2 = poll_joystick(joy_port_1);

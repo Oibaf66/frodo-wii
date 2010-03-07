@@ -884,7 +884,7 @@ uint8 C64::poll_joystick_hats(int port, bool *has_event)
 	return out;
 }
 
-uint8 C64::poll_joystick_buttons(int port, bool *has_event)
+uint8 C64::poll_joystick_buttons(int port, uint8 *table, bool *has_event)
 {
 	SDL_Joystick *js = joy[port];
 	uint8 out = 0xff;
@@ -901,12 +901,10 @@ uint8 C64::poll_joystick_buttons(int port, bool *has_event)
 			Gui::gui->pushJoystickEvent(ev);
 			*has_event = true;
 		}
-
 		if (kc == JOY_NONE)
 			continue;
 
-		TheDisplay->UpdateKeyMatrix(kc, !cur,
-				TheCIA1->KeyMatrix, TheCIA1->RevMatrix,	&out);
+		table[kc] = cur ? 2 : 1;
 	}
 
 	return out;
@@ -919,19 +917,34 @@ uint8 C64::poll_joystick(int port)
 {
 	bool has_event = false;
 	uint8 out = 0xff;
-
-	if (port == 0 && (joy[0] || joy[1]))
-		SDL_JoystickUpdate();
+	static uint8 last_table_ports[2][0xff];
+	static uint8 table_ports[2][0xff];
+	uint8 *last_table = last_table_ports[port];
+	uint8 *table = table_ports[port];
 
 	if (!joy[port])
 		return out;
 
+	memset(table, 0, 0xff);
+
 	out &= this->poll_joystick_axes(port, &has_event);
 	out &= this->poll_joystick_hats(port, &has_event);
-	out &= this->poll_joystick_buttons(port, &has_event);
+	out &= this->poll_joystick_buttons(port, table, &has_event);
 
 	if (!has_event)
 		Gui::gui->pushJoystickEvent(EVENT_NONE);
+
+	/* Handle keyboard codes */
+	for (int i = 0; i < 0x51; i++)
+	{
+		if (table[i] == 0 || table[i] == last_table[i])
+			continue;
+
+		TheDisplay->UpdateKeyMatrix(i, table[i] == 1,
+				TheCIA1->KeyMatrix, TheCIA1->RevMatrix,	&out);
+	}
+
+	memcpy(last_table, table, sizeof(table));
 
 	return out;
 }
