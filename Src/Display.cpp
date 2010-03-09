@@ -944,7 +944,7 @@ uint8 C64::poll_joystick(int port)
 				TheCIA1->KeyMatrix, TheCIA1->RevMatrix,	&out);
 	}
 
-	memcpy(last_table, table, sizeof(table));
+	memcpy(last_table, table, 0xff);
 
 	return out;
 }
