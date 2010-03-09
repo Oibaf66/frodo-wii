@@ -937,7 +937,9 @@ uint8 C64::poll_joystick(int port)
 	/* Handle keyboard codes */
 	for (int i = 0; i < 0x51; i++)
 	{
-		if (table[i] == 0 || table[i] == last_table[i])
+		if (table[i] == 0)
+			continue;
+		if ( !(i & 0x40) && table[i] == last_table[i] )
 			continue;
 
 		TheDisplay->UpdateKeyMatrix(i, table[i] == 1,
