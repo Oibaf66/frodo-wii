@@ -1241,7 +1241,7 @@ bool Network::ConnectToPeer()
 
 void Network::Disconnect()
 {
-	printf("Disconnecting\n");
+	Gui::gui->status_bar->queueMessage("Disconnecting");
 
 	this->ResetNetworkUpdate();
 	NetworkUpdate *disconnect = InitNetworkUpdate(this->cur_ud, DISCONNECT,

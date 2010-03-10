@@ -69,7 +69,9 @@ public:
 			Gui::gui->pushView(Gui::gui->nrv);
 			break;
 		case 4:
-			if ( strncmp(Gui::gui->np->NetworkName, "Unset", strlen("Unset")) == 0)
+			if (TheC64->network)
+				TheC64->network->Disconnect();
+			else if ( strncmp(Gui::gui->np->NetworkName, "Unset", strlen("Unset")) == 0)
 				Gui::gui->pushDialogueBox(new DialogueBox(network_unset_name_dlg));
 			else
 			{
@@ -130,7 +132,7 @@ private:
 		this->messages[2] = this->strs[2];
 
 		this->messages[3] = " ";
-		this->messages[4] = "Connect to the network!";
+		this->messages[4] = TheC64->network ? "Disconnect" : "Connect to the network!";
 		this->messages[5] = " ";
 		this->messages[6] = "Post network message";
 		this->messages[7] = "Post peer message";
