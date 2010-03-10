@@ -22,7 +22,7 @@
 #define _PREFS_H
 
 #define SPEED_95 30
-#define SPEED_100 20
+#define SPEED_100 25
 #define SPEED_110 18
 
 #define MAX_JOYSTICK_AXES 16
