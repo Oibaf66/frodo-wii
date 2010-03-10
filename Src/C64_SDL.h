@@ -299,10 +299,6 @@ void C64::VBlank(bool draw_frame)
 		TheDisplay->Update();
 	}
 
-	if (this->have_a_break) {
-
-		TheSID->PauseSound();
-	}
 	this->network_vblank();
 
 	Gui::gui->runLogic();
@@ -338,7 +334,7 @@ void C64::thread_func(void)
 		if (TheVIC->EmulateCycle())
 			TheSID->EmulateLine();
 		/* No need to emulate anything for the client */
-		if (this->network_connection_type != CLIENT) {
+		if (!this->have_a_break && this->network_connection_type != CLIENT) {
 			TheCIA1->CheckIRQs();
 			TheCIA2->CheckIRQs();
 			TheCIA1->EmulateCycle();
