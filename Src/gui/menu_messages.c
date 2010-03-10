@@ -345,13 +345,14 @@ const char *game_info_menu_messages[6] = {
 };
 
 
-const char *needs_help[8] = {
-	/*00*/          "c64-network.org neeeds",
-	/*01*/		"design help! See",
-	/*02*/		"#", /* Empty line */
+const char *needs_help[9] = {
+	/*00*/          "c64-network.org needs",
+	/*01*/		"grapichs and web design",
+	/*02*/		"help! See",
+	/*02*/		"#",
 	/*03*/		"http://www.c64-network.org",
 	/*04*/		"for more information.",
 	/*05*/		"#",
-	/*06*/          "^|OK",
+	/*06*/          "^|I'll help!",
 	NULL
 };
