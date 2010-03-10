@@ -35,6 +35,7 @@ class ExitListener : public DialogueListener
 {
 	void escapeCallback(DialogueBox *which, int selected)
 	{
+		delete this;
 	}
 
 	void selectCallback(DialogueBox *which, int selected)
@@ -45,6 +46,8 @@ class ExitListener : public DialogueListener
 			Gui::gui->exitMenu();
 			TheC64->quit();
 		}
+
+		delete this;
 	}
 };
 
