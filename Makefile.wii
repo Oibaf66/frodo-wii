@@ -127,7 +127,7 @@ dist: $(BUILD)
 	cp meta.xml $@/apps/frodo/
 	cp icon.png $@/apps/frodo/
 	find $@ -name ".svn" | xargs rm -rf
-	cd $@ && tar -czf ../frodo-wii-bin.tar.gz *
+	cd $@ && tar -czf ../c64-network.org-wii-bin.tar.gz *
 
 #---------------------------------------------------------------------------------
 run:

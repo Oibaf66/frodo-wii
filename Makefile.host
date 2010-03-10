@@ -87,7 +87,7 @@ dist-host: $(TARGET)
 	cp -rap themes $@/frodo/themes
 	cp icon.png $@/frodo/
 	find $@ -name ".svn" | xargs rm -rf
-	cd $@ && tar -czf ../frodo-host-bin.tar.gz *
+	cd $@ && tar -czf ../c64-network.org-host-bin.tar.gz *
 
 dist: dist-host
 
