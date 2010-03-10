@@ -78,8 +78,8 @@ public:
 				TheC64->network = new Network(Gui::gui->np->NetworkServer,
 						Gui::gui->np->NetworkPort);
 				TheC64->network_connection_type = CONNECT;
-				TheC64->network->ConnectToBroker();
 				Gui::gui->exitMenu();
+				TheC64->network->ConnectToBroker();
 			}
 			break;
 		case 6:

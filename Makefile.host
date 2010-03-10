@@ -78,14 +78,14 @@ objs-host/%.o: %.c
 
 dist-host: $(TARGET)
 	rm -rf $@
-	install -d $@/frodo
-	install -d $@/frodo/images
-	install -d $@/frodo/saves
-	install -d $@/frodo/metadata
-	install -d $@/frodo/tmp
-	cp $(TARGET) $@/frodo/
-	cp -rap themes $@/frodo/themes
-	cp icon.png $@/frodo/
+	install -d $@/c64-network.org
+	install -d $@/c64-network.org/images
+	install -d $@/c64-network.org/saves
+	install -d $@/c64-network.org/metadata
+	install -d $@/c64-network.org/tmp
+	cp $(TARGET) $@/c64-network.org/
+	cp -rap themes $@/c64-network.org/themes
+	cp icon.png $@/c64-network.org/
 	find $@ -name ".svn" | xargs rm -rf
 	cd $@ && tar -czf ../c64-network.org-host-bin.tar.gz *
 
