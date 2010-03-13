@@ -1,5 +1,9 @@
 		TODO: Add ability to select files to load from disks in
 		a menu
+c64-network.org, v2:
+		* Fix multiple bindings to the same key
+
+		* Fix joystick input on the virtual keyboard
 
 c64-network.org, v1:
 		* Sound is transferred in network play now
