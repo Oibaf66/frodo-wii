@@ -1,16 +1,16 @@
 		TODO: Add ability to select files to load from disks in
 		a menu
 
-		TODO: Fix Unset.19583 - fixed random number...
+c64-network.org, v1:
+		* Sound is transferred in network play now
 
-        TODO: Multiple frodo versions, switch between
+        * Joystick support is now SDL-based
 
-		TODO: Crash on + in "Other" menu
+		* Fix all warnings 
 
-		TODO: Handle Run/Stop in virtual keyboard (?)
+		* Run/Stop handled
 
-version 11:
-		* 
+		* Redesign the GUI completely 
 
 		* Only one type of network connections now - no need
                   to specify client or master
