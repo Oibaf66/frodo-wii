@@ -30,7 +30,7 @@
 static SDL_AudioSpec spec;
 
 #define FRODO_SNDBUF 512
-#define SOUNDBUFSIZE 1024
+#define SOUNDBUFSIZE 1536
 #define N_BUFS 8
 
 static int16 soundbuffer[N_BUFS][FRODO_SNDBUF];
