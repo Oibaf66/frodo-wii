@@ -895,7 +895,6 @@ uint8 C64::poll_joystick_buttons(int port, uint8 *table, bool *has_event)
 		int kc = ThePrefs.JoystickButtons[i];
 		event_t ev = (event_t)ThePrefs.MenuJoystickButtons[i];
 
-		this->joy_button_pressed[i] = cur;
 		if (cur && ev != EVENT_NONE)
 		{
 			Gui::gui->pushJoystickEvent(ev);
@@ -904,7 +903,8 @@ uint8 C64::poll_joystick_buttons(int port, uint8 *table, bool *has_event)
 		if (kc == JOY_NONE)
 			continue;
 
-		table[kc] = cur ? 2 : 1;
+		if (table[kc] == 0)
+			table[kc] = cur ? 2 : 1;
 	}
 
 	return out;

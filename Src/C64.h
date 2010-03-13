@@ -173,7 +173,6 @@ private:
 
 	int joy_minx[2], joy_maxx[2], joy_miny[2], joy_maxy[2]; // For dynamic joystick calibration
 	uint8 joykey;			// Joystick keyboard emulation mask value
-	bool joy_button_pressed[MAX_JOYSTICK_BUTTONS];
 
 	uint8 orig_kernal_1d84,	// Original contents of kernal locations $1d84 and $1d85
 		  orig_kernal_1d85;	// (for undoing the Fast Reset patch)
