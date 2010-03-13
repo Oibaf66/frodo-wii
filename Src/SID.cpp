@@ -1280,24 +1280,10 @@ void DigitalRenderer::calc_buffer(int16 *buf, long count)
 
 
 // Manufacturer independent sound is still just a dream...
-#if defined(__linux__)
-#include "SID_linux.h"
-
-#elif defined(__mac__)
-#include "SID_mac.h"
-
-#elif defined(WIN32)
-#include "SID_WIN32.h"
-
-#elif defined(GEKKO)
+#if defined(GEKKO)
 #include "SID_wii.h"
-
-#else	// No sound
-void DigitalRenderer::init_sound(void) {ready = false;}
-DigitalRenderer::~DigitalRenderer() {}
-void DigitalRenderer::EmulateLine(void) {}
-void DigitalRenderer::Pause(void) {}
-void DigitalRenderer::Resume(void) {}
+#else
+#include "SID_SDL.h"
 #endif
 
 
