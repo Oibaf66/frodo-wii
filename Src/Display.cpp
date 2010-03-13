@@ -934,6 +934,10 @@ uint8 C64::poll_joystick(int port)
 	if (!has_event)
 		Gui::gui->pushJoystickEvent(EVENT_NONE);
 
+	/* No joystick input when the Gui is active */
+	if (Gui::gui->is_active || Gui::gui->kbd)
+		return 0xff;
+
 	/* Handle keyboard codes */
 	for (int i = 0; i < 0x51; i++)
 	{
