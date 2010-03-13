@@ -42,10 +42,6 @@
 #include "main.h"
 #include "Prefs.h"
 
-#ifdef __riscos__
-#include "ROlib.h"
-#endif
-
 
 // Prototypes
 static bool match(const char *p, const char *n);

@@ -32,16 +32,6 @@
 #include "Prefs.h"
 #include "Network.h"
 
-#ifdef __mac__
-#include <Sound.h>
-#define M_PI 3.14159265358979323846
-#endif
-
-#ifdef WIN32
-class DigitalPlayer;
-#endif
-
-
 #ifdef USE_FIXPOINT_MATHS
 #include "FixPoint.h"
 #endif
@@ -372,35 +362,6 @@ private:
 #if defined(__linux__) || defined(GEKKO)
 	int devfd, sndbufsize, buffer_rate;
 	int16 *sound_buffer;
-#endif
-
-#ifdef __mac__
-	SndChannelPtr chan1;
-	SndDoubleBufferHeader myDblHeader;
-	SndDoubleBufferPtr sampleBuffer1, sampleBuffer2;
-	SCStatus myStatus;
-	short sndbufsize;
-	OSErr err;
-
-	static void doubleBackProc(SndChannelPtr chan, SndDoubleBufferPtr doubleBuffer);
-#endif
-
-#ifdef WIN32
-public:
-	void VBlank(void);
-
-private:
-	void StartPlayer(void);
-	void StopPlayer(void);
-
-	BOOL direct_sound;
-	DigitalPlayer *ThePlayer;
-	SWORD *sound_buffer;
-	int to_output;
-	int sb_pos;
-	int divisor;
-	int *lead;
-	int lead_pos;
 #endif
 };
 
@@ -1301,15 +1262,7 @@ void MOS6581::open_close_renderer(int old_type, int new_type)
 
 	// Create new renderer
 	if (new_type == SIDTYPE_DIGITAL)
-#if defined(__BEOS__) || defined(__riscos__)
-		the_renderer = new DigitalRenderer(the_c64);
-#else
 		the_renderer = new DigitalRenderer;
-#endif
-#ifdef AMIGA
-	else if (new_type == SIDTYPE_SIDCARD)
-		the_renderer = new SIDCardRenderer;
-#endif
 	else
 		the_renderer = NULL;
 

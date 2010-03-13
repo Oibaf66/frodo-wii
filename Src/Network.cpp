@@ -1260,5 +1260,6 @@ bool Network::networking_started = false;
 #if defined(GEKKO)
 #include "NetworkWii.h"
 #else
+/* BSD-style sockets */
 #include "NetworkUnix.h"
 #endif

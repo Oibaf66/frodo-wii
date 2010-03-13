@@ -117,53 +117,10 @@ using std::vector;
 
 #include <assert.h>
 
-#if EEXIST == ENOTEMPTY
-#define BROKEN_OS_PROBABLY_AIX
-#endif
-
-#ifdef __NeXT__
-#define S_IRUSR S_IREAD
-#define S_IWUSR S_IWRITE
-#define S_IXUSR S_IEXEC
-#define S_ISDIR(val) (S_IFDIR & val)
-struct utimbuf
-{
-    time_t actime;
-    time_t modtime;
-};
-#endif
-
-#ifdef __DOS__
-#include <pc.h>
-#include <io.h>
-#else
 #undef O_BINARY
 #define O_BINARY 0
-#endif
-
-#ifdef __mac__
-#define bool Boolean
-#endif
-
-#ifdef __riscos
-#define bool int
-#endif
-
-#ifdef WIN32
-#include <windows.h>
-#include <direct.h>
-#if !defined(M_PI)
-#define M_PI 3.14159265358979323846
-#endif
-#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
-#if _MSC_VER < 1100
-#define bool char
-#endif
-#define LITTLE_ENDIAN_UNALIGNED 1
-#endif
 
 /* If char has more then 8 bits, good night. */
-#ifndef __BEOS__
 typedef unsigned char uint8;
 typedef signed char int8;
 
@@ -206,7 +163,3 @@ typedef int64 intptr;
 #else
 #error Unsupported size of pointer
 #endif
-
-#else
-#include <support/SupportDefs.h>
-#endif	// __BEOS__

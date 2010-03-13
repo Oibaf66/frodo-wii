@@ -21,18 +21,8 @@
 #ifndef _DISPLAY_H
 #define _DISPLAY_H
 
-#ifdef __BEOS__
-#include <InterfaceKit.h>
-#endif
-
-#ifdef AMIGA
-#include <graphics/rastport.h>
-#endif
-
-#ifdef HAVE_SDL
 #include <SDL.h>
 extern SDL_Surface *real_screen;
-#endif
 
 // Colors for speedometer/drive LEDs
 enum {
@@ -45,14 +35,6 @@ enum {
 	green = 20,
 	PALETTE_SIZE = 21,
 };
-
-#ifdef WIN32
-#include <ddraw.h>
-#endif
-
-#ifdef __riscos__
-#include "ROlib.h"
-#endif
 
 
 // Display dimensions
