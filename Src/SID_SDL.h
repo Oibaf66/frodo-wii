@@ -30,7 +30,7 @@
 static SDL_AudioSpec spec;
 
 #define FRODO_SNDBUF 512
-#define SOUNDBUFSIZE 2048
+#define SOUNDBUFSIZE 1024
 #define N_BUFS 8
 
 static int16 soundbuffer[N_BUFS][FRODO_SNDBUF];
@@ -76,6 +76,7 @@ void DigitalRenderer::init_sound(void)
 	}
 
 	this->sound_buffer = new int16[this->sndbufsize];
+	memset(this->sound_buffer, 0, sizeof(int16) * this->sndbufsize);
 	ready = true;
 	SDL_PauseAudio(0);
 }
@@ -137,12 +138,12 @@ void DigitalRenderer::PushVolume(uint8 vol)
 		int datalen = sndbufsize;
 		to_output -= datalen;
 
-
 		SDL_LockAudio();
 		calc_buffer(soundbuffer[head], datalen * 2);
 		head = (head + 1) % N_BUFS;
-		if (head == tail)
-			printf("Uh oh, hit the tail\n");
+		if (head == tail) {
+			tail = (head + 1) % N_BUFS;
+		}
 		SDL_UnlockAudio();
 	}
 }
