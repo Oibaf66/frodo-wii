@@ -118,6 +118,8 @@ Prefs::Prefs()
 	snprintf(this->NetworkServer, 64, "play.c64-network.org");
 	this->NetworkPort = 46214;
 	this->NetworkRegion = REGION_UNKNOWN;
+
+	strcpy(this->Theme, "default");
 }
 
 
@@ -315,6 +317,7 @@ bool Prefs::operator==(const Prefs &rhs) const
 		&& this->NetworkRegion == rhs.NetworkRegion
 		&& strcmp(this->NetworkServer, rhs.NetworkServer) == 0
 		&& strcmp(this->NetworkName, rhs.NetworkName) == 0
+		&& strcmp(this->Theme, rhs.Theme) == 0
 		&& this->NetworkAvatar == rhs.NetworkAvatar
 	);
 }
@@ -499,6 +502,8 @@ void Prefs::Load(const char *filename)
 					NetworkRegion = atoi(value);
 				else if (!strcmp(keyword, "NetworkAvatar"))
 					NetworkAvatar = atoi(value);
+				else if (!strcmp(keyword, "Theme"))
+					strcpy(Theme, value);
 			}
 		}
 		fclose(file);
@@ -610,6 +615,7 @@ bool Prefs::Save(const char *filename)
 		maybe_write(file, strcmp(NetworkServer, TheDefaultPrefs.NetworkServer) != 0, "NetworkServer = %s\n", NetworkServer);
 		maybe_write(file, NetworkPort != TheDefaultPrefs.NetworkPort, "NetworkPort = %d\n", NetworkPort);
 		maybe_write(file, NetworkRegion != TheDefaultPrefs.NetworkRegion, "NetworkRegion = %d\n", NetworkRegion);
+		maybe_write(file, strcmp(Theme, TheDefaultPrefs.Theme) != 0, "Theme = %s\n", Theme);
 		fclose(file);
 		ThePrefsOnDisk = *this;
 		return true;

@@ -572,7 +572,10 @@ void Gui::init()
 {
 	Gui::gui = new Gui();
 
-	/* Set the default theme */
-	panic_if(!Gui::gui->setTheme("default"),
-			"Setting default theme failed\n");
+	if (!Gui::gui->setTheme(ThePrefs.Theme))
+	{
+		/* Set the default theme */
+		panic_if (!Gui::gui->setTheme(ThePrefs.Theme),
+				"Setting default theme failed\n");
+	}
 }

@@ -171,6 +171,7 @@ public:
 
 	int NetworkKey;
 	uint16 NetworkAvatar;
+	char Theme[128];
 };
 
 

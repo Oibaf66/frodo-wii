@@ -43,11 +43,13 @@ public:
 			char *p = xstrdup(msg);
 
 			p[strlen(p) - 1] = '\0';
+			strcpy(Gui::gui->np->Theme, p + 1);
 			if (!Gui::gui->setTheme(p + 1))
 			{
 				/* Something is wrong, reset to default */
 				Gui::gui->setTheme("default");
 				Gui::gui->pushDialogueBox(new DialogueBox(broken_theme_dlg));
+				strcpy(Gui::gui->np->Theme, "default");
 			}
 			free(p);
 		}
