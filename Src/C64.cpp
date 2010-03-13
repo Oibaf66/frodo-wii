@@ -679,4 +679,29 @@ bool C64::LoadSnapshot(const char *filename)
 	}
 }
 
+void C64::Pause(void)
+{
+	/* No pause when the network is running */
+	if (this->network)
+	{
+		this->have_a_break = false;
+		return;
+	}
+
+	this->have_a_break = true;
+	TheSID->PauseSound();
+}
+
+bool C64::IsPaused()
+{
+	return this->have_a_break;
+}
+
+
+void C64::Resume(void)
+{
+	this->have_a_break = false;
+	TheSID->ResumeSound();
+}
+
 #include "C64_SDL.h"

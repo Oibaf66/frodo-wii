@@ -65,15 +65,9 @@ public:
 
 	void Run(void);
 	void Quit(void);
-	void Pause(void)
-	{
-		this->have_a_break = true;
-	}
+	void Pause(void);
 
-	void Resume(void)
-	{
-		this->have_a_break = false;
-	}
+	void Resume(void);
 
 	void Reset(void);
 	void NMI(void);
@@ -116,18 +110,7 @@ public:
 #ifdef FRODO_SC
 	uint32 CycleCounter;
 #endif
-	bool IsPaused()
-	{
-		return this->have_a_break;
-	}
-
-	void enter_menu() {
-		this->have_a_break = true;
-	}
-
-	bool is_in_menu() {
-		return this->have_a_break;
-	}
+	bool IsPaused();
 
 	void quit()
 	{
