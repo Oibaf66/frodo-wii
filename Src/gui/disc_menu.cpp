@@ -68,7 +68,7 @@ public:
 	{
 		Gui::gui->status_bar->queueMessage("Resetting the C64");
 		TheC64->Reset();
-		Gui::gui->timerController->arm(this, 4000);
+		Gui::gui->timerController->arm(this, 4500);
 	}
 
 	virtual void timeoutCallback()
