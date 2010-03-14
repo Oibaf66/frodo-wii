@@ -64,7 +64,7 @@ class HtmlGenerator:
         cnt = 0
         for item in self.container.last_10:
             images = ""
-            if cnt % 4 == 0:
+            if cnt % 3 == 0:
                 cur = cnt
                 images = "<TH ROWSPAN=4><IMG SRC=\"images/%d.png\"></TH><TH ROWSPAN=4><IMG SRC=\"images/%d.png\"></TH><TH ROWSPAN=4><IMG SRC=\"images/%d.png\"></TH>" % (cur, cur + 1, cur + 2)
             outf.write("<TR><TD>%s</TD><TD>&nbsp;</TD>%s</TR>\n" % (item, images) )
