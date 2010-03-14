@@ -128,31 +128,22 @@ const char *frodo_help[11] = {
 
 
 const char *main_menu_messages[14] = {
-	/*00*/          NULL, /* Setup dynamically */
-	/*01*/          " ",
-	/*02*/          "File",
-	/*03*/          "^|Start|Insert",
-	/*04*/          "States",
-	/*05*/          "^|Load|Save|Delete",
-	/*06*/          "Keyboard",
-	/*07*/          "^|Type|Bind",
-	/*08*/          " ",
-	/*09*/          "Game info",
-	/*10*/          "Networking",
-	/*11*/          "Options",
-	/*12*/          "Quit",
+	/*00*/          "File",
+	/*01*/          "^|Start|Insert",
+	/*02*/          "States",
+	/*03*/          "^|Load|Save|Delete",
+	/*04*/          "Keyboard",
+	/*05*/          "^|Type|Bind",
+	/*06*/          " ",
+	/*07*/          "Game info",
+	/*08*/          "Networking",
+	/*09*/          "Options",
+	/*10*/		" ",
+	/*11*/          "Quit",
 	NULL
 };
 
 const char **main_menu_help[14] = {
-		(const char*[]){
-				"Pause or resume the C64",
-				"emulation. Not available",
-				"when running in networked",
-				"mode.",
-				NULL,
-		},
-		NULL,
 		(const char*[]){
 				"Insert a disc/tape or",
 				"start it",
@@ -189,6 +180,7 @@ const char **main_menu_help[14] = {
 				"Configure Frodo",
 				NULL,
 		},
+		NULL,
 		(const char*[]){
 				"Quit Frodo",
 				NULL,

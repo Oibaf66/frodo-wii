@@ -340,6 +340,10 @@ GuiView *Gui::popView()
 		/* Deactivate when no views are left */
 		this->is_active = false;
 
+		if (TheC64->IsPaused())
+			Gui::gui->status_bar->queueMessage("C64 emulation resumed");
+		TheC64->Resume();
+
 		return NULL;
 	}
 
@@ -485,6 +489,12 @@ void Gui::activate()
 	this->np = &cur_prefs;
 
 	this->pushView(this->mv);
+
+	TheC64->Pause();
+	if (TheC64->network)
+		Gui::gui->status_bar->queueMessage("Can't pause when in network mode");
+	else
+		Gui::gui->status_bar->queueMessage("C64 emulation paused");
 }
 
 SDL_Surface *Gui::loadThemeImage(const char *dir, const char *what)
