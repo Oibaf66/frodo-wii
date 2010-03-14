@@ -53,29 +53,24 @@ public:
 
 		switch(which)
 		{
-		case 0: /* Classic */
+		case 0: /* Wiimote */
 			switch (this->p_submenus[0].sel)
 			{
-			case 0: ck = &Gui::gui->np->JoystickHats[0]; break;
-			case 1: ck = &Gui::gui->np->JoystickHats[1]; break;
-			case 2: ck = &Gui::gui->np->JoystickHats[2]; break;
-			case 3: ck = &Gui::gui->np->JoystickHats[3]; break;
-			case 4: ck = &Gui::gui->np->JoystickButtons[0]; break;
-			case 5: ck = &Gui::gui->np->JoystickButtons[1]; break;
-			case 6: ck = &Gui::gui->np->JoystickButtons[2]; break;
-			case 7: ck = &Gui::gui->np->JoystickButtons[3]; break;
-			case 8: ck = &Gui::gui->np->JoystickButtons[4]; break;
+			case 0: ck = &Gui::gui->np->JoystickButtons[0]; break;
+			case 1: ck = &Gui::gui->np->JoystickButtons[1]; break;
+			case 2: ck = &Gui::gui->np->JoystickButtons[2]; break;
+			case 3: ck = &Gui::gui->np->JoystickButtons[3]; break;
+			case 4: ck = &Gui::gui->np->JoystickButtons[4]; break;
+			case 5: ck = &Gui::gui->np->JoystickButtons[5]; break;
 			default:
-				panic("Classic: impossible selection %d", this->p_submenus[0].sel); break;
+				panic("Wiimote: impossible selection %d", this->p_submenus[0].sel); break;
 			}
 			break;
 		case 2: /* Nunchuk */
 			switch (this->p_submenus[1].sel)
 			{
-			case 0: ck = &Gui::gui->np->JoystickAxes[0]; use_virtkbd = false; break;
-			case 1: ck = &Gui::gui->np->JoystickAxes[1]; use_virtkbd = false; break;
-			case 2: ck = &Gui::gui->np->JoystickButtons[7]; break;
-			case 3: ck = &Gui::gui->np->JoystickButtons[8]; break;
+			case 0: ck = &Gui::gui->np->JoystickButtons[7]; break;
+			case 1: ck = &Gui::gui->np->JoystickButtons[8]; break;
 			default:
 				panic("Nunchuk: impossible selection %d", this->p_submenus[1].sel); break;
 			}
@@ -83,43 +78,21 @@ public:
 		case 4: /* Classic */
 			switch (this->p_submenus[2].sel)
 			{
-			case 0: ck = &Gui::gui->np->JoystickHats[0]; break;
-			case 1: ck = &Gui::gui->np->JoystickHats[1]; break;
-			case 2: ck = &Gui::gui->np->JoystickHats[2]; break;
-			case 3: ck = &Gui::gui->np->JoystickHats[3]; break;
-			case 4: ck = &Gui::gui->np->JoystickButtons[9]; break;
-			case 5: ck = &Gui::gui->np->JoystickButtons[10]; break;
-			case 6: ck = &Gui::gui->np->JoystickButtons[11]; break;
-			case 7: ck = &Gui::gui->np->JoystickButtons[12]; break;
-			case 8: ck = &Gui::gui->np->JoystickButtons[13]; break;
-			case 9: ck = &Gui::gui->np->JoystickButtons[14]; break;
-			case 10: ck = &Gui::gui->np->JoystickButtons[15]; break;
-			case 11: ck = &Gui::gui->np->JoystickButtons[16]; break;
-			case 12: ck = &Gui::gui->np->JoystickButtons[17]; break;
-			case 13: ck = &Gui::gui->np->JoystickButtons[18]; break;
+			case 0: ck = &Gui::gui->np->JoystickButtons[9]; break;
+			case 1: ck = &Gui::gui->np->JoystickButtons[10]; break;
+			case 2: ck = &Gui::gui->np->JoystickButtons[11]; break;
+			case 3: ck = &Gui::gui->np->JoystickButtons[12]; break;
+			case 4: ck = &Gui::gui->np->JoystickButtons[13]; break;
+			case 5: ck = &Gui::gui->np->JoystickButtons[14]; break;
+			case 6: ck = &Gui::gui->np->JoystickButtons[15]; break;
+			case 7: ck = &Gui::gui->np->JoystickButtons[16]; break;
+			case 8: ck = &Gui::gui->np->JoystickButtons[17]; break;
+			case 9: ck = &Gui::gui->np->JoystickButtons[18]; break;
 			default:
 				panic("Classic: impossible selection %d", this->p_submenus[2].sel); break;
 			}
 			break;
-		case 6:
-			switch (this->p_submenus[3].sel)
-			{
-			case 0: ck = &Gui::gui->np->JoystickAxes[0]; use_virtkbd = false; break;
-			case 1: ck = &Gui::gui->np->JoystickAxes[1]; use_virtkbd = false; break;
-			default:
-				panic("Classic: impossible selection %d", this->p_submenus[3].sel); break;
-			}
-			break;
-		case 8:
-			switch (this->p_submenus[4].sel)
-			{
-			case 0: ck = &Gui::gui->np->JoystickAxes[2]; use_virtkbd = false; break;
-			case 1: ck = &Gui::gui->np->JoystickAxes[3]; use_virtkbd = false; break;
-			default:
-				panic("Classic: impossible selection %d", this->p_submenus[4].sel); break;
-			}
-			break;
-		case 11:
+		case 7:
 			Gui::gui->np->SetupJoystickDefaults();
 			this->updateHelpMessages();
 			return;
@@ -169,26 +142,18 @@ public:
 	{
 		this->freeHelpMessages();
 
-		this->hm[0] = this->addOne(this->hm[0], this->allocOne("Up: %s", stringToPtr_Wiimote("Up")));
-		this->hm[0] = this->addOne(this->hm[0], this->allocOne("Down: %s", stringToPtr_Wiimote("Down")));
-		this->hm[0] = this->addOne(this->hm[0], this->allocOne("Left: %s", stringToPtr_Wiimote("Left")));
-		this->hm[0] = this->addOne(this->hm[0], this->allocOne("Right: %s", stringToPtr_Wiimote("Right")));
+		this->hm[0] = this->addOne(this->hm[0], this->allocOne("1: %s", stringToPtr_Wiimote("0")));
+		this->hm[0] = this->addOne(this->hm[0], this->allocOne("2: %s", stringToPtr_Wiimote("2")));
 		this->hm[0] = this->addOne(this->hm[0], this->allocOne("A: %s", stringToPtr_Wiimote("A")));
 		this->hm[0] = this->addOne(this->hm[0], this->allocOne("B: %s", stringToPtr_Wiimote("B")));
 		this->hm[0] = this->addOne(this->hm[0], this->allocOne("+: %s", stringToPtr_Wiimote("+")));
 		this->hm[0] = this->addOne(this->hm[0], this->allocOne("-: %s", stringToPtr_Wiimote("-")));
 
 		/* Nunchuk */
-		this->hm[2] = this->addOne(this->hm[2], this->allocOne("Horiz: %s", stringToPtr_Nunchuk("Horiz")));
-		this->hm[2] = this->addOne(this->hm[2], this->allocOne("Vert: %s", stringToPtr_Nunchuk("Vert")));
 		this->hm[2] = this->addOne(this->hm[2], this->allocOne("Z: %s", stringToPtr_Nunchuk("Z")));
 		this->hm[2] = this->addOne(this->hm[2], this->allocOne("C: %s", stringToPtr_Nunchuk("C")));
 
 		/* Classic */
-		this->hm[4] = this->addOne(this->hm[4], this->allocOne("Up: %s", stringToPtr_Classic("Up")));
-		this->hm[4] = this->addOne(this->hm[4], this->allocOne("Down: %s", stringToPtr_Classic("Down")));
-		this->hm[4] = this->addOne(this->hm[4], this->allocOne("Left: %s", stringToPtr_Classic("Left")));
-		this->hm[4] = this->addOne(this->hm[4], this->allocOne("Right: %s", stringToPtr_Classic("Right")));
 		this->hm[4] = this->addOne(this->hm[4], this->allocOne("a: %s", stringToPtr_Classic("a")));
 		this->hm[4] = this->addOne(this->hm[4], this->allocOne("b: %s", stringToPtr_Classic("b")));
 		this->hm[4] = this->addOne(this->hm[4], this->allocOne("x: %s", stringToPtr_Classic("x")));
@@ -205,13 +170,7 @@ public:
 		this->hm[2] = this->addOne(this->hm[2], this->allocOne("L-toggle: %s", stringToPtr_Classic("LA")));
 		*/
 
-		this->hm[6] = this->addOne(this->hm[6], this->allocOne("Horiz: %s", stringToPtr_Classic("LAH")));
-		this->hm[6] = this->addOne(this->hm[6], this->allocOne("Vert: %s", stringToPtr_Classic("LAV")));
-
-		this->hm[8] = this->addOne(this->hm[8], this->allocOne("Horiz: %s", stringToPtr_Classic("RAH")));
-		this->hm[8] = this->addOne(this->hm[8], this->allocOne("Vert: %s", stringToPtr_Classic("RAV")));
-
-		this->hm[11] = this->addOne(this->hm[11], xstrdup("Revert to defaults"));
+		this->hm[7] = this->addOne(this->hm[11], xstrdup("Revert to defaults"));
 
 		this->help->setHelpMessages(this->hm);
 	}

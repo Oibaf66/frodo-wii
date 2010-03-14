@@ -208,17 +208,13 @@ const char *options_menu_messages[14] = {
 
 const char *bind_key_menu_messages[13] = {
                 /*00*/          "Wiimote",
-                /*01*/          "^|Up|Down|Left|Right|A|B|1|2|+|-",
+                /*01*/          "^|A|B|1|2|+|-",
                 /*02*/          "Nunchuk",
-                /*03*/          "^|Horiz|Vert|Z|C",
+                /*03*/          "^|Z|C",
                 /*04*/          "Classic",
-                /*05*/          "^|Up|Down|Left|a|b|x|y|Zl|Zr|+|-",
-                /*06*/          "Classic (left analogue)",
-                /*07*/          "^|Horiz|Vert",
-                /*08*/          "Classic(right analogue)",
-                /*09*/          "^|Horiz|Vert",
-                /*10*/          " ",
-                /*11*/          "Reset to defaults",
+                /*05*/          "^|a|b|x|y|Zl|Zr|+|-",
+                /*06*/          " ",
+                /*07*/          "Reset to defaults",
                 NULL
 };
 
