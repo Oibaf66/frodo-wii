@@ -167,10 +167,10 @@ void Prefs::SetupJoystickDefaults()
 			this->MenuJoystickButtons[10] = KEY_SELECT;
 
 			/* Wiimote +/- as page up, page down */
-			this->MenuJoystickButtons[4] = KEY_PAGEUP;
-			this->MenuJoystickButtons[5] = KEY_PAGEDOWN;
-			this->MenuJoystickButtons[17] = KEY_PAGEUP;
-			this->MenuJoystickButtons[18] = KEY_PAGEDOWN;
+			this->MenuJoystickButtons[4] = KEY_PAGEDOWN;
+			this->MenuJoystickButtons[5] = KEY_PAGEUP;
+			this->MenuJoystickButtons[17] = KEY_PAGEDOWN;
+			this->MenuJoystickButtons[18] = KEY_PAGEUP;
 
 			/* +/- as 1 and 2 */
 			this->JoystickButtons[4] = (7 << 3) | 0;
