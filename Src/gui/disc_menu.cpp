@@ -61,6 +61,24 @@ public:
 	}
 };
 
+class StartGameListener : public TimeoutHandler
+{
+public:
+	StartGameListener()
+	{
+		Gui::gui->status_bar->queueMessage("Resetting the C64");
+		TheC64->Reset();
+		Gui::gui->timerController->arm(this, 4000);
+	}
+
+	virtual void timeoutCallback()
+	{
+		Gui::gui->status_bar->queueMessage("Invoking the load sequence");
+		TheC64->startFakeKeySequence("\nLOAD \"*\",8,1\nRUN\n");
+		delete this;
+	}
+};
+
 class DiscMenu : public FileBrowser, TimeoutHandler
 {
 	friend class DiscView;
@@ -139,9 +157,10 @@ public:
 		{
 			/* Timeout and save the screenshot if there isn't one */
 			new SaveScreenshot();
+			/* And the start sequence */
+			new StartGameListener();
 
 			Gui::gui->exitMenu();
-			TheC64->startFakeKeySequence("\nLOAD \"*\",8,1\nRUN\n");
 		}
 	}
 
