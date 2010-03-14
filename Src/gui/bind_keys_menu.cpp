@@ -318,9 +318,9 @@ private:
 			return &Gui::gui->np->JoystickButtons[2];
 		if (EQ("2"))
 			return &Gui::gui->np->JoystickButtons[3];
-		if (EQ("+"))
-			return &Gui::gui->np->JoystickButtons[4];
 		if (EQ("-"))
+			return &Gui::gui->np->JoystickButtons[4];
+		if (EQ("+"))
 			return &Gui::gui->np->JoystickButtons[5];
 		if (EQ("Home"))
 			return &Gui::gui->np->JoystickButtons[6];
