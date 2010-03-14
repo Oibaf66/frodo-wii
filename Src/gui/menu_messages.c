@@ -339,7 +339,7 @@ const char *game_info_menu_messages[6] = {
 
 const char *needs_help[9] = {
 	/*00*/          "c64-network.org needs",
-	/*01*/		"grapichs and web design",
+	/*01*/		"graphics and web design",
 	/*02*/		"help! See",
 	/*02*/		"#",
 	/*03*/		"http://www.c64-network.org",
