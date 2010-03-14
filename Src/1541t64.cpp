@@ -224,7 +224,7 @@ uint8 ArchDrive::open_file(int channel, const uint8 *name, int name_len)
                 // Open temporary file                                                                                                          
                 if ((file[channel] =
 #if defined(GEKKO)
-                fopen("/apps/frodo/tmp/a", "w+")
+                fopen("/frodo/tmp/a", "w+")
 #else
                 tmpfile()
 #endif
