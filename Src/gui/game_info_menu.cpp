@@ -57,8 +57,11 @@ public:
 		switch (which)
 		{
 		case 0:
-			this->box->gi->setScreenshot(TheC64->TheDisplay->SurfaceFromC64Display());
-			break;
+		{
+			SDL_Surface *tmp = SDL_DisplayFormat(Gui::gui->screenshot);
+
+			this->box->gi->setScreenshot(tmp);
+		} break;
 		case 2:
 		case 3:
 		case 4:

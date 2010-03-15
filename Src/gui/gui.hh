@@ -85,6 +85,7 @@ public:
 	bool is_active;
 	Menu *focus; /* Where the focus goes */
 	Menu *main_menu;
+	SDL_Surface *screenshot;
 
 	SDL_Surface *background;
 	SDL_Surface *main_menu_bg;

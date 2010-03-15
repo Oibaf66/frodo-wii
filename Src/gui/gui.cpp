@@ -79,6 +79,7 @@ Gui::Gui()
 	this->np = NULL;
 
 	this->focus = NULL;
+	this->screenshot = NULL;
 
 	this->bg_left = NULL;
 	this->bg_middle = NULL;
@@ -154,6 +155,8 @@ Gui::~Gui()
 
 	if (VirtualKeyboard::kbd)
 		delete VirtualKeyboard::kbd;
+
+	SDL_FreeSurface(this->screenshot);
 
 	SDL_FreeSurface(this->bg_left);
 	SDL_FreeSurface(this->keyboard);
@@ -483,6 +486,9 @@ void Gui::draw(SDL_Surface *where)
 
 void Gui::activate()
 {
+	SDL_FreeSurface(this->screenshot);
+	this->screenshot = TheC64->TheDisplay->SurfaceFromC64Display();
+
 	this->is_active = true;
 
 	this->cur_prefs = ThePrefs;
