@@ -175,11 +175,12 @@ const char *try_path(const char *path, const char *file)
 void Frodo::LoadFrodorc()
 {
 	const char *paths[] = {
-			NULL, // Filled in below
-			NULL, // also filled in below
+			"/frodo", // Wii
 			".",
 			"/apps/frodo", // Wii
 			"frodo",
+			NULL, // Filled in below
+			NULL, // also filled in below
 			"/usr/share/frodo",
 			NULL,
 	};
@@ -200,8 +201,8 @@ void Frodo::LoadFrodorc()
 		strcpy(home_1, "");
 		strcpy(home_2, "");
 	}
-	paths[0] = home_1;
-	paths[1] = home_2;
+	paths[4] = home_1;
+	paths[5] = home_2;
 
 	for (i = 0; paths[i]; i++)
 	{
