@@ -1,6 +1,8 @@
 		TODO: Add ability to select files to load from disks in
 		a menu
 c64-network.org, v2:
+		* Auto pause on menu enter
+
 		* Automatically save game info on screenshot timeout 
 
 		* Fix multiple bindings to the same key
