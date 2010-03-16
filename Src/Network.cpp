@@ -835,7 +835,6 @@ bool Network::MarshalAllData(NetworkUpdate *ud)
 
 	/* Already marshalled? */
 	if (ntohs(p->magic) == FRODO_NETWORK_MAGIC) {
-		warning("Data already marshalled\n");
 		return true;
 	}
 
