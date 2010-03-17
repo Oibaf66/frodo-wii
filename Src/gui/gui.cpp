@@ -348,11 +348,17 @@ GuiView *Gui::popView()
 
 void Gui::exitMenu()
 {
+	bool prefs_changed;
+
 	/* Pop all views */
 	while (this->popView())
 		;
 	TheC64->NewPrefs(this->np);
+	prefs_changed = ThePrefs != *this->np;
 	ThePrefs = *this->np;
+
+	if (prefs_changed)
+		ThePrefs.Save(ThePrefs.PrefsPath);
 
 	this->saveGameInfo(this->metadata_base_path, this->cur_gameInfo->filename);
 }
