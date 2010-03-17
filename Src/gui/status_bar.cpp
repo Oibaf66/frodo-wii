@@ -11,12 +11,21 @@ StatusBar::StatusBar() : Menu(Gui::gui->small_font), TimeoutHandler()
 }
 
 
-void StatusBar::queueMessage(const char *message)
+void StatusBar::queueMessage(const char *fmt, ...)
 {
+	char buf[255];
+	va_list ap;
+	int r;
+
+	memset(buf, 0, sizeof(buf));
+	va_start(ap, fmt);
+	r = vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
+	va_end(ap);
+
 	/* Free the existing message if we are overwriting it */
 	free((void*)this->messages[this->head]);
 
-	this->messages[this->head] = xstrdup(message);
+	this->messages[this->head] = xstrdup(buf);
 
 	/* If this is the first message, display it as soon as possible */
 	if (this->head == this->tail)
