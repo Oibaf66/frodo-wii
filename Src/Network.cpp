@@ -1125,11 +1125,11 @@ bool Network::AppendScreenshot(NetworkUpdatePeerInfo *pi)
 
 	scr = Gui::gui->screenshot;
 	if (!scr)
-		goto out_none;
+		goto out;
 
 	png = sdl_surface_to_png(scr, &sz);
 	if (!png)
-		goto out_scr;
+		goto out;
 	if ((sz & 3) != 0)
 		sz += 4 - (sz & 3);
 
@@ -1143,10 +1143,8 @@ bool Network::AppendScreenshot(NetworkUpdatePeerInfo *pi)
 
 	out = true;
 	free(png);
-out_scr:
-	SDL_FreeSurface(scr);
-out_none:
 
+out:
 	return out;
 }
 
