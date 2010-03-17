@@ -582,4 +582,7 @@ void Gui::init()
 		panic_if (!Gui::gui->setTheme("default"),
 				"Setting default theme failed\n");
 	}
+
+	Gui::gui->status_bar->queueMessage("Welcome to C64-network.org, the networked C64!");
+	Gui::gui->status_bar->queueMessage("Press Home for the menu!");
 }
