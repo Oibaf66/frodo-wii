@@ -1123,7 +1123,7 @@ bool Network::AppendScreenshot(NetworkUpdatePeerInfo *pi)
 	size_t sz;
 	bool out = NULL;
 
-	scr = TheC64->TheDisplay->SurfaceFromC64Display();
+	scr = Gui::gui->screenshot;
 	if (!scr)
 		goto out_none;
 
