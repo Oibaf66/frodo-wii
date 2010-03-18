@@ -19,6 +19,8 @@ struct game_info
 	uint16_t filename_off;
 	uint16_t score;
 	uint16_t year;
+	uint16_t musician_off;
+	uint16_t graphics_artist_off;
 	uint8_t data[]; /* 4-byte aligned */
 };
 
@@ -27,6 +29,8 @@ class GameInfo
 public:
 	GameInfo(const char *filename = "unknown", const char *name = " ",
 			const char *author = " ",
+			const char *musician = " ",
+			const char *graphics_artist = " ",
 			SDL_Surface *image = NULL);
 
 	GameInfo(GameInfo *gi);
@@ -55,6 +59,8 @@ public:
 	const char *name;
 	const char *author;
 	const char *filename;
+	const char *musician;
+	const char *graphics_artist;
 	SDL_Surface *screenshot;
 
 	uint16_t year;

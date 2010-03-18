@@ -44,6 +44,23 @@ struct game_info_v1
 	uint8_t data[]; /* 4-byte aligned */
 };
 
+struct game_info_v2
+{
+	uint32_t sz;
+	uint16_t version_magic;
+	uint16_t flags;
+
+	uint16_t author_off;
+	uint16_t name_off;
+	uint16_t screenshot_off; /* In PNG format */
+	uint16_t filename_off;
+	uint16_t score;
+	uint16_t year;
+	uint16_t musician_off;
+	uint16_t graphics_artist_off;
+	uint8_t data[]; /* 4-byte aligned */
+};
+
 static void demarshal_v0(struct game_info_v0 *src)
 {
 	src->sz = ntohl(src->sz);
@@ -58,16 +75,18 @@ static void demarshal_v0(struct game_info_v0 *src)
 
 static void demarshal_v1(struct game_info_v1 *src)
 {
-	src->sz = ntohl(src->sz);
-	src->version_magic = ntohs(src->version_magic);
-	src->author_off = ntohs(src->author_off);
-	src->name_off = ntohs(src->name_off);
-	src->filename_off = ntohs(src->filename_off);
-	src->screenshot_off = ntohs(src->screenshot_off);
-	src->score = ntohs(src->score);
-	src->year = ntohs(src->year);
+	demarshal_v0((struct game_info_v0 *)src);
 	src->flags = ntohs(src->flags);
+	src->year = ntohs(src->year);
 }
+
+static void demarshal_v2(struct game_info_v2 *src)
+{
+	demarshal_v1((struct game_info_v1 *)src);
+	src->musician_off = ntohs(src->musician_off);
+	src->graphics_artist_off = ntohs(src->graphics_artist_off);
+}
+
 
 static struct game_info *from_v0(struct game_info_v0 *src)
 {
@@ -104,9 +123,21 @@ static struct game_info *from_v1(struct game_info_v1 *src)
 	return dst;
 }
 
+static struct game_info *from_v2(struct game_info_v2 *src)
+{
+	struct game_info *dst;
+
+	demarshal_v2(src);
+	dst = (struct game_info*)xmalloc(src->sz);
+	memcpy(dst, src, src->sz);
+
+	return dst;
+}
+
 
 GameInfo::GameInfo(const char *filename,
 		const char *name, const char *author,
+		const char *musician, const char *graphics_artist,
 		SDL_Surface *image)
 {
 	this->filename = xstrdup(filename);
@@ -114,7 +145,8 @@ GameInfo::GameInfo(const char *filename,
 		this->name = xstrdup(filename);
 	else
 		this->name = xstrdup(name);
-	this->author = xstrdup(author);
+	this->musician = xstrdup(musician);
+	this->graphics_artist = xstrdup(graphics_artist);
 	this->screenshot = image;
 	this->score = 0;
 	this->year = 1982;
@@ -143,6 +175,8 @@ GameInfo::~GameInfo()
 	free((void*)this->name);
 	free((void*)this->author);
 	free((void*)this->filename);
+	free((void*)this->graphics_artist);
+	free((void*)this->musician);
 
 	SDL_FreeSurface(this->screenshot);
 }
@@ -152,11 +186,15 @@ void GameInfo::resetDefaults()
 	free((void*)this->name);
 	free((void*)this->author);
 	free((void*)this->filename);
+	free((void*)this->graphics_artist);
+	free((void*)this->musician);
 	SDL_FreeSurface(this->screenshot);
 
 	this->name = xstrdup(" ");
 	this->author = xstrdup(" ");
 	this->filename = xstrdup("unknown");
+	this->musician = xstrdup(" ");
+	this->graphics_artist = xstrdup(" ");
 	this->screenshot = NULL;
 }
 
@@ -224,6 +262,8 @@ bool GameInfo::fromDump(struct game_info *gi)
 		p = from_v0((struct game_info_v0 *)p); break;
 	case VERSION(1):
 		p = from_v1((struct game_info_v1 *)p); break;
+	case VERSION(2):
+		p = from_v2((struct game_info_v2 *)p); break;
 	default:
 		/* Garbage, let's return */
 		warning("game info garbage magic: %2x\n",
