@@ -145,8 +145,6 @@ GameInfo::GameInfo(const char *filename,
 		this->name = xstrdup(filename);
 	else
 		this->name = xstrdup(name);
-	this->musician = xstrdup(musician);
-	this->graphics_artist = xstrdup(graphics_artist);
 	this->screenshot = image;
 	this->score = 0;
 	this->year = 1982;
@@ -175,8 +173,6 @@ GameInfo::~GameInfo()
 	free((void*)this->name);
 	free((void*)this->author);
 	free((void*)this->filename);
-	free((void*)this->graphics_artist);
-	free((void*)this->musician);
 
 	SDL_FreeSurface(this->screenshot);
 }
@@ -186,15 +182,11 @@ void GameInfo::resetDefaults()
 	free((void*)this->name);
 	free((void*)this->author);
 	free((void*)this->filename);
-	free((void*)this->graphics_artist);
-	free((void*)this->musician);
 	SDL_FreeSurface(this->screenshot);
 
 	this->name = xstrdup(" ");
 	this->author = xstrdup(" ");
 	this->filename = xstrdup("unknown");
-	this->musician = xstrdup(" ");
-	this->graphics_artist = xstrdup(" ");
 	this->screenshot = NULL;
 }
 
