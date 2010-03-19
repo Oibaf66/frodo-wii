@@ -145,6 +145,7 @@ GameInfo::GameInfo(const char *filename,
 		this->name = xstrdup(filename);
 	else
 		this->name = xstrdup(name);
+	this->author = xstrdup(author);
 	this->screenshot = image;
 	this->score = 0;
 	this->year = 1982;
