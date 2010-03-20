@@ -214,7 +214,7 @@ inline uint8 MOS6502_1541::read_byte_io(uint16 adr)
 				return ((via1_prb & 0x1a)
 					| ((IECLines & TheCIA2->IECLines) >> 7)			// DATA
 					| (((IECLines & TheCIA2->IECLines) >> 4) & 0x04)	// CLK
-					| (((TheCIA2->IECLines << 3) & 0x80) ^ 0x85));		// ATN
+					| (((TheCIA2->IECLines << 3) & 0x80))) ^ 0x85;		// ATN
 			case 1:
 			case 15:
 				return 0xff;	// Keep 1541C ROMs happy (track 0 sensor)
