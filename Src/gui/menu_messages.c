@@ -212,7 +212,7 @@ const char *bind_key_menu_messages[13] = {
                 /*02*/          "Nunchuk",
                 /*03*/          "^|Z|C",
                 /*04*/          "Classic",
-                /*05*/          "^|a|b|x|y|Zl|Zr|+|-",
+                /*05*/          "^|a|b|x|y|L|R|Zl|Zr|+|-",
                 /*06*/          " ",
                 /*07*/          "Reset to defaults",
                 NULL

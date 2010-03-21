@@ -60,8 +60,8 @@ public:
 			case 1: ck = &Gui::gui->np->JoystickButtons[1]; break;
 			case 2: ck = &Gui::gui->np->JoystickButtons[2]; break;
 			case 3: ck = &Gui::gui->np->JoystickButtons[3]; break;
-			case 4: ck = &Gui::gui->np->JoystickButtons[4]; break;
-			case 5: ck = &Gui::gui->np->JoystickButtons[5]; break;
+			case 4: ck = &Gui::gui->np->JoystickButtons[5]; break;
+			case 5: ck = &Gui::gui->np->JoystickButtons[4]; break;
 			default:
 				panic("Wiimote: impossible selection %d", this->p_submenus[0].sel); break;
 			}
@@ -86,8 +86,8 @@ public:
 			case 5: ck = &Gui::gui->np->JoystickButtons[14]; break;
 			case 6: ck = &Gui::gui->np->JoystickButtons[15]; break;
 			case 7: ck = &Gui::gui->np->JoystickButtons[16]; break;
-			case 8: ck = &Gui::gui->np->JoystickButtons[17]; break;
-			case 9: ck = &Gui::gui->np->JoystickButtons[18]; break;
+			case 8: ck = &Gui::gui->np->JoystickButtons[18]; break;
+			case 9: ck = &Gui::gui->np->JoystickButtons[17]; break;
 			default:
 				panic("Classic: impossible selection %d", this->p_submenus[2].sel); break;
 			}
@@ -158,6 +158,8 @@ public:
 		this->hm[4] = this->addOne(this->hm[4], this->allocOne("b: %s", stringToPtr_Classic("b")));
 		this->hm[4] = this->addOne(this->hm[4], this->allocOne("x: %s", stringToPtr_Classic("x")));
 		this->hm[4] = this->addOne(this->hm[4], this->allocOne("y: %s", stringToPtr_Classic("y")));
+		this->hm[4] = this->addOne(this->hm[4], this->allocOne("L: %s", stringToPtr_Classic("L")));
+		this->hm[4] = this->addOne(this->hm[4], this->allocOne("R: %s", stringToPtr_Classic("R")));
 		this->hm[4] = this->addOne(this->hm[4], this->allocOne("Zl: %s", stringToPtr_Classic("Zl")));
 		this->hm[4] = this->addOne(this->hm[4], this->allocOne("Zr: %s", stringToPtr_Classic("Zr")));
 		this->hm[4] = this->addOne(this->hm[4], this->allocOne("+: %s", stringToPtr_Classic("+")));
@@ -352,7 +354,7 @@ private:
 
 	HelpBox *help;
 	int *cur_key;
-	const char **hm[12];
+	const char **hm[14];
 };
 
 void AnalogueBindListener::selectCallback(DialogueBox *which, int selected)

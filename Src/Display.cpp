@@ -905,6 +905,9 @@ uint8 C64::poll_joystick_buttons(int port, uint8 *table, bool *has_event)
 
 		if (table[kc] == 0)
 			table[kc] = cur ? 2 : 1;
+		/* Special case for joysticks: Each button can be pressed multiple times */
+		if ((kc & 0x40) && cur)
+			table[kc] = 2;
 	}
 
 	return out;
