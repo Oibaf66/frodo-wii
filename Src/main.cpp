@@ -31,6 +31,10 @@
 #include "data_store.hh"
 #include "utils.hh"
 
+#if defined(GEKKO)
+#include "fat.h"
+#endif
+
 
 // Global variables
 extern int init_graphics(void);
@@ -256,6 +260,10 @@ void Frodo::ReadyToRun(void)
 	TheC64->Run();
 
 	delete TheC64;
+
+#if defined(GEKKO)
+	fatUnmount("sd:");
+#endif
 }
 
 /*
