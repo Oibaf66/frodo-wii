@@ -142,7 +142,7 @@ public:
 	{
 		this->freeHelpMessages();
 
-		this->hm[0] = this->addOne(this->hm[0], this->allocOne("1: %s", stringToPtr_Wiimote("0")));
+		this->hm[0] = this->addOne(this->hm[0], this->allocOne("1: %s", stringToPtr_Wiimote("1")));
 		this->hm[0] = this->addOne(this->hm[0], this->allocOne("2: %s", stringToPtr_Wiimote("2")));
 		this->hm[0] = this->addOne(this->hm[0], this->allocOne("A: %s", stringToPtr_Wiimote("A")));
 		this->hm[0] = this->addOne(this->hm[0], this->allocOne("B: %s", stringToPtr_Wiimote("B")));
