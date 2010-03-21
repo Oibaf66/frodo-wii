@@ -23,7 +23,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <SDL.h>
-#include <SDL_mixer.h>
 
 #include "VIC.h"
 
