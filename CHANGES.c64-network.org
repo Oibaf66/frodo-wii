@@ -1,6 +1,10 @@
 		TODO: Add ability to select files to load from disks in
 		a menu
 c64-network.org, v2:
+		* Fix sound when paused
+		
+		* Fix nunchuk/classic controller joystick controls
+
 		* Auto pause on menu enter
 
 		* Automatically save game info on screenshot timeout 
