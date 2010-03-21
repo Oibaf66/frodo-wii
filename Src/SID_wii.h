@@ -92,7 +92,7 @@ void DigitalRenderer::PushVolume(uint8 volume)
 
 void DigitalRenderer::EmulateLine(void)
 {
-	if (!ready)
+	if (!ready || TheC64->IsPaused())
 		return;
 	this->PushVolume(volume);
 }
