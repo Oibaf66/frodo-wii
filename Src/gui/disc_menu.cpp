@@ -53,6 +53,12 @@ public:
 	{
 		if (!Gui::gui->cur_gameInfo->screenshot)
 		{
+			if (Gui::gui->is_active)
+			{
+				/* Rearm if we are in the GUI */
+				Gui::gui->timerController->arm(this, 10000);
+				return;
+			}
 			Gui::gui->cur_gameInfo->setScreenshot(TheC64->TheDisplay->SurfaceFromC64Display());
 			Gui::gui->updateGameInfo(new GameInfo(Gui::gui->cur_gameInfo));
 		}
