@@ -88,4 +88,6 @@ const char *ip_to_str(uint8_t *ip_in);
 
 const char *region_to_str(int region);
 
+SDL_Surface *sdl_surface_8bit_copy(SDL_Surface *src);
+
 #endif /* __UTILS_H__ */

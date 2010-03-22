@@ -172,8 +172,6 @@ static int png_colortype_from_surface(SDL_Surface *surface)
 
 	if (surface->format->palette)
 		colortype |= PNG_COLOR_MASK_PALETTE;
-	else if (surface->format->Amask)
-		colortype |= PNG_COLOR_MASK_ALPHA;
 
 	return colortype;
 }
@@ -286,6 +284,39 @@ SDL_Surface *sdl_surface_from_data(void *data, size_t sz)
 
 	return out;
 }
+
+SDL_Surface *sdl_surface_8bit_copy(SDL_Surface *src)
+{
+	Uint32 rmask,gmask,bmask,amask;
+	SDL_Surface *out;
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+	rmask = 0xff000000;
+	gmask = 0x00ff0000;
+	bmask = 0x0000ff00;
+	amask = 0x000000ff;
+#else
+	rmask = 0x000000ff;
+	gmask = 0x0000ff00;
+	bmask = 0x00ff0000;
+	amask = 0xff000000;
+#endif
+	if (!src)
+		return NULL;
+	if (src->format->BitsPerPixel != 8)
+		return NULL;
+
+	out = SDL_CreateRGBSurface(SDL_SWSURFACE, src->w, src->h, 8,
+			rmask, gmask, bmask, amask);
+	if (!out)
+		return NULL;
+	memcpy(out->pixels, src->pixels, src->h * src->pitch);
+
+	SDL_SetColors(out, sdl_palette, 0, PALETTE_SIZE);
+
+	return out;
+}
+
 
 void highlight_background(SDL_Surface *where, Font *font,
 		SDL_Surface *bg_left, SDL_Surface *bg_middle, SDL_Surface *bg_right,

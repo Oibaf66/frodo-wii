@@ -58,7 +58,7 @@ public:
 		{
 		case 0:
 		{
-			SDL_Surface *tmp = SDL_DisplayFormat(Gui::gui->screenshot);
+			SDL_Surface *tmp = sdl_surface_8bit_copy(Gui::gui->screenshot);
 
 			this->box->gi->setScreenshot(tmp);
 		} break;
@@ -83,7 +83,7 @@ public:
 		/* If we haven't' saved a screenshot, save it anyway */
 		if (!this->box->gi->screenshot)
 		{
-			SDL_Surface *p = TheC64->TheDisplay->SurfaceFromC64Display();
+			SDL_Surface *p = sdl_surface_8bit_copy(Gui::gui->screenshot);
 
 			this->box->gi->setScreenshot(p);
 		}

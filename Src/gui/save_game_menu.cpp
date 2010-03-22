@@ -182,7 +182,7 @@ void SaveGameView::saveSnapshot()
 	if (!was_paused)
 		TheC64->Resume();
 
-	Gui::gui->cur_gameInfo->setScreenshot(TheC64->TheDisplay->SurfaceFromC64Display());
+	Gui::gui->cur_gameInfo->setScreenshot(sdl_surface_8bit_copy(Gui::gui->screenshot));
 	Gui::gui->saveGameInfo(Gui::gui->save_game_path, out_name);
 	ThePrefs.Save(prefs_name);
 
