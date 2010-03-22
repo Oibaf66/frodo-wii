@@ -647,6 +647,7 @@ public:
 	virtual void stringCallback(const char *str)
 	{
 		*out = (const char *)xstrdup(str);
+		Gui::gui->status_bar->queueMessage("Network message sent!");
 		/* Remove thyself! */
 		delete this;
 	}
