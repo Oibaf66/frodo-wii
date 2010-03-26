@@ -136,8 +136,8 @@ static struct game_info *from_v2(struct game_info_v2 *src)
 
 
 GameInfo::GameInfo(const char *filename,
-		const char *name, const char *author,
-		const char *musician, const char *graphics_artist,
+		const char *name, const char *publisher,
+		const char *creator, const char *musician,
 		SDL_Surface *image)
 {
 	this->filename = xstrdup(filename);
@@ -145,8 +145,12 @@ GameInfo::GameInfo(const char *filename,
 		this->name = xstrdup(filename);
 	else
 		this->name = xstrdup(name);
-	this->author = xstrdup(author);
+	this->publisher = xstrdup(publisher);
+	this->creator = xstrdup(creator);
+	this->musician = xstrdup(musician);
 	this->screenshot = image;
+	this->genre = GENRE_UNKNOWN;
+	this->players = 1;
 	this->score = 0;
 	this->year = 1982;
 }
@@ -160,20 +164,26 @@ GameInfo::GameInfo(GameInfo *gi)
 	}
 
 	this->name = xstrdup(gi->name);
-	this->author = xstrdup(gi->author);
+	this->publisher = xstrdup(gi->publisher);
 	this->filename = xstrdup(gi->filename);
+	this->musician = xstrdup(gi->musician);
 	this->screenshot = NULL;
+	this->players = gi->players;
+	this->score = gi->score;
 	this->year = gi->year;
+	this->genre = gi->genre;
 
 	if (gi->screenshot)
-		this->screenshot = SDL_DisplayFormatAlpha(gi->screenshot);
+		this->screenshot = SDL_DisplayFormat(gi->screenshot);
 }
 
 GameInfo::~GameInfo()
 {
 	free((void*)this->name);
-	free((void*)this->author);
+	free((void*)this->publisher);
 	free((void*)this->filename);
+	free((void*)this->creator);
+	free((void*)this->musician);
 
 	SDL_FreeSurface(this->screenshot);
 }
@@ -181,12 +191,12 @@ GameInfo::~GameInfo()
 void GameInfo::resetDefaults()
 {
 	free((void*)this->name);
-	free((void*)this->author);
+	free((void*)this->publisher);
 	free((void*)this->filename);
 	SDL_FreeSurface(this->screenshot);
 
 	this->name = xstrdup(" ");
-	this->author = xstrdup(" ");
+	this->publisher = xstrdup(" ");
 	this->filename = xstrdup("unknown");
 	this->screenshot = NULL;
 }
@@ -205,7 +215,7 @@ struct game_info *GameInfo::dump()
 	png_data = sdl_surface_to_png(this->screenshot, &png_sz);
 	panic_if(!png_data, "Cannot create PNG from surface\n");
 
-	total_sz += strlen(this->author) + 1;
+	total_sz += strlen(this->publisher) + 1;
 	total_sz += strlen(this->name) + 1;
 	total_sz += strlen(this->filename) + 1;
 
@@ -221,12 +231,12 @@ struct game_info *GameInfo::dump()
 	out->version_magic = VERSION_MAGIC;
 
 	out->author_off = 0; /* Starts AFTER the header */
-	out->name_off = out->author_off + strlen(this->author) + 1;
+	out->name_off = out->author_off + strlen(this->publisher) + 1;
 	out->filename_off = out->name_off + strlen(this->name) + 1;
 	out->screenshot_off = out->filename_off + strlen(this->filename) + 1;
 
 
-	memcpy(out->data + out->author_off, this->author, strlen(this->author) + 1);
+	memcpy(out->data + out->author_off, this->publisher, strlen(this->publisher) + 1);
 	memcpy(out->data + out->name_off, this->name, strlen(this->name) + 1);
 	memcpy(out->data + out->filename_off, this->filename, strlen(this->filename) + 1);
 	memcpy(out->data + out->screenshot_off, png_data, png_sz);
@@ -265,7 +275,7 @@ bool GameInfo::fromDump(struct game_info *gi)
 		break;
 	}
 
-	this->author = xstrdup((char*)p->data + p->author_off);
+	this->publisher = xstrdup((char*)p->data + p->author_off);
 	this->name = xstrdup((char*)p->data + p->name_off);
 	this->filename = xstrdup((char*)p->data + p->filename_off);
 	this->score = p->score;
@@ -335,8 +345,8 @@ void GameInfo::setAuthor(const char *author)
 {
 	if (strlen(author) == 0)
 		author = " ";
-	free((void*)this->author);
-	this->author = xstrdup(author);
+	free((void*)this->publisher);
+	this->publisher = xstrdup(author);
 	if (strcmp(author, " ") != 0)
 		this->score++;
 }

@@ -81,7 +81,7 @@ public:
 		{
 			snprintf(this->year, sizeof(this->year), "%d", this->gi->year);
 			this->gi_messages[0] = this->gi->name ? this->gi->name : " ";
-			this->gi_messages[3] = this->gi->author ? this->gi->author : " ";
+			this->gi_messages[3] = this->gi->publisher ? this->gi->publisher : " ";
 		}
 		this->gi_messages[6] = year;
 
