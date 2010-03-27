@@ -72,6 +72,7 @@ struct game_info_v2
 	uint16_t filename_off;
 	uint16_t score;
 	uint16_t year;
+	uint16_t creator_off;
 	uint16_t musician_off;
 	uint16_t graphics_artist_off;
 	uint8_t data[]; /* 4-byte aligned */
@@ -100,6 +101,7 @@ static void demarshal_v2(struct game_info_v2 *src)
 {
 	demarshal_v1((struct game_info_v1 *)src);
 	src->musician_off = ntohs(src->musician_off);
+	src->creator_off = ntohs(src->creator_off);
 	src->graphics_artist_off = ntohs(src->graphics_artist_off);
 }
 
@@ -153,8 +155,8 @@ static struct game_info *from_v2(struct game_info_v2 *src)
 
 GameInfo::GameInfo(const char *filename,
 		const char *name, const char *publisher,
-		const char *creator, const char *musician,
-		SDL_Surface *image)
+		const char *creator, const char *graphics_artist,
+		const char *musician, SDL_Surface *image)
 {
 	this->filename = xstrdup(filename);
 	if (strcmp(name, " ") == 0)
@@ -163,6 +165,7 @@ GameInfo::GameInfo(const char *filename,
 		this->name = xstrdup(name);
 	this->publisher = xstrdup(publisher);
 	this->creator = xstrdup(creator);
+	this->graphics_artist = xstrdup(graphics_artist);
 	this->musician = xstrdup(musician);
 	this->screenshot = image;
 	this->genre = GENRE_UNKNOWN;
@@ -182,6 +185,8 @@ GameInfo::GameInfo(GameInfo *gi)
 	this->name = xstrdup(gi->name);
 	this->publisher = xstrdup(gi->publisher);
 	this->filename = xstrdup(gi->filename);
+	this->graphics_artist = xstrdup(gi->graphics_artist);
+	this->creator = xstrdup(gi->creator);
 	this->musician = xstrdup(gi->musician);
 	this->screenshot = NULL;
 	this->players = gi->players;
@@ -195,10 +200,16 @@ GameInfo::GameInfo(GameInfo *gi)
 
 GameInfo::~GameInfo()
 {
+	this->freeAll();
+}
+
+void GameInfo::freeAll()
+{
 	free((void*)this->name);
 	free((void*)this->publisher);
 	free((void*)this->filename);
 	free((void*)this->creator);
+	free((void*)this->graphics_artist);
 	free((void*)this->musician);
 
 	SDL_FreeSurface(this->screenshot);
@@ -206,15 +217,20 @@ GameInfo::~GameInfo()
 
 void GameInfo::resetDefaults()
 {
-	free((void*)this->name);
-	free((void*)this->publisher);
-	free((void*)this->filename);
-	SDL_FreeSurface(this->screenshot);
+	this->freeAll();
 
 	this->name = xstrdup(" ");
 	this->publisher = xstrdup(" ");
 	this->filename = xstrdup("unknown");
+	this->creator = xstrdup(" ");
+	this->musician = xstrdup(" ");
+	this->graphics_artist = xstrdup(" ");
 	this->screenshot = NULL;
+
+	this->genre = GENRE_UNKNOWN;
+	this->players = 1;
+	this->score = 0;
+	this->year = 1982;
 }
 
 void *GameInfo::dump(size_t *out_sz)
