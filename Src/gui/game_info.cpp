@@ -16,6 +16,22 @@
 /* Current magic */
 #define VERSION_MAGIC  VERSION(1)
 
+struct game_info
+{
+	/* These two MUST stay the same */
+	uint32_t sz;
+	uint16_t version_magic;
+	uint16_t flags;
+
+	uint16_t author_off;
+	uint16_t name_off;
+	uint16_t screenshot_off; /* In PNG format */
+	uint16_t filename_off;
+	uint16_t score;
+	uint16_t year;
+	uint8_t data[]; /* 4-byte aligned */
+};
+
 struct game_info_v0
 {
 	uint32_t sz;
@@ -201,7 +217,7 @@ void GameInfo::resetDefaults()
 	this->screenshot = NULL;
 }
 
-struct game_info *GameInfo::dump()
+void *GameInfo::dump(size_t *out_sz)
 {
 	size_t total_sz = sizeof(struct game_info);
 	size_t png_sz;
@@ -241,6 +257,7 @@ struct game_info *GameInfo::dump()
 	memcpy(out->data + out->filename_off, this->filename, strlen(this->filename) + 1);
 	memcpy(out->data + out->screenshot_off, png_data, png_sz);
 
+	*out_sz = out->sz;
 	/* Marshall it all */
 	out->sz = htonl(out->sz);
 	out->author_off = htons(out->author_off);
@@ -251,7 +268,7 @@ struct game_info *GameInfo::dump()
 	out->score = htons(out->score);
 	out->year = htons(out->year);
 
-	return out;
+	return (void *)out;
 }
 
 bool GameInfo::fromDump(struct game_info *gi)

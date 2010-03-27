@@ -15,21 +15,7 @@ enum
 	GENRE_PUZZLE = 4,
 };
 
-struct game_info
-{
-	/* These two MUST stay the same */
-	uint32_t sz;
-	uint16_t version_magic;
-	uint16_t flags;
-
-	uint16_t author_off;
-	uint16_t name_off;
-	uint16_t screenshot_off; /* In PNG format */
-	uint16_t filename_off;
-	uint16_t score;
-	uint16_t year;
-	uint8_t data[]; /* 4-byte aligned */
-};
+struct game_info;
 
 class GameInfo
 {
@@ -55,7 +41,7 @@ public:
 	void resetDefaults();
 
 	/** Returns an allocated dump structure */
-	struct game_info *dump();
+	void *dump(size_t *out_sz);
 
 	/** Fill in this game info object from a structure */
 	bool fromDump(struct game_info *data);

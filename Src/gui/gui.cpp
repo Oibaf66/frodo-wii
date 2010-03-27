@@ -541,12 +541,11 @@ void Gui::saveGameInfo(const char *base_path, const char *name)
 	if (strcmp(this->cur_gameInfo->filename, "unknown") == 0)
 		return;
 
-	struct game_info *p = this->cur_gameInfo->dump();
+	size_t sz;
+	void *p = this->cur_gameInfo->dump(&sz);
 
 	if (p)
 	{
-		size_t sz = ntohl(p->sz);
-
 		char *new_name = (char *)xmalloc(strlen(base_path) +
 				8 + strlen(name));
 		FILE *fp;
