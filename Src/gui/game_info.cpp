@@ -72,6 +72,8 @@ struct game_info_v2
 	uint16_t filename_off;
 	uint16_t score;
 	uint16_t year;
+	uint8_t genre;
+	uint8_t players;
 	uint16_t creator_off;
 	uint16_t musician_off;
 	uint16_t graphics_artist_off;

@@ -53,8 +53,8 @@ public:
 	const char *graphics_artist;
 	SDL_Surface *screenshot;
 
-	uint16_t genre;
-	uint16_t players;
+	uint8_t genre;
+	uint8_t players;
 	uint16_t year;
 	uint16_t score;
 
