@@ -14,7 +14,7 @@
 #define VERSION_BASE   (0x1978)
 #define VERSION(x)     (VERSION_BASE + (x))
 /* Current magic */
-#define VERSION_MAGIC  VERSION(1)
+#define VERSION_MAGIC  VERSION(2)
 
 struct game_info
 {
@@ -29,6 +29,11 @@ struct game_info
 	uint16_t filename_off;
 	uint16_t score;
 	uint16_t year;
+	uint8_t genre;
+	uint8_t players;
+	uint16_t creator_off;
+	uint16_t musician_off;
+	uint16_t graphics_artist_off;
 	uint8_t data[]; /* 4-byte aligned */
 };
 
@@ -169,6 +174,9 @@ static bool from_v2(GameInfo *dst, struct game_info_v2 *p)
 	dst->genre = p->genre;
 	dst->players = p->players;
 
+	printf("From 2: %d, %d, %s, %s, %s\n",
+			dst->genre, dst->players, dst->graphics_artist, dst->musician, dst->creator);
+
 	dst->screenshot = sdl_surface_from_data(p->data + p->screenshot_off,
 			p->sz - p->screenshot_off);
 	if (!dst->screenshot)
@@ -191,6 +199,9 @@ GameInfo::GameInfo(const char *filename,
 	this->publisher = xstrdup(publisher);
 	this->creator = xstrdup(creator);
 	this->graphics_artist = xstrdup(graphics_artist);
+	this->musician = xstrdup(musician);
+	this->graphics_artist = xstrdup(graphics_artist);
+	this->creator = xstrdup(creator);
 	this->musician = xstrdup(musician);
 	this->screenshot = image;
 	this->genre = GENRE_UNKNOWN;
@@ -275,6 +286,9 @@ void *GameInfo::dump(size_t *out_sz)
 	total_sz += strlen(this->publisher) + 1;
 	total_sz += strlen(this->name) + 1;
 	total_sz += strlen(this->filename) + 1;
+	total_sz += strlen(this->creator) + 1;
+	total_sz += strlen(this->musician) + 1;
+	total_sz += strlen(this->graphics_artist) + 1;
 
 	total_sz += png_sz;
 	/* 4-byte align */
@@ -285,17 +299,25 @@ void *GameInfo::dump(size_t *out_sz)
 	out->sz = total_sz;
 	out->score = this->score;
 	out->year = this->year;
+	out->genre = this->genre;
+	out->players = this->players;
 	out->version_magic = VERSION_MAGIC;
 
 	out->author_off = 0; /* Starts AFTER the header */
 	out->name_off = out->author_off + strlen(this->publisher) + 1;
 	out->filename_off = out->name_off + strlen(this->name) + 1;
-	out->screenshot_off = out->filename_off + strlen(this->filename) + 1;
+	out->creator_off = out->filename_off + strlen(this->filename) + 1;
+	out->musician_off = out->creator_off + strlen(this->creator) + 1;
+	out->graphics_artist_off = out->musician_off + strlen(this->musician) + 1;
+	out->screenshot_off = out->graphics_artist_off + strlen(this->graphics_artist) + 1;
 
 
 	memcpy(out->data + out->author_off, this->publisher, strlen(this->publisher) + 1);
 	memcpy(out->data + out->name_off, this->name, strlen(this->name) + 1);
 	memcpy(out->data + out->filename_off, this->filename, strlen(this->filename) + 1);
+	memcpy(out->data + out->creator_off, this->creator, strlen(this->creator) + 1);
+	memcpy(out->data + out->musician_off, this->musician, strlen(this->musician) + 1);
+	memcpy(out->data + out->graphics_artist_off, this->graphics_artist, strlen(this->graphics_artist) + 1);
 	memcpy(out->data + out->screenshot_off, png_data, png_sz);
 
 	*out_sz = out->sz;
@@ -305,6 +327,9 @@ void *GameInfo::dump(size_t *out_sz)
 	out->version_magic = htons(out->version_magic);
 	out->name_off = htons(out->name_off);
 	out->filename_off = htons(out->filename_off);
+	out->creator_off = htons(out->creator_off);
+	out->musician_off = htons(out->musician_off);
+	out->graphics_artist_off = htons(out->graphics_artist_off);
 	out->screenshot_off = htons(out->screenshot_off);
 	out->score = htons(out->score);
 	out->year = htons(out->year);
