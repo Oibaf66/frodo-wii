@@ -108,50 +108,73 @@ static void demarshal_v2(struct game_info_v2 *src)
 }
 
 
-static struct game_info *from_v0(struct game_info_v0 *src)
+static bool from_v0(GameInfo *dst, struct game_info_v0 *p)
 {
-	size_t d = sizeof(struct game_info_v1) - sizeof(struct game_info_v0);
-	struct game_info *dst;
+	demarshal_v0(p);
 
-	printf("Converting v0->v1\n");
-	demarshal_v0(src);
-	dst = (struct game_info*)xmalloc(src->sz + d);
+	dst->publisher = xstrdup((char*)p->data + p->author_off);
+	dst->name = xstrdup((char*)p->data + p->name_off);
+	dst->filename = xstrdup((char*)p->data + p->filename_off);
+	dst->score = p->score;
+	dst->year = 1984;
+	dst->graphics_artist = xstrdup(" ");
+	dst->musician = xstrdup(" ");
+	dst->creator = xstrdup(" ");
+	dst->genre = GENRE_UNKNOWN;
+	dst->players = 1;
 
-	dst->sz = src->sz + d;
-	dst->version_magic = VERSION_MAGIC;
-	dst->flags = 0;
-	dst->year = 1982; /* Got to assume something, right :-) */
-	dst->score = src->score;
+	dst->screenshot = sdl_surface_from_data(p->data + p->screenshot_off,
+			p->sz - p->screenshot_off);
+	if (!dst->screenshot)
+		return false;
 
-	dst->author_off = src->author_off;
-	dst->name_off = src->name_off;
-	dst->screenshot_off = src->screenshot_off;
-	dst->filename_off = src->filename_off;
-	memcpy(dst->data, src->data, src->sz - sizeof(struct game_info_v0));
-
-	return dst;
+	return true;
 }
 
-static struct game_info *from_v1(struct game_info_v1 *src)
+static bool from_v1(GameInfo *dst, struct game_info_v1 *p)
 {
-	struct game_info *dst;
+	demarshal_v1(p);
 
-	demarshal_v1(src);
-	dst = (struct game_info*)xmalloc(src->sz);
-	memcpy(dst, src, src->sz);
+	dst->publisher = xstrdup((char*)p->data + p->author_off);
+	dst->name = xstrdup((char*)p->data + p->name_off);
+	dst->filename = xstrdup((char*)p->data + p->filename_off);
+	dst->score = p->score;
+	dst->year = p->year;
+	dst->graphics_artist = xstrdup(" ");
+	dst->musician = xstrdup(" ");
+	dst->creator = xstrdup(" ");
+	dst->genre = GENRE_UNKNOWN;
+	dst->players = 1;
 
-	return dst;
+	dst->screenshot = sdl_surface_from_data(p->data + p->screenshot_off,
+			p->sz - p->screenshot_off);
+	if (!dst->screenshot)
+		return false;
+
+	return true;
 }
 
-static struct game_info *from_v2(struct game_info_v2 *src)
+static bool from_v2(GameInfo *dst, struct game_info_v2 *p)
 {
-	struct game_info *dst;
+	demarshal_v2(p);
 
-	demarshal_v2(src);
-	dst = (struct game_info*)xmalloc(src->sz);
-	memcpy(dst, src, src->sz);
+	dst->publisher = xstrdup((char*)p->data + p->author_off);
+	dst->name = xstrdup((char*)p->data + p->name_off);
+	dst->filename = xstrdup((char*)p->data + p->filename_off);
+	dst->score = p->score;
+	dst->year = p->year;
+	dst->graphics_artist = xstrdup((char*)p->data + p->graphics_artist_off);
+	dst->musician = xstrdup((char*)p->data + p->musician_off);
+	dst->creator = xstrdup((char*)p->data + p->creator_off);
+	dst->genre = p->genre;
+	dst->players = p->players;
 
-	return dst;
+	dst->screenshot = sdl_surface_from_data(p->data + p->screenshot_off,
+			p->sz - p->screenshot_off);
+	if (!dst->screenshot)
+		return false;
+
+	return true;
 }
 
 
@@ -291,44 +314,27 @@ void *GameInfo::dump(size_t *out_sz)
 
 bool GameInfo::fromDump(struct game_info *gi)
 {
-	struct game_info *p = gi;
+	bool ret;
 
-	/* Demarshal */
-	switch (ntohs(p->version_magic))
+	this->freeAll();
+
+	/* Demarshal and convert */
+	switch (ntohs(gi->version_magic))
 	{
 	case VERSION(0):
-		p = from_v0((struct game_info_v0 *)p); break;
+		ret = from_v0(this, (struct game_info_v0 *)gi); break;
 	case VERSION(1):
-		p = from_v1((struct game_info_v1 *)p); break;
+		ret = from_v1(this, (struct game_info_v1 *)gi); break;
 	case VERSION(2):
-		p = from_v2((struct game_info_v2 *)p); break;
+		ret = from_v2(this, (struct game_info_v2 *)gi); break;
 	default:
 		/* Garbage, let's return */
 		warning("game info garbage magic: %2x\n",
-				ntohs(p->version_magic));
+				ntohs(gi->version_magic));
 		return false;
-		break;
 	}
 
-	this->publisher = xstrdup((char*)p->data + p->author_off);
-	this->name = xstrdup((char*)p->data + p->name_off);
-	this->filename = xstrdup((char*)p->data + p->filename_off);
-	this->score = p->score;
-	this->year = p->year;
-
-	this->screenshot = sdl_surface_from_data(p->data + p->screenshot_off,
-			p->sz - p->screenshot_off);
-	if (!this->screenshot)
-		goto bail_out;
-	free(p);
-
-	return true;
-
-bail_out:
-	free(p);
-	this->resetDefaults();
-
-	return false;
+	return ret;
 }
 
 GameInfo *GameInfo::loadFromFile(const char *fileName)
