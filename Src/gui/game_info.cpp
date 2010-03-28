@@ -404,14 +404,34 @@ GameInfo *GameInfo::loadFromFile(const char *fileName)
 	return out;
 }
 
-void GameInfo::setAuthor(const char *author)
+void GameInfo::setGeneric(const char **what, const char *who)
 {
-	if (strlen(author) == 0)
-		author = " ";
-	free((void*)this->publisher);
-	this->publisher = xstrdup(author);
-	if (strcmp(author, " ") != 0)
+	if (strlen(who) == 0)
+		who = " ";
+	free((void*)*what);
+	*what = xstrdup(who);
+	if (strcmp(who, " ") != 0)
 		this->score++;
+}
+
+void GameInfo::setAuthor(const char *who)
+{
+	this->setGeneric(&this->publisher, who);
+}
+
+void GameInfo::setCreator(const char *who)
+{
+	this->setGeneric(&this->creator, who);
+}
+
+void GameInfo::setMusician(const char *who)
+{
+	this->setGeneric(&this->musician, who);
+}
+
+void GameInfo::setGraphicsArtist(const char *who)
+{
+	this->setGeneric(&this->graphics_artist, who);
 }
 
 void GameInfo::setYear(uint16_t year)

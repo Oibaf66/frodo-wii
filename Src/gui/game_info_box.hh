@@ -81,7 +81,14 @@ public:
 		{
 			snprintf(this->year, sizeof(this->year), "%d", this->gi->year);
 			this->gi_messages[0] = this->gi->name ? this->gi->name : " ";
-			this->gi_messages[3] = this->gi->publisher ? this->gi->publisher : " ";
+			this->gi_messages[1] = this->gi->publisher ? this->gi->publisher : " ";
+			this->gi_messages[2] = this->gi->creator ? this->gi->creator : " ";
+			this->gi_messages[3] = this->gi->musician ? this->gi->musician : " ";
+			this->gi_messages[4] = this->gi->graphics_artist ? this->gi->graphics_artist : " ";
+			if (this->gi->genre == GENRE_UNKNOWN || this->gi->genre >= GENRE_MAX)
+				this->gi_messages[5] = "Unknown";
+			else
+				this->gi_messages[5] = genre_dlg[this->gi->genre - 1];
 		}
 		this->gi_messages[6] = year;
 

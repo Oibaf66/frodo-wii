@@ -323,15 +323,38 @@ const char **network_menu_help[9] = {
 };
 
 
-const char *game_info_menu_messages[6] = {
+const char *game_info_menu_messages[11] = {
 	/*00*/          "Capture game screenshot",
 	/*01*/          " ",
 	/*02*/          "Set game name",
-	/*03*/          "Set game author",
-	/*04*/          "Set publishing year",
+	/*03*/          "Set publisher",
+	/*04*/          "Set creator/programmer",
+	/*05*/          "Set musician",
+	/*06*/          "Set graphics artist",
+	/*07*/          "Set publishing year",
+	/*08*/          "Set genre",
+	/*09*/          "Set number of players",
 	NULL
 };
 
+const char *genre_dlg[8] = {
+	/*00*/          "Action",
+	/*01*/		"Adventure",
+	/*02*/		"Simulation",
+	/*03*/		"Puzzle",
+	/*04*/		"Platform",
+	/*05*/		"Strategy",
+	/*06*/          "Role playing",
+	NULL
+};
+
+const char *players_dlg[5] = {
+	/*00*/          "#  1",
+	/*01*/		"#  2",
+	/*02*/		"#  3",
+	/*03*/		"#  4",
+	NULL
+};
 
 const char *needs_help[9] = {
 	/*00*/          "c64-network.org needs",

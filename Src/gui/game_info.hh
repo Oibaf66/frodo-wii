@@ -13,6 +13,11 @@ enum
 	GENRE_ADVENTURE = 2,
 	GENRE_SIMULATION = 3,
 	GENRE_PUZZLE = 4,
+	GENRE_PLATFORM = 5,
+	GENRE_STRATEGY = 6,
+	GENRE_ROLE_PLAYING = 7,
+
+	GENRE_MAX
 };
 
 struct game_info;
@@ -30,6 +35,12 @@ public:
 	GameInfo(GameInfo *gi);
 
 	~GameInfo();
+
+	void setGraphicsArtist(const char *who);
+
+	void setMusician(const char *who);
+
+	void setCreator(const char *who);
 
 	void setAuthor(const char *author);
 
@@ -59,6 +70,8 @@ public:
 	uint16_t score;
 
 private:
+	void setGeneric(const char **what, const char *who);
+
 	/** Fill in this game info object from a structure */
 	bool fromDump(struct game_info *data);
 

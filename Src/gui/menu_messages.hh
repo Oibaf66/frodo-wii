@@ -23,6 +23,8 @@ extern const char *broken_theme_dlg[];
 extern const char *select_analogue_dlg[];
 extern const char *game_info_bad_year_dlg[];
 extern const char *game_info_bad_number_dlg[];
+extern const char *genre_dlg[];
+extern const char *players_dlg[];
 extern const char *save_state_done[];
 
 #endif

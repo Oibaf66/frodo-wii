@@ -8,6 +8,64 @@
 
 class GameInfoView;
 
+class MultiSelectionDialogue : public DialogueBox
+{
+public:
+	MultiSelectionDialogue(GameInfoBox *box, const char *msgs[]) : DialogueBox(msgs, true)
+	{
+		this->setSelectedBackground(Gui::gui->bg_left, Gui::gui->bg_middle,
+				Gui::gui->bg_right,
+				Gui::gui->bg_submenu_left, Gui::gui->bg_submenu_middle,
+				Gui::gui->bg_submenu_right);
+		this->cur_sel = 0;
+		this->box = box;
+	}
+
+	int selectNext(event_t ev)
+	{
+		return Menu::selectNext(ev);
+	}
+
+protected:
+	GameInfoBox *box;
+};
+
+class GenreDialogue : public MultiSelectionDialogue
+{
+public:
+	GenreDialogue(GameInfoBox *box, const char *msgs[]) : MultiSelectionDialogue(box, msgs)
+	{
+	}
+
+	void selectCallback(int which)
+	{
+		Gui::gui->popDialogueBox();
+
+		box->gi->genre = which + 1;
+		box->updateMessages();
+
+		delete this;
+	}
+};
+
+class PlayersDialogue : public MultiSelectionDialogue
+{
+public:
+	PlayersDialogue(GameInfoBox *box, const char *msgs[]) : MultiSelectionDialogue(box, msgs)
+	{
+	}
+
+	void selectCallback(int which)
+	{
+		Gui::gui->popDialogueBox();
+
+		box->gi->players = which + 1;
+		box->updateMessages();
+
+		delete this;
+	}
+};
+
 class GameInfoMenu : public Menu, public KeyboardListener
 {
 	friend class GameInfoView;
@@ -30,6 +88,15 @@ public:
 			this->box->gi->setAuthor(str);
 			break;
 		case 4:
+			this->box->gi->setCreator(str);
+			break;
+		case 5:
+			this->box->gi->setMusician(str);
+			break;
+		case 6:
+			this->box->gi->setGraphicsArtist(str);
+			break;
+		case 7:
 		{
 			unsigned long v;
 			char *endp;
@@ -65,8 +132,17 @@ public:
 		case 2:
 		case 3:
 		case 4:
+		case 5:
+		case 6:
+		case 7:
 			VirtualKeyboard::kbd->activate();
 			VirtualKeyboard::kbd->registerListener(this);
+			break;
+		case 8:
+			Gui::gui->pushDialogueBox(new GenreDialogue(this->box, genre_dlg));
+			break;
+		case 9:
+			Gui::gui->pushDialogueBox(new PlayersDialogue(this->box, players_dlg));
 			break;
 		default:
 			panic("Impossible menu option\n");
