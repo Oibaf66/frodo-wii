@@ -174,9 +174,6 @@ static bool from_v2(GameInfo *dst, struct game_info_v2 *p)
 	dst->genre = p->genre;
 	dst->players = p->players;
 
-	printf("From 2: %d, %d, %s, %s, %s\n",
-			dst->genre, dst->players, dst->graphics_artist, dst->musician, dst->creator);
-
 	dst->screenshot = sdl_surface_from_data(p->data + p->screenshot_off,
 			p->sz - p->screenshot_off);
 	if (!dst->screenshot)
