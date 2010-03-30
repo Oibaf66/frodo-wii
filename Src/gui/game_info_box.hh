@@ -98,7 +98,7 @@ public:
 		this->setText(this->gi_messages);
 	}
 
-	const char *gi_messages[9];
+	const char *gi_messages[10];
 	char year[8];
 	char players[4];
 	GameInfo *gi;
