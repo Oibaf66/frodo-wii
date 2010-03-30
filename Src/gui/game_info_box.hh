@@ -11,6 +11,7 @@ public:
 	{
 		this->gi = NULL;
 		memset(this->year, 0, sizeof(this->year));
+		memset(this->players, 0, sizeof(this->players));
 		memset(this->gi_messages, 0, sizeof(this->gi_messages));
 		this->setSelectedBackground(NULL, NULL, NULL, NULL, NULL, NULL);
 	}
@@ -80,6 +81,7 @@ public:
 		if (this->gi)
 		{
 			snprintf(this->year, sizeof(this->year), "%d", this->gi->year);
+			snprintf(this->players, sizeof(this->players), "%d", this->gi->players);
 			this->gi_messages[0] = this->gi->name ? this->gi->name : " ";
 			this->gi_messages[1] = this->gi->publisher ? this->gi->publisher : " ";
 			this->gi_messages[2] = this->gi->creator ? this->gi->creator : " ";
@@ -91,12 +93,14 @@ public:
 				this->gi_messages[5] = genre_dlg[this->gi->genre - 1];
 		}
 		this->gi_messages[6] = year;
+		this->gi_messages[7] = this->players;
 
 		this->setText(this->gi_messages);
 	}
 
-	const char *gi_messages[8];
+	const char *gi_messages[9];
 	char year[8];
+	char players[4];
 	GameInfo *gi;
 };
 
