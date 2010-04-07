@@ -241,13 +241,6 @@ const char **options_menu_help[14] = {
 		},
 		NULL,
 		(const char*[]){
-				"Display 1541 drive LED to",
-				"show if the emulation got",
-				"stuck or is running.",
-				NULL,
-		},
-		NULL,
-		(const char*[]){
 				"Select display settings.",
 				"Fullscreen attemts to run",
 				"in fullscreen mode, while.",
@@ -266,6 +259,8 @@ const char **options_menu_help[14] = {
 				"mistake.",
 				NULL,
 		},
+		NULL,
+		NULL,
 		NULL,
 		(const char*[]){
 				"Setup theme for the Frodo",
