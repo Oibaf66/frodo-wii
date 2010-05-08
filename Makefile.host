@@ -27,7 +27,7 @@ datadir = ${PREFIX}/share
 CFLAGS ?=-ggdb -Wall  `sdl-config --cflags` -ISrc -O2 -fno-exceptions
 DEFINES =-DFRODO_SC -DHAVE_CONFIG_H -DDATADIR=\"$(datadir)/frodo/\" -DBINDIR=\"$(bindir)/\" -DHAVE_SDL
 
-LDFLAGS ?= $(GCOV) `sdl-config --libs` -lSDL_ttf -lSDL_image
+LDFLAGS ?= $(GCOV) `sdl-config --libs` -lSDL_ttf -lSDL_image -lpng
 
 
 CPP_SRCS=Src/C64_SC.cpp Src/main.cpp Src/Display.cpp Src/Prefs.cpp Src/SID.cpp \
