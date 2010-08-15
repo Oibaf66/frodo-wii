@@ -10,7 +10,7 @@
 TimeoutHandler::~TimeoutHandler()
 {
 	/* If we haven't timed out yet, disarm us */
-	Gui::gui->controller->disarm(this);
+	TimerController::controller->disarm(this);
 }
 
 
@@ -79,4 +79,12 @@ void TimerController::tick()
 			this->disarm(cur);
 		cur->tick();
 	}
+}
+
+
+
+TimerController *TimerController::controller;
+void TimerController::init()
+{
+	TimerController::controller = new TimerController();
 }

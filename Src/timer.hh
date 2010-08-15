@@ -14,6 +14,10 @@ public:
 
 	void tick();
 
+	/* Singleton */
+	static TimerController *controller;
+	static void init();
+
 private:
 	int n_handlers;
 	TimeoutHandler **handlers;

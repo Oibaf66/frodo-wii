@@ -19,7 +19,7 @@ public:
 
 		TheC64->pushKeyCode(this->kc, false);
 		/* Release it soon */
-		Gui::gui->controller->arm(this, 1);
+		TimerController::controller->arm(this, 1);
 	}
 
 	virtual void timeoutCallback()

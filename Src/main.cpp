@@ -255,6 +255,7 @@ void Frodo::ReadyToRun(void)
 	// Create and start C64
 	TheC64 = new C64;
 	DataStore::ds = new DataStore();
+	TimerController::init();
 	Gui::init();
 	load_rom_files();
 	TheC64->Run();

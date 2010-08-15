@@ -95,7 +95,7 @@ public:
 
 	virtual void hoverCallback(int which)
 	{
-		Gui::gui->controller->arm(this, 350);
+		TimerController::controller->arm(this, 350);
 	}
 
 	virtual void escapeCallback(int which)

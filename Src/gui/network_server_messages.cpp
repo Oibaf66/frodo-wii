@@ -72,7 +72,7 @@ void NetworkServerMessages::timeoutCallback()
 		if (this->messages[this->tail])
 			break;
 	}
-	Gui::gui->controller->arm(this, 5000);
+	TimerController::controller->arm(this, 5000);
 
 	free(cpy);
 }

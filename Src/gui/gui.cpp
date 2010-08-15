@@ -101,7 +101,6 @@ Gui::Gui()
 
 	this->n_views = 0;
 	this->views = NULL;
-	this->controller = new TimerController();
 
 	VirtualKeyboard::kbd = new VirtualKeyboard(NULL);
 
@@ -143,7 +142,6 @@ Gui::~Gui()
 	delete this->nrv;
 
 	delete this->cur_gameInfo;
-	delete this->controller;
 
 	if (this->status_bar)
 		delete this->status_bar;
@@ -277,7 +275,7 @@ void Gui::runLogic(void)
 	GuiView *cur_view = this->peekView();
 
 	this->status_bar->runLogic();
-	this->controller->tick();
+	TimerController::controller->tick();
 	if (this->kbd)
 		this->kbd->runLogic();
 
