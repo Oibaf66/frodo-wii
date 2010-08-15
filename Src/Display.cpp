@@ -647,7 +647,10 @@ public:
 	virtual void stringCallback(const char *str)
 	{
 		*out = (const char *)xstrdup(str);
-		Gui::gui->status_bar->queueMessage("Network message sent!");
+		if (strlen(str) > 0)
+			Gui::gui->status_bar->queueMessage("Network message sent!");
+		else
+			Gui::gui->status_bar->queueMessage("Not sending empty message");
 		/* Remove thyself! */
 		delete this;
 	}
