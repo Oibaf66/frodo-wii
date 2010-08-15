@@ -84,6 +84,13 @@ struct NetworkUpdate
 	uint8 data[];
 };
 
+struct NetworkUpdateServerInfo
+{
+	uint32 game_info_seq_nr;
+	uint32 dummy[3]; /* Future */
+};
+
+
 struct NetworkUpdateDisplay
 {
 	uint8 square;
@@ -118,6 +125,24 @@ struct NetworkUpdateRegisterData
 	uint32_t key;
 	uint32_t metadata; /* Type etc */
 	uint8_t  data[];
+};
+
+struct NetworkUpdateGameInfoHash
+{
+	uint16_t hash;		/* Hash by filename */
+	uint16_t seq_nr;
+};
+
+struct NetworkUpdateGameInfoHashList
+{
+	uint16_t n_entries;
+	NetworkUpdateGameInfoHash hashes[];
+};
+
+struct NetworkUpdateGameInfoList
+{
+	uint16_t n_entries;
+	uint32_t register_keys[];
 };
 
 struct NetworkUpdateSoundInfo
