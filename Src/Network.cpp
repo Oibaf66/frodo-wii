@@ -129,19 +129,19 @@ Network::Network(const char *remote_host, int port)
 	this->target_kbps = 160000; /* kilobit per seconds */
 	this->kbps = 0;
 
-	this->raw_buf = (Uint8*)malloc(RAW_SIZE);
-	this->rle_buf = (Uint8*)malloc(RLE_SIZE);
-	this->diff_buf = (Uint8*)malloc(DIFF_SIZE);
+	this->raw_buf = (uint8*)malloc(RAW_SIZE);
+	this->rle_buf = (uint8*)malloc(RLE_SIZE);
+	this->diff_buf = (uint8*)malloc(DIFF_SIZE);
 	assert(this->raw_buf && this->rle_buf && this->diff_buf);
 	this->cur_joystick_data = 0;
 
 	/* Go from lower right to upper left */
 	this->refresh_square = N_SQUARES_W * N_SQUARES_H - 1;
-	this->square_updated = (Uint32*)malloc( N_SQUARES_W * N_SQUARES_H * sizeof(Uint32));
+	this->square_updated = (uint32*)malloc( N_SQUARES_W * N_SQUARES_H * sizeof(uint32));
 	assert(this->square_updated);
-	memset(this->square_updated, 0, N_SQUARES_W * N_SQUARES_H * sizeof(Uint32));
+	memset(this->square_updated, 0, N_SQUARES_W * N_SQUARES_H * sizeof(uint32));
 
-	this->screen = (Uint8 *)malloc(DISPLAY_X * DISPLAY_Y);
+	this->screen = (uint8 *)malloc(DISPLAY_X * DISPLAY_Y);
 	assert(this->screen);
 
 	this->sound_head = this->sound_tail = 0;
@@ -207,8 +207,8 @@ bool Network::DecodeDisplayDiff(struct NetworkUpdate *src,
 
 	while (p < sz)
 	{
-		Uint8 len = dp->data[p];
-		Uint8 color = dp->data[p+1];
+		uint8 len = dp->data[p];
+		uint8 color = dp->data[p+1];
 		int x_diff = (x - x_start + len) % SQUARE_W;
 		int y_diff = (x - x_start + len) / SQUARE_W;
 
@@ -236,8 +236,8 @@ bool Network::DecodeDisplayRLE(struct NetworkUpdate *src,
 
 	while (p < sz)
 	{
-		Uint8 len = dp->data[p];
-		Uint8 color = dp->data[p+1];
+		uint8 len = dp->data[p];
+		uint8 color = dp->data[p+1];
 
 		while (len > 0)
 		{
@@ -266,9 +266,9 @@ bool Network::DecodeDisplayRaw(struct NetworkUpdate *src,
 	{
 		for (int x = x_start; x < x_start + SQUARE_W; x += 2)
 		{
-			Uint8 v = dp->data[(y - y_start) * raw_w + (x - x_start) / 2];
-			Uint8 a = v >> 4;
-			Uint8 b = v & 0xf;
+			uint8 v = dp->data[(y - y_start) * raw_w + (x - x_start) / 2];
+			uint8 a = v >> 4;
+			uint8 b = v & 0xf;
 
 			this->screen[ y * DISPLAY_X + x ] = a;
 			this->screen[ y * DISPLAY_X + x + 1 ] = b;
@@ -278,14 +278,14 @@ bool Network::DecodeDisplayRaw(struct NetworkUpdate *src,
 	return true;
 }
 
-bool Network::CompareSquare(Uint8 *a, Uint8 *b)
+bool Network::CompareSquare(uint8 *a, uint8 *b)
 {
 	for (int y = 0; y < SQUARE_H; y++)
 	{
 		for (int x = 0; x < SQUARE_W; x += 4)
 		{
-			Uint32 va = *((Uint32*)&a[ y * DISPLAY_X + x ]);
-			Uint32 vb = *((Uint32*)&b[ y * DISPLAY_X + x ]);
+			uint32 va = *((uint32*)&a[ y * DISPLAY_X + x ]);
+			uint32 vb = *((uint32*)&b[ y * DISPLAY_X + x ]);
 
 			if (va != vb)
 				return false;
@@ -295,12 +295,12 @@ bool Network::CompareSquare(Uint8 *a, Uint8 *b)
 	return true;
 }
 
-void Network::EncodeDisplay(Uint8 *master, Uint8 *remote)
+void Network::EncodeDisplay(uint8 *master, uint8 *remote)
 {
 	for ( int sq = 0; sq < N_SQUARES_H * N_SQUARES_W; sq++ )
 	{
-		Uint8 *p_master = &master[ SQUARE_TO_Y(sq) * DISPLAY_X + SQUARE_TO_X(sq) ]; 
-		Uint8 *p_remote = &remote[ SQUARE_TO_Y(sq) * DISPLAY_X + SQUARE_TO_X(sq) ]; 
+		uint8 *p_master = &master[ SQUARE_TO_Y(sq) * DISPLAY_X + SQUARE_TO_X(sq) ];
+		uint8 *p_remote = &remote[ SQUARE_TO_Y(sq) * DISPLAY_X + SQUARE_TO_X(sq) ];
 
 		/* Refresh periodically or if the squares differ */
 		if ( (this->refresh_square == sq && this->kbps < this->target_kbps * 0.7) ||
@@ -329,13 +329,13 @@ void Network::EncodeDisplay(Uint8 *master, Uint8 *remote)
 
 
 size_t Network::EncodeDisplaySquare(struct NetworkUpdate *dst,
-		Uint8 *screen, Uint8 *remote, int square,
+		uint8 *screen, uint8 *remote, int square,
 		bool use_diff)
 {
 	struct NetworkUpdateDisplay *dp = (struct NetworkUpdateDisplay *)dst->data;
 	const int x_start = SQUARE_TO_X(square);
 	const int y_start = SQUARE_TO_Y(square);
-	Uint8 rle_color = screen[ y_start * DISPLAY_X + x_start ];
+	uint8 rle_color = screen[ y_start * DISPLAY_X + x_start ];
 	int rle_len = 0, diff_len = 0;
 	size_t rle_sz = 0, diff_sz = 0;
 	const int raw_w = SQUARE_W / 2;
@@ -348,8 +348,8 @@ size_t Network::EncodeDisplaySquare(struct NetworkUpdate *dst,
 
 		for (int x = x_start; x < x_start + SQUARE_W; x++)
 		{
-			Uint8 col_s = screen[ y * DISPLAY_X + x ];
-			Uint8 col_r = remote[ y * DISPLAY_X + x ];
+			uint8 col_s = screen[ y * DISPLAY_X + x ];
+			uint8 col_r = remote[ y * DISPLAY_X + x ];
 			bool is_odd = (x & 1) == 1;
 			int raw_shift = (is_odd ? 0 : 4);
 
@@ -532,7 +532,7 @@ struct NetworkUpdateSoundInfo *Network::DequeueSound()
 	return out;
 }
 
-void Network::EncodeJoystickUpdate(Uint8 v)
+void Network::EncodeJoystickUpdate(uint8 v)
 {
 	struct NetworkUpdate *dst = this->cur_ud;
 	struct NetworkUpdateJoystick *j = (NetworkUpdateJoystick *)dst->data;
@@ -573,9 +573,9 @@ void Network::DrawTransferredBlocks(SDL_Surface *screen)
 			SDL_Rect r = {x + w, y,     1, h};
 			SDL_Rect u = {x,     y,     w, 1};
 			SDL_Rect d = {x,     y + h, w, 1};
-			Uint32 raw = this->square_updated[sq];
+			uint32 raw = this->square_updated[sq];
 			SDL_Rect size = {x,  y,  2 * ((raw & 0xffff) / 17), 4};
-			Uint32 color = 4;
+			uint32 color = 4;
 
 			if ((raw >> 16) == DISPLAY_UPDATE_RLE)
 				color = 5;
@@ -608,7 +608,7 @@ bool Network::ReceiveUpdate(struct timeval *tv)
 bool Network::ReceiveUpdate(NetworkUpdate *dst, size_t total_sz,
 		struct timeval *tv)
 {
-	Uint8 *p = (Uint8*)dst;
+	uint8 *p = (uint8*)dst;
 	size_t sz_left = total_sz;
 	size_t received = 0;
 	bool has_stop = false;
@@ -688,7 +688,7 @@ bool Network::SendUpdate(struct sockaddr_in *addr)
 	if (sz <= 0)
 		return false;
 	size_t cur_sz = 0;
-	Uint8 *p = (Uint8*)src; 
+	uint8 *p = (uint8*)src;
 	do
 	{
 		size_t size_to_send = this->FillNetworkBuffer((NetworkUpdate*)p);
@@ -723,7 +723,7 @@ size_t Network::FillNetworkBuffer(NetworkUpdate *cur)
 		sz += cur_sz;
 		if (ntohs(cur->type) == STOP)
 			break;
-		cur = (NetworkUpdate*)((Uint8*)cur + cur_sz);
+		cur = (NetworkUpdate*)((uint8*)cur + cur_sz);
 	}
 	assert(sz <= 4096);
 
@@ -733,7 +733,7 @@ size_t Network::FillNetworkBuffer(NetworkUpdate *cur)
 
 void Network::AddNetworkUpdate(NetworkUpdate *update)
 {
-	Uint8 *next = (Uint8*)this->cur_ud + update->size;
+	uint8 *next = (uint8*)this->cur_ud + update->size;
 
 	this->cur_ud = (NetworkUpdate*)next;
 }
@@ -965,7 +965,7 @@ bool Network::ScanDataForStop(NetworkUpdate *ud, size_t max_size)
 		size_t cur_sz = ntohl(p->size);
 
 		sz += cur_sz;
-		p = (NetworkUpdate*)((Uint8*)p + cur_sz);
+		p = (NetworkUpdate*)((uint8*)p + cur_sz);
 	}
 
 	/* The stop tag (maybe) */
