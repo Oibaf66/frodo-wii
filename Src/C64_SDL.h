@@ -190,7 +190,7 @@ void C64::network_vblank()
                 		this->TheDisplay->Update(remote->GetScreen());
         	}
 		const char *msg = TheDisplay->GetTextMessage();
-		if (msg)
+		if (msg && strlen(msg) > 0)
 			remote->EncodeTextMessage(msg, TheDisplay->text_message_broadcast);
 		free((void *)msg);
 
