@@ -74,7 +74,7 @@ public:
 	{
 		this->setState(CONNECT_TO_BROKER);
 
-		Gui::gui->timerController->arm(this, 4000);
+		Gui::gui->controller->arm(this, 4000);
 	}
 
 	void timeoutCallback()

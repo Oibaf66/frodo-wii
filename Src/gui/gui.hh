@@ -104,7 +104,7 @@ public:
 
 	Font *default_font;
 	Font *small_font;
-	TimerController *timerController;
+	TimerController *controller;
 
 	/* Handled specially */
 	VirtualKeyboard *kbd;

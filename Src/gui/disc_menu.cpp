@@ -46,7 +46,7 @@ public:
 	SaveScreenshot() : TimeoutHandler()
 	{
 		/* ~45 seconds from now */
-		Gui::gui->timerController->arm(this, 45000);
+		Gui::gui->controller->arm(this, 45000);
 	}
 
 	virtual void timeoutCallback()
@@ -56,7 +56,7 @@ public:
 			if (Gui::gui->is_active)
 			{
 				/* Rearm if we are in the GUI */
-				Gui::gui->timerController->arm(this, 10000);
+				Gui::gui->controller->arm(this, 10000);
 				return;
 			}
 			Gui::gui->cur_gameInfo->setScreenshot(TheC64->TheDisplay->SurfaceFromC64Display());
@@ -74,7 +74,7 @@ public:
 	{
 		Gui::gui->status_bar->queueMessage("Resetting the C64");
 		TheC64->Reset();
-		Gui::gui->timerController->arm(this, 4500);
+		Gui::gui->controller->arm(this, 4500);
 	}
 
 	virtual void timeoutCallback()
@@ -149,7 +149,7 @@ public:
                         free(tmp_filename);
                 }
 
-		Gui::gui->timerController->disarm(this);
+		Gui::gui->controller->disarm(this);
 		Gui::gui->dv->loadGameInfo(fileName);
 
 		if (Gui::gui->dv->gameInfo->gi)
@@ -172,7 +172,7 @@ public:
 
 	virtual void hoverCallback(int which)
 	{
-		Gui::gui->timerController->arm(this, 350);
+		Gui::gui->controller->arm(this, 350);
 	}
 
 	virtual void timeoutCallback()
@@ -182,7 +182,7 @@ public:
 
 	virtual void escapeCallback(int which)
 	{
-		Gui::gui->timerController->disarm(this);
+		Gui::gui->controller->disarm(this);
 		Gui::gui->popView();
 	}
 

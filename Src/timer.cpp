@@ -10,7 +10,7 @@
 TimeoutHandler::~TimeoutHandler()
 {
 	/* If we haven't timed out yet, disarm us */
-	Gui::gui->timerController->disarm(this);
+	Gui::gui->controller->disarm(this);
 }
 
 

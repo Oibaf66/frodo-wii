@@ -29,7 +29,7 @@ void StatusBar::queueMessage(const char *fmt, ...)
 
 	/* If this is the first message, display it as soon as possible */
 	if (this->head == this->tail)
-		Gui::gui->timerController->arm(this, 1);
+		Gui::gui->controller->arm(this, 1);
 
 	this->head = (this->head + 1) % N_STATUS_MESSAGES;
 	if (this->head == this->tail)
@@ -60,7 +60,7 @@ void StatusBar::timeoutCallback()
 		this->setText(text);
 	else
 		this->setText(NULL);
-	Gui::gui->timerController->arm(this, 2000);
+	Gui::gui->controller->arm(this, 2000);
 	free((void *)this->cur_message);
 }
 
