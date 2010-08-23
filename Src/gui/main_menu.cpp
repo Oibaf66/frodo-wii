@@ -95,6 +95,13 @@ public:
 			case 1:
 				Gui::gui->pushView(Gui::gui->bkv);
 				break;
+			case 2:
+				Gui::gui->np->CursorKeysForJoystick = !Gui::gui->np->CursorKeysForJoystick;
+				if (Gui::gui->np->CursorKeysForJoystick)
+					Gui::gui->status_bar->queueMessage("Cursor keys used as joystick");
+				else
+					Gui::gui->status_bar->queueMessage("Cursor keys used as keyboard cursors");
+				break;
 			default:
 				panic("Illegal selection\n");
 			}

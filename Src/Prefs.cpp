@@ -118,6 +118,7 @@ Prefs::Prefs()
 	snprintf(this->NetworkServer, 64, "play.c64-network.org");
 	this->NetworkPort = 46214;
 	this->NetworkRegion = REGION_UNKNOWN;
+	this->CursorKeysForJoystick = true;
 
 	strcpy(this->Theme, "default");
 }
@@ -319,6 +320,7 @@ bool Prefs::operator==(const Prefs &rhs) const
 		&& strcmp(this->NetworkName, rhs.NetworkName) == 0
 		&& strcmp(this->Theme, rhs.Theme) == 0
 		&& this->NetworkAvatar == rhs.NetworkAvatar
+		&& this->CursorKeysForJoystick == rhs.CursorKeysForJoystick
 	);
 }
 
@@ -504,6 +506,8 @@ void Prefs::Load(const char *filename)
 					NetworkAvatar = atoi(value);
 				else if (!strcmp(keyword, "Theme"))
 					strcpy(Theme, value);
+				else if (!strcmp(keyword, "CursorKeysForJoystick"))
+					CursorKeysForJoystick = !strcmp(value, "TRUE");
 			}
 		}
 		fclose(file);
@@ -616,6 +620,7 @@ bool Prefs::Save(const char *filename)
 		maybe_write(file, NetworkPort != TheDefaultPrefs.NetworkPort, "NetworkPort = %d\n", NetworkPort);
 		maybe_write(file, NetworkRegion != TheDefaultPrefs.NetworkRegion, "NetworkRegion = %d\n", NetworkRegion);
 		maybe_write(file, strcmp(Theme, TheDefaultPrefs.Theme) != 0, "Theme = %s\n", Theme);
+		maybe_write(file, CursorKeysForJoystick != TheDefaultPrefs.CursorKeysForJoystick, "CursorKeysForJoystick = %s\n", CursorKeysForJoystick ? "TRUE" : "FALSE");
 		fclose(file);
 		ThePrefsOnDisk = *this;
 		return true;
