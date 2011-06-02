@@ -702,6 +702,7 @@ void C64::Resume(void)
 {
 	this->have_a_break = false;
 	TheSID->ResumeSound();
+	//SDL_FillRect(real_screen, NULL, 0);
 }
 
 #include "C64_SDL.h"

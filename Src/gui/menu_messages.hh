@@ -26,5 +26,6 @@ extern const char *game_info_bad_number_dlg[];
 extern const char *genre_dlg[];
 extern const char *players_dlg[];
 extern const char *save_state_done[];
+extern const char *save_prefs_done[];
 
 #endif

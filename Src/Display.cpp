@@ -96,8 +96,8 @@ void C64Display::UpdateLEDs(int l0, int l1, int l2, int l3)
 
 // Display surface
 static Uint8 screen[DISPLAY_X * DISPLAY_Y];
-static Uint16 *screen_16;
-static Uint32 *screen_32;
+//static Uint16 *screen_16;
+//static Uint32 *screen_32;
 static int screen_bits_per_pixel;
 
 static SDL_Surface *sdl_screen;
@@ -158,16 +158,22 @@ int init_graphics(void)
 	SDL_ShowCursor(SDL_DISABLE);
 
 	SDL_FreeSurface(sdl_screen);
-	sdl_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, DISPLAY_X, DISPLAY_Y + 17, 8,
-			rmask, gmask, bmask, amask);
+	//sdl_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, DISPLAY_X, DISPLAY_Y + 17, 8, rmask, gmask, bmask, amask);
+	screen_bits_per_pixel = info->vfmt->BitsPerPixel;
+	sdl_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, DISPLAY_X, DISPLAY_Y, screen_bits_per_pixel, rmask, gmask, bmask, amask);
+	
 	if (!sdl_screen)
 	{
 		fprintf(stderr, "Cannot allocate surface to draw on: %s\n",
 				SDL_GetError());
 		exit(1);
 	}
+	
+	#ifndef WII_PORT
 	if (ThePrefs.DisplayType == DISPTYPE_SCREEN)
 		flags |= SDL_FULLSCREEN;
+	#endif
+
 	screen_bits_per_pixel = info->vfmt->BitsPerPixel;
 	SDL_FreeSurface(real_screen);
 	real_screen = SDL_SetVideoMode(FULL_DISPLAY_X, FULL_DISPLAY_Y, screen_bits_per_pixel,
@@ -177,16 +183,19 @@ int init_graphics(void)
 		fprintf(stderr, "\n\nCannot initialize video: %s\n", SDL_GetError());
 		exit(1);
 	}
+	//this part of code seems useless
+	/*
 	free(screen_16);
 	free(screen_32);
 
 	switch (screen_bits_per_pixel)
 	{
 	case 8:
-		/* Default, no need to do anything further */
+		 
+		Default, no need to do anything further 
 		break;
 	case 16:
-		/* Allocate a 16 bit screen */
+		Allocate a 16 bit screen
 		screen_16 = (Uint16*)calloc(real_screen->pitch * FULL_DISPLAY_Y, sizeof(Uint16) );
 		break;
 	case 24:
@@ -197,7 +206,8 @@ int init_graphics(void)
 		printf("What is this???\n");
 		break;
 	}
-
+	*/
+	
 	return 1;
 }
 
@@ -271,6 +281,38 @@ void C64Display::Update_32(uint8 *src_pixels)
 void C64Display::Update_16(uint8 *src_pixels)
 {
 	const Uint16 src_pitch = DISPLAY_X;
+
+	#ifdef WII_PORT
+	
+	if (ThePrefs.DisplayType == DISPTYPE_WINDOW)
+	{	
+		SDL_Rect srcrect = {0, 0, DISPLAY_X, DISPLAY_Y};
+		SDL_Rect dstrect = {0, 8, FULL_DISPLAY_X, FULL_DISPLAY_Y-16};
+		Uint16 *dst_pixels = (Uint16*)sdl_screen->pixels ;
+		const Uint16 src_pitch = DISPLAY_X;
+		const Uint16 dst_pitch = sdl_screen->pitch / sizeof(Uint16);
+
+		/* Draw 1-1 */
+		for (int y = 0; y < DISPLAY_Y; y++)
+		{
+			for (int x = 0; x < DISPLAY_X; x++)
+			{
+				int src_off = y * src_pitch + x;
+				int dst_off = y * dst_pitch + x;
+				Uint16 v = palette_16[src_pixels[src_off]];			
+				dst_pixels[ dst_off ] = v;
+			}
+		}
+
+	/* Stretch */
+	SDL_SoftStretch(sdl_screen, &srcrect, real_screen, &dstrect);	
+	}
+	
+	else
+	
+	#endif
+	{
+
 	const int x_border = (DISPLAY_X - FULL_DISPLAY_X / 2) / 2;
 	const int y_border = (DISPLAY_Y - FULL_DISPLAY_Y / 2) / 2;
 	Uint16 *dst_pixels = (Uint16*)real_screen->pixels;
@@ -291,6 +333,8 @@ void C64Display::Update_16(uint8 *src_pixels)
 			dst_pixels[ dst_off + dst_pitch + 1] = v;
 		}
 	}
+	}
+
 }
 
 void C64Display::Update_8(uint8 *src_pixels)

@@ -2,7 +2,7 @@
 #define NETWORK_USER_MENU_HH
 
 #include <SDL.h>
-#include <Network.h>
+#include "../Network.h"
 
 class GuiView;
 class NetworkUserMenu;

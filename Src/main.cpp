@@ -30,6 +30,7 @@
 #include "gui/gui.hh"
 #include "data_store.hh"
 #include "utils.hh"
+#include <fat.h>
 
 #if defined(GEKKO)
 #include "fat.h"
@@ -109,6 +110,7 @@ void Frodo::load_rom_files()
 
 extern "C" int main(int argc, char **argv)
 {
+	DIR_ITER *dir_tmp;
 	timeval tv;
 	gettimeofday(&tv, NULL);
 	srand(tv.tv_usec);
@@ -126,10 +128,33 @@ extern "C" int main(int argc, char **argv)
 
 	fflush(stdout);
 
+	#ifdef WII_PORT
+	
+	printf("\x1b[2;0H");
+
+	//initialize libfat library
+	if (!fatInitDefault())
+	{ 
+	printf("Couldn't initialize fat subsytem\n");
+	sleep(3);
+	exit(0);
+	}
+	
+	//create tmp directory if it does not exist
+	dir_tmp = diropen("/frodo/tmp");	
+	if (!dir_tmp) {mkdir("/frodo/tmp",0777);printf("Making tmp directory\n");sleep(3);} else dirclose(dir_tmp);
+	
+	
+	#endif
+
 	Frodo *the_app = new Frodo();
 	the_app->ArgvReceived(argc, argv);
 	the_app->ReadyToRun();
 	delete the_app;
+
+	#ifdef WII_PORT
+	fatUnmount(0);
+	#endif
 
 	return 0;
 }

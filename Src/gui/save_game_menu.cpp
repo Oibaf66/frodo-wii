@@ -77,15 +77,16 @@ public:
 
 		if (this->loadSnapshot)
 		{
-			int display_type = Gui::gui->np->DisplayType;
+			//int display_type = Gui::gui->np->DisplayType;
 
+			TheC64->Reset();
 			TheC64->LoadSnapshot(new_path);
 
 			this->updateGameInfo(fileName);
 			Gui::gui->updateGameInfo(Gui::gui->sgv->gameInfo->gi);
 			Gui::gui->np->Load(prefs_path);
 			/* Don't change display type */
-			Gui::gui->np->DisplayType = display_type;
+			//Gui::gui->np->DisplayType = display_type;
 		} else
 			unlink(new_path);
 		free(prefs_path);
@@ -162,6 +163,7 @@ void SaveGameView::saveSnapshot()
 	char *prefs_name;
 	char *save;
 
+	/*
 	if (strlen(Gui::gui->np->DrivePath[0]) != 0)
 		name = Gui::gui->np->DrivePath[0];
 	out_name = strrchr(name, '/');
@@ -169,6 +171,12 @@ void SaveGameView::saveSnapshot()
 		out_name = name;
 	else
 		out_name++;
+	*/
+	//take the filename from gameinfo instead from drivepath
+	out_name = Gui::gui->cur_gameInfo->filename;
+	if (!out_name)
+		out_name = name;
+	
 	save = (char*)xmalloc( strlen(Gui::gui->save_game_path) + strlen(out_name) + 6 );
 	prefs_name = (char*)xmalloc( strlen(Gui::gui->save_game_path) + strlen(out_name) + 12 );
 
@@ -182,9 +190,12 @@ void SaveGameView::saveSnapshot()
 	if (!was_paused)
 		TheC64->Resume();
 
+	//Take the screenshot from the one saved when the gui was activacted
 	Gui::gui->cur_gameInfo->setScreenshot(sdl_surface_8bit_copy(Gui::gui->screenshot));
 	Gui::gui->saveGameInfo(Gui::gui->save_game_path, out_name);
-	ThePrefs.Save(prefs_name);
+	
+	ThePrefs = *Gui::gui->np; 
+	ThePrefs.Save_game(prefs_name);
 
 	Gui::gui->pushDialogueBox(new DialogueBox(save_state_done));
 

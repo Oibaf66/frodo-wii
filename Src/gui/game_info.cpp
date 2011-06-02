@@ -228,7 +228,8 @@ GameInfo::GameInfo(GameInfo *gi)
 	this->genre = gi->genre;
 
 	if (gi->screenshot)
-		this->screenshot = SDL_DisplayFormat(gi->screenshot);
+	//	this->screenshot = SDL_DisplayFormat(gi->screenshot);
+	this->screenshot = sdl_surface_8bit_copy(gi->screenshot);
 }
 
 GameInfo::~GameInfo()

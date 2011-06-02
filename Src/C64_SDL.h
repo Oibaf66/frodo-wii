@@ -303,8 +303,8 @@ void C64::VBlank(bool draw_frame)
 
 	Gui::gui->runLogic();
 
-	if (this->quit_thyself)
-		ThePrefs.Save(ThePrefs.PrefsPath);
+	//if (this->quit_thyself)
+	//	ThePrefs.Save(ThePrefs.PrefsPath);
 #if defined(GEKKO)
 	if (this->quit_thyself && Network::networking_started == true)
 		SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);

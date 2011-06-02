@@ -70,7 +70,7 @@ public:
 		case 0: /* Insert disc */
 			Gui::gui->dv->setDirectory(Gui::gui->game_base_path);
 			Gui::gui->pushView(Gui::gui->dv);
-
+			
 			Gui::gui->dv->runStartSequence(this->p_submenus[0].sel == 0);
 			break;
 		case 2: /* Load/save states */
@@ -114,6 +114,11 @@ public:
 			break;
 		case 9: /* Options */
 			Gui::gui->pushView(Gui::gui->ov);
+			break;
+		case 10: /* Save Prefs */
+			ThePrefs = *Gui::gui->np;
+			ThePrefs.Save(ThePrefs.PrefsPath);
+			Gui::gui->pushDialogueBox(new DialogueBox(save_prefs_done));
 			break;
 		case 11: /* Exit */
 			DialogueBox *exit_dialogue = new DialogueBox(exit_dialogue_messages);

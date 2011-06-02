@@ -72,6 +72,7 @@ class StartGameListener : public TimeoutHandler
 public:
 	StartGameListener()
 	{
+		
 		Gui::gui->status_bar->queueMessage("Resetting the C64");
 		TheC64->Reset();
 		TimerController::controller->arm(this, 4500);

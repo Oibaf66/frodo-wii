@@ -420,7 +420,7 @@ public:
 		 SDL_BlitSurface(Gui::gui->bind_key_box, NULL, where, &dst);
 
 		 this->menu->draw(where, 50, 70, 300, 400);
-		 this->help->draw(where, 358, 28, 264, 210);
+		 this->help->draw(where, 358, 28, 264, 230);
 	}
 
 protected:

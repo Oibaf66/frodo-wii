@@ -104,6 +104,7 @@ public:
 	void Check(void);
 	void Load(const char *filename);
 	bool Save(const char *filename);
+	bool Save_game(const char *filename);
 
 	bool operator==(const Prefs &rhs) const;
 	bool operator!=(const Prefs &rhs) const;

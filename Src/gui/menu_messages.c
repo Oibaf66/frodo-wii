@@ -13,6 +13,17 @@ const char *exit_dialogue_messages[8] = {
 	NULL
 };
 
+const char *save_prefs_done[8] = {
+	/*00*/          "Preferences saved!",
+	/*01*/		"#",
+	/*02*/		"#", /* Empty line */
+	/*03*/		"#",
+	/*04*/		"#",
+	/*05*/		"#",
+	/*06*/          "^|OK",
+	NULL
+};
+
 const char *save_state_done[8] = {
 	/*00*/          "Game state saved!",
 	/*01*/		"#",
@@ -138,7 +149,7 @@ const char *main_menu_messages[14] = {
 	/*07*/          "Game info",
 	/*08*/          "Networking",
 	/*09*/          "Options",
-	/*10*/		" ",
+	/*10*/		"Save prefs",
 	/*11*/          "Quit",
 	NULL
 };
@@ -182,7 +193,10 @@ const char **main_menu_help[14] = {
 				"Configure Frodo",
 				NULL,
 		},
-		NULL,
+		(const char*[]){
+				"Save general preferences",
+				NULL,
+		},	
 		(const char*[]){
 				"Quit Frodo",
 				NULL,
@@ -244,13 +258,9 @@ const char **options_menu_help[14] = {
 		NULL,
 		(const char*[]){
 				"Select display settings.",
-				"Fullscreen attemts to run",
-				"in fullscreen mode, while.",
-				"windowed uses a window.",
-				"Activated on next restart.",
-				" ",
-				"On the Wii, fullscreen is",
-				"always used",
+				"Fullscreen runs in",
+				"double size mode, while",
+				"window in streched mode.",
 				NULL,
 		},
 		NULL,
@@ -262,7 +272,10 @@ const char **options_menu_help[14] = {
 				NULL,
 		},
 		NULL,
-		NULL,
+		(const char*[]){
+				"Reset the c64.",
+				NULL,
+		},
 		NULL,
 		(const char*[]){
 				"Setup theme for the Frodo",
@@ -320,6 +333,7 @@ const char **network_menu_help[9] = {
 };
 
 
+
 const char *game_info_menu_messages[11] = {
 	/*00*/          "Capture game screenshot",
 	/*01*/          " ",
@@ -333,6 +347,8 @@ const char *game_info_menu_messages[11] = {
 	/*09*/          "Set number of players",
 	NULL
 };
+
+
 
 const char *genre_dlg[8] = {
 	/*00*/          "Action",

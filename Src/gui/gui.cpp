@@ -355,8 +355,8 @@ void Gui::exitMenu()
 	prefs_changed = ThePrefs != *this->np;
 	ThePrefs = *this->np;
 
-	if (prefs_changed)
-		ThePrefs.Save(ThePrefs.PrefsPath);
+	//if (prefs_changed)
+	//	ThePrefs.Save(ThePrefs.PrefsPath);
 
 	this->saveGameInfo(this->metadata_base_path, this->cur_gameInfo->filename);
 }

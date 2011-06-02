@@ -120,7 +120,7 @@ Prefs::Prefs()
 	this->NetworkRegion = REGION_UNKNOWN;
 	this->CursorKeysForJoystick = true;
 
-	strcpy(this->Theme, "default");
+	strcpy(this->Theme, "DEFAULT");
 }
 
 
@@ -348,6 +348,23 @@ void Prefs::Check(void)
 		DisplayType = DISPTYPE_WINDOW;
 }
 
+// Introduced to fix the file names with spaces
+void search_name(char* line, char* value)
+{
+char* ptrstr;
+int length=0;
+
+if (!(ptrstr = strchr(line,'='))) return;
+
+ptrstr= ptrstr + 2;
+
+while (ptrstr [length] != '\n') length++;
+
+ptrstr [length] = '\0';
+
+strncpy (value, ptrstr, length+1);
+
+}
 
 /*
  *  Load preferences from file
@@ -360,6 +377,7 @@ void Prefs::Load(const char *filename)
 
 	if ((file = fopen(filename, "r")) != NULL) {
 		while(fgets(line, 255, file)) {
+			// if the file name contains spaces sscanf cuts the name in DrivePath[8-11]
 			if (sscanf(line, "%s = %s\n", keyword, value) == 2) {
 				if (!strcmp(keyword, "NormalCycles"))
 					NormalCycles = atoi(value);
@@ -381,14 +399,15 @@ void Prefs::Load(const char *filename)
 					ScalingNumerator = atoi(value);
 				else if (!strcmp(keyword, "ScalingDenominator"))
 					ScalingDenominator = atoi(value);
-				else if (!strcmp(keyword, "DrivePath8"))
-					strcpy(DrivePath[0], value);
-				else if (!strcmp(keyword, "DrivePath9"))
-					strcpy(DrivePath[1], value);
-				else if (!strcmp(keyword, "DrivePath10"))
-					strcpy(DrivePath[2], value);
-				else if (!strcmp(keyword, "DrivePath11"))
-					strcpy(DrivePath[3], value);
+				//Work arround to fix the problem for files with spaces in the name
+				else if (!strcmp(keyword, "DrivePath8")) {search_name(line, value);
+					strcpy(DrivePath[0], value); }
+				else if (!strcmp(keyword, "DrivePath9")) { search_name(line, value);
+					strcpy(DrivePath[1], value);}
+				else if (!strcmp(keyword, "DrivePath10")) { search_name(line, value);
+					strcpy(DrivePath[2], value);}
+				else if (!strcmp(keyword, "DrivePath11")) { search_name(line, value);
+					strcpy(DrivePath[3], value);}
 				else if (!strcmp(keyword, "ViewPort"))
 					strcpy(ViewPort, value);
 				else if (!strcmp(keyword, "DisplayMode"))
@@ -621,6 +640,39 @@ bool Prefs::Save(const char *filename)
 		maybe_write(file, NetworkRegion != TheDefaultPrefs.NetworkRegion, "NetworkRegion = %d\n", NetworkRegion);
 		maybe_write(file, strcmp(Theme, TheDefaultPrefs.Theme) != 0, "Theme = %s\n", Theme);
 		maybe_write(file, CursorKeysForJoystick != TheDefaultPrefs.CursorKeysForJoystick, "CursorKeysForJoystick = %s\n", CursorKeysForJoystick ? "TRUE" : "FALSE");
+		fclose(file);
+		ThePrefsOnDisk = *this;
+		return true;
+	}
+	return false;
+}
+
+/*
+ *  Save game preferences to file
+ *  true: success, false: error
+ *  Save only drivepath, displaytype, joystikswap, emule 1541, joystickbutton, cursorkeys for joystick
+ */
+
+
+
+bool Prefs::Save_game(const char *filename)
+{
+	FILE *file;
+
+	Check();
+	if ((file = fopen(filename, "w")) != NULL) {
+		
+		for (int i=0; i<4; i++) 
+			maybe_write(file, strcmp(DrivePath[i], TheDefaultPrefs.DrivePath[i]) != 0, "DrivePath%d = %s\n", i+8, DrivePath[i]);
+			
+		maybe_write(file, true, "DisplayType = %s\n", DisplayType == DISPTYPE_WINDOW ? "WINDOW" : "SCREEN");	
+		maybe_write(file, true, "JoystickSwap = %s\n", JoystickSwap ? "TRUE" : "FALSE");
+		maybe_write(file, true, "Emul1541Proc = %s\n", Emul1541Proc ? "TRUE" : "FALSE");
+	
+		for (int i = 0; i < MAX_JOYSTICK_BUTTONS; i++)
+			maybe_write(file, true, "JoystickButtons%d = %d\n", i, JoystickButtons[i]);
+		maybe_write(file, true, "CursorKeysForJoystick = %s\n", CursorKeysForJoystick ? "TRUE" : "FALSE");	
+			
 		fclose(file);
 		ThePrefsOnDisk = *this;
 		return true;
