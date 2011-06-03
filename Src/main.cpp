@@ -30,10 +30,9 @@
 #include "gui/gui.hh"
 #include "data_store.hh"
 #include "utils.hh"
-#include <fat.h>
 
 #if defined(GEKKO)
-#include "fat.h"
+#include <fat.h>
 #endif
 
 
@@ -110,10 +109,12 @@ void Frodo::load_rom_files()
 
 extern "C" int main(int argc, char **argv)
 {
-	DIR_ITER *dir_tmp;
 	timeval tv;
 	gettimeofday(&tv, NULL);
 	srand(tv.tv_usec);
+#if defined(GEKKO)
+	DIR_ITER *dir_tmp;
+#endif
 
 	// Init SDL
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) < 0) {
