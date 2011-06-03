@@ -129,7 +129,7 @@ extern "C" int main(int argc, char **argv)
 
 	fflush(stdout);
 
-	#ifdef WII_PORT
+	#ifdef GEKKO
 	
 	printf("\x1b[2;0H");
 
@@ -153,7 +153,7 @@ extern "C" int main(int argc, char **argv)
 	the_app->ReadyToRun();
 	delete the_app;
 
-	#ifdef WII_PORT
+	#ifdef GEKKO
 	fatUnmount(0);
 	#endif
 

@@ -169,7 +169,7 @@ int init_graphics(void)
 		exit(1);
 	}
 	
-	#ifndef WII_PORT
+	#ifndef GEKKO
 	if (ThePrefs.DisplayType == DISPTYPE_SCREEN)
 		flags |= SDL_FULLSCREEN;
 	#endif
@@ -282,7 +282,7 @@ void C64Display::Update_16(uint8 *src_pixels)
 {
 	const Uint16 src_pitch = DISPLAY_X;
 
-	#ifdef WII_PORT
+	#ifdef GEKKO
 	
 	if (ThePrefs.DisplayType == DISPTYPE_WINDOW)
 	{	

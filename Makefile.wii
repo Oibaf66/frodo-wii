@@ -25,7 +25,7 @@ INCLUDES	:=
 # options for code generation
 #---------------------------------------------------------------------------------
 
-PCFLAGS = -DPRECISE_CPU_CYCLES=1 -DPRECISE_CIA_CYCLES=1 -DPC_IS_POINTER=0 -DWII_PORT
+PCFLAGS = -DPRECISE_CPU_CYCLES=1 -DPRECISE_CIA_CYCLES=1 -DPC_IS_POINTER=0
 SCFLAGS = $(PCFLAGS) -DFRODO_SC
 CFLAGS	= -O3 -g -Wall $(MACHDEP) $(INCLUDE) -DHAVE_SDL $(SCFLAGS) -I$(LIBOGC_INC)/SDL
 CXXFLAGS = $(CFLAGS)
