@@ -138,7 +138,7 @@ const char *frodo_help[11] = {
 };
 
 
-const char *main_menu_messages[14] = {
+const char *main_menu_messages[13] = {
 	/*00*/          "File",
 	/*01*/          "^|Start|Insert",
 	/*02*/          "States",
@@ -149,12 +149,12 @@ const char *main_menu_messages[14] = {
 	/*07*/          "Game info",
 	/*08*/          "Networking",
 	/*09*/          "Options",
-	/*10*/		"Save prefs",
+	/*10*/			"Save prefs",
 	/*11*/          "Quit",
 	NULL
 };
 
-const char **main_menu_help[14] = {
+const char **main_menu_help[13] = {
 		(const char*[]){
 				"Insert a disc/tape or",
 				"start it",
@@ -205,7 +205,7 @@ const char **main_menu_help[14] = {
 };
 
 
-const char *options_menu_messages[14] = {
+const char *options_menu_messages[15] = {
                 /*00*/          "Help",
                 /*01*/          " ",
                 /*02*/          "Map Controller 1 to:",
@@ -216,13 +216,14 @@ const char *options_menu_messages[14] = {
                 /*07*/          "^|window|fullscreen",
                 /*08*/          "Speed (approx. %)",
                 /*09*/          "^|95|100|110",
-        	/*10*/          "Reset the C=64",
-                /*11*/          " ",
+                /*10*/          "Usb port",
+				/*11*/          "^|ON|OFF",
                 /*12*/          "Setup GUI theme",
+				/*13*/          "Reset the C=64",
                 NULL
 };
 
-const char *bind_key_menu_messages[13] = {
+const char *bind_key_menu_messages[9] = {
                 /*00*/          "Wiimote",
                 /*01*/          "^|A|B|1|2|+|-",
                 /*02*/          "Nunchuk",
@@ -234,7 +235,7 @@ const char *bind_key_menu_messages[13] = {
                 NULL
 };
 
-const char **options_menu_help[14] = {
+const char **options_menu_help[15] = {
 		(const char*[]){
 				"Help and keyboard.",
 				"shortcuts",
@@ -273,13 +274,18 @@ const char **options_menu_help[14] = {
 		},
 		NULL,
 		(const char*[]){
-				"Reset the c64.",
+				"Load games from usb port",
+				"instead of SD card",
 				NULL,
 		},
 		NULL,
 		(const char*[]){
 				"Setup theme for the Frodo",
 				"menus.",
+				NULL,
+		},
+		(const char*[]){
+				"Reset the c64.",
 				NULL,
 		},
 		NULL,

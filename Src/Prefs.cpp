@@ -108,6 +108,7 @@ Prefs::Prefs()
 	AlwaysCopy = false;
 	SystemKeys = true;
 	ShowLEDs = true;
+	Usbport = false;
 
 	this->SetupJoystickDefaults();
 
@@ -527,6 +528,8 @@ void Prefs::Load(const char *filename)
 					strcpy(Theme, value);
 				else if (!strcmp(keyword, "CursorKeysForJoystick"))
 					CursorKeysForJoystick = !strcmp(value, "TRUE");
+				else if (!strcmp(keyword, "Usbport"))
+					Usbport = !strcmp(value, "TRUE");	
 			}
 		}
 		fclose(file);
@@ -640,6 +643,7 @@ bool Prefs::Save(const char *filename)
 		maybe_write(file, NetworkRegion != TheDefaultPrefs.NetworkRegion, "NetworkRegion = %d\n", NetworkRegion);
 		maybe_write(file, strcmp(Theme, TheDefaultPrefs.Theme) != 0, "Theme = %s\n", Theme);
 		maybe_write(file, CursorKeysForJoystick != TheDefaultPrefs.CursorKeysForJoystick, "CursorKeysForJoystick = %s\n", CursorKeysForJoystick ? "TRUE" : "FALSE");
+		maybe_write(file, Usbport != TheDefaultPrefs.Usbport, "Usbport = %s\n", Usbport ? "TRUE" : "FALSE");
 		fclose(file);
 		ThePrefsOnDisk = *this;
 		return true;

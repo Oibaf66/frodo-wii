@@ -1,6 +1,8 @@
 #include "menu.hh"
 #include "dialogue_box.hh"
 
+extern int usbismount; 
+
 class KeyboardTypingListener : public KeyboardListener, TimeoutHandler
 {
 public:
@@ -68,7 +70,9 @@ public:
 		switch (which)
 		{
 		case 0: /* Insert disc */
-			Gui::gui->dv->setDirectory(Gui::gui->game_base_path);
+			if (Gui::gui->np->Usbport & usbismount) Gui::gui->dv->setDirectory(Gui::gui->game_base_path_usb);
+			else Gui::gui->dv->setDirectory(Gui::gui->game_base_path);
+			
 			Gui::gui->pushView(Gui::gui->dv);
 			
 			Gui::gui->dv->runStartSequence(this->p_submenus[0].sel == 0);

@@ -4,7 +4,8 @@
 
 ListenerManager::ListenerManager()
 {
-	printf("Flushing listeners\n");
+	//commented since appear under the screen
+	//printf("Flushing listeners\n");
 	this->flushListeners();
 }
 

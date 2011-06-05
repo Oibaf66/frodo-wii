@@ -32,7 +32,9 @@
 #include "utils.hh"
 
 #if defined(GEKKO)
+#include <gccore.h>
 #include <fat.h>
+#include <ogc/usbstorage.h>
 #endif
 
 
@@ -43,7 +45,7 @@ extern int init_graphics(void);
 // Global variables
 C64 *TheC64 = NULL;		// Global C64 object
 char AppDirPath[1024];	// Path of application directory
-
+int usbismount = 0;
 
 // ROM file names
 #ifndef DATADIR
@@ -75,6 +77,48 @@ char AppDirPath[1024];	// Path of application directory
 #include "Char_ROM.h"
 #include "1541_ROM.h"
 
+
+
+ 
+ #if defined(GEKKO)
+ 
+//init and deinit USB device functions
+//code taken from Arikado
+ 
+
+int InitUSB()
+{ 
+	printf("Initializing USB FAT subsytem ...\n\n");
+	fatUnmount("usb:");
+	bool isMounted = fatMountSimple("usb", &__io_usbstorage); 
+ 
+	if(!isMounted)
+	{ 
+		fatUnmount("usb:");
+		fatMountSimple("usb", &__io_usbstorage);
+		bool isInserted = __io_usbstorage.isInserted();
+ 
+		if(isInserted) 
+		{ int retry = 10; 
+			while(retry)
+			{ 
+			isMounted = fatMountSimple("usb", &__io_usbstorage);
+			if (isMounted) break;
+			sleep(1);
+			retry--; 
+			}
+		} 
+	}
+	return isMounted;
+ }
+ 
+ void DeInitUSB()
+{
+	fatUnmount("usb:");
+	__io_usbstorage.shutdown(); 
+}
+
+#endif
 
 /*
  *  Load C64 ROM files
@@ -136,10 +180,17 @@ extern "C" int main(int argc, char **argv)
 	//initialize libfat library
 	if (!fatInitDefault())
 	{ 
-	printf("Couldn't initialize fat subsytem\n");
+	printf("Couldn't initialize SD fat subsytem\n\n");
 	sleep(3);
 	exit(0);
 	}
+	
+	usbismount = InitUSB();
+	if (usbismount) 
+	printf("USB FAT subsytem initialized\n");
+	else
+	printf("Impossible to initialize USB FAT subsytem\n");
+	sleep(2);
 	
 	//create tmp directory if it does not exist
 	dir_tmp = diropen("/frodo/tmp");	
@@ -154,6 +205,7 @@ extern "C" int main(int argc, char **argv)
 	delete the_app;
 
 	#ifdef GEKKO
+	DeInitUSB();
 	fatUnmount(0);
 	#endif
 
@@ -288,9 +340,6 @@ void Frodo::ReadyToRun(void)
 
 	delete TheC64;
 
-#if defined(GEKKO)
-	fatUnmount("sd:");
-#endif
 }
 
 /*

@@ -129,6 +129,7 @@ public:
 	const char *metadata_base_path;
 	const char *theme_base_path;
 	const char *game_base_path;
+	const char *game_base_path_usb;
 	const char *tmp_path;
 	const char *save_game_path;
 

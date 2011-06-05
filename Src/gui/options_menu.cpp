@@ -28,7 +28,7 @@ public:
 			Gui::gui->pushDialogueBox(new DialogueBox(frodo_help));
 			return;
 		}
-		else if (which == 10)
+		else if (which == 13)
 		{
 			Gui::gui->status_bar->queueMessage("Resetting the C64");
 			Gui::gui->exitMenu();
@@ -74,13 +74,14 @@ public:
 		case 2:
 			Gui::gui->np->MsPerFrame = SPEED_110; break;
 		default:
-			panic("Impossible submenu value: %d\n", this->p_submenus[4].sel);
+			panic("Impossible submenu value: %d\n", this->p_submenus[3].sel);
 		}
+		Gui::gui->np->Usbport = !this->p_submenus[4].sel;
 	}
 
 	void updateSubmenus()
 	{
-		int submenu_defs[5];
+		int submenu_defs[4];
 
 		submenu_defs[0] = Gui::gui->np->JoystickSwap == true ? 0 : 1;
 		submenu_defs[1] = !Gui::gui->np->Emul1541Proc;
@@ -96,7 +97,8 @@ public:
 	                /* If it has some other value... */
 		        submenu_defs[3] = 1; break;
 		}
-
+		
+		submenu_defs[4] = !Gui::gui->np->Usbport;
 		this->setText(options_menu_messages, submenu_defs);
 	}
 

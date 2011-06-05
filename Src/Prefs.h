@@ -155,6 +155,7 @@ public:
 	bool AlwaysCopy;		// Always use a work surface (Win32)
 	bool SystemKeys;		// Enable system keys and menu keys (Win32)
 	bool ShowLEDs;			// Show LEDs (Win32)
+	bool Usbport;			// Load from usb port
 
 	uint32 MsPerFrame;
 
