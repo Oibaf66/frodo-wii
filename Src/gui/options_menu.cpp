@@ -81,7 +81,7 @@ public:
 
 	void updateSubmenus()
 	{
-		int submenu_defs[4];
+		int submenu_defs[5];
 
 		submenu_defs[0] = Gui::gui->np->JoystickSwap == true ? 0 : 1;
 		submenu_defs[1] = !Gui::gui->np->Emul1541Proc;

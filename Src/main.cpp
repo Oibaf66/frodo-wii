@@ -45,7 +45,7 @@ extern int init_graphics(void);
 // Global variables
 C64 *TheC64 = NULL;		// Global C64 object
 char AppDirPath[1024];	// Path of application directory
-int usbismount = 0;
+bool usbismount = false;
 
 // ROM file names
 #ifndef DATADIR
@@ -83,31 +83,27 @@ int usbismount = 0;
  #if defined(GEKKO)
  
 //init and deinit USB device functions
-//code taken from Arikado
- 
 
-int InitUSB()
+
+bool InitUSB()
 { 
 	printf("Initializing USB FAT subsytem ...\n\n");
 	fatUnmount("usb:");
-	bool isMounted = fatMountSimple("usb", &__io_usbstorage); 
+	
+	// This should wake up the drive
+	bool isMounted = fatMountSimple("usb", &__io_usbstorage);
+	
+	bool isInserted = __io_usbstorage.isInserted();
+	if (!isInserted) return false; 
  
-	if(!isMounted)
-	{ 
-		fatUnmount("usb:");
-		fatMountSimple("usb", &__io_usbstorage);
-		bool isInserted = __io_usbstorage.isInserted();
- 
-		if(isInserted) 
-		{ int retry = 10; 
-			while(retry)
-			{ 
-			isMounted = fatMountSimple("usb", &__io_usbstorage);
-			if (isMounted) break;
-			sleep(1);
-			retry--; 
-			}
-		} 
+	// USB Drive may be "sleeeeping" 
+	// We need to try Mounting a few times to wake it up
+	int retry = 10;
+	while (retry && !isMounted)
+	{
+		sleep(1);
+		isMounted = fatMountSimple("usb", &__io_usbstorage);
+		retry--; 
 	}
 	return isMounted;
  }
@@ -180,21 +176,23 @@ extern "C" int main(int argc, char **argv)
 	//initialize libfat library
 	if (!fatInitDefault())
 	{ 
-	printf("Couldn't initialize SD fat subsytem\n\n");
-	sleep(3);
-	exit(0);
+		printf("Couldn't initialize SD fat subsytem\n\n");
+		sleep(3);
+		exit(0);
 	}
+	else
+		printf("SD FAT subsytem initialized\n\n");
 	
 	usbismount = InitUSB();
 	if (usbismount) 
-	printf("USB FAT subsytem initialized\n");
+		printf("USB FAT subsytem initialized\n\n");
 	else
-	printf("Impossible to initialize USB FAT subsytem\n");
-	sleep(2);
+		printf("Impossible to initialize USB FAT subsytem\n\n");
+	sleep(3);
 	
 	//create tmp directory if it does not exist
 	dir_tmp = diropen("/frodo/tmp");	
-	if (!dir_tmp) {mkdir("/frodo/tmp",0777);printf("Making tmp directory\n");sleep(3);} else dirclose(dir_tmp);
+	if (!dir_tmp) {mkdir("/frodo/tmp",0777);printf("Making tmp directory\n");sleep(2);} else dirclose(dir_tmp);
 	
 	
 	#endif

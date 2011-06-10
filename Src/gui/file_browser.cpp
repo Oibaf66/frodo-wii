@@ -24,7 +24,7 @@ FileBrowser::~FileBrowser()
 void FileBrowser::pushDirectory(const char *in_path)
 {
 	const char *cur = this->cur_path_prefix ? xstrdup(this->cur_path_prefix) : NULL;
-	size_t cur_len = this->cur_path_prefix ? strlen(this->cur_path_prefix) : NULL;
+	size_t cur_len = this->cur_path_prefix ? strlen(this->cur_path_prefix) : 0;
 	char *path_cpy = xstrdup(in_path);
 	char *path = path_cpy;
 
