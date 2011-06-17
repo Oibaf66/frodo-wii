@@ -138,7 +138,7 @@ const char *frodo_help[11] = {
 };
 
 
-const char *main_menu_messages[13] = {
+const char *main_menu_messages[15] = {
 	/*00*/          "File",
 	/*01*/          "^|Start|Insert",
 	/*02*/          "States",
@@ -147,14 +147,16 @@ const char *main_menu_messages[13] = {
 	/*05*/          "^|Type|Bind|Toggle crsr",
 	/*06*/          " ",
 	/*07*/          "Game info",
-	/*08*/          "Networking",
-	/*09*/          "Options",
-	/*10*/			"Save prefs",
-	/*11*/          "Quit",
+	/*08*/          "Help",
+	/*09*/          "Networking",
+	/*10*/          "Options",
+	/*11*/			"Save prefs",
+	/*12*/			"Reset",
+	/*13*/          "Quit",
 	NULL
 };
 
-const char **main_menu_help[13] = {
+const char **main_menu_help[15] = {
 		(const char*[]){
 				"Insert a disc/tape or",
 				"start it",
@@ -184,6 +186,11 @@ const char **main_menu_help[13] = {
 				NULL,
 		},
 		(const char*[]){
+				"Help and keyboard.",
+				"shortcuts",
+				NULL,
+		},
+		(const char*[]){
 				"Network setup for playing",
 				"C64 games against other",
 				"players online.",
@@ -196,6 +203,10 @@ const char **main_menu_help[13] = {
 		(const char*[]){
 				"Save general preferences",
 				NULL,
+		},
+		(const char*[]){
+				"Reset the C=64",
+				NULL,
 		},	
 		(const char*[]){
 				"Quit Frodo",
@@ -206,20 +217,20 @@ const char **main_menu_help[13] = {
 
 
 const char *options_menu_messages[15] = {
-                /*00*/          "Help",
-                /*01*/          " ",
-                /*02*/          "Map Controller 1 to:",
-                /*03*/          "^|Port 1|Port 2",
-                /*04*/          "True 1541 emulation",
-                /*05*/          "^|ON|OFF",
-                /*06*/          "Display",
-                /*07*/          "^|window|fullscreen",
-                /*08*/          "Speed (approx. %)",
-                /*09*/          "^|95|100|110",
-                /*10*/          "Usb port",
+                /*00*/          "Map Controller 1 to:",
+                /*01*/          "^|Port 1|Port 2",
+                /*02*/          "True 1541 emulation",
+                /*03*/          "^|ON|OFF",
+                /*04*/          "Display",
+                /*05*/          "^|window|fullscreen",
+                /*06*/          "Speed (approx. %)",
+                /*07*/          "^|95|100|110",
+                /*08*/          "Usb port",
+				/*09*/          "^|ON|OFF",
+				/*10*/          "Rumble",
 				/*11*/          "^|ON|OFF",
-                /*12*/          "Setup GUI theme",
-				/*13*/          "Reset the C=64",
+				/*12*/          " ",
+                /*13*/          "Setup GUI theme",
                 NULL
 };
 
@@ -236,12 +247,7 @@ const char *bind_key_menu_messages[9] = {
 };
 
 const char **options_menu_help[15] = {
-		(const char*[]){
-				"Help and keyboard.",
-				"shortcuts",
-				NULL,
-		},
-		NULL,
+		
 		(const char*[]){
 				"Switch controller to",
 				"C64 joystick port",
@@ -280,12 +286,14 @@ const char **options_menu_help[15] = {
 		},
 		NULL,
 		(const char*[]){
-				"Setup theme for the Frodo",
-				"menus.",
+				"Enable wiimote rumble",
 				NULL,
 		},
+		NULL,
+		NULL,
 		(const char*[]){
-				"Reset the c64.",
+				"Setup theme for the Frodo",
+				"menus.",
 				NULL,
 		},
 		NULL,

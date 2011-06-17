@@ -156,6 +156,7 @@ public:
 	bool SystemKeys;		// Enable system keys and menu keys (Win32)
 	bool ShowLEDs;			// Show LEDs (Win32)
 	bool Usbport;			// Load from usb port
+	bool Rumble;			// Enable Rumble for WII
 
 	uint32 MsPerFrame;
 

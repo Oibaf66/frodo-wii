@@ -109,6 +109,7 @@ Prefs::Prefs()
 	SystemKeys = true;
 	ShowLEDs = true;
 	Usbport = false;
+	Rumble = false;
 
 	this->SetupJoystickDefaults();
 
@@ -529,7 +530,9 @@ void Prefs::Load(const char *filename)
 				else if (!strcmp(keyword, "CursorKeysForJoystick"))
 					CursorKeysForJoystick = !strcmp(value, "TRUE");
 				else if (!strcmp(keyword, "Usbport"))
-					Usbport = !strcmp(value, "TRUE");	
+					Usbport = !strcmp(value, "TRUE");
+				else if (!strcmp(keyword, "Rumble"))
+					Rumble = !strcmp(value, "TRUE");
 			}
 		}
 		fclose(file);
@@ -644,6 +647,7 @@ bool Prefs::Save(const char *filename)
 		maybe_write(file, strcmp(Theme, TheDefaultPrefs.Theme) != 0, "Theme = %s\n", Theme);
 		maybe_write(file, CursorKeysForJoystick != TheDefaultPrefs.CursorKeysForJoystick, "CursorKeysForJoystick = %s\n", CursorKeysForJoystick ? "TRUE" : "FALSE");
 		maybe_write(file, Usbport != TheDefaultPrefs.Usbport, "Usbport = %s\n", Usbport ? "TRUE" : "FALSE");
+		maybe_write(file, Rumble != TheDefaultPrefs.Rumble, "Rumble = %s\n", Rumble ? "TRUE" : "FALSE");
 		fclose(file);
 		ThePrefsOnDisk = *this;
 		return true;
@@ -654,7 +658,7 @@ bool Prefs::Save(const char *filename)
 /*
  *  Save game preferences to file
  *  true: success, false: error
- *  Save only drivepath, displaytype, joystikswap, emule 1541, joystickbutton, cursorkeys for joystick
+ *  Save only drivepath, displaytype, joystikswap, emule 1541, joystickbutton, cursorkeys for joystick,rumble
  */
 
 
@@ -676,7 +680,7 @@ bool Prefs::Save_game(const char *filename)
 		for (int i = 0; i < MAX_JOYSTICK_BUTTONS; i++)
 			maybe_write(file, true, "JoystickButtons%d = %d\n", i, JoystickButtons[i]);
 		maybe_write(file, true, "CursorKeysForJoystick = %s\n", CursorKeysForJoystick ? "TRUE" : "FALSE");	
-			
+		maybe_write(file, true, "Rumble = %s\n", Rumble ? "TRUE" : "FALSE");		
 		fclose(file);
 		ThePrefsOnDisk = *this;
 		return true;

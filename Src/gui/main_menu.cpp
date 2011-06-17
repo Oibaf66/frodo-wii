@@ -112,19 +112,27 @@ public:
 			break;
 		case 7: /* Game info */
 			Gui::gui->pushView(Gui::gui->giv);
+			break;	
+		case 8: /* Help */
+			Gui::gui->pushDialogueBox(new DialogueBox(frodo_help));
 			break;
-		case 8: /* Networking */
+		case 9: /* Networking */
 			Gui::gui->pushView(Gui::gui->nv);
 			break;
-		case 9: /* Options */
+		case 10: /* Options */
 			Gui::gui->pushView(Gui::gui->ov);
 			break;
-		case 10: /* Save Prefs */
+		case 11: /* Save Prefs */
 			ThePrefs = *Gui::gui->np;
 			ThePrefs.Save(ThePrefs.PrefsPath);
 			Gui::gui->pushDialogueBox(new DialogueBox(save_prefs_done));
 			break;
-		case 11: /* Exit */
+		case 12: /* Reset c64 */
+			Gui::gui->status_bar->queueMessage("Resetting the C64");
+			Gui::gui->exitMenu();
+			TheC64->Reset();
+			break;
+		case 13: /* Exit */
 			DialogueBox *exit_dialogue = new DialogueBox(exit_dialogue_messages);
 			exit_dialogue->registerListener(new ExitListener());
 			Gui::gui->pushDialogueBox(exit_dialogue);

@@ -21,6 +21,7 @@
 #include "sysdeps.h"
 #if defined(GEKKO)
 # include <ogc/system.h>
+# include <wiiuse/wpad.h> 
 #endif
 
 #include "Display.h"
@@ -976,6 +977,54 @@ uint8 C64::poll_joystick_buttons(int port, uint8 *table, bool *has_event)
 		}
 		if (kc == JOY_NONE)
 			continue;
+		
+		#ifdef GEKKO
+		//Wiimote Rumble
+		static Uint32 last_ticks[2];
+		Uint32 cur_ticks;
+		static bool rumble_on[2];
+		static bool fire_pressed[2];
+		static int joystickbutton_fire[2]={-1,-1};
+		
+		
+		if (!Gui::gui->is_active && !Gui::gui->kbd && ThePrefs.Rumble)
+		
+		{
+			cur_ticks = SDL_GetTicks();
+		
+			if (cur && (kc == 0x50) && !rumble_on[port] && !fire_pressed[port])  
+			{			
+				WPAD_Rumble(port, true);
+				last_ticks[port]= cur_ticks;
+				rumble_on[port]=true;	
+				fire_pressed[port]=true;
+				joystickbutton_fire[port]=i;
+			}
+		
+			if (joystickbutton_fire[port] == i)
+			{
+				if (!cur && (kc == 0x50) && rumble_on[port] && fire_pressed[port])
+				{			
+					rumble_on[port]=true;	
+					fire_pressed[port]=false;
+				}
+			
+				if (((cur_ticks - last_ticks[port] > 150) && rumble_on[port] && !fire_pressed[port]) ||(!cur && (kc == 0x50) && !rumble_on[port] && fire_pressed[port]))
+				{
+					WPAD_Rumble(port, false);
+					rumble_on[port]=false;
+					fire_pressed[port]=false;
+					joystickbutton_fire[port]=-1;
+				}
+				if ((cur_ticks - last_ticks[port] > 150) && rumble_on[port] && fire_pressed[port])
+				{
+					WPAD_Rumble(port, false);
+					rumble_on[port]=false;
+					fire_pressed[port]=true;	
+				}
+			}		
+		}
+		#endif
 
 		if (table[kc] == 0)
 			table[kc] = cur ? 2 : 1;

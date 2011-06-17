@@ -22,21 +22,10 @@ public:
 	}
 
 	virtual void selectCallback(int which)
-	{
-		if (which == 0)
-		{
-			Gui::gui->pushDialogueBox(new DialogueBox(frodo_help));
-			return;
-		}
-		else if (which == 13)
-		{
-			Gui::gui->status_bar->queueMessage("Resetting the C64");
-			Gui::gui->exitMenu();
-			TheC64->Reset();
-			return;
-		}
+	{		
 		/* Select theme */
-		else if (which == 12)
+		
+		if (which == 13)
 		{
 			Gui::gui->tv->setDirectory(Gui::gui->theme_base_path);
 			Gui::gui->pushView(Gui::gui->tv);
@@ -77,11 +66,13 @@ public:
 			panic("Impossible submenu value: %d\n", this->p_submenus[3].sel);
 		}
 		Gui::gui->np->Usbport = !this->p_submenus[4].sel;
+		Gui::gui->np->Rumble = !this->p_submenus[5].sel;
+		
 	}
 
 	void updateSubmenus()
 	{
-		int submenu_defs[5];
+		int submenu_defs[6];
 
 		submenu_defs[0] = Gui::gui->np->JoystickSwap == true ? 0 : 1;
 		submenu_defs[1] = !Gui::gui->np->Emul1541Proc;
@@ -99,6 +90,7 @@ public:
 		}
 		
 		submenu_defs[4] = !Gui::gui->np->Usbport;
+		submenu_defs[5] = !Gui::gui->np->Rumble;
 		this->setText(options_menu_messages, submenu_defs);
 	}
 
