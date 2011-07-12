@@ -153,7 +153,7 @@ extern "C" int main(int argc, char **argv)
 	gettimeofday(&tv, NULL);
 	srand(tv.tv_usec);
 #if defined(GEKKO)
-	DIR_ITER *dir_tmp;
+	DIR *dir_tmp;
 #endif
 
 	// Init SDL
@@ -191,8 +191,8 @@ extern "C" int main(int argc, char **argv)
 	sleep(3);
 	
 	//create tmp directory if it does not exist
-	dir_tmp = diropen("/frodo/tmp");	
-	if (!dir_tmp) {mkdir("/frodo/tmp",0777);printf("Making tmp directory\n");sleep(2);} else dirclose(dir_tmp);
+	dir_tmp = opendir("/frodo/tmp");	
+	if (!dir_tmp) {mkdir("/frodo/tmp",0777);printf("Making tmp directory\n");sleep(2);} else closedir(dir_tmp);
 	
 	
 	#endif
