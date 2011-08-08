@@ -86,19 +86,6 @@ void Network::CloseSocket()
 	net_close(this->sock);
 }
 
-void Network::InitNetwork()
-{
-        char myIP[16];
-
-        memset(myIP, 0, sizeof(myIP));
-	Gui::gui->status_bar->queueMessage("Getting IP address via DHCP...");
-
-	if (if_config(myIP, NULL, NULL, true) < 0) {
-	        	Gui::gui->status_bar->queueMessage("No DHCP reply");
-	        	return;
-        }
-	Gui::gui->status_bar->queueMessage("Got an address");
-}
 
 void Network::ShutdownNetwork()
 {

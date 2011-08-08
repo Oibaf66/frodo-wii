@@ -6,6 +6,51 @@
 #include <sysdeps.h>
 #include <C64.h>
 
+#ifdef GEKKO
+#include <smb.h>
+#endif
+
+/****************************************************************************
+ * Mount SMB Share
+ ****************************************************************************/
+extern bool smbismount;
+
+bool ConnectShare ()
+{
+	
+	if(smbismount)
+		return true;
+		
+		#ifdef GEKKO
+		if(smbInit(ThePrefs.SmbUser, ThePrefs.SmbPwd,ThePrefs.SmbShare, ThePrefs.SmbIp))
+			smbismount = true;
+		#endif	
+
+		if(!smbismount) Gui::gui->status_bar->queueMessage("Failed to connect to SMB share");
+		else {
+		Gui::gui->status_bar->queueMessage("Established connection to SMB share");
+		Gui::gui->np->Port = PORT_SMB;
+		}
+
+	return smbismount;
+}
+
+
+void CloseShare(bool silent)
+{
+
+	if(smbismount) {
+	if (!silent) Gui::gui->status_bar->queueMessage("Disconnected from SMB share");
+	#ifdef GEKKO
+	smbClose("smb");
+	#endif
+	}
+	smbismount = false;
+}
+
+
+extern bool networkisinit; 
+
 class NetworkView;
 
 class NetworkMenu : public Menu, public KeyboardListener
@@ -48,16 +93,33 @@ public:
 			else
 				Gui::gui->np->NetworkPort = v;
 		} break;
+		case 9:
+			strncpy(Gui::gui->np->SmbUser, str, sizeof(Gui::gui->np->SmbUser));
+			break;
+		case 10:
+			strncpy(Gui::gui->np->SmbPwd, str, sizeof(Gui::gui->np->SmbPwd));
+			break;
+		case 11:
+			strncpy(Gui::gui->np->SmbShare, str, sizeof(Gui::gui->np->SmbShare));
+			break;
+		case 12:
+			if (!inet_aton(str, NULL)) 
+			{
+				DialogueBox *error_dialogue = new DialogueBox(network_bad_ip_dlg);
+				Gui::gui->pushDialogueBox(error_dialogue);
+			}
+			else strncpy(Gui::gui->np->SmbIp, str, sizeof(Gui::gui->np->SmbIp));
+			break;
 		default:
 			panic("Cur sel is %d, not possible!\n", this->cur_sel);
 			break;
 		}
 		this->updateMessages();
 	}
-
+	
 	virtual void selectCallback(int which)
 	{
-		printf("option entry %d selected: %s\n", which, this->pp_msgs[which]);
+		//printf("option entry %d selected: %s\n", which, this->pp_msgs[which]);
 		switch (which)
 		{
 		case 0:
@@ -69,7 +131,8 @@ public:
 			Gui::gui->pushView(Gui::gui->nrv);
 			break;
 		case 4:
-			if (TheC64->network)
+			if (!networkisinit) Gui::gui->pushDialogueBox(new DialogueBox(network_is_not_init_dlg));
+			else if (TheC64->network)
 				TheC64->network->Disconnect();
 			else if ( strncmp(Gui::gui->np->NetworkName, "Unset", strlen("Unset")) == 0)
 				Gui::gui->pushDialogueBox(new DialogueBox(network_unset_name_dlg));
@@ -101,6 +164,18 @@ public:
 				TheC64->TheDisplay->TypeNetworkMessage();
 			}
 			break;
+		case 9:
+		case 10:
+		case 11:
+		case 12:
+			VirtualKeyboard::kbd->activate();
+			VirtualKeyboard::kbd->registerListener(this);
+			break;
+		case 13:
+			if (!networkisinit) Gui::gui->pushDialogueBox(new DialogueBox(network_is_not_init_dlg));
+			else {if (smbismount) CloseShare(false); else ConnectShare();this->updateMessages();}
+			break;	
+			
 		default:
 			break;
 		}
@@ -126,22 +201,36 @@ private:
 				Gui::gui->np->NetworkServer);
 		snprintf(this->strs[2], sizeof(this->strs[2]) - 1, "Set region (%s)",
 				region_to_str(Gui::gui->np->NetworkRegion));
-
+		snprintf(this->strs[3], sizeof(this->strs[3]) - 1, "Set SMB user (%s)",
+				Gui::gui->np->SmbUser);
+		snprintf(this->strs[4], sizeof(this->strs[4]) - 1, "Set SMB psw (%s)",
+				Gui::gui->np->SmbPwd);
+		snprintf(this->strs[5], sizeof(this->strs[5]) - 1, "Set SMB folder (%s)",
+				Gui::gui->np->SmbShare);		
+		snprintf(this->strs[6], sizeof(this->strs[6]) - 1, "Set SMB IP (%s)",
+				Gui::gui->np->SmbIp);
+				
 		this->messages[0] = this->strs[0];
 		this->messages[1] = this->strs[1];
 		this->messages[2] = this->strs[2];
 
 		this->messages[3] = " ";
-		this->messages[4] = TheC64->network ? "Disconnect" : "Connect to the network!";
+		this->messages[4] = TheC64->network ? "Disconnect C64 network" : "Connect to C64 network!";
 		this->messages[5] = " ";
 		this->messages[6] = "Post network message";
 		this->messages[7] = "Post peer message";
-		this->messages[8] = NULL;
+		this->messages[8] = " ";
+		this->messages[9] = this->strs[3];
+		this->messages[10] = this->strs[4];
+		this->messages[11] = this->strs[5];
+		this->messages[12] = this->strs[6];
+		this->messages[13] = smbismount ? "Disconnect from SMB share" : "Connect to SMB share";
+		this->messages[14] = NULL;
 		this->setText(this->messages);
 	}
 
-	char strs[3][255];
-	const char *messages[9];
+	char strs[7][255];
+	const char *messages[15];
 
 	HelpBox *help;
 };

@@ -123,6 +123,28 @@ const char *select_analogue_dlg[8] = {
 	NULL
 };
 
+const char *network_is_not_init_dlg[8] = {
+	/*00*/          "Network not initialized!",
+	/*01*/		"Enable a DHCP and",
+	/*02*/		"restart Frodo",
+	/*03*/		"#",
+	/*04*/		"#",
+	/*05*/		"#",
+	/*06*/          "^|OK",
+	NULL
+};
+
+const char *network_bad_ip_dlg[8] = {
+	/*00*/          "Please enter a valid IP!",
+	/*01*/		"#",
+	/*02*/		"#", /* Empty line */
+	/*03*/		"#",
+	/*04*/		"#",
+	/*05*/		"#",
+	/*06*/          "^|OK",
+	NULL
+};
+
 const char *frodo_help[11] = {
 	/*00*/          "Welcome to the C64 network!",
 	/*01*/		"#",
@@ -225,8 +247,8 @@ const char *options_menu_messages[15] = {
                 /*05*/          "^|window|fullscreen",
                 /*06*/          "Speed (approx. %)",
                 /*07*/          "^|95|100|110",
-                /*08*/          "Usb port",
-				/*09*/          "^|ON|OFF",
+                /*08*/          "Port",
+				/*09*/          "^|SD|USB|SMB",
 				/*10*/          "Rumble",
 				/*11*/          "^|ON|OFF",
 				/*12*/          " ",
@@ -280,8 +302,8 @@ const char **options_menu_help[15] = {
 		},
 		NULL,
 		(const char*[]){
-				"Load games from usb port",
-				"instead of SD card",
+				"Load games from SD card,",
+				"USB port or network",
 				NULL,
 		},
 		NULL,
@@ -299,7 +321,7 @@ const char **options_menu_help[15] = {
 		NULL,
 };
 
-const char **network_menu_help[9] = {
+const char **network_menu_help[15] = {
 		(const char*[]){
 				"Setup username to use on",
 				"the C64 network. Must be",
@@ -343,6 +365,29 @@ const char **network_menu_help[9] = {
 				"this.",
 				NULL,
 		},
+		NULL,
+		(const char*[]){
+				"Set SMB username",
+				NULL,
+		},
+		(const char*[]){
+				"Set SMB password",
+				NULL,
+		},
+		(const char*[]){
+				"Set SMB shared folder",
+				NULL,
+		},
+		(const char*[]){
+				"Set SMB remote IP",
+				NULL,
+		},
+		(const char*[]){
+				"Connect to the SMB",
+				"share, or disconnect if",
+				"you are already connected.",
+				NULL,
+		},	
 		NULL,
 };
 

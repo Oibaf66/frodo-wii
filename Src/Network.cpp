@@ -114,8 +114,6 @@ Network::Network(const char *remote_host, int port)
 {
 	const size_t size = NETWORK_UPDATE_SIZE;
 
-	this->InitNetwork();
-
 	this->is_master = true; /* Assume true */
 	this->connected = false;
 
@@ -1247,7 +1245,7 @@ void Network::Disconnect()
 	/* Add a stop at the end of the update */
 	this->AddNetworkUpdate(disconnect);
 
-	this->SendPeerUpdate();
+	if (!&this->peer_addr) this->SendPeerUpdate();
 	this->SendServerUpdate();
 }
 

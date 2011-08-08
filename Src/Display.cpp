@@ -1009,14 +1009,14 @@ uint8 C64::poll_joystick_buttons(int port, uint8 *table, bool *has_event)
 					fire_pressed[port]=false;
 				}
 			
-				if (((cur_ticks - last_ticks[port] > 150) && rumble_on[port] && !fire_pressed[port]) ||(!cur && (kc == 0x50) && !rumble_on[port] && fire_pressed[port]))
+				if (((cur_ticks - last_ticks[port] > 120) && rumble_on[port] && !fire_pressed[port]) ||(!cur && (kc == 0x50) && !rumble_on[port] && fire_pressed[port]))
 				{
 					WPAD_Rumble(port, false);
 					rumble_on[port]=false;
 					fire_pressed[port]=false;
 					joystickbutton_fire[port]=-1;
 				}
-				if ((cur_ticks - last_ticks[port] > 150) && rumble_on[port] && fire_pressed[port])
+				if ((cur_ticks - last_ticks[port] > 120) && rumble_on[port] && fire_pressed[port])
 				{
 					WPAD_Rumble(port, false);
 					rumble_on[port]=false;

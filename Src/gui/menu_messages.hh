@@ -19,12 +19,14 @@ extern const char *network_port_dialogue_messages[];
 extern const char *network_unset_name_dlg[];
 extern const char *network_need_connection[];
 extern const char *network_need_peer[];
+extern const char *network_bad_ip_dlg[];
 extern const char *broken_theme_dlg[];
 extern const char *select_analogue_dlg[];
 extern const char *game_info_bad_year_dlg[];
 extern const char *game_info_bad_number_dlg[];
 extern const char *genre_dlg[];
 extern const char *players_dlg[];
+extern const char *network_is_not_init_dlg[];
 extern const char *save_state_done[];
 extern const char *save_prefs_done[];
 

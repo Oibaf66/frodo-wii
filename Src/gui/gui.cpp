@@ -25,6 +25,7 @@ extern SDL_Surface *screen;
 #define METADATA_ROOT_PATH "/frodo/metadata"
 #define GAME_ROOT_PATH "/frodo/images"
 #define GAME_ROOT_PATH_USB "usb:/"
+#define GAME_ROOT_PATH_SMB "smb:/"
 #define TMP_ROOT_PATH "/frodo/tmp"
 #define SAVE_GAME_ROOT_PATH "/frodo/saves"
 #else
@@ -109,6 +110,7 @@ Gui::Gui()
 	this->metadata_base_path = METADATA_ROOT_PATH;
 	this->game_base_path = GAME_ROOT_PATH;
 	this->game_base_path_usb = GAME_ROOT_PATH_USB;
+	this->game_base_path_smb = GAME_ROOT_PATH_SMB;
 	this->tmp_path = TMP_ROOT_PATH;
 	this->save_game_path = SAVE_GAME_ROOT_PATH;
 

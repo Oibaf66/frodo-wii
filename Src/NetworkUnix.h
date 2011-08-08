@@ -90,10 +90,6 @@ void Network::CloseSocket()
 	close(this->sock);
 }
 
-void Network::InitNetwork()
-{
-	/* Do nothing */
-}
 
 void Network::ShutdownNetwork()
 {

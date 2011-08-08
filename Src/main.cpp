@@ -40,12 +40,19 @@
 
 // Global variables
 extern int init_graphics(void);
+extern void CloseShare (bool silent);
 
 
 // Global variables
 C64 *TheC64 = NULL;		// Global C64 object
 char AppDirPath[1024];	// Path of application directory
 bool usbismount = false;
+bool networkisinit = false;
+bool smbismount = false; 
+
+#ifndef GEKKO
+networkisinit = true;
+#endif
 
 // ROM file names
 #ifndef DATADIR
@@ -112,6 +119,21 @@ bool InitUSB()
 {
 	fatUnmount("usb:");
 	__io_usbstorage.shutdown(); 
+}
+
+bool InitNetwork()
+{
+        char myIP[16];
+
+        memset(myIP, 0, sizeof(myIP));
+	printf("Getting IP address via DHCP...\n\n");
+
+	if (if_config(myIP, NULL, NULL, true) < 0) {
+	        	printf("No DHCP reply\n");
+	        	return false;
+        }
+	printf("Got an address: %s\n",myIP);
+	return true;
 }
 
 #endif
@@ -188,7 +210,10 @@ extern "C" int main(int argc, char **argv)
 		printf("USB FAT subsytem initialized\n\n");
 	else
 		printf("Impossible to initialize USB FAT subsytem\n\n");
-	sleep(3);
+	
+	networkisinit = InitNetwork();	
+		
+	sleep(4);
 	
 	//create tmp directory if it does not exist
 	dir_tmp = opendir("/frodo/tmp");	
@@ -201,6 +226,8 @@ extern "C" int main(int argc, char **argv)
 	the_app->ArgvReceived(argc, argv);
 	the_app->ReadyToRun();
 	delete the_app;
+	
+	if (smbismount) CloseShare (true);
 
 	#ifdef GEKKO
 	DeInitUSB();

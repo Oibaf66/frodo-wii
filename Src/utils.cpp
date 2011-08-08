@@ -158,7 +158,7 @@ struct  png_write_user_struct
 
 static void user_write_fn(png_structp png_ptr, png_bytep bytes, png_size_t sz)
 {
-	struct png_write_user_struct *out = (struct png_write_user_struct *)png_ptr->io_ptr;
+	struct png_write_user_struct *out = (struct png_write_user_struct *) png_get_io_ptr(png_ptr);
 
 	out->data = xrealloc(out->data, out->sz + sz);
 	memcpy((uint8_t*)out->data + out->sz, bytes, sz);

@@ -94,7 +94,12 @@ enum {
 	N_WIIMOTE_BINDINGS
 };
 
-
+// Device Port
+enum {
+	PORT_SD,	// Load from SD card
+	PORT_USB,	// Load from USB port
+	PORT_SMB	//Load from network	
+};
 
 // Preferences data
 class Prefs {
@@ -155,7 +160,6 @@ public:
 	bool AlwaysCopy;		// Always use a work surface (Win32)
 	bool SystemKeys;		// Enable system keys and menu keys (Win32)
 	bool ShowLEDs;			// Show LEDs (Win32)
-	bool Usbport;			// Load from usb port
 	bool Rumble;			// Enable Rumble for WII
 
 	uint32 MsPerFrame;
@@ -177,6 +181,12 @@ public:
 	char Theme[128];
 
 	bool CursorKeysForJoystick;
+	int Port; //SD, USB or SMB
+	
+	char SmbUser[32]; 
+	char SmbPwd[32];
+	char SmbShare[32]; 
+	char SmbIp[32];
 };
 
 

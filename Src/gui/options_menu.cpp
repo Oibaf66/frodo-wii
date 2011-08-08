@@ -65,7 +65,18 @@ public:
 		default:
 			panic("Impossible submenu value: %d\n", this->p_submenus[3].sel);
 		}
-		Gui::gui->np->Usbport = !this->p_submenus[4].sel;
+		switch (this->p_submenus[4].sel)
+		{
+		case 0:
+			Gui::gui->np->Port = PORT_SD; break;
+		case 1:
+			Gui::gui->np->Port = PORT_USB; break;
+		case 2:
+			Gui::gui->np->Port = PORT_SMB; break;
+		default:
+			panic("Impossible submenu value: %d\n", this->p_submenus[4].sel);
+		}
+		
 		Gui::gui->np->Rumble = !this->p_submenus[5].sel;
 		
 	}
@@ -89,7 +100,17 @@ public:
 		        submenu_defs[3] = 1; break;
 		}
 		
-		submenu_defs[4] = !Gui::gui->np->Usbport;
+		switch (Gui::gui->np->Port)
+		{
+	        case PORT_USB:
+	        	submenu_defs[4] = 1; break;
+		case PORT_SMB:
+			submenu_defs[4] = 2; break;
+		default:
+	                /* If it has some other value... SD */
+		        submenu_defs[4] = 0; break;
+		}
+		
 		submenu_defs[5] = !Gui::gui->np->Rumble;
 		this->setText(options_menu_messages, submenu_defs);
 	}

@@ -108,7 +108,7 @@ Prefs::Prefs()
 	AlwaysCopy = false;
 	SystemKeys = true;
 	ShowLEDs = true;
-	Usbport = false;
+	Port = PORT_SD;
 	Rumble = false;
 
 	this->SetupJoystickDefaults();
@@ -123,6 +123,11 @@ Prefs::Prefs()
 	this->CursorKeysForJoystick = true;
 
 	strcpy(this->Theme, "DEFAULT");
+	
+	strcpy(SmbUser, "User"); 
+	strcpy(SmbPwd, "Password");
+	strcpy(SmbShare, "Share"); 
+	strcpy(SmbIp,"192.168.0.1");
 }
 
 
@@ -314,6 +319,8 @@ bool Prefs::operator==(const Prefs &rhs) const
 		&& AlwaysCopy == rhs.AlwaysCopy
 		&& SystemKeys == rhs.SystemKeys
 		&& ShowLEDs == rhs.ShowLEDs
+		&& Port == rhs.Port
+		&& Rumble == rhs.Rumble
 		&& this->MsPerFrame == rhs.MsPerFrame
 		&& this->NetworkKey == rhs.NetworkKey
 		&& this->NetworkPort == rhs.NetworkPort
@@ -323,6 +330,10 @@ bool Prefs::operator==(const Prefs &rhs) const
 		&& strcmp(this->Theme, rhs.Theme) == 0
 		&& this->NetworkAvatar == rhs.NetworkAvatar
 		&& this->CursorKeysForJoystick == rhs.CursorKeysForJoystick
+		&& strcmp(this->SmbUser, rhs.SmbUser) == 0
+		&& strcmp(this->SmbPwd, rhs.SmbPwd) == 0
+		&& strcmp(this->SmbShare, rhs.SmbShare) == 0
+		&& strcmp(this->SmbIp, rhs.SmbIp) == 0
 	);
 }
 
@@ -529,10 +540,20 @@ void Prefs::Load(const char *filename)
 					strcpy(Theme, value);
 				else if (!strcmp(keyword, "CursorKeysForJoystick"))
 					CursorKeysForJoystick = !strcmp(value, "TRUE");
-				else if (!strcmp(keyword, "Usbport"))
-					Usbport = !strcmp(value, "TRUE");
+				else if (!strcmp(keyword, "Port")) {
+					if (!strcmp(value, "USB")) Port = PORT_USB;
+					else if (!strcmp(value, "SMB")) Port = PORT_SMB;
+					else Port = PORT_SD; }
 				else if (!strcmp(keyword, "Rumble"))
 					Rumble = !strcmp(value, "TRUE");
+				else if (!strcmp(keyword, "SmbUser"))
+					strcpy(SmbUser, value);
+				else if (!strcmp(keyword, "SmbPwd"))
+					strcpy(SmbPwd, value);
+				else if (!strcmp(keyword, "SmbShare"))
+					strcpy(SmbShare, value);
+				else if (!strcmp(keyword, "SmbIp"))
+					strcpy(SmbIp, value);					
 			}
 		}
 		fclose(file);
@@ -646,8 +667,28 @@ bool Prefs::Save(const char *filename)
 		maybe_write(file, NetworkRegion != TheDefaultPrefs.NetworkRegion, "NetworkRegion = %d\n", NetworkRegion);
 		maybe_write(file, strcmp(Theme, TheDefaultPrefs.Theme) != 0, "Theme = %s\n", Theme);
 		maybe_write(file, CursorKeysForJoystick != TheDefaultPrefs.CursorKeysForJoystick, "CursorKeysForJoystick = %s\n", CursorKeysForJoystick ? "TRUE" : "FALSE");
-		maybe_write(file, Usbport != TheDefaultPrefs.Usbport, "Usbport = %s\n", Usbport ? "TRUE" : "FALSE");
+		
+		if (Port != TheDefaultPrefs.Port)
+		{
+			fprintf(file, "Port = ");
+			switch (Port) {
+				case PORT_SD:
+					fprintf(file, "SD\n");
+					break;
+				case PORT_USB:
+					fprintf(file, "USB\n");
+					break;
+				case PORT_SMB:
+					fprintf(file, "SMB\n");
+					break;
+			}
+		}
+		
 		maybe_write(file, Rumble != TheDefaultPrefs.Rumble, "Rumble = %s\n", Rumble ? "TRUE" : "FALSE");
+		maybe_write(file, strcmp(SmbUser, TheDefaultPrefs.SmbUser) != 0, "SmbUser = %s\n", SmbUser);
+		maybe_write(file, strcmp(SmbPwd, TheDefaultPrefs.SmbPwd) != 0, "SmbPwd = %s\n", SmbPwd);
+		maybe_write(file, strcmp(SmbShare, TheDefaultPrefs.SmbShare) != 0, "SmbShare = %s\n", SmbShare);
+		maybe_write(file, strcmp(SmbIp, TheDefaultPrefs.SmbIp) != 0, "SmbIp = %s\n", SmbIp);
 		fclose(file);
 		ThePrefsOnDisk = *this;
 		return true;

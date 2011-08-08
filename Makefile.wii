@@ -35,7 +35,7 @@ LDFLAGS	= -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-lSDL_ttf -lSDL_image -lpng -ljpeg -lz -lSDL -lfreetype -lfat -lwiiuse -lbte -logc -lm -lwiikeyboard
+LIBS	:=	-lSDL_ttf -lSDL_image -lpng -ljpeg -lz -lSDL -lfreetype -lfat -lwiiuse -lbte -logc -lm -lwiikeyboard -ltinysmb
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -95,6 +95,7 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES), -iquote $(CURDIR)/$(dir)) \
 					-I$(LIBOGC_INC) \
 					-I$(CURDIR)/Src \
 					-I$(PORTLIBS)/include
+					
 
 #---------------------------------------------------------------------------------
 # build a list of library paths

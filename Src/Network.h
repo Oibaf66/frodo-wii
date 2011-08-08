@@ -298,7 +298,6 @@ public:
 
 	bool is_master; /* Some peers are more equal than others */
 
-	void InitNetwork();
 
 	void ShutdownNetwork();
 
@@ -310,7 +309,7 @@ public:
 	bool WaitForPeerReply();
 
 	bool SendBandWidthTest();
-
+	
 	network_connection_error_t WaitForBandWidthReply();
 
 	network_connection_error_t WaitForPeerList();

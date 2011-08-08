@@ -1,5 +1,38 @@
-		TODO: Add ability to select files to load from disks in
-		a menu
+
+c64-network.org, v2.4: 
+		* Added SMB support
+ 
+-- Oibaf, fabio.olimpieri@tin.it,
+
+c64-network.org, v2.3: 
+		* Added usb fat support 
+	
+		* Added wiimote rumble support 
+    
+-- Oibaf, fabio.olimpieri@tin.it,
+   
+c64-network.org,v2.2: 
+		* Several bug fixes 
+	
+		* Window zooming 
+	
+		* General preferences saved manually 
+		
+		* Added items in info menu 
+	
+		* Option to emulate joystick with arrows keys
+	
+
+-- Oibaf, fabio.olimpieri@tin.it,
+
+c64-network.org, v2.1: 
+		* Compiled with libogc 1.8.6 
+		
+		* Fix option menu
+    
+-- Oibaf, fabio.olimpieri@tin.it,
+
+
 c64-network.org, v2:
 		* Fix sound when paused
 		
@@ -12,6 +45,8 @@ c64-network.org, v2:
 		* Fix multiple bindings to the same key
 
 		* Fix joystick input on the virtual keyboard
+		
+-- Simon Kagstrom simon.kagstrom@gmail.com,
 
 c64-network.org, v1:
 		* Sound is transferred in network play now
