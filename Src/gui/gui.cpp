@@ -109,8 +109,10 @@ Gui::Gui()
 	this->theme_base_path = THEME_ROOT_PATH;
 	this->metadata_base_path = METADATA_ROOT_PATH;
 	this->game_base_path = GAME_ROOT_PATH;
+	#if defined(GEKKO)
 	this->game_base_path_usb = GAME_ROOT_PATH_USB;
 	this->game_base_path_smb = GAME_ROOT_PATH_SMB;
+	#endif
 	this->tmp_path = TMP_ROOT_PATH;
 	this->save_game_path = SAVE_GAME_ROOT_PATH;
 
@@ -562,7 +564,7 @@ void Gui::saveGameInfo(const char *base_path, const char *name)
 			if (ferror(fp))
 				warning("Write error on %s\n", new_name);
 			else if ((size_t)n != sz)
-				warning("Could only write %d bytes of %d for %s\n",
+				warning("Could only write %d bytes of %zd for %s\n",
 						n, sz, new_name);
 			fclose(fp);
 		}

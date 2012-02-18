@@ -47,11 +47,12 @@ extern void CloseShare (bool silent);
 C64 *TheC64 = NULL;		// Global C64 object
 char AppDirPath[1024];	// Path of application directory
 bool usbismount = false;
-bool networkisinit = false;
 bool smbismount = false; 
 
 #ifndef GEKKO
-networkisinit = true;
+bool networkisinit = true;
+#else
+bool networkisinit = false;
 #endif
 
 // ROM file names
@@ -101,7 +102,11 @@ bool InitUSB()
 	bool isMounted = fatMountSimple("usb", &__io_usbstorage);
 	
 	bool isInserted = __io_usbstorage.isInserted();
-	if (!isInserted) return false; 
+	if (!isInserted) 
+	{
+	printf("USB device not found\n\n");
+	return false;
+	}
  
 	// USB Drive may be "sleeeeping" 
 	// We need to try Mounting a few times to wake it up
@@ -129,7 +134,7 @@ bool InitNetwork()
 	printf("Getting IP address via DHCP...\n\n");
 
 	if (if_config(myIP, NULL, NULL, true) < 0) {
-	        	printf("No DHCP reply\n");
+	        	printf("No DHCP reply\n\n");
 	        	return false;
         }
 	printf("Got an address: %s\n",myIP);

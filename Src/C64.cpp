@@ -56,7 +56,7 @@ C64::C64()
 	c64_ctor1();
 
 	// Open display
-	printf("ssof1 %d:%d\n",
+	printf("ssof1 %zd:%zd\n",
 			sizeof(C64Display), sizeof(C64));
 	TheDisplay = new C64Display(this);
 
