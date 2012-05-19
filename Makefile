@@ -1,4 +1,17 @@
-all:	message
+all: 
 
-message:
-	@echo "Run  make -f Makefile.host  or  make -f Makefile.wii  instead"
+	make -f Makefile.wii
+
+
+run:	
+
+	make run -f Makefile.wii
+
+clean: 
+
+	make clean -f Makefile.wii
+	
+	
+install:
+
+	make dist -f Makefile.wii
