@@ -15,6 +15,7 @@
 
 #include "virtual_keyboard.hh"
 #include "gui.hh"
+#include "C64.h"
 
 typedef struct virtkey
 {
@@ -322,6 +323,9 @@ void VirtualKeyboard::runLogic()
 	else if (ev & KEY_SELECT)
 	{
 		virtkey_t *key = &keys[ this->sel_y * KEY_COLS + this->sel_x ];
+		
+		//Special case for Restore
+		if (strcmp(key->name,"Rstr")==0) {TheC64->NMI();return;} 
 
 		if (!key)
 			return;

@@ -258,11 +258,11 @@ const char *options_menu_messages[15] = {
 
 const char *bind_key_menu_messages[9] = {
                 /*00*/          "Wiimote",
-                /*01*/          "^|A|B|1|2|+|-",
+                /*01*/          "^| A| B| 1| 2| +| -",
                 /*02*/          "Nunchuk",
-                /*03*/          "^|Z|C",
+                /*03*/          "^| Z| C",
                 /*04*/          "Classic",
-                /*05*/          "^|a|b|x|y|L|R|Zl|Zr|+|-",
+                /*05*/          "^|a|b|x|y|L|R|Zl|Zr| +| -",
                 /*06*/          " ",
                 /*07*/          "Reset to defaults",
                 NULL

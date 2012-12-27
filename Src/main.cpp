@@ -218,7 +218,7 @@ extern "C" int main(int argc, char **argv)
 	
 	networkisinit = InitNetwork();	
 		
-	sleep(4);
+	sleep(3);
 	
 	//create tmp directory if it does not exist
 	dir_tmp = opendir("/frodo/tmp");	

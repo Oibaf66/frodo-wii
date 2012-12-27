@@ -1,3 +1,10 @@
+c64-network.org, v2.4.1: 
+		* Fixed Restore key
+		* (build) Compiled against libogc 1.8.11 and SDL-Wii r101
+		* Fixed full resolution in 576i video mode
+
+-- Oibaf, fabio.olimpieri@tin.it, Dec 27 CEST 2012
+
 
 c64-network.org, v2.4: 
 		* Added SMB support
