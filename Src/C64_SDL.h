@@ -112,9 +112,31 @@ void C64::startFakeKeySequence(const char *str)
 	this->fake_key_sequence = true;
 }
 
+//Class already defined in disck_menu.cpp
+class StartGameListener : public TimeoutHandler
+{
+public:
+	StartGameListener()
+	{
+		
+		Gui::gui->status_bar->queueMessage("Resetting the C64");
+		TheC64->Reset();
+		TimerController::controller->arm(this, 4500);
+	}
+
+	virtual void timeoutCallback()
+	{
+		Gui::gui->status_bar->queueMessage("Invoking the load sequence");
+		TheC64->startFakeKeySequence("\nLOAD \"*\",8,1\nRUN\n");
+		delete this;
+	}
+};
+
 /*
  *  Start main emulation thread
  */
+ 
+extern char *floppy8;
 
 void C64::Run(void)
 {
@@ -131,6 +153,9 @@ void C64::Run(void)
 	PatchKernal(ThePrefs.FastReset, ThePrefs.Emul1541Proc);
 
 	quit_thyself = false;
+	
+	if (floppy8)  new StartGameListener();
+
 	thread_func();
 }
 

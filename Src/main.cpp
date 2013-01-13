@@ -224,6 +224,9 @@ extern "C" int main(int argc, char **argv)
 	dir_tmp = opendir("/frodo/tmp");	
 	if (!dir_tmp) {mkdir("/frodo/tmp",0777);printf("Making tmp directory\n");sleep(2);} else closedir(dir_tmp);
 	
+	//Cancel the old a file
+	unlink ("/frodo/tmp/a");
+	
 	
 	#endif
 
@@ -261,11 +264,12 @@ Frodo::Frodo()
  *  Process command line arguments
  */
 char *network_server_connect = 0;
+char *floppy8 = 0;
 
 void Frodo::ArgvReceived(int argc, char **argv)
 {
-	if (argc == 2)
-		network_server_connect = argv[1];
+	if (argc == 2) floppy8 = argv[1];
+	else if (argc == 3) network_server_connect = argv[2];	 
 }
 
 const char *try_path(const char *path, const char *file)
@@ -348,6 +352,9 @@ void Frodo::LoadFrodorc()
  *  Arguments processed, run emulation
  */
 
+
+extern const char *prg_exts[];
+
 void Frodo::ReadyToRun(void)
 {
 	if (getcwd(AppDirPath, 256) == NULL)
@@ -357,6 +364,52 @@ void Frodo::ReadyToRun(void)
 	if (network_server_connect)
 		strncpy(ThePrefs.NetworkServer, network_server_connect,
 				sizeof(ThePrefs.NetworkServer));
+		
+//Mount the floppy if passed as argument
+if (floppy8)  
+	{
+	strncpy(ThePrefs.DrivePath[0], floppy8, sizeof(ThePrefs.DrivePath[0]));
+	
+	char *filename;
+	filename = strrchr(floppy8, '/');
+	if (!filename) filename++;
+	
+	if (ext_matches_list(filename, prg_exts)) {
+                	char *tmp_filename;
+                        FILE *src, *dst;
+
+                        tmp_filename = (char *)xmalloc(strlen(TMP_ROOT_PATH) + 4);
+                        sprintf(tmp_filename, "%s/ab", TMP_ROOT_PATH);
+
+                        /* Clean temp dir first (we only want one file) */
+                        unlink(tmp_filename);
+
+                        src = fopen(ThePrefs.DrivePath[0], "r");
+                        if (src != NULL)
+                        {
+                                snprintf(ThePrefs.DrivePath[0], sizeof(ThePrefs.DrivePath[0]),
+                                		"%s", TMP_ROOT_PATH);
+
+                                /* Special handling of .prg: Copy to TMP_PATH and
+                                 * load that as a dir */
+                                dst = fopen(tmp_filename, "w");
+                                if (dst)
+                                {
+                                        Uint8 buf[1024];
+                                        size_t v;
+
+                                        do {
+                                                v = fread(buf, 1, sizeof(buf), src);
+                                                fwrite(buf, 1, v, dst);
+                                        } while (v > 0);
+                                        fclose(dst);
+                                }
+                                fclose(src);
+                        }
+                        free(tmp_filename);
+			}
+	}
+			
 	panic_if (!init_graphics(),
 			"Can't initialize graphics!\n");
 

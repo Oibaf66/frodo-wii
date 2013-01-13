@@ -10,7 +10,7 @@
 
 static const char *game_exts[] = {".d64", ".D64", ".t64", ".T64",
 	".prg",".PRG", ".p00", ".P00", NULL};
-static const char *prg_exts[] = {".prg",".PRG", ".p00", ".P00", NULL};
+const char *prg_exts[] = {".prg",".PRG", ".p00", ".P00", NULL};
 
 class DiscMenu;
 
@@ -120,7 +120,7 @@ public:
                         FILE *src, *dst;
 
                         tmp_filename = (char *)xmalloc(strlen(Gui::gui->tmp_path) + 4);
-                        sprintf(tmp_filename, "%s/a", Gui::gui->tmp_path);
+                        sprintf(tmp_filename, "%s/ab", Gui::gui->tmp_path);
 
                         /* Clean temp dir first (we only want one file) */
                         unlink(tmp_filename);

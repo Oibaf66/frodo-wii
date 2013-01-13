@@ -13,6 +13,22 @@
 #include <main.h>
 #include <Prefs.h>
 
+#if defined(GEKKO)
+#define THEME_ROOT_PATH "/frodo/themes"
+#define METADATA_ROOT_PATH "/frodo/metadata"
+#define GAME_ROOT_PATH "/frodo/images"
+#define GAME_ROOT_PATH_USB "usb:/"
+#define GAME_ROOT_PATH_SMB "smb:/"
+#define TMP_ROOT_PATH "/frodo/tmp"
+#define SAVE_GAME_ROOT_PATH "/frodo/saves"
+#else
+#define THEME_ROOT_PATH "themes"
+#define METADATA_ROOT_PATH "metadata"
+#define GAME_ROOT_PATH "images"
+#define TMP_ROOT_PATH "tmp"
+#define SAVE_GAME_ROOT_PATH "saves"
+#endif
+
 class DialogueBox;
 class StatusBar;
 class NetworkServerMessages;
