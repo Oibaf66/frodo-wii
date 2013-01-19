@@ -108,7 +108,7 @@ Prefs::Prefs()
 	AlwaysCopy = false;
 	SystemKeys = true;
 	ShowLEDs = true;
-	Port = PORT_SD;
+	Port = PORT_DEFAULT;
 	Rumble = false;
 
 	this->SetupJoystickDefaults();
@@ -541,9 +541,10 @@ void Prefs::Load(const char *filename)
 				else if (!strcmp(keyword, "CursorKeysForJoystick"))
 					CursorKeysForJoystick = !strcmp(value, "TRUE");
 				else if (!strcmp(keyword, "Port")) {
-					if (!strcmp(value, "USB")) Port = PORT_USB;
+					if (!strcmp(value, "SD")) Port = PORT_SD;
+					else if (!strcmp(value, "USB")) Port = PORT_USB;
 					else if (!strcmp(value, "SMB")) Port = PORT_SMB;
-					else Port = PORT_SD; }
+					else Port = PORT_DEFAULT; }
 				else if (!strcmp(keyword, "Rumble"))
 					Rumble = !strcmp(value, "TRUE");
 				else if (!strcmp(keyword, "SmbUser"))
@@ -672,6 +673,9 @@ bool Prefs::Save(const char *filename)
 		{
 			fprintf(file, "Port = ");
 			switch (Port) {
+				case PORT_DEFAULT:
+					fprintf(file, "DEFAULT\n");
+					break;
 				case PORT_SD:
 					fprintf(file, "SD\n");
 					break;

@@ -17,6 +17,7 @@
 #define THEME_ROOT_PATH "/frodo/themes"
 #define METADATA_ROOT_PATH "/frodo/metadata"
 #define GAME_ROOT_PATH "/frodo/images"
+#define GAME_ROOT_PATH_SD "sd:/"
 #define GAME_ROOT_PATH_USB "usb:/"
 #define GAME_ROOT_PATH_SMB "smb:/"
 #define TMP_ROOT_PATH "/frodo/tmp"
@@ -145,6 +146,7 @@ public:
 	const char *metadata_base_path;
 	const char *theme_base_path;
 	const char *game_base_path;
+	const char *game_base_path_sd;
 	const char *game_base_path_usb;
 	const char *game_base_path_smb;
 	const char *tmp_path;

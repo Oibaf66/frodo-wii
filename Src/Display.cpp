@@ -969,7 +969,14 @@ uint8 C64::poll_joystick_buttons(int port, uint8 *table, bool *has_event)
 		bool cur = SDL_JoystickGetButton (js, i) ? true : false;
 		int kc = ThePrefs.JoystickButtons[i];
 		event_t ev = (event_t)ThePrefs.MenuJoystickButtons[i];
-
+	
+		//Handle special Restore key, since its not actually part of the key mapping
+		if (kc == MATRIX(0, 0x1FF) && cur) {
+			NMI();
+			continue;
+	    }
+		
+		
 		if (cur && ev != EVENT_NONE)
 		{
 			Gui::gui->pushJoystickEvent(ev);

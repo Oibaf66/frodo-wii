@@ -248,7 +248,7 @@ const char *options_menu_messages[15] = {
                 /*06*/          "Speed (approx. %)",
                 /*07*/          "^|95|100|110",
                 /*08*/          "Port",
-				/*09*/          "^|SD|USB|SMB",
+				/*09*/          "^|DEFAULT|SD|USB|SMB",
 				/*10*/          "Rumble",
 				/*11*/          "^|ON|OFF",
 				/*12*/          " ",

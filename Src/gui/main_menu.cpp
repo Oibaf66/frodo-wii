@@ -3,6 +3,7 @@
 
 extern bool usbismount; 
 extern bool smbismount;
+extern bool sdismount;
 
 class KeyboardTypingListener : public KeyboardListener, TimeoutHandler
 {
@@ -71,9 +72,10 @@ public:
 		switch (which)
 		{
 		case 0: /* Insert disc */
-			if (Gui::gui->np->Port == PORT_USB && usbismount) Gui::gui->dv->setDirectory(Gui::gui->game_base_path_usb);
+			if (Gui::gui->np->Port == PORT_SD && sdismount) Gui::gui->dv->setDirectory(Gui::gui->game_base_path_sd);
+			else if (Gui::gui->np->Port == PORT_USB && usbismount) Gui::gui->dv->setDirectory(Gui::gui->game_base_path_usb);
 			else if (Gui::gui->np->Port == PORT_SMB && smbismount) Gui::gui->dv->setDirectory(Gui::gui->game_base_path_smb);
-			else Gui::gui->dv->setDirectory(Gui::gui->game_base_path);
+			else Gui::gui->dv->setDirectory(Gui::gui->game_base_path); //DEFAULT
 			
 			Gui::gui->pushView(Gui::gui->dv);
 			

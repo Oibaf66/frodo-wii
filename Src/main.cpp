@@ -48,6 +48,7 @@ C64 *TheC64 = NULL;		// Global C64 object
 char AppDirPath[1024];	// Path of application directory
 bool usbismount = false;
 bool smbismount = false; 
+bool sdismount = false; 
 
 #ifndef GEKKO
 bool networkisinit = true;
@@ -201,14 +202,26 @@ extern "C" int main(int argc, char **argv)
 	printf("\x1b[2;0H");
 
 	//initialize libfat library
-	if (!fatInitDefault())
-	{ 
-		printf("Couldn't initialize SD fat subsytem\n\n");
+	if (fatInitDefault())
+		printf("FAT subsytem initialized\n\n");
+	else
+		{
+		printf("Couldn't initialize FAT subsytem\n\n");
 		sleep(3);
 		exit(0);
-	}
-	else
+		}
+		
+	DIR *dp;
+    
+	dp = opendir ("sd:/");
+	if (dp) sdismount = 1; else sdismount = 0;
+	
+	if (sdismount)
 		printf("SD FAT subsytem initialized\n\n");
+	else
+		printf("Couldn't initialize SD fat subsytem\n\n");
+ 	
+	if (sdismount) closedir (dp);
 	
 	usbismount = InitUSB();
 	if (usbismount) 
@@ -218,7 +231,7 @@ extern "C" int main(int argc, char **argv)
 	
 	networkisinit = InitNetwork();	
 		
-	sleep(3);
+	sleep(2);
 	
 	//create tmp directory if it does not exist
 	dir_tmp = opendir("/frodo/tmp");	

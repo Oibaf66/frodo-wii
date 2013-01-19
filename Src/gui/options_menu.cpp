@@ -68,11 +68,13 @@ public:
 		switch (this->p_submenus[4].sel)
 		{
 		case 0:
-			Gui::gui->np->Port = PORT_SD; break;
+			Gui::gui->np->Port = PORT_DEFAULT; break;
 		case 1:
-			Gui::gui->np->Port = PORT_USB; break;
+			Gui::gui->np->Port = PORT_SD; break;
 		case 2:
-			Gui::gui->np->Port = PORT_SMB; break;
+			Gui::gui->np->Port = PORT_USB; break;
+		case 3:
+			Gui::gui->np->Port = PORT_SMB; break;	
 		default:
 			panic("Impossible submenu value: %d\n", this->p_submenus[4].sel);
 		}
@@ -102,12 +104,14 @@ public:
 		
 		switch (Gui::gui->np->Port)
 		{
-	        case PORT_USB:
+	        case PORT_SD:
 	        	submenu_defs[4] = 1; break;
+			case PORT_USB:
+	        	submenu_defs[4] = 2; break;
 		case PORT_SMB:
-			submenu_defs[4] = 2; break;
+			submenu_defs[4] = 3; break;
 		default:
-	                /* If it has some other value... SD */
+	                /* If it has some other value... DEFAULT */
 		        submenu_defs[4] = 0; break;
 		}
 		

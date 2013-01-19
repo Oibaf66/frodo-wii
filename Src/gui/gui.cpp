@@ -94,6 +94,7 @@ Gui::Gui()
 	this->metadata_base_path = METADATA_ROOT_PATH;
 	this->game_base_path = GAME_ROOT_PATH;
 	#if defined(GEKKO)
+	this->game_base_path_sd = GAME_ROOT_PATH_SD;
 	this->game_base_path_usb = GAME_ROOT_PATH_USB;
 	this->game_base_path_smb = GAME_ROOT_PATH_SMB;
 	#endif

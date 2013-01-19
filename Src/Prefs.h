@@ -96,6 +96,7 @@ enum {
 
 // Device Port
 enum {
+	PORT_DEFAULT, // Load from the device  of dol file
 	PORT_SD,	// Load from SD card
 	PORT_USB,	// Load from USB port
 	PORT_SMB	//Load from network	
@@ -181,7 +182,7 @@ public:
 	char Theme[128];
 
 	bool CursorKeysForJoystick;
-	int Port; //SD, USB or SMB
+	int Port; //DEFAULT, SD, USB or SMB
 	
 	char SmbUser[32]; 
 	char SmbPwd[32];
