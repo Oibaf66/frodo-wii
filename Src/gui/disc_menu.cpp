@@ -8,7 +8,7 @@
 #include "game_info.hh"
 #include "game_info_box.hh"
 
-static const char *game_exts[] = {".d64", ".D64", ".t64", ".T64",
+const char *game_exts[] = {".d64", ".D64", ".t64", ".T64",
 	".prg",".PRG", ".p00", ".P00", NULL};
 const char *prg_exts[] = {".prg",".PRG", ".p00", ".P00", NULL};
 

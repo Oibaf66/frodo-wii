@@ -563,6 +563,75 @@ void Gui::saveGameInfo(const char *base_path, const char *name)
 	this->gameInfoChanged = false;
 }
 
+extern char *floppy8; //Complete path
+extern const char *game_exts[];
+extern const char *prg_exts[];
+extern const char *save_exts[];
+
+//Class already defined in disck_menu.cpp
+class StartGameListener2 : public TimeoutHandler
+{
+public:
+	StartGameListener2()
+	{
+		
+		//Gui::gui->status_bar->queueMessage("Resetting the C64");
+		//TheC64->Reset();
+		TimerController::controller->arm(this, 4500);
+	}
+
+	virtual void timeoutCallback()
+	{
+		if (ext_matches_list(floppy8, game_exts))
+		{
+			char *filename;
+			filename = strrchr(floppy8, '/');
+			if (filename) filename++;
+			
+			Gui::gui->dv->loadGameInfo(filename);
+			
+			if (Gui::gui->dv->gameInfo->gi)
+				Gui::gui->updateGameInfo(Gui::gui->dv->gameInfo->gi);
+			else
+				Gui::gui->updateGameInfo(new GameInfo(filename));
+		
+			Gui::gui->status_bar->queueMessage("Invoking the load sequence");
+			TheC64->startFakeKeySequence("\nLOAD \"*\",8,1\nRUN\n");
+			
+		}
+		
+		if (ext_matches_list(floppy8, save_exts))
+		{
+			char *prefs_path;
+
+			prefs_path = (char *)xmalloc(strlen(floppy8) + 8);
+	
+			sprintf(prefs_path, "%s.prefs", floppy8);
+		
+			TheC64->LoadSnapshot(floppy8);
+		
+			char *filename;
+			filename = strrchr(floppy8, '/');
+			if (filename) filename++;
+			char *cpy = xstrdup(filename);
+			char *p = strstr(cpy, ".sav");
+			if (p)
+				*p = '\0';
+				
+			Gui::gui->sgv->loadGameInfo(cpy);
+			
+			if (Gui::gui->sgv->gameInfo->gi)
+				Gui::gui->updateGameInfo(Gui::gui->sgv->gameInfo->gi);
+			else
+				Gui::gui->updateGameInfo(new GameInfo(cpy));
+			
+			free(cpy);
+			ThePrefs.Load(prefs_path);
+			free(prefs_path);
+		}
+		delete this;
+	}
+};
 
 /* The singleton/factory stuff */
 Gui *Gui::gui;
@@ -579,4 +648,6 @@ void Gui::init()
 
 	Gui::gui->status_bar->queueMessage("Welcome to C64-network.org, the networked C64!");
 	Gui::gui->status_bar->queueMessage("Press Home for the menu!");
+	if (floppy8) if ((ext_matches_list(floppy8, game_exts))||(ext_matches_list(floppy8, save_exts))) new StartGameListener2();
+	
 }

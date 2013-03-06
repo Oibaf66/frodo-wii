@@ -237,9 +237,9 @@ extern "C" int main(int argc, char **argv)
 	dir_tmp = opendir("/frodo/tmp");	
 	if (!dir_tmp) {mkdir("/frodo/tmp",0777);printf("Making tmp directory\n");sleep(2);} else closedir(dir_tmp);
 	
-	//Cancel the old a file
+	//Cancel the old files
 	unlink ("/frodo/tmp/a");
-	
+	unlink ("/frodo/tmp/dummy");
 	
 	#endif
 
@@ -367,6 +367,7 @@ void Frodo::LoadFrodorc()
 
 
 extern const char *prg_exts[];
+extern const char *game_exts[];
 
 void Frodo::ReadyToRun(void)
 {
@@ -380,14 +381,13 @@ void Frodo::ReadyToRun(void)
 		
 //Mount the floppy if passed as argument
 if (floppy8)  
+{	
+	if (ext_matches_list(floppy8, game_exts))
 	{
-	strncpy(ThePrefs.DrivePath[0], floppy8, sizeof(ThePrefs.DrivePath[0]));
+		strncpy(ThePrefs.DrivePath[0], floppy8, sizeof(ThePrefs.DrivePath[0]));
 	
-	char *filename;
-	filename = strrchr(floppy8, '/');
-	if (!filename) filename++;
-	
-	if (ext_matches_list(filename, prg_exts)) {
+		if (ext_matches_list(floppy8, prg_exts)) {
+					
                 	char *tmp_filename;
                         FILE *src, *dst;
 
@@ -422,7 +422,7 @@ if (floppy8)
                         free(tmp_filename);
 			}
 	}
-			
+}		
 	panic_if (!init_graphics(),
 			"Can't initialize graphics!\n");
 

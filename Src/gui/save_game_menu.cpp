@@ -9,7 +9,7 @@
 #include "game_info.hh"
 #include "game_info_box.hh"
 
-static const char *save_exts[] = {".sav", ".SAV", NULL};
+const char *save_exts[] = {".sav", ".SAV", NULL};
 
 class SaveGameMenu;
 
