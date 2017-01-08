@@ -134,12 +134,13 @@ typedef int int16;
 #error No 2 byte type, you lose.
 #endif
 
-#if SIZEOF_INT == 4
-typedef unsigned int uint32;
-typedef int int32;
-#elif SIZEOF_LONG == 4
+
+#if SIZEOF_LONG == 4
 typedef unsigned long uint32;
 typedef long int32;
+#elif SIZEOF_INT == 4
+typedef unsigned int uint32;
+typedef int int32;
 #else
 #error No 4 byte type, you lose.
 #endif

@@ -134,7 +134,7 @@ bool InitNetwork()
         memset(myIP, 0, sizeof(myIP));
 	printf("Getting IP address via DHCP...\n\n");
 
-	if (if_config(myIP, NULL, NULL, true) < 0) {
+	if (if_config(myIP, NULL, NULL, true, 10) < 0) {
 	        	printf("No DHCP reply\n\n");
 	        	return false;
         }
